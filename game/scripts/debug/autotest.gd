@@ -54,6 +54,9 @@ func tp(x: float, z: float, face := Vector3(0, 0, 1)) -> void:
 
 func _run() -> void:
 	match scenario:
+		"anim":
+			# character animation checks (anim track): scripts/actors/anim_check.gd
+			await AnimCheck.run(self)
 		"basic":
 			await shot("title", 60)
 			world.start_game(false)

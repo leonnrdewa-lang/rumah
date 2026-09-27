@@ -3,8 +3,8 @@ extends Node
 ## touch the shared autotest):
 ##   godot --path game --rendering-driver opengl3 --resolution 1280x720 -- --uidemo=dialogs --shots=/tmp/shots
 ## Scenarios: dialogs (HUD, villager dialog with 4+ choices, speaker change,
-## shop menus, morning report, pause, status), touch (same with touch layout),
-## title. Quits when done.
+## shop menus, morning report, pause, status), touch (shorter, touch layout),
+## quick (dialog layouts only), title. Quits when done.
 
 var ui: Node
 var scenario := "dialogs"
@@ -64,13 +64,27 @@ func _run() -> void:
 	if scenario == "touch":
 		ui._touch_mode = true
 		ui._layout()
-	await shot("title", 40)
+	if scenario != "quick":
+		await shot("title", 40)
 	if scenario == "title":
 		return
 	w.start_game(false)
 	await wait(2.2)
 	await shot("intro_dialog", 5)
 	ui.close()
+	if scenario == "quick":
+		# just the dialog layouts: villager greeting + 6 land choices
+		GS.money = 6000000
+		GS.inv["surat"] = 1
+		GS.upgrades["preman"] = 1
+		w.deals.talk("ibu")
+		await wait(1.2)
+		await shot("talk_greeting", 5)
+		await key(KEY_2)
+		await wait(1.6)
+		await shot("land_choices", 5)
+		ui.close()
+		return
 	# HUD next to a ripe palm: harvest prompt + egrek slot highlighted
 	var tv: Node3D = w.tile_views["0:0"]
 	tp(tv.global_position.x, tv.global_position.z + 1.3, Vector3(0, 0, -1))

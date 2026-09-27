@@ -19,6 +19,7 @@ var speaker_changed := true
 var panel: PanelContainer
 var col: VBoxContainer
 var bubble: PanelContainer
+var badge_room: Control
 var body: Label
 var grid: GridContainer
 var name_tag: PanelContainer
@@ -81,7 +82,18 @@ func _build() -> void:
 	ui._margins(bs, 20, 12, 20, 14)
 	bubble.add_theme_stylebox_override("panel", bs)
 	bubble.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	col.add_child(bubble)
+	bubble.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bubble.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	# top row: [room for the round badge] [speech bubble]; the choices below
+	# span the whole panel like in the target screenshot
+	var top_row := HBoxContainer.new()
+	top_row.add_theme_constant_override("separation", 0)
+	top_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	badge_room = Control.new()
+	badge_room.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	top_row.add_child(badge_room)
+	top_row.add_child(bubble)
+	col.add_child(top_row)
 	body = ui._label(text, 23, ui.BROWN)
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	body.add_theme_constant_override("line_spacing", 3)
@@ -226,7 +238,8 @@ func relayout(vp: Vector2) -> void:
 	var touch: bool = ui._touch_mode
 	var pw := 0.0
 	var ph := 0.0
-	var pad_left := 24.0
+	var pad_left := 22.0
+	var room := 0.0  # indent of the bubble next to a round badge
 	var w := 0.0
 	if land:
 		if art:
@@ -238,9 +251,9 @@ func relayout(vp: Vector2) -> void:
 		elif badge_tex:
 			ph = clampf(vp.y * 0.23, 118.0, 164.0)
 			pw = ph
-			pad_left = 22.0 + pw + 20.0
-		var text_w := clampf(vp.x - 2.0 * m - pad_left - 26.0, 340.0, 700.0 if not touch else 780.0)
-		w = minf(pad_left + text_w + 26.0, vp.x - 2.0 * m)
+			room = pw + 20.0
+		var text_w := clampf(vp.x - 2.0 * m - pad_left - room - 26.0, 340.0, 700.0 if not touch else 780.0)
+		w = minf(pad_left + room + text_w + 26.0, vp.x - 2.0 * m)
 	else:
 		w = vp.x - 2.0 * m
 		if art:
@@ -252,6 +265,7 @@ func relayout(vp: Vector2) -> void:
 			ph = clampf(vp.x * 0.26, 120.0, 180.0)
 			pw = ph
 	_panel_style.content_margin_left = pad_left
+	badge_room.custom_minimum_size = Vector2(room, maxf(0.0, pw * 0.66 - 28.0 + 6.0) if room > 0.0 else 0.0)
 	_panel_style.content_margin_top = 28.0 if (land or (art == null and badge_tex == null)) else 30.0
 	bubble.tail = land and (art != null or badge_tex != null)
 	grid.columns = _columns(land)
@@ -259,7 +273,7 @@ func relayout(vp: Vector2) -> void:
 		# a lone "Lanjut" sits bottom-right like a continue arrow
 		grid.size_flags_horizontal = Control.SIZE_SHRINK_END
 		buttons[0].custom_minimum_size.x = 220.0
-	var inner_w := w - pad_left - 26.0
+	var inner_w := w - pad_left - room - 26.0
 	body.custom_minimum_size.x = maxf(120.0, inner_w - 40.0)
 	panel.size = Vector2(w, 0)
 	panel.size = Vector2(w, panel.get_combined_minimum_size().y)
@@ -269,7 +283,7 @@ func relayout(vp: Vector2) -> void:
 	# name tag riding the panel's top edge, above the text column
 	var ns := name_tag.get_combined_minimum_size()
 	name_tag.size = ns
-	var tag_x := panel.position.x + pad_left - 6.0
+	var tag_x := panel.position.x + pad_left + room - 6.0
 	if not land and (art or badge_tex):
 		tag_x = panel.position.x + 16.0 + pw + 12.0
 		if tag_x + ns.x > panel.position.x + w - 12.0:

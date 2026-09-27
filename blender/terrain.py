@@ -372,11 +372,11 @@ blocked_px = (road_edge < 0.25) | door_block | (bld_dist <= 0.15) | (sd < 2.0)
 
 # plants per m^2 in each zone (the densest zone wins) and species weights
 ZONES = [
-    ("verge", zone_verge, 0.95, {"grass_a": 3, "grass_b": 3, "flowers_white": 1.6, "flowers_yellow": 1.3, "fern_a": 1.0,
+    ("verge", zone_verge, 1.3, {"grass_a": 3, "grass_b": 3, "flowers_white": 1.6, "flowers_yellow": 1.3, "fern_a": 1.0,
                                  "rock_a": 0.35, "keladi": 0.4, "shrub_a": 0.5, "frond_fallen": 0.25}),
-    ("bld", zone_bld, 0.9, {"shrub_a": 2, "shrub_b": 2, "keladi": 1.6, "flowers_white": 1.1, "flowers_yellow": 1.0,
+    ("bld", zone_bld, 1.1, {"shrub_a": 2, "shrub_b": 2, "keladi": 1.6, "flowers_white": 1.1, "flowers_yellow": 1.0,
                             "fern_b": 1.0, "grass_a": 1.2, "pile_fronds": 0.25}),
-    ("parcel", zone_parcel, 0.8, {"fern_a": 2, "fern_b": 2, "frond_fallen": 1.2, "grass_b": 2, "keladi": 0.8,
+    ("parcel", zone_parcel, 0.95, {"fern_a": 2, "fern_b": 2, "frond_fallen": 1.2, "grass_b": 2, "keladi": 0.8,
                                   "shrub_b": 0.8, "pile_fronds": 0.3, "flowers_white": 0.6}),
     ("forest", zone_forest, 0.7, {"fern_a": 2, "fern_b": 2, "shrub_a": 1.2, "shrub_b": 1.2, "vine_log": 0.22,
                                   "frond_fallen": 0.6, "keladi": 1.0, "rock_a": 0.3, "grass_b": 0.6}),
@@ -515,8 +515,8 @@ for (x, z) in tile_pts:
 shade_r = 1.0 - np.exp(-shade_acc * 1.25)
 shade_r = ndimage.gaussian_filter(shade_r, 0.7)
 
-dry = 0.2 + (fractal_noise(N, (4, 40), 2.0, seed=41) - 0.5) * 0.45
-dry += 0.4 * np.exp(-((road_edge - 0.6) / 0.9) ** 2)                  # road verges
+dry = 0.1 + (fractal_noise(N, (4, 40), 2.0, seed=41) - 0.5) * 0.45
+dry += 0.32 * np.exp(-((road_edge - 0.5) / 0.8) ** 2)                 # road verges
 dry -= 0.45 * np.exp(-np.maximum(tree_d - 2.0, 0) / 5.0)               # lush near forest
 dry -= 0.3 * np.exp(-np.maximum(parcel_ring, 0) / 3.0)                 # lush plantation
 dry += 0.25 * (1 - smoothstep(4.0, 10.0, sd))                          # salty beach grass
