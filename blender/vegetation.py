@@ -1419,11 +1419,14 @@ PALMS = {
                     epi=1, crown_r=0.12, ao=0.58, pet=0.16,
                     tiers=[dict(n=7, el=(78, 58), droop=(20, 40), zr=(-0.1, 0.08), L=(1.3, 1.75), pw=1.5),
                            dict(n=9, el=(44, 26), droop=(58, 72), zr=(0.14, 0.26), L=(1.8, 2.05), pw=1.7)]),
+    # win: the crown's camera window - the spreading tiers leave the -Y sector (+-window deg) open so the trunk
+    # and the front bunches show from the game camera (as in the target); the steep young fronds still cover it.
     "sawit_3": dict(H=3.4, r=0.28, wr=0.6, boots=54, boot=(0.38, 0.28, 0.13), rings=7, spear=1.1, segs=7,
-                    fruits=6, epi=2, crown_r=0.22, ao=0.55, fruit=(0.8, 0.9), pet=0.2,
-                    tiers=[dict(n=8, el=(80, 62), droop=(26, 52), zr=(-0.12, 0.04), L=(2.0, 2.35), pw=1.4),
-                           dict(n=8, el=(50, 38), droop=(62, 78), zr=(0.06, 0.15), L=(2.4, 2.6), pw=1.7),
-                           dict(n=4, el=(34, 28), droop=(72, 84), zr=(0.17, 0.22), L=(2.15, 2.3), pw=1.8)]),
+                    fruits=6, epi=2, crown_r=0.22, ao=0.55, fruit=(0.8, 0.9), pet=0.2, window=42,
+                    tiers=[dict(n=6, el=(78, 66), droop=(40, 55), zr=(-0.12, 0.0), L=(1.95, 2.25), pw=1.5),
+                           dict(n=8, el=(56, 46), droop=(76, 90), zr=(0.02, 0.1), L=(2.5, 2.75), pw=1.9, win=True),
+                           dict(n=6, el=(40, 32), droop=(88, 95), zr=(0.12, 0.2), L=(2.35, 2.55), pw=2.1, win=True,
+                                off=0.5)]),
 }
 
 
@@ -1449,12 +1452,18 @@ def build_palm(name, P, seed=3):
     top = H + 0.05
     N = sum(T["n"] for T in P["tiers"])
     vm = petiole_map(P["pet"])
+    win = math.radians(P.get("window", 0))
     i = 0
     for T in P["tiers"]:
         for k in range(T["n"]):
             f = k / max(1, T["n"] - 1)
             age = i / max(1, N - 1)  # 0 youngest (upright, top) -> 1 oldest (spreading, drooping)
-            phi = i * GOLDEN + rnd.uniform(-0.12, 0.12)
+            if T.get("win") and win > 0:
+                # spread evenly over the arc outside the camera window (centred on -Y)
+                u = ((k + 0.5 + T.get("off", 0.0)) / T["n"]) % 1.0
+                phi = -math.pi / 2 + win + u * (2 * math.pi - 2 * win) + rnd.uniform(-0.08, 0.08)
+            else:
+                phi = i * GOLDEN + rnd.uniform(-0.12, 0.12)
             i += 1
             el = lerp(T["el"][0], T["el"][1], f) + rnd.uniform(-4, 4)
             dr = lerp(T["droop"][0], T["droop"][1], f) + rnd.uniform(-5, 5)
@@ -1490,9 +1499,9 @@ def build_palm(name, P, seed=3):
         fr = empty("Fruits", parent=root)
         mats = M_fruit()
         nf = P["fruits"]
-        k0 = rnd.uniform(0, 6.28)
+        k0 = -math.pi / 2 - math.pi / nf if P.get("window") else rnd.uniform(0, 6.28)
         for k in range(nf):
-            a = k0 + (k + 0.5) * (2 * math.pi / nf) + rnd.uniform(-0.18, 0.18)
+            a = k0 + (k + 0.5) * (2 * math.pi / nf) + rnd.uniform(-0.12, 0.12)
             ln = rnd.uniform(*P["fruit"])
             # hanging on the trunk below the crown: upper / lower alternate, axis mostly down and out
             z = H - 0.52 - 0.2 * (k % 2) + rnd.uniform(-0.05, 0.05)

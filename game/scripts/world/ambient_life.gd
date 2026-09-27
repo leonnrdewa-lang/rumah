@@ -337,15 +337,27 @@ func _chimney_tops() -> Array[Vector3]:
 			break
 	# the chimney top is above the camera most of the time, so the mill also puffs
 	# steam from the ridge of its main hall, which the gameplay camera can see
+	var stacks: Array[Vector2] = []
+	for cl in clusters:
+		stacks.append(Vector2(cl[0].x, cl[0].z) / float(cl[1]))
 	var ridge := -INF
+	var cand: Array[Vector3] = []
 	for v in faces:
-		if v.y < top * 0.62:
+		if v.y >= top * 0.62:
+			continue
+		var near_stack := false
+		for st in stacks:
+			if Vector2(v.x, v.z).distance_to(st) < 2.0:
+				near_stack = true
+				break
+		if not near_stack:
+			cand.append(v)
 			ridge = maxf(ridge, v.y)
 	if ridge > 3.0:
 		var acc := Vector3.ZERO
 		var n := 0
-		for v in faces:
-			if v.y > ridge - 0.05 and v.y < top * 0.62:
+		for v in cand:
+			if v.y > ridge - 0.05:
 				acc += v
 				n += 1
 		if n > 0:
