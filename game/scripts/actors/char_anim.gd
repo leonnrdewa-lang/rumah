@@ -60,7 +60,7 @@ const SWING_BONES := ["upperarm_L", "upperarm_R", "forearm_L", "forearm_R"]
 const POLE_CARRY_DIR := Vector3(0.1, 1.0, -0.42)
 const POLE_CARRY_SLIDE := 0.28   # m the pole rides up in the fist when carried
 const POLE_FOLLOW := 16.0
-const POLE_MAX_SPEED := 9.0
+const POLE_MAX_SPEED := 7.0
 
 static var _gait_cache := {}
 static var _tool_meshes := {}
@@ -87,6 +87,7 @@ var _act_alt := false
 var _act_kind := ""
 var _nat := {"walk": 1.1, "run": 2.6}   # m/s each clip covers at 1x (model units, unscaled)
 var _gain := {}                          # clip -> stride gain per STRIDE_KS entry
+var _pivots := {}                        # clip -> {bone: cycle-mean rotation} for stride scaling
 var _gait_src := "default"               # "extras" / "measured" / "default"
 var _grip_offset := -1.0                 # fist centre past the wrist (m), from the extras
 var _run_on := 2.9
@@ -96,13 +97,13 @@ var _idle_rate := 1.0
 var _head := -1
 var _neck := -1
 var _hips := -1
-var _hips_rest_pos := Vector3.ZERO
 var _feet: Array[int] = []
 var _override_bones: Array[int] = []
 var _rest_rot := {}
 var _stride_bones: Array[int] = []
 var _swing_bones: Array[int] = []
 var _stride_k := 1.0
+var fade := {}                           # the cross-fade in progress (read by the anim bench)
 var _pole_dir := Vector3.UP              # model space
 var _pole_slide := 0.0
 var _pole_fresh := true
@@ -191,6 +192,7 @@ func play_action(kind: String, duration := -1.0) -> void:
 		nm = clip if nm != clip else "alt/" + clip
 	_rate = rate
 	_act_rate = rate
+	_note_fade(nm, BLEND_ACTION_IN * rate)
 	ap.play(nm, BLEND_ACTION_IN * rate)
 	_cur = nm
 	_cur_kind = "action"
@@ -209,8 +211,9 @@ func hold_tool(kind: String) -> void:
 
 
 func is_busy() -> bool:
-	## True while an action clip plays and the character should stand still.
-	return skinned and _act_left > BLEND_ACTION_OUT * 0.6
+	## True while an action clip plays and the character should stand still
+	## (until the clip starts fading out, BLEND_ACTION_OUT before its end).
+	return skinned and _act_left > 0.0
 
 
 func action_kind_playing() -> String:
@@ -344,7 +347,17 @@ func _sync_external_yaw() -> void:
 func _init_v2() -> void:
 	skinned = true
 	ap.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
-	ap.deterministic = true
+	# Cross-fades: Godot's deterministic mode does not normalise the fade
+	# weights, which pushes every bone off the path between the two clips by up
+	# to ~6-12 degrees and snaps it back when the fade ends (a pop on both ends
+	# of every blend, worst on bones far from their rest pose). With normalised
+	# weights the fade starts exactly on the old clip, lands exactly on the new
+	# one and moves continuously in between (AnimBench checks this). That needs
+	# every clip to key the same bones (a bone missing from one clip would hold
+	# its other value until the fade ends), which the v2 exports do. Bones are
+	# reset to rest before each advance, so an unkeyed bone never keeps a stale
+	# pose.
+	ap.deterministic = not _same_tracks()
 	for n in LOOP_CLIPS:
 		if ap.has_animation(n):
 			ap.get_animation(n).loop_mode = Animation.LOOP_LINEAR
@@ -371,8 +384,6 @@ func _init_v2() -> void:
 	for bi in _override_bones:
 		_rest_rot[bi] = skel.get_bone_rest(bi).basis.get_rotation_quaternion()
 	_hips = skel.find_bone("hips")
-	if _hips >= 0:
-		_hips_rest_pos = skel.get_bone_rest(_hips).origin
 	for n in ["foot_L", "foot_R"]:
 		var fi := skel.find_bone(n)
 		if fi >= 0:
@@ -439,17 +450,19 @@ func _update_v2(delta: float, speed: float, t: float) -> void:
 		_rate = lerpf(_rate, want_rate, clampf(delta * 25.0, 0.0, 1.0))
 	elif _cur_kind != "action":
 		_rate = lerpf(_rate, want_rate, clampf(delta * 8.0, 0.0, 1.0))
-	# the mixer rewrites only bones that have tracks: put the look bones back
-	# to rest first so the additive look below never accumulates
-	for bi in _override_bones:
-		skel.set_bone_pose_rotation(bi, _rest_rot[bi])
-	if _hips >= 0:
-		skel.set_bone_pose_position(_hips, _hips_rest_pos)
+	# the mixer rewrites only bones that have tracks: start from rest so the
+	# procedural layers below (look, stride) never accumulate
+	skel.reset_bone_poses()
+	if not fade.is_empty():
+		fade["w"] = clampf(float(fade["t"]) / maxf(float(fade["len"]), 0.0001), 0.0, 1.0)
+		fade["t"] = float(fade["t"]) + delta * _rate
+		fade["from_t"] = float(fade["from_t"]) + delta * _rate
 	ap.advance(delta * _rate)
 	if _stride_k > 1.005:
 		var y0 := _lowest_foot()
-		_scale_swing(_stride_bones, _stride_k)
-		_scale_swing(_swing_bones, 1.0 + (_stride_k - 1.0) * 0.6)
+		var piv: Dictionary = _pivots.get(gait, {})
+		_scale_swing(_stride_bones, _stride_k, piv)
+		_scale_swing(_swing_bones, 1.0 + (_stride_k - 1.0) * 0.6, piv)
 		# longer swings lift the planted foot (the leg reaches further out):
 		# sink the hips by as much so it stays on the ground
 		var lift := _lowest_foot() - y0
@@ -470,11 +483,14 @@ func _lowest_foot() -> float:
 	return 0.0 if y == INF else y
 
 
-func _scale_swing(bones: Array[int], k: float) -> void:
-	## Scale each bone's rotation away from its rest pose by k (a longer swing).
+func _scale_swing(bones: Array[int], k: float, pivots: Dictionary) -> void:
+	## Scale each bone's rotation away from its cycle-mean rotation in the clip
+	## (the centre of the swing) by k: a longer swing, same posture.
 	for bi in bones:
-		var r: Quaternion = _rest_rot[bi]
+		var r: Quaternion = pivots.get(bi, _rest_rot[bi])
 		var d := (r.inverse() * skel.get_bone_pose_rotation(bi)).normalized()
+		if d.w < 0.0:
+			d = -d   # the short way round
 		var ang := d.get_angle()
 		if ang < 0.0001 or ang > PI * 0.9:
 			continue
@@ -518,7 +534,11 @@ func _switch(kind: String, rate: float, blend: float) -> void:
 	if nm == _cur and ap.is_playing():
 		_cur_kind = kind
 		return
-	ap.play(nm, blend * maxf(rate, 0.3))
+	# blend times are in clip time (advance() scales them by the rate): size them
+	# for the rate, but not below 0.8x - a walk starting from rest speeds up
+	# during the fade, which would otherwise make it too short
+	_note_fade(nm, blend * maxf(rate, 0.8))
+	ap.play(nm, blend * maxf(rate, 0.8))
 	var len := ap.get_animation(nm).length
 	if phase >= 0.0:
 		ap.seek(phase * len, false)
@@ -527,6 +547,31 @@ func _switch(kind: String, rate: float, blend: float) -> void:
 		ap.seek(randf() * len, false)
 	_cur = nm
 	_cur_kind = kind
+
+
+func _note_fade(to: String, blend: float) -> void:
+	var nested: bool = not fade.is_empty() and float(fade["t"]) < float(fade["len"])
+	fade = {"from": _cur, "from_t": ap.current_animation_position if ap.is_playing() else 0.0,
+		"to": to, "t": 0.0, "len": blend, "w": 0.0, "nested": nested}
+
+
+func _same_tracks() -> bool:
+	## True when every clip keys the same bone channels.
+	var ref := {}
+	var first := true
+	for n in ap.get_animation_list():
+		if "/" in n:
+			continue
+		var a := ap.get_animation(n)
+		var s := {}
+		for t in a.get_track_count():
+			s[str(a.track_get_path(t)) + "|" + str(a.track_get_type(t))] = true
+		if first:
+			ref = s
+			first = false
+		elif s.size() != ref.size() or not s.keys().all(func(k): return ref.has(k)):
+			return false
+	return true
 
 
 func _resolve(clip: String) -> String:
@@ -559,6 +604,7 @@ func _measure_gait() -> void:
 			_gait_cache[key] = g
 	_nat = (g["nat"] as Dictionary).duplicate()
 	_gain = g["gain"]
+	_pivots = g["pivots"]
 	_gait_src = g["src"]
 	_grip_offset = g["grip"]
 	_run_on = _speed_of("walk") * WALK_TO_RUN
@@ -583,6 +629,7 @@ func _gait_extras() -> Dictionary:
 func _build_gait() -> Dictionary:
 	var nat := {"walk": 1.1, "run": 2.6}
 	var gain := {}
+	var pivots := {}
 	var src := "default"
 	var ex := _gait_extras()
 	var foot := skel.find_bone("foot_L")
@@ -596,16 +643,31 @@ func _build_gait() -> Dictionary:
 		if a.length <= 0.0 or foot < 0:
 			continue
 		ap.play(nm)
+		# centre of each limb's swing: the mean rotation over the cycle
+		var acc := {}
+		for i in 20:
+			skel.reset_bone_poses()
+			ap.seek(a.length * i / 20.0, true)
+			for bi in _stride_bones + _swing_bones:
+				var q := skel.get_bone_pose_rotation(bi)
+				var v := Vector4(q.x, q.y, q.z, q.w)
+				if acc.has(bi) and (acc[bi] as Vector4).dot(v) < 0.0:
+					v = -v
+				acc[bi] = (acc[bi] as Vector4) + v if acc.has(bi) else v
+		var piv := {}
+		for bi in acc:
+			var v: Vector4 = (acc[bi] as Vector4).normalized()
+			piv[bi] = Quaternion(v.x, v.y, v.z, v.w)
+		pivots[clip] = piv
 		var spans := PackedFloat32Array()
 		for k in STRIDE_KS:
 			var zmin := INF
 			var zmax := -INF
 			for i in 20:
-				for bi in _override_bones:
-					skel.set_bone_pose_rotation(bi, _rest_rot[bi])
+				skel.reset_bone_poses()
 				ap.seek(a.length * i / 20.0, true)
 				if k > 1.0:
-					_scale_swing(_stride_bones, k)
+					_scale_swing(_stride_bones, k, piv)
 				var p := _sk_xf * skel.get_bone_global_pose(foot).origin
 				zmin = minf(zmin, p.z)
 				zmax = maxf(zmax, p.z)
@@ -624,12 +686,11 @@ func _build_gait() -> Dictionary:
 			nat[clip] = clampf(spans[0] / (a.length * st), 0.3, 8.0)
 			src = "measured"
 	ap.stop()
-	for bi in _override_bones:
-		skel.set_bone_pose_rotation(bi, _rest_rot[bi])
+	skel.reset_bone_poses()
 	if _resolve("run") != "run":
 		nat["run"] = maxf(nat["walk"] * 2.0, 2.0)
 	var grip := float(ex.get("grip_offset", -1.0))
-	return {"nat": nat, "gain": gain, "src": src, "grip": grip}
+	return {"nat": nat, "gain": gain, "pivots": pivots, "src": src, "grip": grip}
 
 
 func _apply_look(delta: float, moving: bool) -> void:
@@ -767,8 +828,12 @@ func _update_tool(delta: float) -> void:
 
 
 func pole_working() -> bool:
-	## True while the harvest clip steers the pole (otherwise it is carried).
-	return _act_left > 0.0 and ACTIONS.get(_act_kind, ["", 1.0, ""])[2] == "egrek"
+	## True while the harvest clip steers the pole. Otherwise a pole kept in hand
+	## (hold_tool) is carried; one shown only for the harvest keeps following the
+	## hands while it fades out.
+	if _act_left > 0.0 and ACTIONS.get(_act_kind, ["", 1.0, ""])[2] == "egrek":
+		return true
+	return held_tool != "egrek"
 
 
 func _egrek_basis(delta: float) -> Basis:

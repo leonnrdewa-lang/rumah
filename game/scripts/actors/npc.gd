@@ -10,8 +10,8 @@ const WAVE_RANGE := 4.5
 const LOOK_RANGE := 6.0
 const ANIM_RANGE := 32.0   # beyond this from the player (off screen) the model is not animated
 const NO_WAVE := ["char_preman", "char_petugas"]
-const VISIT_RANGE := 16.0  # m: farthest neighbour a villager strolls over to
-const VISIT_LEASH := 8.0   # m: how far past its wander radius a villager goes visiting
+const VISIT_RANGE := 20.0  # m: farthest neighbour a villager strolls over to
+const VISIT_LEASH := 10.0  # m: how far past its wander radius a villager goes visiting
 
 var vid := ""            # villager id in GS.villagers, or "" for extras
 var display_name := ""
@@ -355,9 +355,9 @@ func _start_chat(other: Npc, secs: float, first: bool) -> void:
 func _end_chat() -> void:
 	if _chat_with != null and is_instance_valid(_chat_with) and _chat_with._chat_with == self:
 		_chat_with._chat_with = null
-		_chat_with._social_cd = randf_range(18.0, 35.0)
+		_chat_with._social_cd = randf_range(12.0, 25.0)
 	if _chat_with != null:
-		_social_cd = randf_range(18.0, 35.0)
+		_social_cd = randf_range(12.0, 25.0)
 	_chat_with = null
 
 

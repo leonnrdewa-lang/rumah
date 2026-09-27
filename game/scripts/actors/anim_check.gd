@@ -2,9 +2,12 @@ class_name AnimCheck
 extends RefCounted
 ## Autotest scenario "anim" (run through scripts/debug/autotest.gd):
 ##   godot --path game -- --autotest=anim --shots=<dir>
-## Walks, runs, stops, turns, harvests, chops, plants, talks, cheers and gets
-## waved at, capturing short frame sequences (0.1 s apart) from a close follow
-## camera, and prints checks for blending, tools and the movement lock.
+## First the numeric bench on a bare floor (AnimBench: foot slide, action lock,
+## tools, pole steadiness, fades; prints "[anim] BENCH PASS/FAIL"), then in the
+## island: walks, runs, stops, turns, harvests, chops, plants, talks, cheers and
+## gets waved at, capturing short frame sequences (0.1 s apart) from a close
+## follow camera (undergrowth hidden), an off-screen villager check and 120 s
+## of village life (chats, visits).
 
 
 static func run(at: Node) -> void:

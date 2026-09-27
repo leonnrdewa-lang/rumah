@@ -4,6 +4,9 @@ extends CharacterBody3D
 ## joystick) with a little acceleration, stays on land, stands still while a
 ## work animation plays and carries the harvest on their back.
 
+## 5.2 m/s is a run for a 1.1 m chibi (the walk clip would need 8x playback),
+## so normal movement shows the run clip on purpose; the walk shows below
+## ~1.5 m/s (half-pushed stick, speeding up, villagers). See CharAnim.WALK_TO_RUN.
 const SPEED := 5.2
 const RUN_MULT := 1.5
 const ACCEL := 30.0     # m/s^2 speeding up

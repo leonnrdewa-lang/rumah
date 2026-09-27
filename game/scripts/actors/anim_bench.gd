@@ -10,8 +10,9 @@ extends RefCounted
 const DT := 1.0 / 60.0
 const SLIDE_MAX := 0.10          # planted foot speed / ground speed (1.25 and 5.2 m/s)
 const POLE_CARRY_MAX_DEG := 4.0  # pole direction change per 1/60 s frame while carried
-const POLE_WORK_MAX_DEG := 12.0  # ... while harvesting
+const POLE_MOVE_MAX_DEG := 8.0   # ... while harvesting and when picking it up / shouldering it
 const LOCK_TOL := 0.05           # s
+const FADE_WINDOW := 0.35        # s after a clip change in which a spike counts as a fade pop
 
 
 static func run(at: Node) -> Array:
@@ -52,9 +53,9 @@ static func _build_stage(at: Node) -> Node3D:
 	pm.size = Vector2(240, 240)
 	fl.mesh = pm
 	var img := Image.create(2, 2, false, Image.FORMAT_RGB8)
-	img.fill(Color("b7c784"))
-	img.set_pixel(1, 0, Color("9aad68"))
-	img.set_pixel(0, 1, Color("9aad68"))
+	img.fill(Color("8fa45c"))
+	img.set_pixel(1, 0, Color("74884a"))
+	img.set_pixel(0, 1, Color("74884a"))
 	var m := StandardMaterial3D.new()
 	m.albedo_texture = ImageTexture.create_from_image(img)
 	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
@@ -64,10 +65,20 @@ static func _build_stage(at: Node) -> Node3D:
 	var sun := DirectionalLight3D.new()
 	sun.rotation = Vector3(deg_to_rad(-48), deg_to_rad(-35), 0)
 	sun.shadow_enabled = true
-	sun.light_energy = 1.1
+	sun.light_energy = 0.9
+	sun.light_color = Color("fff1d8")
 	stage.add_child(sun)
 	var cam := Camera3D.new()
 	cam.fov = 34.0
+	# its own sky and ambient light (the island's environment expects the island's sun)
+	var env := Environment.new()
+	env.background_mode = Environment.BG_COLOR
+	env.background_color = Color("b9d3e2")
+	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	env.ambient_light_color = Color("a9bccb")
+	env.ambient_light_energy = 0.7
+	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+	cam.environment = env
 	stage.add_child(cam)
 	cam.current = true
 	stage.set_meta("cam", cam)
@@ -121,9 +132,9 @@ static func _slide_tests(stage: Node3D, fails: Array) -> void:
 			var res := probe.result()
 			var gate: bool = v == 1.25 or (v == 5.2 and c[0] == "char_player")
 			var bad: bool = gate and float(res["mean"]) > SLIDE_MAX
-			print("[bench] slide %-12s %.2f m/s  clip=%-4s rate=%.2f stride=%.2f  sole mean=%4.1f%% median=%4.1f%% p90=%4.1f%% (n=%d)  ankle mean=%4.1f%%  src=%s%s" % [
+			print("[bench] slide %-12s %.2f m/s  clip=%-4s rate=%.2f stride=%.2f  stance mean=%4.1f%% p90=%4.1f%% (n=%d)  incl. touchdown=%4.1f%%  ankle=%4.1f%%  src=%s%s" % [
 				c[0], v, anim._cur_kind, anim._rate, anim._stride_k, 100.0 * float(res["mean"]),
-				100.0 * float(res["median"]), 100.0 * float(res["p90"]), res["n"], 100.0 * float(res["ankle"]),
+				100.0 * float(res["p90"]), res["n"], 100.0 * float(res["loose"]), 100.0 * float(res["ankle"]),
 				anim._gait_src, "  <-- FAIL" if bad else ""])
 			if bad:
 				fails.append("slide %s %.2f" % [c[0], v])
@@ -140,7 +151,7 @@ static func _action_tests(stage: Node3D, fails: Array) -> void:
 		anim.play_action(kind)
 		var spec: Array = CharAnim.ACTIONS[kind]
 		var clip := anim._resolve(spec[0])
-		var expect: float = anim.ap.get_animation(clip).length / float(spec[1]) - CharAnim.BLEND_ACTION_OUT * 0.6
+		var expect: float = anim.ap.get_animation(clip).length / float(spec[1]) - CharAnim.BLEND_ACTION_OUT
 		var lock := 0.0
 		var tool_ok: bool = spec[2] == ""
 		var tool_d := 0.0
@@ -219,7 +230,7 @@ static func _pole_tests(stage: Node3D, fails: Array) -> void:
 				var tn: Node3D = anim._tools.get("egrek")
 				if tn and tn.visible:
 					low = minf(low, (_tool_world(anim, tn) * Vector3(0, -0.5, 0)).y)
-			var lim := POLE_WORK_MAX_DEG if ph[0] == "harvest" else POLE_CARRY_MAX_DEG
+			var lim := POLE_MOVE_MAX_DEG if ph[0] in ["harvest", "after"] else POLE_CARRY_MAX_DEG
 			lim *= 60.0 / fps
 			var ok := worst <= lim
 			print("[bench] pole %d fps %-10s max change %5.1f deg/frame (limit %.0f; the hand's own grip axis %5.1f)  pole butt lowest %.2f m %s" % [
@@ -242,21 +253,51 @@ static func _pole_tests(stage: Node3D, fails: Array) -> void:
 	_free(r2)
 
 
-# ------------------------------------------------------------------ pops
+# ------------------------------------------------------------------ fades
+static func _clip_rot(anim: CharAnim, clip: String, bone: String, t: float) -> Quaternion:
+	## A bone's rotation in a clip at time t, straight from the Animation resource.
+	var a := anim.ap.get_animation(clip)
+	var path := NodePath(str(anim.ap.get_node(anim.ap.root_node).get_path_to(anim.skel)) + ":" + bone)
+	var tr := a.find_track(path, Animation.TYPE_ROTATION_3D)
+	var rest := anim.skel.get_bone_rest(anim.skel.find_bone(bone)).basis.get_rotation_quaternion()
+	if tr < 0:
+		return rest
+	var tt := fposmod(t, a.length) if a.loop_mode != Animation.LOOP_NONE else clampf(t, 0.0, a.length)
+	return a.rotation_track_interpolate(tr, tt)
+
+
 static func _pop_tests(stage: Node3D, fails: Array) -> void:
-	## A cross-fade that pops shows as one frame whose bone rotation change
-	## dwarfs the frames around it.
+	## Cross-fades must not jump. For every frame of every fade and every bone:
+	##  - the fade's first frame shows the old clip and the frame it ends shows
+	##    the new clip (within 0.5 deg): it starts and lands without a snap;
+	##  - in between, the pose moves no more per frame than the two clips do plus
+	##    the weight change times their gap (x2 slack: Godot interpolates the
+	##    rest-relative rotations, a slightly longer path than a slerp).
+	## Godot's deterministic mixer, for one, fails this: its fade weights are not
+	## normalised, so bones stray up to ~6 deg and snap back as the fade ends.
+	## Clips are sampled straight from the Animation resources. Bones driven by
+	## code on top (head/neck look, stride-scaled legs) are left out.
 	for model_name in ["char_player", "char_kakek"]:
 		var r := _rig(stage, model_name)
 		var anim: CharAnim = r["anim"]
 		var sk := anim.skel
-		var rows: Array = []
-		var labels: Array = []
-		var plan := [["idle", 1.0, 0.0, ""], ["walk", 1.5, 1.25, ""], ["run", 1.5, 5.2, ""], ["stop", 1.0, 0.0, ""],
-			["harvest", 1.6, 0.0, "harvest"], ["harvest2", 0.7, 0.0, "harvest"], ["plant", 1.6, 0.0, "plant"],
-			["walk2", 1.0, 1.25, ""], ["chop", 1.2, 0.0, "clear"], ["talk", 1.5, 0.0, "talk"], ["cheer", 1.4, 0.0, "cheer"],
-			["sad walk", 1.2, 0.94, "sad"], ["sad", 1.2, 0.0, "sad"], ["wave", 1.4, 0.0, "wave"], ["end", 0.8, 0.0, ""]]
+		var plan := [["idle", 1.0, 0.0, ""], ["walk", 1.5, 1.25, ""], ["run", 1.5, 5.2, ""], ["sprint", 1.0, 7.8, ""],
+			["stop", 1.0, 0.0, ""], ["harvest", 1.6, 0.0, "harvest"], ["harvest2", 0.7, 0.0, "harvest"],
+			["plant", 1.6, 0.0, "plant"], ["walk2", 1.0, 1.25, ""], ["chop", 1.2, 0.0, "clear"], ["talk", 1.5, 0.0, "talk"],
+			["cheer", 1.4, 0.0, "cheer"], ["sad walk", 1.2, 0.94, "sad"], ["sad", 1.2, 0.0, "sad"], ["wave", 1.4, 0.0, "wave"],
+			["end", 0.8, 0.0, ""]]
+		var skip := ["head", "neck"]
 		var sp := 0.0
+		var frames := 0
+		var checked := 0
+		var nested := 0
+		var worst_end := 0.0
+		var worst_end_at := ""
+		var worst_step := 0.0
+		var worst_step_at := ""
+		var pairs := {}
+		var prev := {}      # bone -> [display, from pose, to pose] last frame of the same fade
+		var prev_fade := {}
 		for ph in plan:
 			var t := 0.0
 			anim.idle_clip = "sad" if ph[3] == "sad" else "idle"
@@ -269,31 +310,53 @@ static func _pop_tests(stage: Node3D, fails: Array) -> void:
 				sp = move_toward(sp, ph[2], (acc if ph[2] > sp else acc * 1.4) * DT)
 				_step(r, DT, sp)
 				t += DT
-				var row := []
+				frames += 1
+				var f := anim.fade
+				var active: bool = not f.is_empty() and f["from"] != "" and float(f["w"]) < 1.0 + 1e-4 \
+					and float(f["t"]) <= float(f["len"]) + anim._rate * DT * 1.01
+				if not active or f["nested"]:
+					nested += 1 if active else 0
+					prev = {}
+					continue
+				if f != prev_fade:
+					prev = {}
+				prev_fade = f
+				checked += 1
+				var from: String = f["from"]
+				var to: String = anim.ap.current_animation
+				var w: float = f["w"]
+				var dw: float = anim._rate * DT / maxf(float(f["len"]), 0.0001)
+				pairs["%s>%s" % [from.trim_prefix("alt/"), to.trim_prefix("alt/")]] = true
+				var cur := {}
 				for b in sk.get_bone_count():
-					row.append(sk.get_bone_pose_rotation(b))
-				row.append(sk.get_bone_pose_position(maxi(anim._hips, 0)))
-				rows.append(row)
-				labels.append(ph[0])
-		var nb := sk.get_bone_count()
-		var pops := []
-		var worst := 0.0
-		for b in nb + 1:
-			var d := PackedFloat32Array()
-			for i in range(1, rows.size()):
-				if b < nb:
-					d.append(rad_to_deg((rows[i - 1][b] as Quaternion).angle_to(rows[i][b])))
-				else:
-					d.append((rows[i - 1][b] as Vector3).distance_to(rows[i][b]) * 1000.0)   # hips: mm
-			for i in range(2, d.size() - 2):
-				var around := maxf(d[i - 2], d[i + 2])
-				worst = maxf(worst, d[i] / maxf(around, 1.0))
-				if d[i] > 3.0 and d[i] > 2.5 * around:
-					pops.append("%s@%s(%.1f vs %.1f)" % [sk.get_bone_name(b) if b < nb else "hips_pos", labels[i + 1], d[i], around])
-		print("[bench] pops %s: %d frames through idle/walk/run/stop/actions/talk/sad/wave; worst spike ratio %.2f; pops: %s" % [
-			model_name, rows.size(), worst, "none" if pops.is_empty() else ", ".join(pops.slice(0, 8))])
-		if not pops.is_empty():
-			fails.append("pops " + model_name)
+					var bn := sk.get_bone_name(b)
+					if bn in skip or (anim._stride_k > 1.005 and (b in anim._stride_bones or b in anim._swing_bones)):
+						continue
+					var qd := sk.get_bone_pose_rotation(b)
+					var qa := _clip_rot(anim, from, bn, f["from_t"])
+					var qb := _clip_rot(anim, to, bn, anim.ap.current_animation_position)
+					cur[b] = [qd, qa, qb]
+					if w <= 0.0 or w >= 1.0:
+						var e := rad_to_deg(qd.angle_to(qa if w <= 0.0 else qb))
+						if e > worst_end:
+							worst_end = e
+							worst_end_at = "%s %s>%s w=%.0f (%s)" % [bn, from, to, w, ph[0]]
+					if prev.has(b):
+						var p: Array = prev[b]
+						var step := rad_to_deg((p[0] as Quaternion).angle_to(qd))
+						var bound := rad_to_deg((p[1] as Quaternion).angle_to(qa) + (p[2] as Quaternion).angle_to(qb)) \
+							+ rad_to_deg(qa.angle_to(qb)) * dw * 2.0 + 0.3
+						if step - bound > worst_step:
+							worst_step = step - bound
+							worst_step_at = "%s %s>%s w=%.2f moved %.1f deg, allowed %.1f (%s)" % [bn, from, to, w, step, bound, ph[0]]
+				prev = cur
+		var ok := worst_end < 0.5 and worst_step <= 0.0
+		print("[bench] fades %s: %d frames, %d inside single fades (%s), %d in nested fades (not checked)" % [
+			model_name, frames, checked, ", ".join(pairs.keys()), nested])
+		print("[bench]   fade ends off the clips by at most %.2f deg %s; worst frame step beyond the allowed %.2f deg %s  %s" % [
+			worst_end, worst_end_at, maxf(worst_step, 0.0), worst_step_at, "ok" if ok else "<-- FAIL"])
+		if not ok:
+			fails.append("fades " + model_name)
 		_free(r)
 
 
@@ -341,16 +404,18 @@ static func _film(at: Node, stage: Node3D) -> void:
 	await roll.call("run", 6, 5.2, 6, side, 0.5)
 	await roll.call("stop", 6, 0.0, 6, side, 0.5)
 	anim.play_action("harvest")
-	await roll.call("harvest", 12, 0.0, 6, Vector3(0.6, 1.3, 6.2), 1.1)
+	await roll.call("harvest", 12, 0.0, 6, Vector3(0.8, 1.2, 5.2), 1.05)
 	await roll.call("rest", 1, 0.0, 30, side, 0.5)
 	anim.play_action("plant")
 	await roll.call("plant", 8, 0.0, 9, Vector3(1.6, 0.9, 3.6), 0.4)
 	anim.play_action("clear")
 	await roll.call("chop", 6, 0.0, 9, Vector3(1.6, 0.9, 3.6), 0.45)
 	anim.hold_tool("harvest")
-	await roll.call("holdwalk", 6, 1.6, 6, Vector3(0.6, 1.2, 6.0), 1.0)
-	await roll.call("holdrun", 4, 5.2, 6, Vector3(0.6, 1.2, 6.0), 1.0)
-	await roll.call("holdstop", 3, 0.0, 12, Vector3(0.6, 1.2, 6.0), 1.0)
+	await roll.call("holdwalk", 6, 1.25, 6, Vector3(0.8, 1.2, 5.2), 1.05)
+	await roll.call("holdrun", 4, 5.2, 6, Vector3(0.8, 1.2, 5.2), 1.05)
+	await roll.call("holdstop", 3, 0.0, 12, Vector3(0.8, 1.2, 5.2), 1.05)
+	anim.play_action("harvest")
+	await roll.call("holdharvest", 6, 0.0, 12, Vector3(0.8, 1.2, 5.2), 1.05)
 	anim.hold_tool("")
 	_free(st["r"])
 	st["r"] = _rig(stage, "char_kakek")
@@ -439,7 +504,7 @@ class FootProbe:
 				if prev[i].y < prev[c].y:
 					c = i
 			var d := Vector2(p[c].x - prev[c].x, p[c].z - prev[c].z).length() / dt
-			rows.append([prev[c].y - ground_y, d / maxf(ground_speed, 0.01)])
+			rows.append([prev[c].y - ground_y, d / maxf(ground_speed, 0.01), p[c].y - ground_y])
 		prev = p
 		var ank := []
 		for f in feet:
@@ -448,34 +513,37 @@ class FootProbe:
 			var lo := 0 if (prev_ankles[0] as Vector3).y <= (prev_ankles[1] as Vector3).y else 1
 			var a0: Vector3 = prev_ankles[lo]
 			var a1: Vector3 = ank[lo]
-			ankle_rows.append([a0.y - ground_y, Vector2(a1.x - a0.x, a1.z - a0.z).length() / dt / maxf(ground_speed, 0.01)])
+			ankle_rows.append([a0.y - ground_y, Vector2(a1.x - a0.x, a1.z - a0.z).length() / dt / maxf(ground_speed, 0.01), a1.y - ground_y])
 		prev_ankles = ank
 
-	static func _planted(src: Array, band: float) -> Array:
+	static func _planted(src: Array, band: float, both_ends: bool) -> Array:
+		## Slide ratios of the steps where the tracked point is on the ground:
+		## within `band` of the lowest height seen (at the start of the step, and
+		## with both_ends also at its end, which leaves out lift-off and the
+		## last airborne frame before touchdown).
 		var ymin := INF
 		for r in src:
 			ymin = minf(ymin, r[0])
 		var vals := []
 		for r in src:
-			if r[0] < ymin + band:
+			if r[0] < ymin + band and (not both_ends or r[2] < ymin + band):
 				vals.append(r[1])
 		vals.sort()
 		return vals
 
-	func result() -> Dictionary:
-		# planted = steps whose lowest sole point is within 1.2 cm of the lowest seen
-		var vals := _planted(rows, 0.012)
-		var avals := _planted(ankle_rows, 0.012)
-		var n := vals.size()
-		var mean := 0.0
+	static func _mean(vals: Array) -> float:
+		var m := 0.0
 		for x in vals:
-			mean += x
-		var amean := 0.0
-		for x in avals:
-			amean += x
+			m += x
+		return m / maxf(vals.size(), 1)
+
+	func result() -> Dictionary:
+		var vals := _planted(rows, 0.008, true)
+		var n := vals.size()
 		return {
-			"mean": mean / maxf(n, 1), "n": n,
+			"mean": _mean(vals), "n": n,
 			"median": vals[n / 2] if n > 0 else 0.0,
 			"p90": vals[int(n * 0.9)] if n > 0 else 0.0,
-			"ankle": amean / maxf(avals.size(), 1),
+			"loose": _mean(_planted(rows, 0.012, false)),
+			"ankle": _mean(_planted(ankle_rows, 0.012, false)),
 		}

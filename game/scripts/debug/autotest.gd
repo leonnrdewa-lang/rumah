@@ -336,6 +336,16 @@ func _run() -> void:
 					await get_tree().process_frame
 				print("perfsplit   %-12s draw=%4d prims=%7d" % ["shadows", base[0] - Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME), base[1] - Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)])
 				world.sun.shadow_enabled = true
+		"hero":
+			# the target screenshot's composition: standing at a ripe palm, harvesting
+			world.start_game(false)
+			world.ui.close()
+			GS.hour = 8.5
+			tp(-17.4, 25.4, Vector3(-0.5, 0, -1).normalized())
+			await shot("hero", 40)
+			world._tile_action(0, 1)
+			await wait(0.9)
+			await shot("hero_harvest", 2)
 		"look":
 			# quick two-shot look check for render tuning
 			world.start_game(false)
