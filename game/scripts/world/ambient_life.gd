@@ -382,16 +382,17 @@ func _build_smoke() -> void:
 		var low: bool = top.y < 6.0
 		var p := CPUParticles3D.new()
 		p.name = "MillSteam" if low else "ChimneySmoke"
-		p.amount = 16 if low else 18
-		p.lifetime = 4.2 if low else 6.0
-		p.mesh = _quad(0.9 if low else 1.0, mat)
+		p.amount = 18
+		p.lifetime = 4.5 if low else 6.0
+		p.mesh = _quad(1.1 if low else 1.0, mat)
 		p.direction = Vector3.UP
 		p.spread = 14.0
-		p.initial_velocity_min = 1.3 if low else 1.0
-		p.initial_velocity_max = 1.8 if low else 1.5
-		p.gravity = Vector3(0.35, -0.05, 0.75) if low else Vector3(0.4, 0.05, 0.8)
-		p.damping_min = 0.15
-		p.damping_max = 0.35
+		p.initial_velocity_min = 0.7 if low else 1.0
+		p.initial_velocity_max = 1.0 if low else 1.5
+		# the low steam is bent over by the breeze, so it trails across the top of the frame
+		p.gravity = Vector3(0.3, 0.05, 1.3) if low else Vector3(0.4, 0.05, 0.8)
+		p.damping_min = 0.1
+		p.damping_max = 0.25
 		p.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
 		p.emission_sphere_radius = 0.3 if low else 0.25
 		p.scale_amount_min = 1.0
@@ -400,7 +401,7 @@ func _build_smoke() -> void:
 		curve.add_point(Vector2(0, 0.45))
 		curve.add_point(Vector2(1, 2.4 if low else 2.8))
 		p.scale_amount_curve = curve
-		p.color_ramp = _fade_ramp(Color(0.97, 0.96, 0.93, 0.85) if low else Color(0.93, 0.92, 0.88, 0.9), 0.12)
+		p.color_ramp = _fade_ramp(Color(0.97, 0.96, 0.93, 0.92) if low else Color(0.93, 0.92, 0.88, 0.9), 0.12)
 		p.local_coords = false
 		p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(p)

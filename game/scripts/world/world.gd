@@ -15,6 +15,12 @@ const GROUND_TEX := ["grass", "grass_dry", "dirt", "sand", "mulch"]
 ## green-teal sky/foliage bounce: sunlit ground reads warm yellow-green, shadows deep green
 ## (the warm-light / cool-shadow split of the target painting)
 const AMBIENT_DAY := Color("a8ccb8")
+## "Hemat baterai" turns the sun's shadows off. In the Compatibility renderer that
+## moves the sun from its own additive pass into the base pass, where our (custom
+## shader) materials receive far less of it: measured 0.43x on a 0.5 albedo, the
+## frame drops from V 0.48 to 0.37 (autotest qcmp-style A/B at the same spot). This
+## boost brings the low-quality frame back to the high-quality brightness.
+const LQ_SUN_BOOST := 2.2
 
 const DECOR_COLLIDE := {"tree_big": 0.55, "coconut": 0.35, "banana": 0.3, "rock_b": -1.0, "rock_c": -1.0,
 	"cliff_a": -1.0, "bush_a": 0.45, "bush_b": 0.45, "sawit_wild": 0.45}
@@ -227,6 +233,9 @@ func _apply_quality() -> void:
 	# "Hemat baterai" also drops the terrain's extra texture samples
 	if terrain_mat:
 		terrain_mat.set_shader_parameter("hq", 1.0 if quality_high else 0.0)
+		# the baked contact shade was made for the full undergrowth; with half of the
+		# plants gone, lighten it so bare dark patches do not remain
+		terrain_mat.set_shader_parameter("shade_strength", 1.0 if quality_high else 0.72)
 	if undergrowth:
 		undergrowth.set_density(1.0 if quality_high else 0.5)
 		undergrowth.set_shadows(quality_high)
@@ -990,7 +999,7 @@ func _update_daylight() -> void:
 	var night_col := Color(0.55, 0.62, 1.0)
 	var col := day_col.lerp(dusk_col, clampf(dusk, 0.0, 1.0)).lerp(night_col, night)
 	sun.light_color = col
-	sun.light_energy = lerpf(1.02, 0.32, night) * lerpf(0.88, 1.0, day_k)
+	sun.light_energy = lerpf(1.02, 0.32, night) * lerpf(0.88, 1.0, day_k) * (1.0 if sun.shadow_enabled else LQ_SUN_BOOST)
 	env.ambient_light_color = AMBIENT_DAY.lerp(Color("5b6fa8"), night).lerp(Color("e0b090"), clampf(dusk, 0.0, 1.0) * 0.4)
 	env.ambient_light_energy = lerpf(0.64, 0.48, night)
 	env.background_color = Color("3a8f94").lerp(Color("14304a"), night)

@@ -1,9 +1,11 @@
 class_name AnimBench
 extends RefCounted
 ## Numeric animation checks on a bare, lit floor (autotest "anim", part "bench"):
-## planted-foot slide at game speeds, action lock times and tools in the hand,
-## harvesting pole steadiness, pops in the cross-fades, off-screen timers, plus
-## frame sequences 0.1 s apart from a side camera.
+## planted-foot slide at game speeds (also with the gait extras stripped),
+## action lock times and tools in the hand, harvesting pole steadiness and
+## gentle starts, tools growing/shrinking, the carried pole clearing the back
+## basket, pops in the cross-fades, off-screen timers and resume, plus frame
+## sequences 0.1 s apart from a side camera.
 ## Characters are stepped at a fixed 1/60 s (or 1/30 s), so the numbers do not
 ## depend on how fast the machine renders.
 

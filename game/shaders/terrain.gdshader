@@ -59,7 +59,7 @@ uniform vec3 macro_shady = vec3(0.6, 0.64, 0.6);
 uniform vec3 macro_sunny = vec3(1.12, 1.16, 1.02);
 uniform float shade_depth = 0.4;
 // warm tan roads like the target's (the dirt texture lights up rather yellow)
-uniform vec3 road_tint = vec3(0.9, 0.84, 1.08);
+uniform vec3 road_tint = vec3(0.965, 0.92, 1.18);
 uniform vec3 dry_tint = vec3(0.97, 0.92, 1.08);
 
 varying vec3 wpos;

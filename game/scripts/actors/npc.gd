@@ -22,7 +22,7 @@ const VISIT_LEASH := 10.0  # m: how far past its wander radius a villager goes v
 ## TRIP_PACE, and back. The game day is short (~2.5 min awake), so the walk is
 ## too, and rare (TRIP_COOLDOWN): the player should still find people at home.
 const TRIP_RANGE := 60.0   # m: longest walk (along the route) to get there
-const TRIP_CHANCE := 0.4   # per social check with nobody within VISIT_RANGE
+const TRIP_CHANCE := 0.6   # per social check with nobody within VISIT_RANGE
 const TRIP_COOLDOWN := Vector2(240.0, 420.0)   # s between trips
 const TRIP_LAST_HOUR := 14.5
 const TRIP_PACE := 1.2
@@ -410,7 +410,7 @@ func _try_trip() -> void:
 	if vid == "" or radius < 2.0 or _trip_cd > 0.0 or _away or is_worker() or GS.hour > TRIP_LAST_HOUR \
 			or randf() > TRIP_CHANCE:
 		return
-	_trip_cd = randf_range(20.0, 40.0)   # try again a little later if nobody is free
+	_trip_cd = randf_range(10.0, 20.0)   # try again a little later if nobody is free
 	for other in _neighbours():
 		if other == self or not is_instance_valid(other) or other.radius >= 2.0 or other.model_name in NO_WAVE \
 				or other.vid != "" or not other.is_idle() or other._visit != null or other.is_expecting():

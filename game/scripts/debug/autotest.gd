@@ -292,14 +292,17 @@ func _run() -> void:
 		"perf":
 			world.start_game(false)
 			world.ui.close()
-			for s in [[-17, 30], [-3, 5], [48, 0], [0, -40]]:
-				tp(s[0], s[1])
-				for i in 30:
-					await get_tree().process_frame
-				print("perf at %s: draw calls=%d objects=%d primitives=%d" % [s,
-					Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),
-					Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME),
-					Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)])
+			for q in [true, false]:
+				world.set_quality(q)
+				for s in [[-17, 30], [-3, 5], [48, 0], [0, -40]]:
+					tp(s[0], s[1])
+					for i in 30:
+						await get_tree().process_frame
+					print("perf%s at %s: draw calls=%d objects=%d primitives=%d" % ["" if q else " (Hemat baterai)", s,
+						Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),
+						Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME),
+						Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)])
+			world.set_quality(true)
 		"perfsplit":
 			# where do the draw calls go? hide one group at a time at the busiest spot
 			world.start_game(false)

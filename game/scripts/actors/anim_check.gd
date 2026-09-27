@@ -2,12 +2,14 @@ class_name AnimCheck
 extends RefCounted
 ## Autotest scenario "anim" (run through scripts/debug/autotest.gd):
 ##   godot --path game -- --autotest=anim --shots=<dir>
-## First the numeric bench on a bare floor (AnimBench: foot slide, action lock,
-## tools, pole steadiness, fades; prints "[anim] BENCH PASS/FAIL"), then in the
-## island: walks, runs, stops, turns, harvests, chops, plants, talks, cheers and
-## gets waved at, capturing short frame sequences (0.1 s apart) from a close
-## follow camera (undergrowth hidden), an off-screen villager check and 120 s
-## of village life (chats, visits).
+## First 30 s of the title screen (every villager the orbiting camera sees must
+## be animated and face where it walks; prints "[anim] title PASS/FAIL"), then
+## the numeric bench on a bare floor (AnimBench: foot slide, action lock, tools,
+## pole steadiness, fades, off-screen resume; prints "[anim] BENCH PASS/FAIL"),
+## then in the island: walks, runs, stops, turns, harvests, chops, plants,
+## talks, cheers and gets waved at, capturing short frame sequences (0.1 s
+## apart) from a close follow camera (undergrowth hidden), an off-screen
+## villager check and 120 s of village life (chats, visits, warung trips, work).
 
 
 static func run(at: Node) -> void:
@@ -321,6 +323,8 @@ static func _title_check(at: Node) -> void:
 	var t := 0.0
 	var next_sample := 0.0
 	var shots := "--anim-noshots" not in OS.get_cmdline_user_args() and DisplayServer.get_name() != "headless"
+	var ui_vis: bool = world.ui.visible
+	world.ui.visible = false   # the title logo covers the middle of the screen
 	while t < 30.0:
 		await tree.process_frame
 		var dt := at.get_process_delta_time()
@@ -366,6 +370,7 @@ static func _title_check(at: Node) -> void:
 				bad += 1
 				st["bad"] += 1
 			stats[n.display_name] = st
+	world.ui.visible = ui_vis
 	for k in stats:
 		print("[anim]   title %-18s in view %d samples, walking in %d, not animated %d" % [k, stats[k]["in"], stats[k]["walk"], stats[k]["bad"]])
 	var ok := bad == 0 and moving_samples > 0
