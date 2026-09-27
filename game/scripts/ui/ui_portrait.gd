@@ -8,7 +8,7 @@ extends Control
 ## Two looks: the 2D anime half-body art (assets/portraits/<name>.png, soft fade
 ## at the waist cut; art delivered with an opaque background is shown as a
 ## rounded card instead) or, as a fallback, the 3D head render in a round
-## cream badge with the head popping out above the circle.
+## cream badge (build_badge, also used inside the dialog panel and menus).
 
 const SHADER_CODE := """
 shader_type canvas_item;
@@ -49,7 +49,6 @@ var cur_key := ""
 var cur_art := false
 var _cur_born := 0.0
 var _t := 0.0
-var _shader: Shader
 
 
 func _ready() -> void:
@@ -118,7 +117,10 @@ func _dismiss(node: Control, swapped: bool) -> void:
 	tw.chain().tween_callback(node.queue_free)
 
 
-func _material(fade_bottom: float, badge: bool, center := Vector2(0.5, 0.58), radius := 0.41) -> ShaderMaterial:
+static var _shader: Shader
+
+
+static func make_material(fade_bottom: float, badge: bool, center := Vector2(0.5, 0.58), radius := 0.41) -> ShaderMaterial:
 	if _shader == null:
 		_shader = Shader.new()
 		_shader.code = SHADER_CODE
@@ -131,7 +133,78 @@ func _material(fade_bottom: float, badge: bool, center := Vector2(0.5, 0.58), ra
 	return m
 
 
+static func build_badge(tex: Texture2D, d: float) -> Control:
+	## Round cream portrait badge of diameter `d` (as in the target's dialog):
+	## soft shadow, cream rim and a thin tan outline. A 3D head render (tagged
+	## "bust") fills the circle, clipped to it below the centre so a hat can pop
+	## just over the top edge; flat icons sit inside. Returns a holder whose
+	## child "Bob" can be animated (breathing / talking bounce).
+	var holder := Control.new()
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.custom_minimum_size = Vector2(d, d)
+	holder.size = Vector2(d, d)
+	holder.pivot_offset = Vector2(d * 0.5, d)
+	var bob := Control.new()
+	bob.name = "Bob"
+	bob.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bob.set_anchors_preset(Control.PRESET_FULL_RECT)
+	holder.add_child(bob)
+	var circle := Panel.new()
+	var s := StyleBoxFlat.new()
+	s.bg_color = Color("f3e4c6")
+	s.set_corner_radius_all(512)
+	s.border_color = Color("fffaf0")
+	s.set_border_width_all(maxi(3, int(d * 0.04)))
+	s.shadow_color = Color(0.25, 0.14, 0.05, 0.26)
+	s.shadow_size = int(clampf(d * 0.07, 4.0, 10.0))
+	s.shadow_offset = Vector2(0, 3)
+	s.anti_aliasing = true
+	s.corner_detail = 24
+	circle.add_theme_stylebox_override("panel", s)
+	circle.set_anchors_preset(Control.PRESET_FULL_RECT)
+	circle.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bob.add_child(circle)
+	var ring := Panel.new()
+	var rs := StyleBoxFlat.new()
+	rs.draw_center = false
+	rs.set_corner_radius_all(512)
+	rs.border_color = Color("d8c29a")
+	rs.set_border_width_all(2)
+	rs.anti_aliasing = true
+	rs.corner_detail = 24
+	ring.add_theme_stylebox_override("panel", rs)
+	ring.set_anchors_preset(Control.PRESET_FULL_RECT)
+	ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bob.add_child(ring)
+	if tex == null:
+		return holder
+	var bust := tex.has_meta("bust")
+	var k := 1.1 if bust else 0.78
+	var tr := TextureRect.new()
+	tr.name = "Face"
+	tr.texture = tex
+	tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tr.stretch_mode = TextureRect.STRETCH_SCALE
+	tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tr.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	tr.size = Vector2(k * d, k * d)
+	if bust:
+		# bottom-aligned with the circle; clipped to its inner rim below the centre
+		var rim := maxf(3.0, d * 0.04)
+		tr.position = Vector2(-(k - 1.0) * 0.5 * d, d - k * d - rim * 0.5)
+		var cy := (0.5 * d - tr.position.y) / (k * d)
+		tr.material = make_material(0.0, true, Vector2(0.5, cy), (d * 0.5 - rim) / (k * d))
+	else:
+		tr.position = Vector2(d - k * d, d - k * d) * 0.5
+	bob.add_child(tr)
+	return holder
+
+
 func _make_holder(tex: Texture2D, is_art: bool, rect: Rect2) -> Control:
+	if not is_art:
+		var b := build_badge(tex, rect.size.x)
+		b.position = rect.position
+		return b
 	var holder := Control.new()
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	holder.position = rect.position
@@ -142,91 +215,44 @@ func _make_holder(tex: Texture2D, is_art: bool, rect: Rect2) -> Control:
 	bob.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bob.set_anchors_preset(Control.PRESET_FULL_RECT)
 	holder.add_child(bob)
-	if is_art:
-		var tr := TextureRect.new()
-		tr.texture = tex
-		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		tr.stretch_mode = TextureRect.STRETCH_SCALE
-		tr.set_anchors_preset(Control.PRESET_FULL_RECT)
-		tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		if tex.has_meta("framed"):
-			var card := Panel.new()
-			var cs := StyleBoxFlat.new()
-			cs.bg_color = Color("fffaf0")
-			cs.set_corner_radius_all(24)
-			cs.shadow_color = Color(0.2, 0.12, 0.04, 0.3)
-			cs.shadow_size = 12
-			cs.shadow_offset = Vector2(0, 4)
-			card.add_theme_stylebox_override("panel", cs)
-			card.set_anchors_preset(Control.PRESET_FULL_RECT)
-			card.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			bob.add_child(card)
-			var m := _material(0.0, false)
-			m.set_shader_parameter("corner_px", 22.0)
-			m.set_shader_parameter("size_px", rect.size)
-			tr.material = m
-			tr.name = "Framed"
-			bob.add_child(tr)
-			var edge := Panel.new()
-			var es := StyleBoxFlat.new()
-			es.draw_center = false
-			es.set_corner_radius_all(24)
-			es.border_color = Color("fffaf0")
-			es.set_border_width_all(5)
-			es.anti_aliasing = true
-			edge.add_theme_stylebox_override("panel", es)
-			edge.set_anchors_preset(Control.PRESET_FULL_RECT)
-			edge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			bob.add_child(edge)
-			return holder
-		tr.material = _material(0.06, false)
+	var tr := TextureRect.new()
+	tr.texture = tex
+	tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tr.stretch_mode = TextureRect.STRETCH_SCALE
+	tr.set_anchors_preset(Control.PRESET_FULL_RECT)
+	tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if tex.has_meta("framed"):
+		var card := Panel.new()
+		var cs := StyleBoxFlat.new()
+		cs.bg_color = Color("fffaf0")
+		cs.set_corner_radius_all(24)
+		cs.shadow_color = Color(0.2, 0.12, 0.04, 0.3)
+		cs.shadow_size = 12
+		cs.shadow_offset = Vector2(0, 4)
+		card.add_theme_stylebox_override("panel", cs)
+		card.set_anchors_preset(Control.PRESET_FULL_RECT)
+		card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		bob.add_child(card)
+		var m := make_material(0.0, false)
+		m.set_shader_parameter("corner_px", 22.0)
+		m.set_shader_parameter("size_px", rect.size)
+		tr.material = m
+		tr.name = "Framed"
 		bob.add_child(tr)
-	else:
-		# round cream badge; the render is drawn 1.24x bigger, bottom-aligned,
-		# clipped to the circle below its centre so the head pops out on top
-		var circle := Panel.new()
-		var s := StyleBoxFlat.new()
-		s.bg_color = Color("f6e6c4")
-		s.set_corner_radius_all(512)
-		s.border_color = Color("fffaf0")
-		s.set_border_width_all(5)
-		s.shadow_color = Color(0.25, 0.14, 0.05, 0.28)
-		s.shadow_size = 10
-		s.shadow_offset = Vector2(0, 4)
-		s.anti_aliasing = true
-		circle.add_theme_stylebox_override("panel", s)
-		circle.set_anchors_preset(Control.PRESET_FULL_RECT)
-		circle.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		bob.add_child(circle)
-		var ring := Panel.new()
-		var rs := StyleBoxFlat.new()
-		rs.draw_center = false
-		rs.set_corner_radius_all(512)
-		rs.border_color = Color("d8c29a")
-		rs.set_border_width_all(2)
-		rs.anti_aliasing = true
-		ring.add_theme_stylebox_override("panel", rs)
-		ring.set_anchors_preset(Control.PRESET_FULL_RECT)
-		ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		# head renders pop out of the circle; flat icons sit inside it
-		var bust := tex.has_meta("bust")
-		var k := 1.24 if bust else 0.78
-		var d := rect.size.x
-		var tr := TextureRect.new()
-		tr.texture = tex
-		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		tr.stretch_mode = TextureRect.STRETCH_SCALE
-		tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		tr.set_anchors_preset(Control.PRESET_TOP_LEFT)
-		tr.size = Vector2(k * d, k * d)
-		if bust:
-			tr.position = Vector2(-(k - 1.0) * 0.5 * d, d - k * d - d * 0.02)
-			var cy := (k * d - d * 0.5 + d * 0.02) / (k * d)
-			tr.material = _material(0.0, true, Vector2(0.5, cy), (d * 0.5 - 4.0) / (k * d))
-		else:
-			tr.position = Vector2(d - k * d, d - k * d) * 0.5
-		bob.add_child(tr)
-		bob.add_child(ring)
+		var edge := Panel.new()
+		var es := StyleBoxFlat.new()
+		es.draw_center = false
+		es.set_corner_radius_all(24)
+		es.border_color = Color("fffaf0")
+		es.set_border_width_all(5)
+		es.anti_aliasing = true
+		edge.add_theme_stylebox_override("panel", es)
+		edge.set_anchors_preset(Control.PRESET_FULL_RECT)
+		edge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		bob.add_child(edge)
+		return holder
+	tr.material = make_material(0.06, false)
+	bob.add_child(tr)
 	return holder
 
 

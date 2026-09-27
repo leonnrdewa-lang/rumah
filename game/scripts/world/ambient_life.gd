@@ -29,6 +29,7 @@ var _fly_state: Array = []     # [base: Vector3, phase: float, speed: float, goa
 var _flowers := {}             # Vector2i(8 m cell) -> PackedVector3Array
 
 var _smoke: Array[CPUParticles3D] = []
+var _smoke_mat: StandardMaterial3D
 var _leaves: CPUParticles3D
 var _fireflies: CPUParticles3D
 var _dust: CPUParticles3D
@@ -385,8 +386,11 @@ func _front_vent(faces: PackedVector3Array, aabb: AABB, stacks: Array[Vector2], 
 
 func _build_smoke() -> void:
 	var tops := _chimney_tops()
-	var tex := _soft_dot(64, 0.45)
+	var tex := _soft_dot(64, 0.25)
 	var mat := _particle_material(tex, Color(1, 1, 1, 1))
+	# unshaded, so it is tinted by the night factor every frame (v2 showed glowing white
+	# orbs over the dark mill at night)
+	_smoke_mat = mat
 	for top in tops:
 		# the breeze blows south, towards the camera, so both the chimney plume and
 		# the low steam drift into the gameplay frame
@@ -413,7 +417,7 @@ func _build_smoke() -> void:
 		curve.add_point(Vector2(0, 0.45))
 		curve.add_point(Vector2(1, 2.4 if low else 2.8))
 		p.scale_amount_curve = curve
-		p.color_ramp = _fade_ramp(Color(0.97, 0.96, 0.93, 0.92) if low else Color(0.93, 0.92, 0.88, 0.9), 0.12)
+		p.color_ramp = _fade_ramp(Color(0.97, 0.96, 0.93, 0.62) if low else Color(0.93, 0.92, 0.88, 0.8), 0.14)
 		p.local_coords = false
 		p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(p)
@@ -529,11 +533,15 @@ func _process(delta: float) -> void:
 	if world == null:
 		return
 	_t += delta
-	var h: float = GS.hour if world.state != "title" else 9.5
-	_night = clampf(smoothstep(17.8, 19.6, h) + (1.0 - smoothstep(5.0, 6.6, h)), 0.0, 1.0)
+	_night = float(world.get("night_k"))
 	var c := _focus()
 	_update_flock(delta)
+	if _night > 0.45:
+		_flock.visible = false
 	_update_butterflies(delta)
+	if _smoke_mat:
+		# day: soft cream steam; night: a faint cool grey wisp in the dark
+		_smoke_mat.albedo_color = Color(1, 1, 1, 1).lerp(Color(0.2, 0.23, 0.32, 0.45), _night)
 	_leaves.global_position = c + Vector3(0, 7.5, -2.0)
 	_leaves.emitting = _night < 0.5
 	var ff := _night > 0.45

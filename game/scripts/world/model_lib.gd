@@ -146,6 +146,14 @@ static func convert_material(m: Material, fade := true, rim := 0.0) -> Material:
 		var up := 0.0
 		if mname.findn("Frond") >= 0:
 			base = 1.0
+			if mname.findn("Dry") < 0:
+				# the v2 palm crowns read lime (S 0.68 / V 0.65 against the target's 0.54 /
+				# 0.54): less saturated and darker, with more light-to-dark along the frond
+				# and less glow through the leaves
+				sm.set_shader_parameter("green_sat", 0.62)
+				sm.set_shader_parameter("tone", 0.8)
+				sm.set_shader_parameter("tip_light", 0.3)
+				sm.set_shader_parameter("backlight", Vector3(0.18, 0.2, 0.1))
 		elif mname.findn("Grass") >= 0 or mname.findn("Flower") >= 0 or mname.findn("Petal") >= 0:
 			sway = 2.5
 			base = 0.0

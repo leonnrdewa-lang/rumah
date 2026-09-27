@@ -12,15 +12,22 @@ const AMBIENT_SCRIPT := preload("res://scripts/world/ambient_life.gd")
 const SHADE_TEX_PATH := "res://assets/textures/world_shade.png"
 const GROUND_DIR := "res://assets/textures/ground/"
 const GROUND_TEX := ["grass", "grass_dry", "dirt", "sand", "mulch"]
-## green-teal sky/foliage bounce: sunlit ground reads warm yellow-green, shadows deep green
-## (the warm-light / cool-shadow split of the target painting)
+## Day light, tuned against the target at 08:30 (sunlit ground V ~0.77 H ~57, cast
+## shadows ~0.55x): a warm sun from the upper left and a green-teal sky/foliage bounce,
+## so sunlit ground reads warm yellow-green and shade olive-teal
+const SUN_DAY := Color(1.0, 0.93, 0.74)
+const SUN_ENERGY := 1.25
 const AMBIENT_DAY := Color("a8ccb8")
+const AMBIENT_ENERGY := 0.67
 ## "Hemat baterai" turns the sun's shadows off. In the Compatibility renderer that
 ## moves the sun from its own additive pass into the base pass, where our custom-shader
-## materials receive far less of it (measured 0.43x on a 0.5 albedo; the same frame
-## dropped from mean V 0.48 to 0.37). This boost brings the low-quality frame back to
-## the high-quality brightness (V 0.48 / 0.59 vs 0.48 / 0.61 at two test spots).
-const LQ_SUN_BOOST := 2.2
+## materials receive far less of it (measured 0.43x on a 0.5 albedo), so the sun is
+## boosted back. With nothing in shade the boosted warm sun turned the whole frame
+## khaki (hue 64-67 against 74-78 at full quality), so it is boosted less, made a
+## little cooler, and the green-teal sky light makes up the difference.
+const LQ_SUN_BOOST := 1.8
+const LQ_SUN_TINT := Color(0.96, 1.0, 1.1)
+const LQ_AMBIENT := 1.3
 
 const DECOR_COLLIDE := {"tree_big": 0.55, "coconut": 0.35, "banana": 0.3, "rock_b": -1.0, "rock_c": -1.0,
 	"cliff_a": -1.0, "bush_a": 0.45, "bush_b": 0.45, "sawit_wild": 0.45}
@@ -67,10 +74,20 @@ var target: Dictionary = {}
 var _ring: MeshInstance3D
 var _title_t := 0.0
 var _t := 0.0
-## ~52 deg / 17 m: close to the target's framing, and the whole crown of a palm
-## right next to the player stays in frame (at 45 deg / 16 m it left the top edge)
-var cam_distance := 17.0
-var cam_pitch := 52.0
+var night_k := 0.0   # 0 = day, 1 = night (read by ambient_life.gd)
+## The target's three-quarter view: ~45 deg pitch, 16.5 m (about 19 m of ground across a
+## 16:9 screen at the player), so palms show their full crowns from the side and the
+## ground recedes with depth. The look point sits `cam_lead` m up-screen (north) of the
+## player: the player stands a little below the centre, and the crowns of the palms
+## just behind them, which rise up the screen, stay in frame (at 45 deg without the
+## lead they left the top edge).
+var cam_distance := 16.5
+var cam_pitch := 45.0
+var cam_lead := 1.6
+## extra look-ahead in the walking direction (s of travel): about cancels the follow lag,
+## so the scene ahead of a walking player is in view
+const CAM_MOVE_LEAD := 0.3
+var _move_lead := Vector3.ZERO
 var quality_high := true
 var undergrowth: Undergrowth
 var ambient: Node3D
@@ -184,7 +201,7 @@ func _build_environment() -> void:
 	env.background_color = Color("3a8f94")
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = AMBIENT_DAY
-	env.ambient_light_energy = 0.64
+	env.ambient_light_energy = AMBIENT_ENERGY
 	env.tonemap_mode = Environment.TONE_MAPPER_LINEAR
 	# soft painterly post: a subtle glow on highlights, a little more saturation/contrast
 	env.glow_enabled = true
@@ -197,7 +214,7 @@ func _build_environment() -> void:
 	env.adjustment_enabled = true
 	env.adjustment_brightness = 1.0
 	env.adjustment_contrast = 1.05
-	env.adjustment_saturation = 1.12
+	env.adjustment_saturation = 1.0
 	we.environment = env
 	add_child(we)
 	sun = DirectionalLight3D.new()
@@ -205,7 +222,7 @@ func _build_environment() -> void:
 	sun.shadow_opacity = 0.74
 	sun.shadow_blur = 2.2
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
-	sun.directional_shadow_max_distance = 27.0
+	sun.directional_shadow_max_distance = 31.0   # set per frame in _place_camera
 	sun.shadow_bias = 0.05
 	sun.shadow_normal_bias = 1.1
 	add_child(sun)
@@ -214,7 +231,9 @@ func _build_environment() -> void:
 	camera = Camera3D.new()
 	camera.fov = 35.0
 	camera.near = 0.5
-	camera.far = 200.0
+	# nothing beyond the ground at the top edge of the frame can be on screen (~27 m at
+	# play, ~48 m for the title fly-over, ~45 m pulled back on a portrait phone)
+	camera.far = 90.0
 	cam_rig.add_child(camera)
 	camera.current = true
 
@@ -222,7 +241,6 @@ func _build_environment() -> void:
 func _apply_quality() -> void:
 	if OS.has_feature("web_android") or OS.has_feature("web_ios") or OS.has_feature("mobile"):
 		RenderingServer.directional_shadow_atlas_set_size(1024, true)
-		sun.directional_shadow_max_distance = 27.0
 	sun.shadow_enabled = quality_high
 	get_viewport().msaa_3d = Viewport.MSAA_2X if quality_high else Viewport.MSAA_DISABLED
 	get_viewport().scaling_3d_scale = 1.0 if quality_high else 0.75
@@ -405,13 +423,13 @@ func _build_plant_mask() -> void:
 	for id in door_points:
 		var d: Vector3 = door_points[id]
 		_mask_circle(d.x, d.z, 1.4)
-	# (terrain.py keeps taller plants 1.95 m from planting spots; low grass may reach
-	# the piringan's edge)
+	# planting spots: terrain.py keeps ferns 1.2 m and taller plants 1.6 m away; low grass
+	# may reach the (smaller) piringan's edge
 	for key in tile_views:
 		var tp: Vector3 = tile_views[key].position
-		_mask_circle(tp.x, tp.z, 1.4)
+		_mask_circle(tp.x, tp.z, 0.85)
 	for it in interactables:
-		if it.has("pos"):
+		if it.has("pos") and not it.has("tile"):
 			var ip: Vector3 = it["pos"]
 			_mask_circle(ip.x, ip.z, 1.4)
 	for c in obstacles:
@@ -987,20 +1005,30 @@ func _process(delta: float) -> void:
 func _update_daylight() -> void:
 	var h := GS.hour if state != "title" else 9.5
 	var day_k := clampf(sin((h - 6.0) / 13.0 * PI), 0.0, 1.0)
-	var night := smoothstep(17.8, 19.6, h) + (1.0 - smoothstep(5.0, 6.6, h))
+	# the night is over before the game's day starts (06:00), so the first frame of a
+	# day is a bright, golden morning instead of murky dawn (v2 opened at V 0.42)
+	var night := smoothstep(17.8, 19.6, h) + (1.0 - smoothstep(4.3, 5.7, h))
 	night = clampf(night, 0.0, 1.0)
-	var dusk := clampf(1.0 - absf(h - 18.0) / 1.6, 0.0, 1.0) + clampf(1.0 - absf(h - 6.5) / 1.2, 0.0, 1.0) * 0.6
+	night_k = night
+	var dusk := clampf(1.0 - absf(h - 18.0) / 1.6, 0.0, 1.0) + clampf(1.0 - absf(h - 6.0) / 1.6, 0.0, 1.0) * 0.5
+	dusk = clampf(dusk, 0.0, 1.0)
 	var elev := lerpf(30.0, 60.0, day_k)
 	# warm sun from the upper left of the screen: shadows fall down-right
 	sun.rotation = Vector3(deg_to_rad(-elev), deg_to_rad(-122.0 + (h - 12.0) * 2.5), 0)
-	var day_col := Color(1.0, 0.94, 0.8)
-	var dusk_col := Color(1.0, 0.68, 0.42)
+	var dusk_col := Color(1.0, 0.7, 0.45)
 	var night_col := Color(0.55, 0.62, 1.0)
-	var col := day_col.lerp(dusk_col, clampf(dusk, 0.0, 1.0)).lerp(night_col, night)
+	var col := SUN_DAY.lerp(dusk_col, dusk).lerp(night_col, night)
+	var energy := lerpf(SUN_ENERGY, 0.36, night) * lerpf(0.9, 1.0, day_k)
+	var amb := AMBIENT_DAY.lerp(Color("5b6fa8"), night).lerp(Color("e0b090"), dusk * 0.4)
+	var amb_energy := lerpf(AMBIENT_ENERGY, 0.5, night)
+	if not sun.shadow_enabled:
+		col *= LQ_SUN_TINT
+		energy *= LQ_SUN_BOOST
+		amb_energy *= LQ_AMBIENT
 	sun.light_color = col
-	sun.light_energy = lerpf(1.02, 0.32, night) * lerpf(0.88, 1.0, day_k) * (1.0 if sun.shadow_enabled else LQ_SUN_BOOST)
-	env.ambient_light_color = AMBIENT_DAY.lerp(Color("5b6fa8"), night).lerp(Color("e0b090"), clampf(dusk, 0.0, 1.0) * 0.4)
-	env.ambient_light_energy = lerpf(0.64, 0.48, night)
+	sun.light_energy = energy
+	env.ambient_light_color = amb
+	env.ambient_light_energy = amb_energy
 	env.background_color = Color("3a8f94").lerp(Color("14304a"), night)
 	RenderingServer.global_shader_parameter_set("night", night)
 	for l in lamps:
@@ -1020,13 +1048,22 @@ func _update_camera(delta: float) -> void:
 		_place_camera(34.0, 48.0)
 		return
 	# smooth, frame-rate independent follow (a touch of lag reads as "floaty" camera)
-	var target_pos := player.global_position + Vector3(0, 0.5, 0)
+	var vel: Vector3 = player.velocity
+	vel.y = 0.0
+	_move_lead = _move_lead.lerp((vel * CAM_MOVE_LEAD).limit_length(2.4), 1.0 - exp(-delta * 2.0))
+	var target_pos := player.global_position + Vector3(0, 0.5, -cam_lead) + _move_lead
 	var k := 1.0 - exp(-delta * 4.0)
 	cam_rig.global_position = cam_rig.global_position.lerp(target_pos, k)
 	var dist := cam_distance
+	var fov := 35.0
 	if aspect < 1.0:
-		# portrait phones: pull back so the narrow screen still shows the surroundings
-		dist *= lerpf(1.75, 1.0, clampf(aspect, 0.0, 1.0))
+		# portrait phones: the camera keeps the vertical field of view, so the narrow
+		# screen shows little ground across; pull back and widen a little
+		# (9:19.5 -> x1.54 and 39 deg: ~8.5 m across instead of ~4.9 m)
+		var a := clampf(aspect, 0.0, 1.0)
+		dist *= lerpf(2.0, 1.0, a)
+		fov = lerpf(42.0, 35.0, a)
+	camera.fov = fov
 	_place_camera(dist, cam_pitch)
 	# see-through hole around the player
 	var pp := player.global_position + Vector3(0, 0.7, 0)
@@ -1041,6 +1078,13 @@ func _place_camera(dist: float, pitch_deg: float) -> void:
 	var pitch := deg_to_rad(pitch_deg)
 	camera.position = Vector3(0, sin(pitch) * dist, cos(pitch) * dist)
 	camera.rotation = Vector3(-pitch, 0, 0)
+	# shadows must reach the ground at the top edge of the frame: its depth along the
+	# view axis is h / sin(pitch - fov/2) * cos(fov/2) (~1.5 x dist at 45 deg); the
+	# last 20% of the shadow range fades out, hence the / 0.8
+	var half := deg_to_rad(camera.fov * 0.5)
+	var h := sin(pitch) * dist + 1.0
+	var depth := h / sin(maxf(pitch - half, 0.2)) * cos(half)
+	sun.directional_shadow_max_distance = clampf(depth / 0.8, 20.0, 70.0)
 
 
 func _update_target() -> void:

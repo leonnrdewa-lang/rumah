@@ -6,6 +6,21 @@ var world: Node
 var scenario := "basic"
 var shots_dir := "/tmp"
 var _i := 0
+var _tune := {}
+
+
+func _process(_delta: float) -> void:
+	# "tune" scenario: scale the day light after world.gd set it for this frame
+	if _tune.is_empty():
+		return
+	world.sun.light_energy *= float(_tune.get("sun", 1.0))
+	world.env.ambient_light_energy *= float(_tune.get("amb", 1.0))
+	if _tune.has("amb_col"):
+		world.env.ambient_light_color = Color(_tune["amb_col"])
+	if _tune.has("sun_col"):
+		world.sun.light_color = Color(_tune["sun_col"])
+	if _tune.has("opacity"):
+		world.sun.shadow_opacity = float(_tune["opacity"])
 
 
 func _ready() -> void:
@@ -26,6 +41,98 @@ func shot(name: String, frames := 20) -> void:
 	img.save_png("%s/%02d_%s.png" % [shots_dir, _i, name])
 	_i += 1
 	print("[shot] ", name)
+
+
+const MASK_SHADER := """shader_type spatial;
+render_mode unshaded, cull_disabled;
+uniform sampler2D data_tex : filter_linear, repeat_disable;
+uniform float world_size = 200.0;
+varying vec3 wpos;
+void vertex() { wpos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
+void fragment() {
+	vec4 d = texture(data_tex, (wpos.xz + world_size * 0.5) / world_size);
+	ALBEDO = max(d.b, d.g) > 0.5 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
+}
+"""
+
+
+const KEY_SHADER := """shader_type spatial;
+render_mode unshaded, cull_disabled;
+uniform vec3 key : source_color = vec3(1.0, 0.0, 1.0);
+uniform sampler2D albedo_tex : hint_default_white;
+uniform float cut = 0.0;
+void fragment() {
+	if (cut > 0.5 && texture(albedo_tex, UV).a < 0.45) { discard; }
+	ALBEDO = key;
+}
+"""
+
+
+func _key_material(src: Material, col: Color) -> ShaderMaterial:
+	## unshaded key colour that keeps the source's alpha-card cut-out
+	var m := ShaderMaterial.new()
+	m.shader = Shader.new()
+	m.shader.code = KEY_SHADER
+	m.set_shader_parameter("key", col)
+	if src is ShaderMaterial and src.get_shader_parameter("albedo_tex") != null:
+		m.set_shader_parameter("albedo_tex", src.get_shader_parameter("albedo_tex"))
+		m.set_shader_parameter("cut", 1.0 if str(src.shader.resource_path).contains("cutout") else 0.0)
+	return m
+
+
+func _mask_shot(name: String, bare: bool) -> void:
+	## Terrain in key colours (green = land, red = road / sand); the parcels' palm fronds
+	## magenta, their trunks and fruit blue; the piringan discs count as bare land
+	## (green); with `bare` the undergrowth and parcel gardens are hidden too.
+	var env: Environment = world.env
+	var glow: bool = env.glow_enabled
+	env.glow_enabled = false
+	env.adjustment_enabled = false
+	var key := ShaderMaterial.new()
+	key.shader = Shader.new()
+	key.shader.code = MASK_SHADER
+	key.set_shader_parameter("data_tex", world.DATA_TEX)
+	var terrain: Array = []
+	for mi in ModelLib.find_meshes(world):
+		if mi.material_override == world.terrain_mat:
+			terrain.append(mi)
+			mi.material_override = key
+	var keyed: Array = []   # [GeometryInstance3D, surface or -1]
+	for k in world.tile_views:
+		for mi in ModelLib.find_meshes(world.tile_views[k]):
+			for i in mi.mesh.get_surface_count():
+				var sm: Material = mi.mesh.surface_get_material(i)
+				var frond := sm != null and sm.resource_name.findn("Frond") >= 0
+				mi.set_surface_override_material(i, _key_material(sm, Color(1, 0, 1) if frond else Color(0, 0, 1)))
+				keyed.append([mi, i])
+	var hidden: Array = []
+	for n in world.get_children():
+		if str(n.name).begins_with("ParcelDecor"):
+			for c in n.get_children():
+				var mmi := c as MultiMeshInstance3D
+				if mmi and mmi.multimesh.mesh.get_surface_count() > 0:
+					var sm: Material = mmi.multimesh.mesh.surface_get_material(0)
+					if sm and sm.resource_name.findn("Piringan") >= 0:
+						keyed.append([mmi, -1, mmi.material_override])
+						mmi.material_override = _key_material(sm, Color(0, 1, 0))
+			if bare:
+				hidden.append(n)
+	if bare:
+		hidden.append(world.undergrowth)
+	for n in hidden:
+		n.visible = false
+	await shot(name, 3)
+	for mi in terrain:
+		mi.material_override = world.terrain_mat
+	for kd in keyed:
+		if kd[1] < 0:
+			kd[0].material_override = kd[2]
+		else:
+			kd[0].set_surface_override_material(kd[1], null)
+	for n in hidden:
+		n.visible = true
+	env.glow_enabled = glow
+	env.adjustment_enabled = true
 
 
 func wait(sec: float) -> void:
@@ -392,19 +499,128 @@ func _run() -> void:
 			await shot("vis_parcel_low", 30)
 			world.set_quality(true)
 		"pitch":
-			# camera tuning: the hero spot at a few pitch / distance pairs
+			# camera tuning: the hero spot at a few pitch / distance / look-ahead sets
 			world.start_game(false)
 			world.ui.close()
 			world.ui.visible = false
-			for pd in [[45.0, 16.0], [50.0, 16.5], [52.0, 17.0], [55.0, 17.0]]:
+			for pd in [[42.0, 16.5, 1.6], [45.0, 16.5, 1.6], [47.0, 17.0, 1.4], [52.0, 17.0, 0.0]]:
 				world.cam_pitch = pd[0]
 				world.cam_distance = pd[1]
+				world.cam_lead = pd[2]
 				GS.hour = 8.5
 				tp(-17.4, 25.4, Vector3(-0.5, 0, -1).normalized())
-				await shot("pitch_%d_%d" % [pd[0], pd[1] * 10], 30)
+				await shot("pitch_%d_%d" % [pd[0], pd[1] * 10], 12)
 				tp(-3.5, 37.5, Vector3(0, 0, -1))
-				await shot("spawn_%d_%d" % [pd[0], pd[1] * 10], 30)
+				await shot("spawn_%d_%d" % [pd[0], pd[1] * 10], 12)
 			world.ui.visible = true
+		"measure":
+			# UI-free frames + key-colour masks for scripted comparisons with the target
+			# (/tmp tools: crown HSV from the palm mask, undergrowth coverage of the land)
+			world.start_game(false)
+			world.ui.close()
+			world.ui.visible = false
+			var spots := [[-17.4, 25.4, "hero"], [-17, 30, "parcel"], [-9, 10, "road"], [-3, 36, "kantor"],
+				[-44, 36, "garden"], [-30, -20, "field"]]
+			var only := ""
+			var masks := true
+			var low := false
+			var hour := 8.5
+			for a in OS.get_cmdline_user_args():
+				if a.begins_with("--spots="):
+					only = a.get_slice("=", 1)
+				elif a == "--nomask":
+					masks = false
+				elif a == "--low":
+					low = true
+				elif a.begins_with("--hour="):
+					hour = float(a.get_slice("=", 1))
+			for s in spots:
+				if only != "" and not str(s[2]) in only.split(","):
+					continue
+				GS.hour = hour
+				tp(s[0], s[1], Vector3(0, 0, -1))
+				await shot("m_%s_noui" % s[2], 14)
+				if masks:
+					await _mask_shot("m_%s_mask" % s[2], false)
+					await _mask_shot("m_%s_mask0" % s[2], true)
+				if low:
+					world.set_quality(false)
+					GS.hour = hour
+					await shot("m_%slow_noui" % s[2], 10)
+					world.set_quality(true)
+			world.ui.visible = true
+		"tune":
+			# render tuning: --tune=<json file> = [{"name", "terrain": {uniform: value},
+			# "foliage": {uniform: value}, "frond": {...}, "sun": x, "amb": x, "sat": x}, ...]
+			world.start_game(false)
+			world.ui.close()
+			world.ui.visible = false
+			var path := ""
+			var only := "hero,road"
+			for a in OS.get_cmdline_user_args():
+				if a.begins_with("--tune="):
+					path = a.get_slice("=", 1)
+				elif a.begins_with("--spots="):
+					only = a.get_slice("=", 1)
+			var sets: Array = JSON.parse_string(FileAccess.get_file_as_string(path))
+			var spots := {"hero": [-17.4, 25.4], "road": [-9, 10], "kantor": [-3, 36], "field": [-30, -20], "pabrik": [49, -3]}
+			for st in sets:
+				_tune = st
+				for k in st.get("terrain", {}):
+					var v = st["terrain"][k]
+					world.terrain_mat.set_shader_parameter(k, Vector3(v[0], v[1], v[2]) if v is Array else v)
+				for m in ModelLib._materials.values():
+					var sm := m as ShaderMaterial
+					if sm == null or not str(sm.shader.resource_path).contains("foliage"):
+						continue
+					var frond: bool = sm.resource_name.findn("Frond") >= 0 and sm.resource_name.findn("Dry") < 0
+					for grp in ["foliage", "frond"]:
+						if grp == "frond" and not frond:
+							continue
+						for k in st.get(grp, {}):
+							var fv = st[grp][k]
+							sm.set_shader_parameter(k, Vector3(fv[0], fv[1], fv[2]) if fv is Array else fv)
+				world.env.adjustment_saturation = st.get("sat", 1.0)
+				if st.has("low"):
+					world.set_quality(not st["low"])
+				for sp in only.split(","):
+					GS.hour = st.get("hour", 8.5)
+					tp(spots[sp][0], spots[sp][1], Vector3(0, 0, -1))
+					if st.get("mask", false):
+						# names measure.py pairs up: m_<set><spot>_noui / _mask / _mask0
+						await shot("m_%s%s_noui" % [st["name"], sp], 12)
+						await _mask_shot("m_%s%s_mask" % [st["name"], sp], false)
+						await _mask_shot("m_%s%s_mask0" % [st["name"], sp], true)
+					else:
+						await shot("t_%s_%s" % [st["name"], sp], 12)
+				if st.has("low"):
+					world.set_quality(true)
+			_tune = {}
+			world.ui.visible = true
+		"dawn":
+			# the first frames of a new game (06:00) and of the evening
+			await shot("title", 10)
+			world.start_game(false)
+			await shot("dawn_intro", 12)
+			world.ui.close()
+			await shot("dawn_0600", 12)
+			for hh in [7.0, 12.0, 16.5, 17.5, 18.5]:
+				GS.hour = hh
+				await shot("dawn_%04d" % int(hh * 100), 12)
+			GS.hour = 8.5
+			world.set_quality(false)
+			await shot("dawn_0830_low", 12)
+			world.set_quality(true)
+			await shot("dawn_0830", 12)
+		"portrait":
+			# run with --resolution 576x1280 (phone held upright)
+			world.start_game(false)
+			world.ui.close()
+			GS.hour = 8.5
+			tp(-17.4, 25.4, Vector3(-0.5, 0, -1).normalized())
+			await shot("portrait_hero", 14)
+			tp(-3.5, 37.5, Vector3(0, 0, -1))
+			await shot("portrait_spawn", 14)
 		"lush":
 			# render tuning: UI-free frames at 08:30 (tour spots + curated views) for
 			# measuring brightness / shade coverage against the target screenshot

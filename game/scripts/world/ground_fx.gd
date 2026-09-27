@@ -88,6 +88,31 @@ static func soil_material() -> ShaderMaterial:
 	return _soil_mat
 
 
+const PIRINGAN_SHADER := preload("res://shaders/piringan.gdshader")
+static var _piringan_mat: ShaderMaterial
+
+
+static func piringan_material() -> ShaderMaterial:
+	## Soft alpha-blended version of the piringan model's material (see piringan.gdshader);
+	## null when the model has no texture.
+	if _piringan_mat == null:
+		var mesh := ModelLib.merged_mesh("piringan", true)
+		var tex: Texture2D = null
+		for i in mesh.get_surface_count():
+			var sm := mesh.surface_get_material(i) as ShaderMaterial
+			if sm and sm.get_shader_parameter("albedo_tex") != null:
+				tex = sm.get_shader_parameter("albedo_tex")
+		if tex == null:
+			return null
+		_piringan_mat = ShaderMaterial.new()
+		_piringan_mat.resource_name = "M_Piringan"
+		_piringan_mat.shader = PIRINGAN_SHADER
+		_piringan_mat.set_shader_parameter("albedo_tex", tex)
+		_piringan_mat.set_shader_parameter("noise_tex", ModelLib.NOISE_TEX)
+		_piringan_mat.render_priority = -1
+	return _piringan_mat
+
+
 static var _tiling := {}
 
 

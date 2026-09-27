@@ -242,6 +242,30 @@ def toast_badges(px=96):
     p.save("ui_star")
 
 
+def tap(px=96):
+    """Touch-screen twin of the "E" key badge in the action prompt: a finger
+    tapping (the round action button does what E does on a keyboard)."""
+    p = Pad(px)
+    ink = (62, 38, 23, 255)
+    p.circle(0.5, 0.5, 0.49, ink)
+    hand = CREAM_HI
+    # tap ripples above the fingertip
+    for r, w in ((0.13, 0.045), (0.215, 0.04)):
+        p.d.arc([(0.5 - r) * p.k, (0.3 - r) * p.k, (0.5 + r) * p.k, (0.3 + r) * p.k], 208, 332,
+                fill=(233, 185, 73, 255), width=int(w * p.k))
+    # index finger pointing up, a fist below it and the thumb on the left
+    p.rect(0.445, 0.27, 0.575, 0.64, hand, r=0.065)
+    p.rect(0.4, 0.5, 0.71, 0.82, hand, r=0.11)
+    p.circle(0.625, 0.53, 0.07, hand)
+    p.circle(0.69, 0.585, 0.058, hand)
+    p.poly([(0.29, 0.56), (0.35, 0.52), (0.46, 0.66), (0.42, 0.75)], hand)
+    p.circle(0.32, 0.545, 0.045, hand)
+    # knuckle creases
+    p.line([(0.585, 0.585), (0.585, 0.64)], ink, 0.022)
+    p.line([(0.655, 0.625), (0.655, 0.67)], ink, 0.022)
+    p.save("ui_tap")
+
+
 def phone(px=256):
     """Fallback portrait for the franchise HQ calling on the phone."""
     p = Pad(px)
@@ -287,6 +311,7 @@ if __name__ == "__main__":
     menu_icon()
     status_icon()
     toast_badges()
+    tap()
     phone()
     if "--app-icon" in sys.argv:  # app_icon.png is shared with the web build; only on request
         app_icon()

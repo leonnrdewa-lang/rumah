@@ -372,11 +372,14 @@ for d in decor:
     if d["model"] in ("tree_big", "sawit_wild"):
         tree_d = np.minimum(tree_d, np.hypot(X - d["pos"][0], Z - d["pos"][2]))
 
-# planting spots: low grass may grow up to the piringan's edge (1.45 m), taller plants
-# keep 1.95 m clear (TILE_BIG_R) so the tile state stays readable
-TILE_BIG_R = 1.95
-keep_out = [(x, z, r) for (x, z, r) in circles if r < 3.4] + [(x, z, 1.45) for x, z in tile_pts] + \
-           [(x, z, 1.7) for x, z in sign_pts]
+# planting spots: how close each plant may grow to a spot's centre. Low grass reaches
+# the (smaller) piringan's edge, ferns and cover plants stay out of the harvest ring,
+# taller plants keep 1.6-1.8 m clear so the palm, its fruit and the tile state stay
+# readable (world.gd filters again at 0.85 m)
+TILE_R = {"grass_a": 0.95, "grass_b": 0.95, "flowers_white": 1.0, "flowers_yellow": 1.0, "leaf_low": 1.05,
+          "fern_low": 1.15, "rock_a": 1.2, "frond_fallen": 1.5, "fern_a": 1.35, "fern_b": 1.35, "keladi": 1.65,
+          "shrub_a": 1.8, "shrub_b": 1.8, "vine_log": 2.2, "pile_fronds": 2.2}
+keep_out = [(x, z, r) for (x, z, r) in circles if r < 3.4] + [(x, z, 1.7) for x, z in sign_pts]
 for b in L.BUILDINGS:          # jetty and its road end
     if b["model"] == "dermaga":
         keep_out.append((b["pos"][0], b["pos"][1], 4.0))
@@ -394,6 +397,11 @@ for (x, z, r) in keep_out:
     for gx in range(int(math.floor((x - r) / 4)), int(math.floor((x + r) / 4)) + 1):
         for gz in range(int(math.floor((z - r) / 4)), int(math.floor((z + r) / 4)) + 1):
             ko_grid.setdefault((gx, gz), []).append((x, z, r))
+tile_grid = {}
+for (x, z) in tile_pts:
+    for gx in range(int(math.floor((x - 2.5) / 4)), int(math.floor((x + 2.5) / 4)) + 1):
+        for gz in range(int(math.floor((z - 2.5) / 4)), int(math.floor((z + 2.5) / 4)) + 1):
+            tile_grid.setdefault((gx, gz), []).append((x, z))
 
 
 def kept_out(x, z, pad=0.0):
@@ -404,14 +412,22 @@ def kept_out(x, z, pad=0.0):
 
 
 def near_tile(x, z, r):
-    return any((x - tx) ** 2 + (z - tz) ** 2 < r * r for tx, tz in tile_pts)
+    for (tx, tz) in tile_grid.get((int(math.floor(x / 4)), int(math.floor(z / 4))), ()):
+        if (x - tx) ** 2 + (z - tz) ** 2 < r * r:
+            return True
+    return False
 
 
 land_ok = (sd > 3.0) & (sand < 0.5)
 road_edge = road_d - L.ROAD_WIDTH / 2
-# fix round 1: wider verges / yards / forest edges and a dense ground layer everywhere
-# (the v2 review measured 40-70% bare lawn in open areas against the target's carpet)
+# polish round: the v2 review measured undergrowth on only ~30-35% of the land pixels
+# against ~2/3 in the target (and the player's parcel read as lawn with brown discs), so
+# the carpet is ~3x denser. It is mostly the cheap cover plants (grass cards, and the
+# procedural fern_low / leaf_low rosettes built in undergrowth.gd, 14-24 tris) around
+# thickets of modelled ferns / shrubs / keladi (200-320 tris); the game only draws the
+# plants under the camera, which pays for it.
 zone_verge = land_ok & (road_edge > 0.25) & (road_edge < 5.0)
+zone_wall = land_ok & (bld_dist > 0.15) & (bld_dist < 2.2) & ~door_block & ~door_low
 zone_bld = land_ok & (bld_dist > 0.15) & (bld_dist < 6.0) & ~door_block
 zone_parcel = land_ok & (parcel_ring > 0.2) & (parcel_ring < 5.5)
 zone_forest = land_ok & (tree_d > 0.9) & (tree_d < 10.0)
@@ -419,53 +435,64 @@ zone_inner = land_ok & parcel_in
 zone_beach = (sd > 2.0) & (sand > 0.35) & (sand < 0.9)
 blocked_px = (road_edge < 0.25) | door_block | (bld_dist <= 0.15) | (sd < 2.0)
 
-# plants per m^2 in each zone (the densest zone wins) and species weights.
-# The cheap alpha-card clumps (grass_a/b ~22 tris, flowers 12) make up the carpet;
-# ferns / shrubs / keladi (~200-320 tris) mostly grow in thickets (see `clump`).
+# (name, mask, big plants / m2, their species weights, cover plants / m2, their weights);
+# the zone with the most plants wins
+# (grass_b is the seed-head grass: a little of it reads as wild meadow, a lot of it as
+# pale khaki wisps; the target's ground layer is mostly small leafy plants)
+CARPET_OPEN = {"grass_a": 3.0, "grass_b": 1.0, "fern_low": 2.0, "leaf_low": 1.6, "flowers_white": 0.9,
+               "flowers_yellow": 0.7, "frond_fallen": 0.1, "rock_a": 0.03}
 ZONES = [
-    ("verge", zone_verge, 1.55, {"grass_a": 4.0, "grass_b": 4.0, "flowers_white": 1.6, "flowers_yellow": 1.2, "fern_a": 0.6,
-                                  "rock_a": 0.06, "keladi": 0.35, "shrub_a": 0.35, "frond_fallen": 0.3}),
-    ("bld", zone_bld, 1.35, {"shrub_a": 1.2, "shrub_b": 1.2, "keladi": 1.3, "flowers_white": 1.4, "flowers_yellow": 1.1,
-                             "fern_b": 0.6, "grass_a": 3.0, "grass_b": 2.0, "pile_fronds": 0.2}),
-    ("parcel", zone_parcel, 1.2, {"fern_a": 1.0, "fern_b": 1.0, "frond_fallen": 1.0, "grass_b": 3.6, "grass_a": 1.6,
-                                 "keladi": 0.7, "shrub_b": 0.5, "pile_fronds": 0.2, "flowers_white": 0.8}),
-    ("forest", zone_forest, 1.05, {"fern_a": 1.3, "fern_b": 1.3, "shrub_a": 0.9, "shrub_b": 0.9, "vine_log": 0.15,
-                                   "frond_fallen": 0.6, "keladi": 1.0, "rock_a": 0.08, "grass_b": 2.6, "grass_a": 1.4}),
-    ("inner", zone_inner, 0.85, {"fern_a": 0.5, "grass_b": 2.6, "frond_fallen": 1.0, "grass_a": 2.0}),
-    ("open", land_ok, 0.9, {"grass_a": 3.4, "grass_b": 3.4, "flowers_white": 0.9, "flowers_yellow": 0.7, "fern_a": 0.55,
-                           "fern_b": 0.3, "shrub_b": 0.25, "shrub_a": 0.15, "keladi": 0.3, "frond_fallen": 0.15}),
-    ("beach", zone_beach, 0.22, {"grass_b": 1.0, "grass_a": 0.6}),
+    ("wall", zone_wall, 0.9, {"shrub_a": 1.3, "shrub_b": 1.2, "keladi": 1.5, "fern_b": 0.6, "fern_a": 0.4,
+                              "pile_fronds": 0.05},
+     2.6, {"grass_a": 2.0, "grass_b": 0.8, "leaf_low": 2.2, "fern_low": 1.6, "flowers_white": 1.0,
+           "flowers_yellow": 0.8}),
+    ("verge", zone_verge, 0.2, {"fern_a": 1.0, "keladi": 0.6, "shrub_a": 0.5, "fern_b": 0.5},
+     3.2, {"grass_a": 3.0, "grass_b": 1.2, "fern_low": 2.0, "leaf_low": 1.6, "flowers_white": 1.1,
+           "flowers_yellow": 0.8, "frond_fallen": 0.12, "rock_a": 0.04}),
+    ("bld", zone_bld, 0.45, {"shrub_a": 1.2, "shrub_b": 1.2, "keladi": 1.4, "fern_b": 0.6, "pile_fronds": 0.08},
+     3.0, {"grass_a": 2.5, "grass_b": 0.8, "leaf_low": 2.0, "fern_low": 1.4, "flowers_white": 1.2,
+           "flowers_yellow": 0.9}),
+    ("parcel", zone_parcel, 0.35, {"fern_a": 1.0, "fern_b": 1.0, "keladi": 0.6, "shrub_b": 0.4, "pile_fronds": 0.1},
+     3.2, {"grass_b": 1.0, "grass_a": 2.0, "fern_low": 2.4, "leaf_low": 1.4, "frond_fallen": 0.5,
+           "flowers_white": 0.6}),
+    ("forest", zone_forest, 0.4, {"fern_a": 1.3, "fern_b": 1.3, "shrub_a": 0.9, "shrub_b": 0.9, "keladi": 1.0,
+                                  "vine_log": 0.12},
+     2.6, {"grass_b": 1.0, "grass_a": 1.5, "fern_low": 2.6, "leaf_low": 1.6, "frond_fallen": 0.5, "rock_a": 0.06}),
+    # the planting grid: low plants only, so paths and tiles stay readable
+    ("inner", zone_inner, 0.08, {"fern_a": 1.0, "fern_b": 1.0},
+     3.6, {"grass_b": 0.8, "grass_a": 2.5, "fern_low": 2.6, "leaf_low": 2.0, "flowers_white": 0.5,
+           "flowers_yellow": 0.3, "frond_fallen": 0.6}),
+    ("open", land_ok, 0.14, {"fern_a": 0.5, "fern_b": 0.3, "shrub_b": 0.25, "shrub_a": 0.15, "keladi": 0.3},
+     2.8, CARPET_OPEN),
+    ("beach", zone_beach, 0.0, {}, 0.3, {"grass_b": 1.0, "grass_a": 0.6}),
 ]
 # the door approach keeps only low plants
-DOOR_LOW = {"grass_a", "grass_b", "flowers_white", "flowers_yellow"}
+DOOR_LOW = {"grass_a", "grass_b", "flowers_white", "flowers_yellow", "leaf_low"}
 UG_SCALE = {"grass_a": (1.0, 1.6), "grass_b": (1.0, 1.6), "fern_a": (0.9, 1.4), "fern_b": (0.9, 1.4),
             "keladi": (0.85, 1.3), "shrub_a": (0.95, 1.5), "shrub_b": (0.95, 1.5), "flowers_white": (0.8, 1.2),
             "flowers_yellow": (0.8, 1.2), "frond_fallen": (0.65, 0.9), "vine_log": (0.8, 1.05),
-            "pile_fronds": (0.9, 1.1), "rock_a": (0.45, 0.9)}
-UG_GAP = {"grass_a": 0.35, "grass_b": 0.35, "flowers_white": 0.35, "flowers_yellow": 0.35, "fern_a": 0.55, "fern_b": 0.55,
+            "pile_fronds": (0.9, 1.1), "rock_a": (0.45, 0.9), "fern_low": (0.85, 1.35), "leaf_low": (0.8, 1.3)}
+UG_GAP = {"grass_a": 0.3, "grass_b": 0.3, "flowers_white": 0.3, "flowers_yellow": 0.3, "fern_a": 0.55, "fern_b": 0.55,
           "keladi": 0.5, "shrub_a": 0.8, "shrub_b": 0.8, "frond_fallen": 0.9, "vine_log": 1.3, "pile_fronds": 1.1,
-          "rock_a": 0.4}
+          "rock_a": 0.4, "fern_low": 0.45, "leaf_low": 0.35}
 UG_PAD = {"shrub_a": 0.5, "shrub_b": 0.5, "vine_log": 0.8, "pile_fronds": 0.6, "frond_fallen": 0.5}
 DENSITY = float(os.environ.get("UG_DENSITY", "1.0"))
 
 # plants grow in clumps (thickets of shrubs/ferns with open grass between), like the target
 clump = smoothstep(0.42, 0.72, fractal_noise(N, (10, 90), 1.4, seed=51))
-CLUMPINESS = {"verge": 0.5, "bld": 0.35, "parcel": 0.45, "forest": 0.6, "inner": 0.3, "open": 0.5, "beach": 0.5}
 BIG = ("shrub_a", "shrub_b", "keladi", "fern_a", "fern_b", "vine_log", "pile_fronds")
-SMALL = ("grass_a", "grass_b", "flowers_white", "flowers_yellow")
-density = np.zeros_like(X)
+SMALL = ("grass_a", "grass_b", "flowers_white", "flowers_yellow", "leaf_low")
 zone_id = np.full(X.shape, -1)
-for zi in range(len(ZONES) - 1, -1, -1):   # earlier (denser) zones override later ones
-    name, mask, dens, _ = ZONES[zi]
-    k = CLUMPINESS[name]
-    # clumps modulate density less than they pick the species (thicket vs grass), so the
-    # ground layer never thins out to bare lawn
-    dn = dens * (0.8 + 0.4 * n_mid) * ((1 - k) + k * (0.45 + 1.6 * clump))
-    upd = mask & (dn >= density * 0.999)
-    density[upd] = dn[upd]
+best = np.zeros_like(X)
+for zi in range(len(ZONES) - 1, -1, -1):   # earlier zones win ties
+    name, mask, bd, _, cd, _ = ZONES[zi]
+    upd = mask & ((bd + cd) >= best * 0.999)
+    best[upd] = bd + cd
     zone_id[upd] = zi
-density[blocked_px] = 0
-density *= DENSITY
+zone_id[blocked_px] = -1
+# thickets: 2.4x the big plants and a little less carpet; elsewhere the reverse
+thick = 0.55 + 1.9 * clump
+vary = (0.85 + 0.3 * n_mid) * DENSITY
 
 undergrowth = {}
 ug_pts = {}
@@ -484,24 +511,8 @@ def ug_free(x, z, gap, small=False):
     return True
 
 
-rejects = {"keep_out": 0, "road": 0, "spacing": 0}
-
-
+rejects = {"keep_out": 0, "road": 0, "spacing": 0, "tile": 0}
 cell_area = PX * PX
-expected = density * cell_area
-
-
-def cell_weights(i, j, zi):
-    weights = dict(ZONES[zi][3])
-    if door_low[i, j]:
-        weights = {nm: w for nm, w in weights.items() if nm in DOOR_LOW} or {"grass_a": 1.0}
-    thicket = clump[i, j] > 0.55
-    for nm in weights:
-        if nm in BIG:
-            weights[nm] *= 4.0 if thicket else 1.3
-        elif nm in SMALL:
-            weights[nm] *= 0.7 if thicket else 1.4
-    return weights
 
 
 def pick(weights):
@@ -523,35 +534,35 @@ def place(m, x, z):
     ug_list.append((m, x, z, sc))
 
 
-# the cheap grass / flower carpet (~12-24 tris a clump) is laid denser than the zone
-# figure so the ground between thickets reads as covered, not as bare lawn
-SMALL_BOOST = 1.7
-# Two passes so the grass carpet cannot crowd out the thickets: first the big plants
-# (ferns, shrubs, keladi, logs), then the small ones (grass, flowers, fronds, pebbles)
-# in the gaps. Each cell's expected count is split by the species weights.
+# Two passes so the carpet cannot crowd out the thickets: first the big plants (ferns,
+# shrubs, keladi, logs), then the cover plants (grass, fern_low / leaf_low rosettes,
+# flowers, fronds, pebbles) in the gaps.
 for big_pass in (True, False):
-    for i, j in zip(*np.nonzero(expected > 0)):
+    for i, j in zip(*np.nonzero(zone_id >= 0)):
         zi = zone_id[i, j]
-        if zi < 0:
+        _, _, bd, bw, cd, cw = ZONES[zi]
+        weights = dict(bw if big_pass else cw)
+        dens = bd * thick[i, j] if big_pass else cd * (1.25 - 0.3 * clump[i, j])
+        if door_low[i, j]:
+            weights = {nm: w for nm, w in weights.items() if nm in DOOR_LOW}
+            if big_pass or not weights:
+                continue
+        if not weights or dens <= 0:
             continue
-        weights = cell_weights(i, j, zi)
-        part = {nm: w for nm, w in weights.items() if (nm in BIG) == big_pass}
-        if not part:
-            continue
-        n = urng.poisson(expected[i, j] * sum(part.values()) / sum(weights.values()) * (1.0 if big_pass else SMALL_BOOST))
+        n = urng.poisson(dens * vary[i, j] * cell_area)
         for _ in range(n):
             x = float(X[i, j] + urng.uniform(-PX / 2, PX / 2))
             z = float(Z[i, j] + urng.uniform(-PX / 2, PX / 2))
-            m = pick(part)
+            m = pick(weights)
             if kept_out(x, z):
                 rejects["keep_out"] += 1
+                continue
+            if near_tile(x, z, TILE_R[m] + UG_PAD.get(m, 0.0) * 0.5):
+                rejects["tile"] += 1
                 continue
             # big pieces must not poke onto the road or into keep-out circles
             if m in UG_PAD and (sample(road_edge, x, z) < UG_PAD[m] + 0.3 or kept_out(x, z, UG_PAD[m])):
                 rejects["road"] += 1
-                continue
-            if big_pass and near_tile(x, z, TILE_BIG_R + UG_PAD.get(m, 0.0)):
-                rejects["keep_out"] += 1
                 continue
             if not ug_free(x, z, UG_GAP[m], m in SMALL):
                 rejects["spacing"] += 1
@@ -593,20 +604,22 @@ for d in decor:
         splat(litter, d["pos"][0], d["pos"][2], 1.8 * d.get("scale", 1.0), 0.9)
     elif d["model"] == "sawit_wild":
         splat(litter, d["pos"][0], d["pos"][2], 1.2 * d.get("scale", 1.0), 0.7)
-# (the grass / flower carpet only gets a faint patch: at ~1 clump per m^2 anything
-# stronger darkens all open ground evenly instead of pooling shade under thickets)
-UG_SHADE = {"shrub_a": (0.55, 1.4), "shrub_b": (0.55, 1.4), "keladi": (0.38, 0.8), "fern_a": (0.38, 0.9),
-            "fern_b": (0.38, 0.9), "vine_log": (0.6, 0.5), "pile_fronds": (0.6, 0.5), "grass_a": (0.25, 0.1),
-            "grass_b": (0.25, 0.1), "frond_fallen": (0.45, 0.15), "rock_a": (0.3, 0.3),
-            "flowers_white": (0.2, 0.06), "flowers_yellow": (0.2, 0.06)}
+# Contact shade pools tightly under the thickets; the (now dense) cover carpet only adds
+# a faint patch, or the whole lawn would darken evenly (the v2 frames read murky olive
+# because ~60% of the parcel ground sat in baked shade)
+UG_SHADE = {"shrub_a": (0.45, 1.3), "shrub_b": (0.45, 1.3), "keladi": (0.32, 0.8), "fern_a": (0.32, 0.75),
+            "fern_b": (0.32, 0.75), "vine_log": (0.5, 0.5), "pile_fronds": (0.5, 0.5), "grass_a": (0.2, 0.03),
+            "grass_b": (0.2, 0.03), "frond_fallen": (0.4, 0.1), "rock_a": (0.25, 0.3),
+            "flowers_white": (0.18, 0.02), "flowers_yellow": (0.18, 0.02), "fern_low": (0.28, 0.14),
+            "leaf_low": (0.2, 0.08)}
 for (m, x, z, sc) in ug_list:
     sg, am = UG_SHADE.get(m, (0.3, 0.1))
     splat(shade_acc, x, z, sg * sc, am)
 # parcels: a little shade and litter where the palms will be
 for (x, z) in tile_pts:
-    splat(shade_acc, x, z, 1.4, 0.15)
-    splat(litter, x, z, 1.1, 0.12)
-shade_r = 1.0 - np.exp(-shade_acc * 1.25)
+    splat(shade_acc, x, z, 1.1, 0.15)
+    splat(litter, x, z, 0.9, 0.12)
+shade_r = 1.0 - np.exp(-shade_acc * 1.1)
 shade_r = ndimage.gaussian_filter(shade_r, 0.7)
 
 dry = 0.1 + (fractal_noise(N, (4, 40), 2.0, seed=41) - 0.5) * 0.45
@@ -695,6 +708,7 @@ for b in L.BUILDINGS:
 dcol = {"tree_big": (30, 80, 30), "coconut": (120, 160, 40), "banana": (90, 170, 60), "rock_a": (150, 150, 150),
         "rock_b": (130, 130, 130), "rock_c": (100, 100, 100), "cliff_a": (70, 70, 70)}
 ucol = {"shrub_a": (60, 110, 40), "shrub_b": (60, 110, 40), "fern_a": (80, 140, 50), "fern_b": (80, 140, 50),
+        "fern_low": (95, 150, 60), "leaf_low": (90, 160, 70),
         "keladi": (70, 150, 70), "flowers_white": (250, 250, 240), "flowers_yellow": (250, 210, 60)}
 for m, arr in undergrowth.items():
     if m in ucol:

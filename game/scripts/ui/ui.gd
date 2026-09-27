@@ -78,7 +78,9 @@ var _closed_frame := -10
 var _stage_owner: Control
 var _last_money := -1
 var _bar_tweens := {}
-var _bottom_shown := true
+var _dialog_key := ""
+var _toast_home := Rect2()
+const TOAST_BAND := 66.0  ## room kept above tall cards for a toast
 var _layout_sig := ""
 
 
@@ -496,7 +498,9 @@ func _build_hud() -> void:
 		menu_row.add_child(b)
 	tr.add_child(menu_row)
 	minimap = preload("res://scripts/ui/minimap.gd").new()
+	minimap.name = "Minimap"
 	minimap.world = world
+	minimap.ui = self
 	minimap.font = _font_bold
 	hud.add_child(minimap)
 	# bottom-left: key prompt pill like "E  Panen"
@@ -508,6 +512,15 @@ func _build_hud() -> void:
 	var kb := _round_badge("E", 34)
 	kb.name = "KeyBadge"
 	prompt_key = kb.get_child(0)
+	# on touch screens the badge shows a tapping finger (the round action
+	# button does the job of the E key); "not possible" prompts show an info dot
+	var kic := TextureRect.new()
+	kic.name = "Icon"
+	kic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	kic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	kic.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	kic.visible = false
+	kb.add_child(kic)
 	prompt_label = _label("", 21, BROWN, true)
 	prompt_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	prompt_pill = _pill(_hrow([kb, prompt_label], 12), CREAM, 5, 22)
@@ -546,7 +559,6 @@ func _layout() -> void:
 	var row1: Control = tl.get_node("Row1")
 	var trs := tr.get_combined_minimum_size()
 	var row1_w := row1.get_combined_minimum_size().x
-	tl.position = Vector2(16, 14)
 	var tr_y := 14.0
 	if row1_w + trs.x + 48.0 > vp.x:
 		# narrow screen: meters go under the money/clock row on the right
@@ -555,59 +567,169 @@ func _layout() -> void:
 	quest_label.custom_minimum_size.x = clampf(minf(vp.x * 0.3, free_w - 80.0), 200.0, 360.0)
 	tl.size = Vector2.ZERO
 	tr.size = Vector2.ZERO
-	tr.position = Vector2(vp.x - trs.x - 16.0, tr_y)
+	_place(tl, Vector2(16, 14))
+	var tr_pos := Vector2(vp.x - trs.x - 16.0, tr_y)
+	_place(tr, tr_pos)
 	if minimap:
 		if minimap.big:
 			var w := minf(vp.x - 40, (vp.y - 40) * 170.0 / 150.0)
 			minimap.size = Vector2(w, w * 150.0 / 170.0)
-			minimap.position = (vp - minimap.size) * 0.5
+			_place(minimap, ((vp - minimap.size) * 0.5).round())
 		else:
 			var small := Vector2(206, 182) if vp.y >= 640 else Vector2(156, 138)
 			minimap.size = small
-			minimap.position = Vector2(vp.x - small.x - 16, tr.position.y + trs.y + 10)
+			_place(minimap, Vector2(vp.x - small.x - 16, tr_pos.y + trs.y + 10))
 	var inv_size := hotbar.get_combined_minimum_size()
 	hotbar.size = inv_size
 	if _touch_mode:
-		hotbar.position = Vector2(roundf(vp.x * 0.5 - inv_size.x * 0.5), vp.y - inv_size.y - 14)
+		_place(hotbar, Vector2(roundf(vp.x * 0.5 - inv_size.x * 0.5), vp.y - inv_size.y - 14))
 	else:
-		hotbar.position = Vector2(vp.x - inv_size.x - 18, vp.y - inv_size.y - 16)
+		_place(hotbar, Vector2(vp.x - inv_size.x - 18, vp.y - inv_size.y - 16))
+	if touch:
+		_layout_touch(vp)
 	_place_prompt(vp)
 	# toasts: top-centre gap between the pill clusters, else below them
 	var gap_l := 16.0 + row1_w + 14.0
-	var gap_r := tr.position.x - 14.0
+	var gap_r := tr_pos.x - 14.0
 	var tw := minf(560.0, gap_r - gap_l)
 	if tr_y <= 14.0 and tw >= 360.0:
-		toast_box.position = Vector2(roundf((gap_l + gap_r) * 0.5 - tw * 0.5), 14)
+		_toast_home = Rect2(roundf((gap_l + gap_r) * 0.5 - tw * 0.5), 14, tw, 0)
 	else:
 		tw = minf(560.0, vp.x - 32.0)
-		var below := maxf(tl.position.y + tl.get_combined_minimum_size().y, tr.position.y + trs.y) + 12.0
-		if portrait:
-			below = maxf(below, (minimap.position.y + minimap.size.y + 12.0) if minimap and not minimap.big else below)
-		toast_box.position = Vector2(roundf(vp.x * 0.5 - tw * 0.5), below)
-	toast_box.custom_minimum_size = Vector2(tw, 0)
-	toast_box.size = Vector2(tw, 0)
+		var below := maxf(14.0 + tl.get_combined_minimum_size().y, tr_pos.y + trs.y) + 12.0
+		if portrait and minimap and not minimap.big:
+			below = maxf(below, _home(minimap).y + minimap.size.y + 12.0)
+		_toast_home = Rect2(roundf(vp.x * 0.5 - tw * 0.5), below, tw, 0)
+	if modal:
+		_center_modal()
+	_sync_hud()
+
+
+func _place_toasts() -> void:
+	## Toasts sit in the HUD's top gap; while a card modal has cleared the HUD
+	## they move to the top edge, into the band _center_modal keeps free.
+	var vp := root.get_viewport_rect().size
+	var r := _toast_home
+	if modal != null and not modal.has_meta("self_layout"):
+		var tw := minf(560.0, vp.x - 32.0)
+		r = Rect2(roundf(vp.x * 0.5 - tw * 0.5), 8, tw, 0)
+	if r.size.x <= 0.0:
+		return
+	toast_box.position = r.position
+	toast_box.custom_minimum_size = Vector2(r.size.x, 0)
+	toast_box.size = Vector2(r.size.x, 0)
 	for t in toast_box.get_children():
 		var l: Label = t.find_child("Text", true, false)
 		if l:
-			l.custom_minimum_size.x = tw - 70.0
-	if touch:
-		_layout_touch(vp)
-	if modal:
-		_center_modal()
+			l.custom_minimum_size.x = r.size.x - 70.0
 
 
 func _place_prompt(vp: Vector2) -> void:
 	var prompts: Control = hud.get_node("Prompts")
 	var ps := prompts.get_combined_minimum_size()
 	prompts.size = ps
+	var at := Vector2(16, vp.y - ps.y - 16)
 	if _touch_mode:
-		prompts.position = Vector2(roundf(vp.x * 0.5 - ps.x * 0.5), hotbar.position.y - ps.y - 18)
-	else:
-		prompts.position = Vector2(16, vp.y - ps.y - 16)
+		# next to the round action button it stands for; above the hotbar
+		# when the screen is too narrow for that
+		at = Vector2(action_btn.position.x - ps.x - 16.0, roundf(action_btn.position.y + (action_btn.size.y - ps.y) * 0.5))
+		if at.x < 16.0:
+			at = Vector2(roundf(vp.x * 0.5 - ps.x * 0.5), _home(hotbar).y - ps.y - 18)
+	_place(prompts, at)
 	if tool_tip.visible:
 		var ts := tool_tip.get_combined_minimum_size()
 		tool_tip.size = ts
-		tool_tip.position = Vector2(clampf(hotbar.position.x + hotbar.size.x - ts.x, 12, vp.x - ts.x - 12), hotbar.position.y - ts.y - 16)
+		var hb := _home(hotbar)
+		# right-aligned over the desktop hotbar; centred over the touch one (the
+		# action prompt sits to its right)
+		var tx := hb.x + hotbar.size.x - ts.x
+		if _touch_mode:
+			tx = hb.x + (hotbar.size.x - ts.x) * 0.5
+		tool_tip.position = Vector2(clampf(tx, 12, vp.x - ts.x - 12), hb.y - ts.y - 16).round()
+
+
+# ------------------------------------------------------------------ HUD vs modals
+# Every HUD piece has a "home" position (set by _layout) and a hide amount k
+# (0 shown .. 1 hidden). Hidden pieces slide off the nearest screen edge and
+# fade, so dialogs / menus never sit on top of pills, the minimap or the
+# hotbar: card modals (menus, reports, pause) clear the whole HUD; dialogs
+# clear the bottom HUD and whatever top piece their panel / portrait would
+# touch (at 1280x720 none: the target keeps the top pills visible).
+func _place(p: Control, home: Vector2) -> void:
+	p.set_meta("home", home)
+	_apply_hud(p)
+
+
+func _home(p: Control) -> Vector2:
+	return p.get_meta("home", p.position)
+
+
+func _slide_vec(p: Control) -> Vector2:
+	if p == touch:
+		return Vector2.ZERO
+	if p == minimap:
+		return Vector2.ZERO if minimap.big else Vector2(p.size.x + 40.0, 0)
+	if p == hotbar or p.name == "Prompts":
+		return Vector2(0, p.size.y + 40.0)
+	return Vector2(0, -(p.size.y + 40.0))
+
+
+func _apply_hud(p: Control) -> void:
+	var k: float = p.get_meta("hide_k", 0.0)
+	var e := k * k * (3.0 - 2.0 * k)
+	p.position = (_home(p) + _slide_vec(p) * e).round()
+	p.modulate.a = 1.0 - k
+	if p != touch:
+		p.visible = k < 0.995
+
+
+func _hud_hide(p: Control, hide: bool, instant := false) -> void:
+	if p == null:
+		return
+	var target := 1.0 if hide else 0.0
+	if is_equal_approx(float(p.get_meta("hide_to", 0.0)), target) and not instant:
+		return
+	p.set_meta("hide_to", target)
+	if p.has_meta("hide_tw"):
+		var old: Tween = p.get_meta("hide_tw")
+		if old and old.is_valid():
+			old.kill()
+	var from: float = p.get_meta("hide_k", 0.0)
+	if instant or not hud.visible:
+		p.set_meta("hide_k", target)
+		_apply_hud(p)
+		return
+	var tw := create_tween()
+	tw.tween_method(func(k: float):
+		p.set_meta("hide_k", k)
+		_apply_hud(p), from, target, 0.2 if hide else 0.28)
+	p.set_meta("hide_tw", tw)
+
+
+func _hud_top() -> Array:
+	return [hud.get_node("TopLeft"), hud.get_node("TopRight"), minimap]
+
+
+func _sync_hud() -> void:
+	## Moves HUD pieces out of the current modal's way (or back home).
+	if hud == null:
+		return
+	var dialog_open := modal != null and modal.has_meta("self_layout")
+	var card := modal != null and not dialog_open
+	var blocked: Array = modal.occupied_rects() if dialog_open and modal.has_method("occupied_rects") else []
+	for p in _hud_top():
+		var hide := card
+		if dialog_open:
+			var r := Rect2(_home(p), p.size).grow(10.0)
+			for b in blocked:
+				if r.intersects(b):
+					hide = true
+		_hud_hide(p, hide)
+	for p in [hud.get_node("Prompts"), hotbar, touch]:
+		_hud_hide(p, modal != null)
+	if modal != null:
+		tool_tip.visible = false
+	_place_toasts()
 
 
 func show_hud() -> void:
@@ -618,6 +740,7 @@ func show_hud() -> void:
 	hud.visible = true
 	touch.visible = _touch_mode
 	_prompt_cache = ""
+	_sync_hud()
 	_refresh_hud()
 
 
@@ -727,9 +850,22 @@ func set_prompt(text: String, ok: bool) -> void:
 	prompt_pill.visible = true
 	prompt_label.text = text
 	var kb: PanelContainer = prompt_pill.find_child("KeyBadge", true, false)
-	prompt_key.text = "E" if ok else "i"
-	kb.add_theme_stylebox_override("panel", _box(INK if ok else Color("a8875a"), 17))
-	kb.visible = ok or not _touch_mode
+	var kic: TextureRect = kb.get_node("Icon")
+	# E key on keyboards, a tapping finger on touch screens (the round action
+	# button bottom-right), an info dot when the action is not possible yet
+	var glyph := "" if ok and not _touch_mode else ("ui_tap" if ok else "ui_info")
+	prompt_key.text = "E"
+	prompt_key.visible = glyph == ""
+	kic.texture = icon(glyph) if glyph != "" else null
+	kic.visible = kic.texture != null
+	if glyph != "" and kic.texture == null:
+		prompt_key.text = "i" if not ok else "E"
+		prompt_key.visible = true
+	# the glyph icons are complete round badges; the key letter sits on ink
+	var ks := _box(Color(0, 0, 0, 0) if kic.visible else (INK if ok else Color("a8875a")), 17)
+	_margins(ks, 0 if kic.visible else 4, 0, 0 if kic.visible else 4, 0)
+	kb.add_theme_stylebox_override("panel", ks)
+	kb.visible = true
 	prompt_label.add_theme_color_override("font_color", BROWN if ok else BROWN_SOFT)
 	prompt_pill.modulate.a = 1.0 if ok else 0.92
 	if action_label:
@@ -860,7 +996,10 @@ func _open_modal(panel: Control, dim := true, on_close := Callable()) -> void:
 			var tw := create_tween()
 			tw.tween_property(panel, "modulate:a", 1.0, 0.16)
 			tw.parallel().tween_property(panel, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	_show_bottom_hud(not panel.has_meta("self_layout"))
+	if minimap and minimap.big:
+		minimap.big = false
+		_layout()
+	_sync_hud()
 	if world and world.player:
 		world.player.locked = true
 		world.player.touch_vec = Vector2.ZERO
@@ -868,20 +1007,6 @@ func _open_modal(panel: Control, dim := true, on_close := Callable()) -> void:
 	if joy_base:
 		joy_base.visible = false
 	call_deferred("_focus_first", panel)
-
-
-func _show_bottom_hud(on: bool) -> void:
-	if on == _bottom_shown:
-		return
-	_bottom_shown = on
-	var prompts: Control = hud.get_node("Prompts")
-	# (the touch layer is faded as a whole: action_btn's own alpha shows
-	# whether the context action is available)
-	for c in [hotbar, prompts, tool_tip, touch]:
-		if c == null:
-			continue
-		var tw := (c as Control).create_tween()
-		tw.tween_property(c, "modulate:a", 1.0 if on else 0.0, 0.15)
 
 
 func _focus_first(panel: Control) -> void:
@@ -908,10 +1033,13 @@ func _center_modal() -> void:
 	var vp := root.get_viewport_rect().size
 	if modal.has_meta("self_layout"):
 		modal.relayout(vp)
+		_sync_hud()
 		return
 	var sz := modal.get_combined_minimum_size()
 	modal.size = Vector2(minf(sz.x, vp.x - 24), minf(sz.y, vp.y - 24))
 	modal.position = ((vp - modal.size) * 0.5).round()
+	# tall cards step down to keep a band free for toasts at the top edge
+	modal.position.y = maxf(modal.position.y, minf(TOAST_BAND, roundf(vp.y - modal.size.y - 12.0)))
 	modal.pivot_offset = modal.size * 0.5
 	# shopkeepers with anime art stand at the left edge of their menu
 	var side: Texture2D = modal.get_meta("side_art") if modal.has_meta("side_art") else null
@@ -977,7 +1105,8 @@ func _after_close() -> void:
 			portrait_stage.hide_portrait()
 			_stage_owner = null
 	if modal == null:
-		_show_bottom_hud(true)
+		_dialog_key = ""
+		_sync_hud()
 		_prompt_cache = ""
 
 
@@ -993,7 +1122,8 @@ func dialog(portrait: String, speaker: String, text: String, choices: Array = []
 		choices = [{"text": "Lanjut", "cb": Callable()}]
 	var key := portrait_key(portrait, speaker)
 	var chained := modal != null or _closed_frame == Engine.get_process_frames()
-	var changed: bool = key != portrait_stage.cur_key or not portrait_stage.has_portrait()
+	var changed: bool = key != _dialog_key or not chained
+	_dialog_key = key
 	var art := portrait_art(key)
 	var dv := DialogView.new()
 	dv.name = "Dialog"
@@ -1092,20 +1222,9 @@ func _input(event: InputEvent) -> void:
 
 # ------------------------------------------------------------------ list menu (shops)
 func _portrait_badge(tex: Texture2D, size := 76) -> Control:
-	var c := PanelContainer.new()
-	var s := _box(Color("f6e6c4"), size / 2, CREAM_LIGHT, 3, true)
-	_margins(s, 2, 2, 2, 2)
-	c.add_theme_stylebox_override("panel", s)
-	c.custom_minimum_size = Vector2(size, size)
+	## Same round badge as the dialog's fallback portrait.
+	var c := PortraitStage.build_badge(tex, size)
 	c.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	if tex:
-		var tr := TextureRect.new()
-		tr.texture = tex
-		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		c.add_child(tr)
 	return c
 
 
@@ -1151,12 +1270,13 @@ func menu(title: String, subtitle: String, items: Array, on_close := Callable(),
 	col.add_child(_divider())
 	var scroll := ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.custom_minimum_size = Vector2(list_w, minf(items.size() * 86, vp.y - 270))
+	scroll.custom_minimum_size = Vector2(list_w, minf(items.size() * 78, vp.y - 270))
 	col.add_child(scroll)
 	var list := VBoxContainer.new()
 	list.add_theme_constant_override("separation", 8)
 	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(list)
+	_fit_scroll_later(scroll, list, vp.y - 270)
 	for it in items:
 		var row := PanelContainer.new()
 		var rs := _box(CREAM_LIGHT, 18, LINE, 2)
@@ -1238,14 +1358,20 @@ func info_panel(title: String, lines: Array, button_text := "Oke", on_close := C
 	var inner := VBoxContainer.new()
 	inner.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	inner.add_theme_constant_override("separation", 7)
+	# measured like the Labels will lay out (the old per-character guess left
+	# a tall empty gap above the button); corrected after the first layout
 	var est := 0.0
+	var sep := 7.0
 	for line in lines:
 		var s := str(line)
+		if inner.get_child_count() > 0:
+			est += sep
 		if s.begins_with("—") or s.begins_with("- "):
-			var sec := _label(s.trim_prefix("—").trim_suffix("—").strip_edges(), 18, BROWN_SOFT, true)
+			var st := s.trim_prefix("—").trim_suffix("—").strip_edges()
+			var sec := _label(st, 18, BROWN_SOFT, true)
 			sec.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			inner.add_child(sec)
-			est += 30
+			est += _text_h(st, _font_bold, 18, w)
 			continue
 		var raid := s.begins_with("[SIDAK]")
 		var l := _label(s, 20, RED if raid else BROWN)
@@ -1268,11 +1394,13 @@ func info_panel(title: String, lines: Array, button_text := "Oke", on_close := C
 			bullet = holder
 		bullet.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 		inner.add_child(_hrow([bullet, l], 10))
-		est += 30.0 * ceilf(maxf(1.0, s.length() * 10.5 / (w - 44.0)))
+		est += maxf(26.0, _text_h(s, _font_semi, 20, w - 32.0))
 	var scroll := ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.custom_minimum_size = Vector2(w, minf(est + 10.0, vp.y - (230.0 if footer == null else 290.0)))
+	var max_h := vp.y - (230.0 if footer == null else 290.0)
+	scroll.custom_minimum_size = Vector2(w, minf(ceilf(est), max_h))
 	scroll.add_child(inner)
+	_fit_scroll_later(scroll, inner, max_h)
 	col.add_child(scroll)
 	if footer:
 		col.add_child(footer)
@@ -1280,6 +1408,33 @@ func info_panel(title: String, lines: Array, button_text := "Oke", on_close := C
 	b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	col.add_child(b)
 	_open_modal(panel, true, on_close)
+
+
+func _text_h(text: String, font: Font, fsize: int, width: float) -> float:
+	## Height of an autowrapped (AUTOWRAP_WORD_SMART) Label `width` px wide.
+	var para := TextParagraph.new()
+	para.add_string(text, font, fsize)
+	para.width = width
+	para.break_flags = TextServer.BREAK_MANDATORY | TextServer.BREAK_WORD_BOUND | TextServer.BREAK_ADAPTIVE
+	return para.get_size().y + maxf(0.0, para.get_line_count() - 1) * 3.0
+
+
+func _fit_scroll_later(scroll: ScrollContainer, inner: Control, max_h: float) -> void:
+	## Once the panel has been laid out, size the scroll box to its content
+	## exactly (no gap above the buttons), up to max_h.
+	# weak refs: a menu rebuilt after a purchase frees the old scroll first
+	var sref: WeakRef = weakref(scroll)
+	var iref: WeakRef = weakref(inner)
+	get_tree().process_frame.connect(func():
+		var sc: ScrollContainer = sref.get_ref()
+		var box: Control = iref.get_ref()
+		if sc == null or box == null or not sc.is_inside_tree():
+			return
+		var h := minf(ceilf(box.get_combined_minimum_size().y), max_h)
+		if absf(h - sc.custom_minimum_size.y) > 0.5:
+			sc.custom_minimum_size.y = h
+			if modal and modal.is_ancestor_of(sc):
+				_center_modal(), CONNECT_ONE_SHOT)
 
 
 func _chip(icon_name: String, text: String, color := BROWN) -> Control:
@@ -1565,8 +1720,13 @@ func _circle(color: Color, radius: int, border := Color(0, 0, 0, 0)) -> StyleBox
 
 func _layout_touch(vp: Vector2) -> void:
 	action_btn.position = Vector2(vp.x - 124 - 28, vp.y - 124 - 96)
-	var hint: Control = touch.get_node("JoyHint")
+	var hint: Label = touch.get_node("JoyHint")
+	hint.size = hint.get_combined_minimum_size()
 	hint.position = Vector2(40, vp.y - 60)
+	# portrait phones: the centred hotbar spans the bottom, lift the hint above it
+	var hb := Rect2(_home(hotbar), hotbar.size).grow(6.0)
+	if hb.intersects(Rect2(hint.position, hint.size)):
+		hint.position = Vector2(24, hb.position.y - hint.size.y - 8.0)
 
 
 func _handle_touch(event: InputEvent) -> void:

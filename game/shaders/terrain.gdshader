@@ -37,11 +37,12 @@ uniform float world_size = 200.0;
 uniform float water_level = -0.3;
 uniform float shade_strength = 1.0;
 uniform float tex_saturation = 0.85;
-uniform vec3 grass_tint = vec3(1.28, 1.04, 1.6);   // linear multiplier: texture -> target olive
+// linear multiplier: texture -> the target's warm yellow-green lawn (sunlit ~#c2b86c)
+uniform vec3 grass_tint = vec3(1.55, 1.18, 1.9);
 // average colour of grass_tex (linear), set by world.gd; detail is scaled around it
 uniform vec3 grass_avg = vec3(0.27, 0.39, 0.065);
 // < 1 flattens the texture's fine blade noise into a smoother, painterly ground
-uniform float detail_contrast = 0.85;
+uniform float detail_contrast = 0.7;
 // mip bias (as a gradient scale) for the grass: > 1 = softer
 uniform float grass_blur = 1.5;
 // v1 procedural palette (fallbacks) + tints anchored to the target palette
@@ -56,8 +57,12 @@ uniform vec3 mulch_col : source_color = vec3(0.45, 0.35, 0.24);
 uniform vec3 shade_tint : source_color = vec3(0.78, 0.95, 0.82);
 // macro variation: shady olive <-> sunlit yellow-green (linear multipliers)
 uniform vec3 macro_shady = vec3(0.6, 0.64, 0.6);
-uniform vec3 macro_sunny = vec3(1.12, 1.16, 1.02);
-uniform float shade_depth = 0.4;
+uniform vec3 macro_sunny = vec3(1.16, 1.12, 0.96);
+uniform float shade_depth = 0.45;
+// contact-shade response: the baked mask is remapped so faint shade (the grass carpet)
+// barely darkens the lawn and the shade pools under the thickets
+uniform float shade_lo = 0.12;
+uniform float shade_hi = 0.95;
 // warm tan roads like the target's (the dirt texture lights up rather yellow)
 uniform vec3 road_tint = vec3(0.965, 0.92, 1.18);
 uniform vec3 dry_tint = vec3(0.97, 0.92, 1.08);
@@ -186,7 +191,7 @@ void fragment() {
 	}
 
 	// ---------------------------------------------------------------- contact shade
-	float shade = clamp(sh.r * shade_strength, 0.0, 1.0);
+	float shade = smoothstep(shade_lo, shade_hi, sh.r) * shade_strength;
 	col = mix(col, col * shade_tint * shade_depth, shade);
 
 	ALBEDO = col;

@@ -25,6 +25,10 @@ uniform float tip_light = 0.18;
 // the post saturation make them read neon otherwise); yellow/white petals keep colour
 uniform float green_sat = 0.72;
 uniform float green_warm = 0.05;
+// overall albedo scale (palm crowns are toned down a little)
+uniform float tone = 1.0;
+// translucency of the leaves when lit from behind
+uniform vec3 backlight = vec3(0.26, 0.28, 0.14);
 uniform sampler2D noise_tex : hint_default_white, filter_linear_mipmap, repeat_enable;
 
 varying vec3 world_pos;
@@ -66,9 +70,9 @@ void fragment() {
 	vec3 cs = mix(vec3(lum), c, green_sat);
 	cs.r += green_warm * cs.g;
 	c = mix(c, cs, gdom);
-	ALBEDO = c;
+	ALBEDO = c * tone;
 	ROUGHNESS = 1.0;
-	BACKLIGHT = vec3(0.26, 0.28, 0.14);
+	BACKLIGHT = backlight;
 	if (fade_enabled > 0.5) {
 		vec2 d = (SCREEN_UV - occlude_center) * vec2(VIEWPORT_SIZE.x / VIEWPORT_SIZE.y, 1.0);
 		float r = length(d);

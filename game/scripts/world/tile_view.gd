@@ -12,6 +12,8 @@ extends Node3D
 const GARDEN_MAIN := ["shrub_a", "banana", "shrub_b", "keladi", "shrub_a", "banana", "keladi", "shrub_b"]
 const GARDEN_SMALL := ["fern_a", "fern_b", "grass_a", "grass_b", "flowers_white", "flowers_yellow", "keladi", "fern_a"]
 const SHADOW_MODELS := ["shrub_a", "shrub_b", "banana", "keladi", "bush_a", "bush_b"]
+## piringan scale (model is 2.4 m across): empty tile, palm stage 0..3
+const PIRINGAN_SCALE := [0.58, 0.62, 0.7, 0.76, 0.8]
 
 static var _tiles := {}     # pid -> {idx: TileView}
 static var _batches := {}   # pid -> Node3D holding the parcel's MultiMeshes
@@ -117,7 +119,10 @@ func _flush_batch() -> void:
 		if t["s"] == "bush":
 			_garden(tv, lists)
 		else:
-			var s := 0.85 if t["s"] == "empty" or int(t["st"]) == 0 else 1.0
+			# the weeded circle grows with the palm: a small soft patch on a cleared tile or
+			# around a seedling (the v2 1.0-2.1 m brown discs read as stickers on the lawn),
+			# ~1.9 m across under a grown palm
+			var s: float = PIRINGAN_SCALE[0] if t["s"] == "empty" else PIRINGAN_SCALE[clampi(int(t["st"]), 0, 3) + 1]
 			_add(lists, "piringan", Transform3D(Basis(Vector3.UP, tv._yaw).scaled(Vector3(s, 1.0, s)), tv.position + Vector3(0, 0.015, 0)), Color.WHITE)
 	for model in lists:
 		var list: Array = lists[model]
@@ -151,6 +156,10 @@ func _flush_batch() -> void:
 		mmi.multimesh = mm
 		if not model in SHADOW_MODELS:
 			mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		if model == "piringan" and ModelLib.has_model("piringan"):
+			var pm := GroundFx.piringan_material()
+			if pm:
+				mmi.material_override = pm
 		batch.add_child(mmi)
 
 

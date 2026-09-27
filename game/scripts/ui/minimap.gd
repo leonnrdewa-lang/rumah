@@ -7,6 +7,7 @@ const TEX := preload("res://assets/textures/minimap.png")
 const LABELS := {"kantor": "Kantor", "toko": "Koperasi", "warung": "Warung", "pabrik": "Pabrik", "calo": "Calo"}
 
 var world: Node
+var ui: Node
 var big := false
 var font: Font
 var _t := 0.0
@@ -16,6 +17,8 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	clip_contents = true
 	gui_input.connect(func(e):
+		if ui and ui.is_blocking():
+			return  # no big map on top of a dialog / menu
 		if (e is InputEventMouseButton and e.pressed) or (e is InputEventScreenTouch and e.pressed):
 			big = not big
 			Sfx.play("click", 1.0, -6.0)
