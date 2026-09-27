@@ -1877,8 +1877,30 @@ def clip_harvest(rig, st):
         e = rad(el)
         D = Vector((0.24, -math.cos(e), math.sin(e))).normalized()
         gR = Vector((-d["sh_x"] + (x + DEF["sh_x"] + 0.035) * k, (y + 0.015) * k, d["sh_z"] - (DEF["sh_z"] - z) * k))
+        gR = fit_grip(gR, D, 0.11 * k)
         gL = gR + D * 0.11 * k
         return tuple(gR), tuple(gL), tuple(D)
+
+    ok = 0.84 * (d["l_up"] + d["l_fore"]) + 0.8 * 0.036 * d["hand_k"]
+    SR, SL = Vector((-d["sh_x"], 0.0, d["sh_z"])), Vector((d["sh_x"], 0.0, d["sh_z"]))
+
+    def fit_grip(gR, D, t):
+        """Nudge the right grip (least distance) until both fists are inside the arms' reach
+        (wide-shouldered, short-armed characters): chest-frame geometry, the shoulders don't move."""
+        def excess(p):
+            return max((p - SR).length - ok, (p + D * t - SL).length - ok)
+        if excess(gR) <= 0.0:
+            return gR
+        best, bkey = gR, (excess(gR), 0.0)
+        for ix in range(-10, 11):
+            for iy in range(-4, 13):
+                for iz in range(-8, 9):
+                    q = gR + Vector((ix, iy, iz)) * 0.01
+                    e = excess(q)
+                    key = (max(e, 0.0), (q - gR).length)
+                    if key < bkey:
+                        best, bkey = q, key
+        return best
     ready = (-0.035, -0.13, 0.4, 44)
     kf = {0: ready, 5: (-0.03, -0.125, 0.42, 49), 10: (-0.03, -0.12, 0.39, 47),
           15: (-0.03, -0.1, 0.52, 57), 19: (-0.03, -0.1, 0.53, 58), 23: (-0.02, -0.13, 0.385, 50),
