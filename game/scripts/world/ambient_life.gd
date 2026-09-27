@@ -335,6 +335,23 @@ func _chimney_tops() -> Array[Vector3]:
 		out.append(node.global_transform * p)
 		if out.size() >= 2:
 			break
+	# the chimney top is above the camera most of the time, so the mill also puffs
+	# steam from the ridge of its main hall, which the gameplay camera can see
+	var ridge := -INF
+	for v in faces:
+		if v.y < top * 0.62:
+			ridge = maxf(ridge, v.y)
+	if ridge > 3.0:
+		var acc := Vector3.ZERO
+		var n := 0
+		for v in faces:
+			if v.y > ridge - 0.05 and v.y < top * 0.62:
+				acc += v
+				n += 1
+		if n > 0:
+			var p := acc / float(n)
+			p.y = ridge
+			out.append(node.global_transform * p)
 	return out
 
 

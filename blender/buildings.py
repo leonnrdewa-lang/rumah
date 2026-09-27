@@ -623,8 +623,15 @@ def build_gudang():
     front-left whose face is the separate child `SignBoard` (like kantor's)."""
     name = "gudang"
     root = empty(name)
+    BOARD, GREEN = "#efe3c4", "#7aa957"
     M = dict(roof=mat("M_Roof", "#a8a296"), trim=mat("M_Wood", "#6f5236"), plank=mat("M_Plank", "#a27b52"),
-             board=mat("M_Board", "#efe3c4"), green=mat("M_Print", "#5d8a45"))
+             board=mat("M_Board", BOARD))
+    M['green'] = M['board']      # green print / sacks / drum = cream board tinted through the vertex colour
+
+    def green(o, slot=None):
+        """Tint o (or only its faces using material slot `slot`) print-green."""
+        faces = None if slot is None else [p.index for p in o.data.polygons if p.material_index == slot]
+        return PR.tint_to(o, GREEN, BOARD, faces)
     P = []
     x0, x1, y0, y1 = -2.5, 2.5, -1.15, 1.15
     ZF, ZB = 2.75, 2.15                          # beam tops at the front / back
@@ -682,19 +689,20 @@ def build_gudang():
     for n, zz in ((2, FZ + 0.12), (2, FZ + 0.12 + 0.2), (1, FZ + 0.12 + 0.4)):
         for i in range(n):
             xx = px_ + (i - (n - 1) / 2) * 0.5
-            P.append(PR.sack("sack", M['board'], M['green'], loc=(xx, py_, zz),
-                             rotz=math.pi / 2 + rnd.uniform(-0.08, 0.08), L=0.68, W=0.46, T=0.23, lo=True, seed=k))
+            P.append(green(PR.sack("sack", M['board'], M['green'], loc=(xx, py_, zz),
+                                   rotz=math.pi / 2 + rnd.uniform(-0.08, 0.08), L=0.68, W=0.46, T=0.23, lo=True,
+                                   seed=k), slot=1))
             k += 1
     # green sacks slumped at the back, one leaning
     for (sx_, sy_, rz, tl) in ((0.45, 0.8, 0.2, (0.0, 0.0)), (1.05, 0.75, -0.25, (0.0, 0.0)),
                                (0.75, 0.85, 0.05, (0.25, 0.1))):
-        P.append(PR.sack("sack_g", M['green'], M['board'], loc=(sx_, sy_, FZ + (0.18 if tl[0] else 0.0)), rotz=rz,
-                         L=0.66, W=0.44, T=0.24, lo=True, seed=20 + k, tilt=tl))
+        P.append(green(PR.sack("sack_g", M['green'], M['board'], loc=(sx_, sy_, FZ + (0.18 if tl[0] else 0.0)),
+                               rotz=rz, L=0.66, W=0.44, T=0.24, lo=True, seed=20 + k, tilt=tl), slot=0))
         k += 1
     # harvesting poles (egrek) leaning on the back wall, and a green drum by the right front post
     for x in (-0.55, -0.42):
         P.append(rod("egrek", (x, y1 - 0.6, FZ), (x + 0.1, y1 - 0.05, FZ + 1.95), 0.03, M['plank'], 5))
-    P.append(add_cyl("drum", 0.28, 0.86, loc=(2.05, -0.6, FZ + 0.43), material=M['green'], verts=10))
+    P.append(green(add_cyl("drum", 0.28, 0.86, loc=(2.05, -0.6, FZ + 0.43), material=M['green'], verts=10)))
     # --- signboard in front-left: two posts, backing frame, little zinc cap
     sx_, sy_ = -1.55, -2.5
     bw, bh, bz = 1.7, 0.95, 1.3
@@ -1274,8 +1282,10 @@ def build_truck():
     the bed (the game toggles it)."""
     name = "truck"
     root = empty(name)
-    M = dict(paint=mat("M_Paint", "#efeadf"), dark=mat("M_Dark", "#3a3431"), win=mat("M_Window", "#a9c9d2", 0.4),
-             wood=mat("M_Wood", "#8f6b45"), fruit=mat("M_Fruit", "#e2682c"))
+    PAINT, GLASS = "#efeadf", "#9fc1cc"
+    M = dict(paint=mat("M_Paint", PAINT), dark=mat("M_Dark", "#3a3431"), wood=mat("M_Wood", "#8f6b45"),
+             fruit=mat("M_Fruit", "#e2682c"))
+    M['win'] = M['paint']        # glass = paint tinted blue-grey through the vertex colour (4-material budget)
     P = []
     W = 1.78
     # chassis rails, bumpers, fuel tank, mud flaps
@@ -1289,15 +1299,16 @@ def build_truck():
     cy0, cy1 = -2.05, -0.82
     P.append(bx("cab", (W, cy1 - cy0, 1.36), (0, (cy0 + cy1) / 2, 1.3), M['paint'], 0.15, 3))
     P.append(bx("cab_roof", (W - 0.18, cy1 - cy0 - 0.2, 0.08), (0, (cy0 + cy1) / 2 + 0.03, 2.0), M['paint'], 0.035, 2))
-    P.append(bx("windshield", (W - 0.26, 0.06, 0.55), (0, cy0 - 0.005, 1.6), M['win'], 0.03, 1,
-                rot=(math.radians(-6), 0, 0)))
+    P.append(PR.tint_to(bx("windshield", (W - 0.26, 0.06, 0.55), (0, cy0 - 0.005, 1.6), M['win'], 0.03, 1,
+                           rot=(math.radians(-6), 0, 0)), GLASS, PAINT))
     P.append(bx("grille", (1.0, 0.06, 0.26), (0, cy0 - 0.01, 0.92), M['dark'], 0.03, 1))
     P.append(bx("face_band", (W - 0.2, 0.04, 0.06), (0, cy0 - 0.01, 1.22), M['dark'], 0.0))
     for sx in (-1, 1):
-        P.append(add_cyl("headlight", 0.11, 0.06, loc=(sx * 0.66, cy0 - 0.01, 0.92), material=M['win'], verts=10,
-                         rot=(math.pi / 2, 0, 0)))
+        P.append(PR.tint_to(add_cyl("headlight", 0.11, 0.06, loc=(sx * 0.66, cy0 - 0.01, 0.92), material=M['win'],
+                                    verts=10, rot=(math.pi / 2, 0, 0)), "#fbf1c4", PAINT))
         P.append(bx("indicator", (0.14, 0.05, 0.07), (sx * 0.66, cy0 - 0.01, 1.08), M['fruit'], 0))
-        P.append(bx("side_win", (0.06, 0.62, 0.48), (sx * (W / 2 + 0.005), -1.6, 1.58), M['win'], 0.03, 1))
+        P.append(PR.tint_to(bx("side_win", (0.06, 0.62, 0.48), (sx * (W / 2 + 0.005), -1.6, 1.58), M['win'], 0.03, 1),
+                            GLASS, PAINT))
         P.append(bx("door_line", (0.04, 0.03, 0.9), (sx * (W / 2 + 0.005), -1.18, 1.25), M['dark'], 0.0))
         P.append(bx("handle", (0.04, 0.12, 0.035), (sx * (W / 2 + 0.02), -1.32, 1.28), M['dark'], 0))
         P.append(beam("mirror_arm", (sx * (W / 2), -1.95, 1.62), (sx * (W / 2 + 0.2), -2.02, 1.66), 0.04, 0.04, Z,
@@ -1361,8 +1372,8 @@ def build_truck():
     for i, (x, y, layer) in enumerate(spots):
         z = bz + 0.08 + layer * 0.34
         CP.append(PR.bunch("tbs", (M['fruit'], M['fruit'], M['dark']), loc=(x, y, z - 0.03),
-                           size=1.22 + rnd.uniform(-0.08, 0.08), seed=i,
-                           rot=(rnd.uniform(-0.5, 0.5), rnd.uniform(-0.5, 0.5), rnd.uniform(0, 6.28))))
+                           size=1.18 + rnd.uniform(-0.08, 0.08), seed=i, core_tint=("#c8401e", "#e2682c"),
+                           rot=(rnd.uniform(-0.4, 0.4), rnd.uniform(-0.4, 0.4), rnd.uniform(0, 6.28))))
     cargo = join(CP, "Cargo")
     cargo.data.name = "Cargo"
     if not cargo.data.uv_layers:

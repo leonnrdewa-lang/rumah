@@ -554,8 +554,9 @@ def strip_xy(g, pts, widths, col_fn, z=0.0, mi=0):
 # ---------------------------------------------------------------- palm fronds (top-down, base at bottom)
 FROND_KINDS = {
     #          leaflets/side, max len, max width, angle base/tip (deg from rachis)
-    "frond": dict(N=19, lmax=0.57, wmax=0.15, th0=58, th1=34, seed=1, skip=0.0,
-                  base="#284f18", mid="#4f862a", tip="#8fb23e", rach0="#6b7a34", rach1="#b3b552", jit=0.1),
+    # the oil-palm frond keeps long, broad leaflets right to its end (blunt, fan-like tip as in the target)
+    "frond": dict(N=18, lmax=0.56, wmax=0.17, th0=58, th1=30, seed=1, skip=0.0, blunt=True, y1=1.63,
+                  base="#284f18", mid="#4f862a", tip="#8fb23e", rach0="#56682c", rach1="#b3b552", jit=0.1),
     "frond_dry": dict(N=24, lmax=0.5, wmax=0.1, th0=66, th1=40, seed=2, skip=0.14,
                       base="#6b4f2c", mid="#a07e45", tip="#c9a86a", rach0="#8a6a3e", rach1="#c7a468", jit=0.14),
     "frond_coco": dict(N=38, lmax=0.62, wmax=0.058, th0=74, th1=52, seed=3, skip=0.0,
@@ -568,7 +569,7 @@ def _frond_model(kind):
     rnd = random.Random(P["seed"])
     m = _tex_mat(rough=0.6 if kind != "frond_dry" else 0.85, spec=0.18 if kind != "frond_dry" else 0.1)
     g = Geo()
-    y0, y1, ytip = 0.24, 1.93, 1.985
+    y0, y1, ytip = 0.24, P.get("y1", 1.93), (1.9 if P.get("blunt") else 1.985)
     cb, cm, ct = lin(P["base"]), lin(P["mid"]), lin(P["tip"])
     r0, r1 = lin(P["rach0"]), lin(P["rach1"])
     olive = (lin("#5d5b2f"), lin("#87873f"), lin("#a8a25a"))
@@ -590,7 +591,10 @@ def _frond_model(kind):
             if rnd.random() < P["skip"]:
                 continue
             y = y0 + (y1 - y0) * u
-            prof = math.sin(math.pi * (0.07 + 0.91 * u)) ** 0.6 * (1.0 - 0.22 * u)
+            if P.get("blunt"):
+                prof = lerp(0.4, 1.0, smoothstep(0.0, 0.32, u)) * (1.0 - 0.36 * u * u)
+            else:
+                prof = math.sin(math.pi * (0.07 + 0.91 * u)) ** 0.6 * (1.0 - 0.22 * u)
             ln = P["lmax"] * prof * rnd.uniform(0.93, 1.05)
             th = math.radians(lerp(P["th0"], P["th1"], u) + rnd.uniform(-4, 4) * (2 if kind == "frond_dry" else 1))
             w = P["wmax"] * (0.62 + 0.38 * prof) * rnd.uniform(0.9, 1.08)
@@ -614,9 +618,16 @@ def _frond_model(kind):
 
             flat_leaf(g, (b[0], b[1], 0.0), D, ln, w, col, st=6, fold=0.3, bend=-side * 0.06 * rnd.uniform(0.5, 1.5),
                       z0=0.02 + 0.08 * u, zdrop=0.06 * ln, shape=shape_lance)
-    # frond tip: a last pair of small leaflets fused into a point
-    for side in (-1, 1):
-        flat_leaf(g, (0.0, y1 - 0.02, 0.06), (side * 0.25, 1.0), 0.09, 0.035, lambda s, sd: cm, st=2, fold=0.2)
+    # frond tip: a last pair of leaflets fused into a point (a broad fan on the oil-palm frond)
+    if P.get("blunt"):
+        for side, ang, ln in ((-1, 16, 0.3), (1, 16, 0.3), (-1, 6, 0.33), (1, 5, 0.34)):
+            th = math.radians(ang)
+            flat_leaf(g, (side * 0.008, y1 - 0.01, 0.1), (side * math.sin(th), math.cos(th)), ln, 0.13,
+                      lambda s, sd: cscale(cmix(cm, ct, s), 1.0 if sd == 0 else 0.92), st=6, fold=0.3,
+                      bend=-side * 0.05, zdrop=0.02, shape=shape_lance)
+    else:
+        for side in (-1, 1):
+            flat_leaf(g, (0.0, y1 - 0.02, 0.06), (side * 0.25, 1.0), 0.09, 0.035, lambda s, sd: cm, st=2, fold=0.2)
     o = g.obj("_frond_tex", [m])
     return o
 
@@ -1129,22 +1140,24 @@ ATLAS = {"cluster": (0.0, 0.5, 0.5, 1.0), "sprig": (0.5, 0.5, 1.0, 1.0),
 HALVES = {"left": (0.0, 0.0, 0.5, 1.0), "right": (0.5, 0.0, 1.0, 1.0)}
 
 
-def arc_points(base, phi, elev, droop, L, segs, yaw_drift=0.0):
-    """Centre line of an arching leaf: starts at `elev` degrees, bends down by `droop` degrees."""
+def arc_points(base, phi, elev, droop, L, segs, yaw_drift=0.0, pw=1.4):
+    """Centre line of an arching leaf: starts at `elev` degrees, bends down by `droop` degrees
+    (droop * t**pw: a larger pw keeps the leaf rising longer and bends it down near the tip)."""
     pts = [Vector(base)]
     ds = L / segs
     for i in range(segs):
         t = (i + 0.5) / segs
-        a = math.radians(elev - droop * t ** 1.4)
+        a = math.radians(elev - droop * t ** pw)
         ph = phi + yaw_drift * t
         pts.append(pts[-1] + Vector((math.cos(ph) * math.cos(a), math.sin(ph) * math.cos(a), math.sin(a))) * ds)
     return pts
 
 
 def card_path(g, mi, pts, W, uv=(0.0, 0.0, 1.0, 1.0), prof=None, fold=(0.2, 0.3), across=5, twist=0.0,
-              col_fn=None, side_hint=None, margin=1.06, smooth=True):
+              col_fn=None, side_hint=None, margin=1.06, smooth=True, vmap=None):
     """Textured card strip along `pts` (texture v0 at pts[0]), Λ-folded: the edges hang below the
-    midrib by hw*(fold0*|s| + fold1*s^2).  prof(t) trims the width to the texture's opaque extent."""
+    midrib by hw*(fold0*|s| + fold1*s^2).  prof(t) trims the width to the texture's opaque extent.
+    vmap(t) -> texture t (e.g. stretch the bare petiole over the first part of the card)."""
     n = len(pts) - 1
     offs = (-1.0, -0.5, 0.0, 0.5, 1.0) if across == 5 else (-1.0, 0.0, 1.0)
     u0, v0, u1, v1 = uv
@@ -1152,6 +1165,7 @@ def card_path(g, mi, pts, W, uv=(0.0, 0.0, 1.0, 1.0), prof=None, fold=(0.2, 0.3)
     rows = []
     for i, p in enumerate(pts):
         t = i / n
+        tv = vmap(t) if vmap else t
         T = (pts[min(i + 1, n)] - pts[max(i - 1, 0)]).normalized()
         S = T.cross(UP)
         if S.length < 0.25:
@@ -1162,14 +1176,14 @@ def card_path(g, mi, pts, W, uv=(0.0, 0.0, 1.0, 1.0), prof=None, fold=(0.2, 0.3)
         if twist:
             R = Matrix.Rotation(math.radians(twist) * t, 3, T)
             S, N = R @ S, R @ N
-        rt = max(0.03, min(1.0, (prof(t) if prof else 1.0) * margin))
+        rt = max(0.03, min(1.0, (prof(tv) if prof else 1.0) * margin))
         hw = 0.5 * W * rt
         row = []
         for s in offs:
             a = abs(s)
             q = p + S * s * hw - N * hw * (fold[0] * a + fold[1] * a * a)
             c = col_fn(t, s) if col_fn else (1.0, 1.0, 1.0)
-            row.append((g.vert(q, c), (lerp(u0, u1, 0.5 + 0.5 * s * rt), lerp(v0, v1, t)), N))
+            row.append((g.vert(q, c), (lerp(u0, u1, 0.5 + 0.5 * s * rt), lerp(v0, v1, tv)), N))
         rows.append(row)
     for i in range(n):
         for j in range(len(offs) - 1):
@@ -1247,7 +1261,7 @@ def palm_trunk(g, mi, H, r, rnd, boots, boot, rings, sides=12, z0=0.3, z1=None, 
     """Tapered trunk core + phyllotactic spiral of cut frond bases ("boots").  Colours: dark core,
     mid boot sides, light fresh cut faces, some moss; darker under the crown."""
     def shade(z):
-        return lerp(1.0, 0.72, smoothstep(H - 1.1, H, z)) if crown_dark else 1.0
+        return lerp(1.0, 0.8, smoothstep(H - 1.1, H, z)) if crown_dark else 1.0
 
     rows = []
     for j in range(rings + 1):
@@ -1257,7 +1271,7 @@ def palm_trunk(g, mi, H, r, rnd, boots, boot, rings, sides=12, z0=0.3, z1=None, 
         for i in range(sides):
             a = 2 * math.pi * i / sides + j * 0.3
             jr = rr * rnd.uniform(0.95, 1.05)
-            row.append(g.vert((jr * math.cos(a), jr * math.sin(a), z), grey((0.5 + 0.08 * rnd.random()) * shade(z))))
+            row.append(g.vert((jr * math.cos(a), jr * math.sin(a), z), grey((0.66 + 0.08 * rnd.random()) * shade(z))))
         rows.append(row)
     for j in range(rings):
         for i in range(sides):
@@ -1265,7 +1279,7 @@ def palm_trunk(g, mi, H, r, rnd, boots, boot, rings, sides=12, z0=0.3, z1=None, 
             c, d = rows[j + 1][(i + 1) % sides], rows[j + 1][i]
             mid = (g.v[a] + g.v[c]) * 0.5
             g.face((a, b, c, d), mi, ref=Vector((mid.x, mid.y, 0)), smooth=True)
-    top = g.vert((0, 0, H + r * 0.7), grey(0.3))
+    top = g.vert((0, 0, H + r * 0.7), grey(0.55))
     for i in range(sides):
         g.face((rows[-1][i], rows[-1][(i + 1) % sides], top), mi, ref=UP, smooth=True)
     L0, Wb, Tb = boot
@@ -1289,10 +1303,10 @@ def palm_trunk(g, mi, H, r, rnd, boots, boot, rings, sides=12, z0=0.3, z1=None, 
         cut = ln * 0.32
         sh = shade(z)
         mossy = rnd.random() < moss
-        tint = (0.7, 0.86, 0.48) if mossy else (1.0, 1.0, 1.0)
-        c_base = cscale(cmul(tint, grey(0.6)), sh)
-        c_top = cscale(cmul(tint, grey(0.86)), sh)
-        c_keel = cscale(grey(0.7), sh)
+        tint = (0.74, 0.88, 0.56) if mossy else (1.0, 1.0, 1.0)
+        c_base = cscale(cmul(tint, grey(0.72)), sh)
+        c_top = cscale(cmul(tint, grey(0.92)), sh)
+        c_keel = cscale(grey(0.8), sh)
         base = [C + Tg * wb * 0.5 + Rn * tb * 0.4, C - Tg * wb * 0.5 + Rn * tb * 0.4, C - Rn * tb]
         end = [E - D * cut + Tg * we * 0.5 + Rn * te * 0.4, E - D * cut - Tg * we * 0.5 + Rn * te * 0.4, E - Rn * te]
         bi = [g.vert(base[0], c_base), g.vert(base[1], c_base), g.vert(base[2], c_base)]
@@ -1307,97 +1321,134 @@ def palm_trunk(g, mi, H, r, rnd, boots, boot, rings, sides=12, z0=0.3, z1=None, 
         g.face(ci, mi, ref=D + Rn)
 
 
-def fruit_bunch(name, center, axis, length, rnd, mats, parent=None, n=24, sides=5, core_sub=1, dark=0.6):
-    """Oil-palm fresh fruit bunch (TBS): ovoid dark core packed with pointed fruitlets (orange
-    bodies, near-black tips), apex along +axis.  mats = (M_Fruit, M_FruitDark)."""
+FRUIT_TINTS = (  # vertex-colour multipliers on M_Fruit (#ec6c30); every channel stays >= 0.5
+    (1.0, 1.0, 1.0),      # ripe orange
+    (0.93, 0.86, 0.84),   # orange-red
+    (0.84, 0.62, 0.6),    # red (#d4502a-ish)
+)
+
+
+def fruit_bunch(name, center, axis, length, rnd, mats, parent=None, n=20, sides=5, dark=0.3, width=0.4):
+    """Oil-palm fresh fruit bunch (TBS): an ovoid core packed with plump fruitlets that taper into
+    short spikes.  Bright orange-red (M_Fruit x vertex tint >= 0.5); only the spike tips of ~`dark`
+    of the fruitlets are near-black (M_FruitDark).  Apex (narrow end) along +axis.
+    mats = (M_Fruit, M_FruitDark)."""
     g = Geo()
     ax = Vector(axis).normalized()
     R = ax.to_track_quat("Z", "Y").to_matrix()
     C = Vector(center)
-    a_, b_ = length * 0.5, length * 0.4
+    a_, b_ = length * 0.5, length * width
 
     def surf(c):
-        egg = 1.0 - 0.12 * c.z
+        egg = 1.0 - 0.14 * c.z
         return Vector((c.x * b_ * egg, c.y * b_ * egg, c.z * a_))
 
-    verts, faces = ico_data(core_sub)
+    # core: every fruitlet base is buried in it (no loose parts)
+    verts, faces = ico_data(1)
     base = len(g.v)
     for co in verts:
         nn = co.normalized()
-        g.vert(C + R @ (surf(nn) * 0.8), grey(0.32 + 0.12 * max(0.0, nn.z)))
+        g.vert(C + R @ (surf(nn) * 0.86), (0.6, 0.52, 0.5))
     for f in faces:
         ctr = sum((verts[i] for i in f), Vector()) / 3
         g.face([base + i for i in f], 0, ref=R @ ctr, smooth=True)
     for k in range(n):
-        zc = lerp(0.93, -0.72, (k + 0.5) / n) + rnd.uniform(-0.03, 0.03)
+        zc = lerp(0.9, -0.84, (k + 0.5) / n) + rnd.uniform(-0.03, 0.03)
         ang = k * GOLDEN + rnd.uniform(-0.2, 0.2)
         rc = math.sqrt(max(0.0, 1 - zc * zc))
         c = Vector((rc * math.cos(ang), rc * math.sin(ang), zc))
-        p = surf(c) * 0.84
-        egg = 1.0 - 0.12 * c.z
+        p = surf(c) * 0.8
+        egg = 1.0 - 0.14 * c.z
         nrm = Vector((c.x / (b_ * egg), c.y / (b_ * egg), c.z / a_)).normalized()
         apex = Vector((0, 0, 1)) - nrm * nrm.z
         apex = apex.normalized() if apex.length > 1e-3 else Vector((1, 0, 0))
-        tilt = math.radians(rnd.uniform(28, 48) * (0.4 + 0.6 * rc))
+        tilt = math.radians(rnd.uniform(22, 40) * (0.4 + 0.6 * rc))
         D = (nrm * math.cos(tilt) + apex * math.sin(tilt)).normalized()
-        sz = length * 0.27 * rnd.uniform(0.9, 1.1) * (0.72 + 0.28 * rc)
-        rw = sz * 0.42
+        sz = length * 0.3 * rnd.uniform(0.9, 1.1) * (0.74 + 0.26 * rc)
+        rw = sz * 0.5
         U = D.cross(Vector((0.31, 0.83, 0.47))).normalized()
         V = D.cross(U)
-        br = (rnd.uniform(0.55, 0.75) if rnd.random() < 0.25 else rnd.uniform(0.86, 1.0)) * lerp(0.88, 1.0, (zc + 0.8) / 1.75)
+        tint = FRUIT_TINTS[0 if rnd.random() < 0.45 else (1 if rnd.random() < 0.6 else 2)]
+        lit = lerp(0.9, 1.0, (zc + 0.85) / 1.75)  # a touch darker towards the stalk end
+        body = cscale(tint, lit)
+        foot = cmul(body, (0.82, 0.8, 0.8))
         ph = rnd.uniform(0, 6.28)
-        r0 = [p - D * sz * 0.2 + (U * math.cos(q) + V * math.sin(q)) * rw * 0.85
-              for q in (ph + 2 * math.pi * s / sides for s in range(sides))]
-        capf = rnd.uniform(0.46, 0.54) if rnd.random() < dark else 0.62
-        r1 = [p + D * sz * capf + (U * math.cos(q) + V * math.sin(q)) * rw * 0.72
-              for q in (ph + 2 * math.pi * s / sides for s in range(sides))]
-        tip = p + D * sz * (capf + 0.2)
-        i0 = [g.vert(C + R @ q, grey(0.58 * br)) for q in r0]
-        i1 = [g.vert(C + R @ q, grey(1.0 * br)) for q in r1]
-        i1d = [g.vert(C + R @ q, grey(0.9)) for q in r1]
-        it = g.vert(C + R @ tip, grey(1.0))
+        ring = lambda f, r: [p + D * sz * f + (U * math.cos(q) + V * math.sin(q)) * rw * r
+                             for q in (ph + 2 * math.pi * s_ / sides for s_ in range(sides))]
+        rA, rB = ring(-0.25, 0.8), ring(0.36, 1.0)
+        iA = [g.vert(C + R @ q, foot) for q in rA]
+        iB = [g.vert(C + R @ q, body) for q in rB]
+        P = C + R @ p
+        for s_ in range(sides):
+            q = (iA[s_], iA[(s_ + 1) % sides], iB[(s_ + 1) % sides], iB[s_])
+            g.face(q, 0, ref=sum((g.v[x] for x in q), Vector()) / 4 - P, smooth=True)
         Dw = R @ D
-        for s in range(sides):
-            q = (i0[s], i0[(s + 1) % sides], i1[(s + 1) % sides], i1[s])
-            mid = sum((g.v[x] for x in q), Vector()) / 4
-            g.face(q, 0, ref=mid - (C + R @ p), smooth=True)
-            tri = (i1d[s], i1d[(s + 1) % sides], it)
-            mid = (g.v[i1d[s]] + g.v[i1d[(s + 1) % sides]]) * 0.5
-            g.face(tri, 1, ref=mid - (C + R @ p) + Dw * 0.3, smooth=True)
+        if rnd.random() < dark:
+            # plump body -> short near-black spike tip
+            rC = ring(0.66, 0.5)
+            iC = [g.vert(C + R @ q, cmul(body, (0.9, 0.85, 0.85))) for q in rC]
+            iCd = [g.vert(C + R @ q, (1.0, 1.0, 1.0)) for q in rC]
+            it = g.vert(C + R @ (p + D * sz * 0.92), (1.0, 1.0, 1.0))
+            for s_ in range(sides):
+                q = (iB[s_], iB[(s_ + 1) % sides], iC[(s_ + 1) % sides], iC[s_])
+                g.face(q, 0, ref=sum((g.v[x] for x in q), Vector()) / 4 - P + Dw * 0.2, smooth=True)
+                tri = (iCd[s_], iCd[(s_ + 1) % sides], it)
+                g.face(tri, 1, ref=(g.v[iCd[s_]] + g.v[iCd[(s_ + 1) % sides]]) * 0.5 - P + Dw * 0.3, smooth=True)
+        else:
+            # plump body tapering into an orange spike, a little redder at the point
+            it = g.vert(C + R @ (p + D * sz * 0.86), cmul(body, (0.8, 0.62, 0.62)))
+            for s_ in range(sides):
+                tri = (iB[s_], iB[(s_ + 1) % sides], it)
+                g.face(tri, 0, ref=(g.v[iB[s_]] + g.v[iB[(s_ + 1) % sides]]) * 0.5 - P + Dw * 0.3, smooth=True)
     return g.obj(name, list(mats), parent)
 
 
+def M_fruit():
+    return vmat("M_Fruit", "#ec6c30", rough=0.42, spec=0.5), vmat("M_FruitDark", "#3a1f18", rough=0.4, spec=0.5)
+
+
 PALMS = {
-    # tiers: fronds from the youngest (top) down; el / droop in degrees, zr = attach depth below the crown top.
-    # sawit_3 matches the target: ~2.6 m trunk, crown ~5.2 m across, ~4.6 m tall.
+    # tiers: fronds from the youngest (top) down; el / droop in degrees, zr = attach depth below the crown top,
+    # pw = how late the frond bends down (see arc_points).  pet = bare petiole share of the frond.
+    # sawit_3 matches the target: ~3.4 m rough trunk with the bunches hanging on it under an arching umbrella
+    # crown (~5 m across, ~5.2 m tall); lower fronds rise first and droop, tips stay >= ~2.4 m up.
     "sawit_1": dict(H=0.25, r=0.11, wr=0.56, boots=5, boot=(0.14, 0.12, 0.06), rings=2, spear=0.5, segs=6, fruits=0,
-                    epi=0, crown_r=0.05, ao=0.6,
-                    tiers=[dict(n=11, el=(80, 22), droop=(10, 50), zr=(-0.1, 0.25), L=(0.8, 1.3))]),
+                    epi=0, crown_r=0.05, ao=0.6, pet=0.12,
+                    tiers=[dict(n=11, el=(80, 30), droop=(20, 60), zr=(-0.1, 0.2), L=(0.8, 1.3), pw=1.6)]),
     "sawit_2": dict(H=0.9, r=0.2, wr=0.58, boots=20, boot=(0.26, 0.2, 0.09), rings=3, spear=0.8, segs=7, fruits=0,
-                    epi=1, crown_r=0.12, ao=0.55,
-                    tiers=[dict(n=7, el=(76, 56), droop=(16, 28), zr=(-0.1, 0.08), L=(1.3, 1.75)),
-                           dict(n=9, el=(32, 2), droop=(30, 48), zr=(0.2, 0.36), L=(1.85, 2.1))]),
-    "sawit_3": dict(H=2.6, r=0.29, wr=0.6, boots=52, boot=(0.38, 0.28, 0.13), rings=6, spear=1.05, segs=8,
-                    fruits=5, epi=3, crown_r=0.22, ao=0.5, fruit=0.7,
-                    tiers=[dict(n=9, el=(76, 54), droop=(16, 30), zr=(-0.12, 0.1), L=(1.9, 2.5)),
-                           dict(n=11, el=(30, 2), droop=(30, 46), zr=(0.32, 0.55), L=(2.55, 2.8))]),
+                    epi=1, crown_r=0.12, ao=0.58, pet=0.16,
+                    tiers=[dict(n=7, el=(78, 58), droop=(20, 40), zr=(-0.1, 0.08), L=(1.3, 1.75), pw=1.5),
+                           dict(n=9, el=(44, 26), droop=(58, 72), zr=(0.14, 0.26), L=(1.8, 2.05), pw=1.7)]),
+    "sawit_3": dict(H=3.4, r=0.28, wr=0.6, boots=54, boot=(0.38, 0.28, 0.13), rings=7, spear=1.1, segs=7,
+                    fruits=6, epi=2, crown_r=0.22, ao=0.55, fruit=(0.8, 0.9), pet=0.2,
+                    tiers=[dict(n=8, el=(80, 62), droop=(26, 52), zr=(-0.12, 0.04), L=(2.0, 2.35), pw=1.4),
+                           dict(n=8, el=(50, 38), droop=(62, 78), zr=(0.06, 0.15), L=(2.4, 2.6), pw=1.7),
+                           dict(n=4, el=(34, 28), droop=(72, 84), zr=(0.17, 0.22), L=(2.15, 2.3), pw=1.8)]),
 }
+
+
+def petiole_map(p):
+    """card t -> texture t: the first `p` of the card shows the bare petiole (texture 0..0.12)."""
+    def f(t):
+        return t / p * 0.12 if t < p else 0.12 + (t - p) / (1.0 - p) * 0.88
+    return f
 
 
 def build_palm(name, P, seed=3):
     rnd = random.Random(seed)
     root = empty(name)
     mf = M_frond()
-    mt = vmat("M_Trunk", "#9d7c52")
+    mt = vmat("M_Trunk", "#8f714c")
     prof = alpha_profile("frond")
     H, r = P["H"], P["r"]
     tg = Geo()
     palm_trunk(tg, 0, H, r, rnd, P["boots"], P["boot"], P["rings"], z0=min(0.3, H * 0.3), crown_dark=H > 0.8)
     trunk = tg.obj(name + "_trunk", [mt])
-    bake_ao([trunk], distance=0.6, floor=0.55)
+    bake_ao([trunk], distance=0.6, floor=0.62)
     g = Geo()
     top = H + 0.05
     N = sum(T["n"] for T in P["tiers"])
+    vm = petiole_map(P["pet"])
     i = 0
     for T in P["tiers"]:
         for k in range(T["n"]):
@@ -1405,16 +1456,16 @@ def build_palm(name, P, seed=3):
             age = i / max(1, N - 1)  # 0 youngest (upright, top) -> 1 oldest (spreading, drooping)
             phi = i * GOLDEN + rnd.uniform(-0.12, 0.12)
             i += 1
-            el = lerp(T["el"][0], T["el"][1], f) + rnd.uniform(-5, 5)
+            el = lerp(T["el"][0], T["el"][1], f) + rnd.uniform(-4, 4)
             dr = lerp(T["droop"][0], T["droop"][1], f) + rnd.uniform(-5, 5)
             L = lerp(T["L"][0], T["L"][1], f) * rnd.uniform(0.95, 1.04)
             zb = top - lerp(T["zr"][0], T["zr"][1], f)
             rb = P["crown_r"] * (0.35 + 0.65 * age)
             base = Vector((rb * math.cos(phi), rb * math.sin(phi), zb))
-            pts = arc_points(base, phi, el, dr, L, P["segs"], yaw_drift=rnd.uniform(-0.15, 0.15))
-            tint = (1.0, 1.0, 0.88) if age < 0.18 else ((0.97, 0.92, 0.7) if age > 0.88 else (1.0, 1.0, 1.0))
-            card_path(g, 0, pts, L * P["wr"], prof=prof, fold=(lerp(0.5, 0.22, age), lerp(0.3, 0.5, age)),
-                      across=5, twist=rnd.uniform(-14, 14),
+            pts = arc_points(base, phi, el, dr, L, P["segs"], yaw_drift=rnd.uniform(-0.15, 0.15), pw=T.get("pw", 1.4))
+            tint = (1.0, 1.0, 0.88) if age < 0.18 else ((0.97, 0.93, 0.74) if age > 0.9 else (1.0, 1.0, 1.0))
+            card_path(g, 0, pts, L * P["wr"], prof=prof, fold=(lerp(0.45, 0.25, age), lerp(0.3, 0.6, age)),
+                      across=5, twist=rnd.uniform(-12, 12), vmap=vm,
                       col_fn=lambda t, s, tint=tint: cscale(tint, plant_ao(t, s, lo=P["ao"], reach=0.42)),
                       side_hint=Vector((math.sin(phi), -math.cos(phi), 0.0)))
     for k, (sp, el) in enumerate(((P["spear"], 87), (P["spear"] * 0.72, 74))):
@@ -1424,7 +1475,7 @@ def build_palm(name, P, seed=3):
                   col_fn=lambda t, s: cscale((1.0, 1.0, 0.85), plant_ao(t, s, lo=0.6, reach=0.5)),
                   side_hint=Vector((math.sin(phi), -math.cos(phi), 0.0)))
     for k in range(P["epi"]):  # small ferny epiphytes on the trunk
-        z = lerp(0.9, H - 0.7, (k + 0.5) / max(1, P["epi"])) + rnd.uniform(-0.2, 0.2)
+        z = lerp(0.9, H - 1.0, (k + 0.5) / max(1, P["epi"])) + rnd.uniform(-0.2, 0.2)
         a = rnd.uniform(0, 6.28)
         for j in range(3):
             aa = a + (j - 1) * 0.6
@@ -1437,16 +1488,19 @@ def build_palm(name, P, seed=3):
     body.parent = root
     if P["fruits"]:
         fr = empty("Fruits", parent=root)
-        m_fruit = vmat("M_Fruit", "#f0762e", rough=0.45, spec=0.5)
-        m_dark = vmat("M_FruitDark", "#3a1f18", rough=0.4, spec=0.5)
+        mats = M_fruit()
+        nf = P["fruits"]
         k0 = rnd.uniform(0, 6.28)
-        for k in range(P["fruits"]):
-            a = k0 + (k + 0.5) * (2 * math.pi / P["fruits"]) + rnd.uniform(-0.25, 0.25)
-            z = H - 0.18 + rnd.uniform(-0.06, 0.05)
-            rr = trunk_radius(z, H, r) + 0.27
-            c = (rr * math.cos(a), rr * math.sin(a), z)
-            axis = Vector((math.cos(a) * 0.9, math.sin(a) * 0.9, 0.45))
-            fruit_bunch(f"Fruit_{k}", c, axis, P["fruit"] * rnd.uniform(0.93, 1.06), rnd, (m_fruit, m_dark), fr)
+        for k in range(nf):
+            a = k0 + (k + 0.5) * (2 * math.pi / nf) + rnd.uniform(-0.18, 0.18)
+            ln = rnd.uniform(*P["fruit"])
+            # hanging on the trunk below the crown: upper / lower alternate, axis mostly down and out
+            z = H - 0.52 - 0.2 * (k % 2) + rnd.uniform(-0.05, 0.05)
+            rr = trunk_radius(z, H, r) + ln * 0.4 * 0.62
+            out = Vector((math.cos(a), math.sin(a), 0.0))
+            c = out * rr + UP * z
+            axis = out * rnd.uniform(0.38, 0.5) - UP * 0.9
+            fruit_bunch(f"Fruit_{k}", c, axis, ln, rnd, mats, fr, n=20)
     return root
 
 
@@ -1504,29 +1558,21 @@ def build_sawit_0():
 
 
 def build_tbs():
-    """A harvested bunch lying on the ground, stalk stub, a few loose fruitlets (brondolan)."""
+    """A harvested bunch (carried by the player and dropped on the ground): one solid piece, stalk stub.
+    No loose fruitlets - the model is also carried, so everything must stay attached."""
     rnd = random.Random(21)
     root = empty("tbs")
-    m_fruit = vmat("M_Fruit", "#f0762e", rough=0.45, spec=0.5)
-    m_dark = vmat("M_FruitDark", "#3a1f18", rough=0.4, spec=0.5)
+    m_fruit, m_dark = M_fruit()
     m_stalk = vmat("M_Stalk", "#a88a55")
     L = 0.5
     axis = Vector((1.0, 0.15, 0.25))
-    body = fruit_bunch("tbs_bunch", (0, 0, 0), axis, L, rnd, (m_fruit, m_dark), None, n=34, sides=5)
+    body = fruit_bunch("tbs_bunch", (0, 0, 0), axis, L, rnd, (m_fruit, m_dark), None, n=30, sides=5, width=0.42)
     g = Geo()
     ax = axis.normalized()
-    p0 = -ax * (L * 0.36)
-    tube(g, [p0, p0 - ax * 0.14, p0 - ax * 0.2 + Vector((0, 0, -0.02))], [0.05, 0.042, 0.035], 6, 0, cap_top=True,
+    p0 = -ax * (L * 0.3)
+    tube(g, [p0, p0 - ax * 0.16, p0 - ax * 0.24 + Vector((0, 0, -0.02))], [0.055, 0.045, 0.036], 6, 0, cap_top=True,
          col_fn=lambda j, i, q: grey(0.75 + 0.1 * j))
-    for k, (x, y) in enumerate(((0.08, -0.3), (-0.16, -0.26), (0.25, 0.22))):
-        c = (0.07, 0.1, 0.035)
-        verts, faces = ico_data(1)
-        base = len(g.v)
-        for co in verts:
-            g.vert(Vector((x, y, 0.03)) + Vector((co.x * 0.04, co.y * 0.033, co.z * 0.03)), grey(0.85))
-        for f in faces:
-            g.face([base + i for i in f], 1 + (k == 1), ref=sum((verts[i] for i in f), Vector()), smooth=True)
-    extra = g.obj("tbs_extra", [m_stalk, m_fruit, m_dark])
+    extra = g.obj("tbs_extra", [m_stalk])
     o = join([body, extra], "tbs_mesh")
     bpy.context.view_layer.update()
     zmin = min(v.co.z for v in o.data.vertices)
@@ -2328,23 +2374,54 @@ def build_stump():
 
 
 # ============================================================ preview / export / checks
+COL_FLOOR = 0.46   # contract: vertex colour never darker than ~0.45 (the game multiplies albedo by it)
+CARD_LIFT = 0.015  # leaf-card vertices stay this far above the ground plane (no z-fighting with terrain)
+
+
+def soft_floor(c, lo=COL_FLOOR, knee=0.62):
+    """Monotonic soft floor: values above `knee` untouched, below it squeezed into [lo, knee]."""
+    if c >= knee:
+        return c
+    t = max(0.0, c) / knee
+    return lo + (knee - lo) * t * t
+
+
 def finalize(root):
-    """Cull back faces on closed (non-leaf) materials and make sure nothing dips below z=0."""
+    """Cull back faces on closed (non-leaf) materials, soft-floor every vertex colour at ~0.45 and
+    lift leaf-card vertices to >= 1.5 cm above the ground.  Solid parts (rocks, logs, stumps) may
+    sink below z=0 so they sit into uneven terrain."""
     for o in all_descendants(root):
         if o.type != "MESH":
             continue
+        me = o.data
+        card_mat = []
         for slot in o.material_slots:
             m = slot.material
-            if m is not None and not m.get("double_sided", False):
+            dbl = m is not None and bool(m.get("double_sided", False))
+            card_mat.append(dbl)
+            if m is not None and not dbl:
                 m.use_backface_culling = True
+        card_v = set()
+        for pg in me.polygons:
+            if card_mat and card_mat[min(pg.material_index, len(card_mat) - 1)]:
+                card_v.update(pg.vertices)
         mw = o.matrix_world
         inv = mw.inverted()
-        for v in o.data.vertices:
+        for vi in card_v:
+            v = me.vertices[vi]
             w = mw @ v.co
-            if w.z < 0.0:
-                w.z = 0.0
+            if w.z < CARD_LIFT:
+                w.z = CARD_LIFT
                 v.co = inv @ w
-        o.data.update()
+        if "Col" in me.color_attributes:
+            attr = me.color_attributes["Col"]
+            cols = [0.0] * (len(attr.data) * 4)
+            attr.data.foreach_get("color", cols)
+            for i in range(0, len(cols), 4):
+                for c in range(3):
+                    cols[i + c] = soft_floor(cols[i + c])
+            attr.data.foreach_set("color", cols)
+        me.update()
 
 
 def _game_lights():
@@ -2512,6 +2589,7 @@ def _place(src, loc, rot_z=0.0, scale=1.0):
         return c
     r = dup(src, None)
     r.location = loc
+    r.rotation_mode = "XYZ"  # glTF imports use quaternions: rotation_euler alone would be ignored
     r.rotation_euler = (0.0, 0.0, rot_z)
     r.scale = (scale, scale, scale)
     return r
