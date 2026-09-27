@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://coj8ht1iq4ayo"
-path="res://.godot/imported/world_shade.png-4d69be4415f381384747f2681a1a67ed.ctex"
+uid="uid://sbnkwj4x37vi"
+path="res://.godot/imported/flowers.png-7f5d4ebf48db843cf0e2ad3031d673da.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/textures/world_shade.png"
-dest_files=["res://.godot/imported/world_shade.png-4d69be4415f381384747f2681a1a67ed.ctex"]
+source_file="res://assets/textures/foliage/flowers.png"
+dest_files=["res://.godot/imported/flowers.png-7f5d4ebf48db843cf0e2ad3031d673da.ctex"]
 
 [params]
 
@@ -31,10 +31,10 @@ process/channel_remap/red=0
 process/channel_remap/green=1
 process/channel_remap/blue=2
 process/channel_remap/alpha=3
-process/fix_alpha_border=false
+process/fix_alpha_border=true
 process/premult_alpha=false
 process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=0
+detect_3d/compress_to=1
