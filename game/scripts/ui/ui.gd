@@ -923,6 +923,18 @@ func _center_modal() -> void:
 			modal.set_meta("presented", true)
 			_stage_owner = modal
 			shown = true
+	elif side:
+		# phone held upright: the shopkeeper leans in above the card's top edge
+		var ph := clampf(vp.y * 0.22, 200.0, 380.0)
+		var aspect := float(side.get_width()) / float(side.get_height())
+		var pw := minf(ph * aspect, modal.size.x * 0.55)
+		ph = pw / aspect
+		var top := modal.position.y - ph + 24.0
+		if top >= 150.0:
+			portrait_stage.present(str(modal.get_meta("portrait_key")), side, true, Rect2(modal.position.x + 14.0, top, pw, ph), not modal.has_meta("presented"))
+			modal.set_meta("presented", true)
+			_stage_owner = modal
+			shown = true
 	if badge:
 		badge.visible = not shown
 	if not shown and _stage_owner == modal:

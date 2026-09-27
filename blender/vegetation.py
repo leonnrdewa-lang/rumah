@@ -1254,7 +1254,7 @@ def palm_trunk(g, mi, H, r, rnd, boots, boot, rings, sides=12, z0=0.3, z1=None, 
         for i in range(sides):
             a = 2 * math.pi * i / sides + j * 0.3
             jr = rr * rnd.uniform(0.95, 1.05)
-            row.append(g.vert((jr * math.cos(a), jr * math.sin(a), z), grey((0.36 + 0.08 * rnd.random()) * shade(z))))
+            row.append(g.vert((jr * math.cos(a), jr * math.sin(a), z), grey((0.5 + 0.08 * rnd.random()) * shade(z))))
         rows.append(row)
     for j in range(rings):
         for i in range(sides):
@@ -1287,9 +1287,9 @@ def palm_trunk(g, mi, H, r, rnd, boots, boot, rings, sides=12, z0=0.3, z1=None, 
         sh = shade(z)
         mossy = rnd.random() < moss
         tint = (0.7, 0.86, 0.48) if mossy else (1.0, 1.0, 1.0)
-        c_base = cscale(cmul(tint, grey(0.5)), sh)
-        c_top = cscale(cmul(tint, grey(0.82)), sh)
-        c_keel = cscale(grey(0.62), sh)
+        c_base = cscale(cmul(tint, grey(0.6)), sh)
+        c_top = cscale(cmul(tint, grey(0.86)), sh)
+        c_keel = cscale(grey(0.7), sh)
         base = [C + Tg * wb * 0.5 + Rn * tb * 0.4, C - Tg * wb * 0.5 + Rn * tb * 0.4, C - Rn * tb]
         end = [E - D * cut + Tg * we * 0.5 + Rn * te * 0.4, E - D * cut - Tg * we * 0.5 + Rn * te * 0.4, E - Rn * te]
         bi = [g.vert(base[0], c_base), g.vert(base[1], c_base), g.vert(base[2], c_base)]
@@ -1391,7 +1391,7 @@ def build_palm(name, P, seed=3):
     tg = Geo()
     palm_trunk(tg, 0, H, r, rnd, P["boots"], P["boot"], P["rings"], z0=min(0.3, H * 0.3), crown_dark=H > 0.8)
     trunk = tg.obj(name + "_trunk", [mt])
-    bake_ao([trunk], distance=0.7)
+    bake_ao([trunk], distance=0.6, floor=0.55)
     g = Geo()
     top = H + 0.05
     N = sum(T["n"] for T in P["tiers"])
@@ -1709,7 +1709,7 @@ def build_bush_b():
     return build_bush("bush_b", 47, blobs, sprigs=6, clusters=100, broad=3)
 
 
-def grass_cards(g, mi, rnd, n, w, h, rects, center=(0.0, 0.0), spread=0.06, lean=0.08, lo=0.55):
+def grass_cards(g, mi, rnd, n, w, h, rects, center=(0.0, 0.0), spread=0.06, lean=0.08, lo=0.68):
     for k in range(n):
         rect, asp = rects[k % len(rects)]
         yaw = k * math.pi / n + rnd.uniform(-0.25, 0.25)
@@ -1720,7 +1720,7 @@ def grass_cards(g, mi, rnd, n, w, h, rects, center=(0.0, 0.0), spread=0.06, lean
                    col_fn=lambda t: grey(lerp(lo, 1.0, smoothstep(0.0, 0.7, t))))
 
 
-def build_grass(name, seed, n, h, half, wmul=1.0, spread=0.06, lo=0.55):
+def build_grass(name, seed, n, h, half, wmul=1.0, spread=0.06, lo=0.68):
     rnd = random.Random(seed)
     root = empty(name)
     g = Geo()
@@ -1939,7 +1939,7 @@ def build_tree_big():
             n = Vector((math.cos(a) * math.cos(e), math.sin(a) * math.cos(e), math.sin(e)))
             p = Vector((x, y, z)) + Vector((n.x * r * sx, n.y * r * sy, n.z * r * sz)) * rnd.uniform(0.9, 1.0)
             p += n * 0.22
-            v = lerp(0.55, 1.0, 0.5 + 0.5 * n.z) * lerp(0.8, 1.0, smoothstep(3.0, ztop, p.z))
+            v = lerp(0.5, 0.9, 0.5 + 0.5 * n.z) * lerp(0.8, 1.0, smoothstep(3.0, ztop, p.z))
             quad_card(g, 0, p, n + UP * 0.25, rnd.uniform(0.9, 1.25), ATLAS["cluster"], spin=rnd.uniform(0, 6.28),
                       col=grey(v), flat=True)
     leaves = g.obj("tree_canopy", [M_leaf("M_Canopy")])
@@ -2467,7 +2467,7 @@ asset("shrub_b", build_shrub_b)
 asset("bush_a", build_bush_a)
 asset("bush_b", build_bush_b)
 asset("grass_a", lambda: build_grass("grass_a", 71, 5, 0.42, "left", spread=0.08))
-asset("grass_b", lambda: build_grass("grass_b", 72, 6, 0.7, "right", spread=0.1, lo=0.5))
+asset("grass_b", lambda: build_grass("grass_b", 72, 6, 0.7, "right", spread=0.1, lo=0.62))
 asset("grass_tuft", lambda: build_grass("grass_tuft", 73, 3, 0.3, "left", spread=0.04))
 asset("flowers", lambda: build_flowers("flowers", 81, ("left", "right"), n=4, h=0.4))
 asset("flowers_white", lambda: build_flowers("flowers_white", 82, ("left",), n=3, h=0.42))
@@ -2625,6 +2625,29 @@ def scene_test(spacing=6.4, tag="veg_scene", dist=16.0, target=(0.5, 1.0, 0.0)):
     print(f"[scene] {out}")
 
 
+MANIFEST = {
+    # material -> texture in game/assets/textures/foliage (all alpha-tested at 0.5, glTF alphaMode MASK)
+    "M_Frond": ("frond", True, "palm frond: sways above ~1 m"),
+    "M_FrondDry": ("frond_dry", True, "dead frond lying on the ground: no sway"),
+    "M_CocoFrond": ("frond_coco", True, "coconut frond"),
+    "M_Fern": ("fern", True, "fern frond, low"),
+    "M_Leaf": ("leaves", True, "broad leaves (keladi, shrub_b, vine_log ivy)"),
+    "M_Bush": ("leaves", True, "bushes / shrub_a: leaf-cluster cards + leafy core"),
+    "M_Canopy": ("leaves", True, "tree_big canopy (core blobs + cluster cards)"),
+    "M_Grass": ("grass", True, "grass clump cards"),
+    "M_Flower": ("flowers", True, "flower clump cards"),
+    "M_Piringan": ("piringan", False, "flat ground decal (single-sided), keep above terrain"),
+}
+
+
+def write_manifest():
+    import json
+    out = {m: {"texture": f"res://assets/textures/foliage/{t}.png", "alpha_scissor": 0.5, "double_sided": d, "note": n}
+           for m, (t, d, n) in MANIFEST.items()}
+    with open(os.path.join(TEX_DIR, "materials.json"), "w") as f:
+        json.dump(out, f, indent=1)
+
+
 # ============================================================ entry point
 def main(argv):
     force_all = "textures" in argv
@@ -2638,6 +2661,7 @@ def main(argv):
             raise SystemExit(f"unknown asset {n!r}; choose from {list(ASSETS)}")
     for t in TEXTURES:
         ensure_texture(t, force=force_all or t in tex_force)
+    write_manifest()
     if not argv:
         names = list(ASSETS)
     for n in names:

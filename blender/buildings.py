@@ -1275,7 +1275,7 @@ def build_truck():
     name = "truck"
     root = empty(name)
     M = dict(paint=mat("M_Paint", "#efeadf"), dark=mat("M_Dark", "#3a3431"), win=mat("M_Window", "#a9c9d2", 0.4),
-             wood=mat("M_Wood", "#8f6b45"), fruit=mat("M_Fruit", "#dc5a2c"))
+             wood=mat("M_Wood", "#8f6b45"), fruit=mat("M_Fruit", "#d9542a"))
     P = []
     W = 1.78
     # chassis rails, bumpers, fuel tank, mud flaps

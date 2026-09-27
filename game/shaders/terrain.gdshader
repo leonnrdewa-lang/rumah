@@ -80,7 +80,7 @@ void fragment() {
 		g = sat(g, tex_saturation) * grass_tint;
 		// shady olive <-> sunny yellow-green macro variation
 		float t = smoothstep(0.22, 0.8, tone + (n2.b - 0.5) * 0.35);
-		g *= mix(vec3(0.78, 0.84, 0.74), vec3(1.12, 1.08, 0.94), t);
+		g *= mix(vec3(0.62, 0.76, 0.6), vec3(1.14, 1.08, 0.9), t);
 	} else {
 		g = mix(grass_dark, grass_mid, smoothstep(0.22, 0.48, tone + (n2.g - 0.5) * 0.2));
 		g = mix(g, grass_light, smoothstep(0.58, 0.82, tone + (n2.b - 0.5) * 0.35));

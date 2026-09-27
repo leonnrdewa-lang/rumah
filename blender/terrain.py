@@ -467,9 +467,9 @@ for d in decor:
         splat(litter, d["pos"][0], d["pos"][2], 1.8 * d.get("scale", 1.0), 0.9)
     elif d["model"] == "sawit_wild":
         splat(litter, d["pos"][0], d["pos"][2], 1.2 * d.get("scale", 1.0), 0.7)
-UG_SHADE = {"shrub_a": (0.55, 0.45), "shrub_b": (0.55, 0.45), "keladi": (0.4, 0.35), "fern_a": (0.4, 0.3),
-            "fern_b": (0.4, 0.3), "vine_log": (0.6, 0.35), "pile_fronds": (0.6, 0.35), "grass_a": (0.25, 0.12),
-            "grass_b": (0.25, 0.12), "frond_fallen": (0.5, 0.15), "rock_a": (0.3, 0.25),
+UG_SHADE = {"shrub_a": (0.6, 0.6), "shrub_b": (0.6, 0.6), "keladi": (0.45, 0.45), "fern_a": (0.45, 0.42),
+            "fern_b": (0.45, 0.42), "vine_log": (0.6, 0.4), "pile_fronds": (0.6, 0.4), "grass_a": (0.28, 0.18),
+            "grass_b": (0.28, 0.18), "frond_fallen": (0.5, 0.15), "rock_a": (0.3, 0.25),
             "flowers_white": (0.2, 0.08), "flowers_yellow": (0.2, 0.08)}
 for (m, x, z, sc) in ug_list:
     sg, am = UG_SHADE.get(m, (0.3, 0.1))

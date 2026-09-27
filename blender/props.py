@@ -530,11 +530,12 @@ def sack(name, m_body, m_band, loc=(0, 0, 0), rotz=0.0, L=0.74, W=0.48, T=0.2, l
     return o
 
 
-def bunch(name, mats, loc=(0, 0, 0), size=1.0, seed=0, rot=(0, 0, 0), nspk=10):
-    """Palm fruit bunch (TBS): bumpy red-orange ovoid, darker cap and dark-tipped spiky fruitlets.
-    mats = (red body, orange base, dark tips). ~95 tris. Origin at the bottom of the bunch."""
+def bunch(name, mats, loc=(0, 0, 0), size=1.0, seed=0, rot=(0, 0, 0), nspk=8):
+    """Palm fruit bunch (TBS) as in the target: an ovoid packed with round fruitlets - a checker of
+    orange / red fruitlet faces over a near-black core, bumped outward - with a few short dark spines.
+    mats = (red, orange, dark). ~104 tris. Origin at the bottom of the bunch."""
     rnd = random.Random(seed)
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=8, ring_count=5, radius=1.0)
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=8, ring_count=6, radius=1.0)
     o = C._active()
     o.name = name
     me = o.data
@@ -542,30 +543,48 @@ def bunch(name, mats, loc=(0, 0, 0), size=1.0, seed=0, rot=(0, 0, 0), nspk=10):
     shape = lambda d: Vector((d.x * rx * (1.0 - 0.2 * max(0.0, d.z)), d.y * rx * (1.0 - 0.2 * max(0.0, d.z)), d.z * rz))
     for v in me.vertices:
         d = v.co.normalized()
-        v.co = shape(d) * rnd.uniform(0.9, 1.1)
+        v.co = shape(d) * rnd.uniform(0.92, 1.08)
     me.update()
     for m in mats:
         me.materials.append(m)
+    segs = 8
     for p in me.polygons:
         cz = p.center.z / rz
-        p.material_index = 0 if cz > -0.3 else 1
+        ang = math.atan2(p.center.y, p.center.x)
+        ring = int((cz + 1.0) * 3.0)
+        seg = int(((ang + math.pi) / (2 * math.pi)) * segs) % segs
+        if (ring + seg) % 2 == 0:
+            p.material_index = 1 if cz < 0.15 else 0          # fruitlet: orange low, red high
+        else:
+            p.material_index = 2 if cz > -0.55 else 1          # dark gaps (orange at the stalk end)
+    # push the fruitlet faces out a little so they read as round bumps
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    for f in bm.faces:
+        if f.material_index != 2:
+            f.normal_update()
+            n = f.normal.copy()
+            for v in f.verts:
+                v.co += n * 0.012 * size
+    bm.to_mesh(me)
+    bm.free()
     shade_smooth(o)
     verts, faces = [], []
     for k in range(nspk):
-        zz = max(-0.6, min(0.85, 1 - (k + 0.5) / nspk * 1.5))
+        zz = max(-0.4, min(0.8, 0.8 - (k + 0.5) / nspk * 1.2))
         a = k * 2.39996 + rnd.uniform(-0.3, 0.3)
         rr = math.sqrt(max(0.0, 1 - zz * zz))
         d = Vector((rr * math.cos(a), rr * math.sin(a), zz))
-        c = shape(d) * 0.92
+        c = shape(d) * 0.95
         n = Vector((d.x / rx, d.y / rx, d.z / rz)).normalized()
         t1 = n.cross(Vector((0, 0, 1)) if abs(n.z) < 0.9 else Vector((1, 0, 0))).normalized()
         t2 = n.cross(t1)
-        w = 0.05 * size
+        w = 0.03 * size
         b0 = len(verts)
         for j in range(3):
             ang = j * 2 * math.pi / 3 + rnd.uniform(0, 1)
             verts.append(c + (t1 * math.cos(ang) + t2 * math.sin(ang)) * w)
-        verts.append(c + n * (0.065 * size + rnd.uniform(0, 0.02)))
+        verts.append(c + n * (0.05 * size + rnd.uniform(0, 0.015)))
         faces += [(b0, b0 + 1, b0 + 3), (b0 + 1, b0 + 2, b0 + 3), (b0 + 2, b0, b0 + 3)]
     sp = mesh_from_data(name + "_tips", verts, faces, mats[2])
     fix_normals(sp)
@@ -899,7 +918,7 @@ def build_tumpukan_tbs():
     """Pile of 6 palm fruit bunches (~1 m wide)."""
     name = "tumpukan_tbs"
     root = prop_root(name)
-    mats = (mat("M_Fruit", "fruit"), mat("M_FruitOrange", "fruit_orange"), mat("M_FruitDark", "fruit_dark"))
+    mats = (mat("M_Fruit", "#c43b1c"), mat("M_FruitOrange", "#e8702e"), mat("M_FruitDark", "#3a1f18"))
     P = []
     rnd = random.Random(5)
     spots = [(-0.3, -0.18, 0), (0.08, -0.26, 0), (0.36, 0.05, 0), (-0.22, 0.24, 0), (0.12, 0.2, 0.0),

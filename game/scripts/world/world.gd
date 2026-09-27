@@ -178,11 +178,11 @@ func _build_environment() -> void:
 	env.tonemap_mode = Environment.TONE_MAPPER_LINEAR
 	# soft painterly post: a subtle glow on highlights, a little more saturation/contrast
 	env.glow_enabled = true
-	env.glow_intensity = 0.22
+	env.glow_intensity = 0.3
 	env.glow_strength = 1.0
 	env.glow_bloom = 0.0
-	env.glow_hdr_threshold = 1.0
-	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_SCREEN
+	env.glow_hdr_threshold = 0.9
+	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_SOFTLIGHT
 	env.adjustment_enabled = true
 	env.adjustment_brightness = 1.0
 	env.adjustment_contrast = 1.05
