@@ -1,5 +1,5 @@
 """Flat UI glyphs for the HUD (coin stack, sun, leaf, eye, energy bolt, quest,
-menu, status, toast badges, phone) and the app icon, drawn with Pillow.
+menu, status, toast badges, tap, phone, warung) and the app icon, drawn with Pillow.
 
 Everything is drawn 8x supersampled and downscaled with premultiplied alpha,
 so edges stay crisp and free of dark fringes.
@@ -285,6 +285,46 @@ def phone(px=256):
     p.save("ui_phone")
 
 
+def warung(px=256):
+    """Fallback portrait for Mak Inah (no head render of her own): her stall,
+    a striped awning over a counter with a steaming glass of sweet tea."""
+    p = Pad(px)
+    p.badge((92, 158, 138, 255), ring=(58, 118, 100, 255), ring_w=0.035)
+    p.circle(0.5, 0.5, 0.4, (112, 176, 154, 255))
+    wood = (168, 108, 58, 255)
+    wood_dk = (120, 74, 40, 255)
+    red = (214, 88, 52, 255)
+    # posts, back wall with a dark serving hatch
+    p.rect(0.23, 0.36, 0.29, 0.8, wood_dk, r=0.015)
+    p.rect(0.71, 0.36, 0.77, 0.8, wood_dk, r=0.015)
+    p.rect(0.27, 0.42, 0.73, 0.7, CREAM, r=0.02)
+    p.rect(0.33, 0.47, 0.67, 0.62, (96, 62, 36, 255), r=0.02)
+    # jars of snacks in the hatch
+    for x in (0.4, 0.5, 0.6):
+        p.rect(x - 0.035, 0.52, x + 0.035, 0.61, (240, 214, 150, 255), r=0.015)
+        p.rect(x - 0.035, 0.505, x + 0.035, 0.53, red, r=0.01)
+    # counter
+    p.rect(0.19, 0.66, 0.81, 0.74, wood, r=0.02)
+    p.rect(0.19, 0.72, 0.81, 0.745, wood_dk, r=0.01)
+    # striped awning with a scalloped edge
+    x0, x1, y0, y1 = 0.17, 0.83, 0.25, 0.39
+    n = 6
+    for i in range(n):
+        a = x0 + (x1 - x0) * i / n
+        b = x0 + (x1 - x0) * (i + 1) / n
+        col = red if i % 2 == 0 else CREAM_HI
+        p.poly([(0.5 + (a - 0.5) * 0.86, y0), (0.5 + (b - 0.5) * 0.86, y0), (b, y1), (a, y1)], col)
+        p.circle((a + b) / 2, y1, (b - a) / 2, col)
+    p.rect(0.21, 0.22, 0.79, 0.265, wood_dk, r=0.02)
+    # glass of teh manis on the counter + steam
+    p.rect(0.605, 0.55, 0.705, 0.665, (250, 238, 214, 255), r=0.018)
+    p.rect(0.617, 0.58, 0.693, 0.655, (196, 110, 40, 255), r=0.012)
+    for sx in (0.635, 0.675):
+        pts = [(sx + 0.012 * math.sin(t * 0.9), 0.53 - t * 0.022) for t in range(6)]
+        p.line(pts, CREAM_HI, 0.018)
+    p.save("ui_warung")
+
+
 def app_icon(px=256):
     p = Pad(px)
     k = 1.0
@@ -313,6 +353,7 @@ if __name__ == "__main__":
     toast_badges()
     tap()
     phone()
+    warung()
     if "--app-icon" in sys.argv:  # app_icon.png is shared with the web build; only on request
         app_icon()
     print("ok")

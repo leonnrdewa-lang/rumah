@@ -397,6 +397,12 @@ func _run() -> void:
 			await wait(0.2)
 			print("released vec=", world.player.touch_vec)
 		"perf":
+			for i in 30:
+				await get_tree().process_frame
+			print("perf at title: draw calls=%d objects=%d primitives=%d" % [
+				Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),
+				Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME),
+				Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)])
 			world.start_game(false)
 			world.ui.close()
 			for q in [true, false]:
@@ -493,6 +499,9 @@ func _run() -> void:
 			GS.hour = 20.5
 			tp(-17, 32.5, Vector3(0, 0, -1))
 			await shot("vis_night", 60)
+			# the mill's steam must not glow at night
+			tp(49, -3, Vector3(0, 0, -1))
+			await shot("vis_night_pabrik", 30)
 			GS.hour = 8.5
 			world.set_quality(false)
 			tp(-17, 32.5, Vector3(0, 0, -1))
@@ -503,15 +512,15 @@ func _run() -> void:
 			world.start_game(false)
 			world.ui.close()
 			world.ui.visible = false
-			for pd in [[42.0, 16.5, 1.6], [45.0, 16.5, 1.6], [47.0, 17.0, 1.4], [52.0, 17.0, 0.0]]:
+			for pd in [[45.0, 16.5, 1.6], [45.0, 16.5, 2.2], [46.0, 17.5, 2.0], [44.0, 17.0, 2.4]]:
 				world.cam_pitch = pd[0]
 				world.cam_distance = pd[1]
 				world.cam_lead = pd[2]
 				GS.hour = 8.5
 				tp(-17.4, 25.4, Vector3(-0.5, 0, -1).normalized())
-				await shot("pitch_%d_%d" % [pd[0], pd[1] * 10], 12)
-				tp(-3.5, 37.5, Vector3(0, 0, -1))
-				await shot("spawn_%d_%d" % [pd[0], pd[1] * 10], 12)
+				await shot("pitch_%d_%d_%d" % [pd[0], pd[1] * 10, pd[2] * 10], 12)
+				tp(-17, 28, Vector3(0, 0, -1))
+				await shot("parcel_%d_%d_%d" % [pd[0], pd[1] * 10, pd[2] * 10], 12)
 			world.ui.visible = true
 		"measure":
 			# UI-free frames + key-colour masks for scripted comparisons with the target

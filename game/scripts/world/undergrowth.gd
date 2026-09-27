@@ -9,14 +9,17 @@ extends Node3D
 ## view's ground footprint leaves the area built last time, the cells around it are
 ## concatenated into the MultiMesh buffers again (a few native array appends, ~every
 ## 3 m of walking). Compared with 16 m chunks, which drew ~3000 m2 of plants for the
-## ~600 m2 of ground on screen, this draws ~4x fewer instances with ~15 draw calls
-## instead of ~70, which pays for a much denser carpet.
+## ~600 m2 of ground on screen, this draws ~4x fewer instances (measured at the busiest
+## spot: 28 draw calls with shadows instead of 68), which pays for a ~2x denser carpet.
 ##
 ## Instances are shuffled inside each cell so the "Hemat baterai" quality can simply
 ## take the first part of every cell.
 const CELL := 4.0
 const STRIDE := 16          # floats per instance: 3x4 transform + colour
 const MARGIN := 3.0         # built area = view footprint + this (m)
+## a camera higher than this (the title fly-over, 25 m up) sees ~3x the gameplay ground
+## area with every plant a few pixels big: it gets a third of every cell
+const FAR_HEIGHT := 21.0
 ## v1 models used when a v2 asset has not been exported (model, scale factor)
 const FALLBACK := {
 	"grass_a": ["grass_tuft", 1.2], "grass_b": ["grass_tuft", 1.5], "flowers_white": ["flowers", 1.0],
@@ -38,6 +41,7 @@ var density := 1.0
 var _cells: Array[Dictionary] = []    # per MultiMesh: Vector2i -> PackedFloat32Array
 var _built := Rect2()
 var _dirty := true
+var _far := false
 static var _proc_meshes := {}
 
 
@@ -138,6 +142,10 @@ func _process(_delta: float) -> void:
 	var cam := get_viewport().get_camera_3d()
 	if cam == null or not is_visible_in_tree():
 		return
+	var far := cam.global_position.y > FAR_HEIGHT
+	if far != _far:
+		_far = far
+		_dirty = true
 	var fp := _footprint(cam)
 	if _dirty or not _built.encloses(fp):
 		_rebuild(fp.grow(MARGIN))
@@ -171,6 +179,7 @@ func _rebuild(area: Rect2) -> void:
 	var c0 := Vector2i(floori(area.position.x / CELL), floori(area.position.y / CELL))
 	var c1 := Vector2i(floori(area.end.x / CELL), floori(area.end.y / CELL))
 	var aabb := AABB(Vector3(area.position.x, -2.0, area.position.y), Vector3(area.size.x, 7.0, area.size.y))
+	var dens := density * (0.35 if _far else 1.0)
 	for m in mmis.size():
 		var cells: Dictionary = _cells[m]
 		var out := PackedFloat32Array()
@@ -180,11 +189,11 @@ func _rebuild(area: Rect2) -> void:
 				if not cells.has(key):
 					continue
 				var arr: PackedFloat32Array = cells[key]
-				if density >= 0.999:
+				if dens >= 0.999:
 					out.append_array(arr)
 				else:
 					var cnt := arr.size() / STRIDE
-					out.append_array(arr.slice(0, int(ceil(cnt * density)) * STRIDE))
+					out.append_array(arr.slice(0, int(ceil(cnt * dens)) * STRIDE))
 		var n := out.size() / STRIDE
 		var mm := mmis[m].multimesh
 		# grow-only capacity: no GPU buffer reallocation while walking around

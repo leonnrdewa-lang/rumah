@@ -5,9 +5,11 @@ extends Node
 ## Scenarios: dialogs (HUD, villager dialog with 4+ choices, speaker change,
 ## shop menus, morning report, pause, status), touch (shorter, touch layout),
 ## quick (dialog layouts only), title, layers / layers_touch (lean modal
-## layering check on low graphics, ~20 s: run at 1280x720, 915x412, 720x1280;
+## layering check on low graphics, ~30 s: run at 1280x720, 915x412, 720x1280;
 ## drop stand-in PNGs into assets/portraits/ of a test copy to see the
-## half-body layout). Quits when done.
+## half-body layout). Each layers shot also prints a line with the modal's
+## rect, the HUD pieces left on screen and whether the toasts overlap any
+## visible HUD piece or card ("overlap=none" is the pass). Quits when done.
 
 var ui: Node
 var scenario := "dialogs"
@@ -172,6 +174,47 @@ func snap(name: String) -> void:
 	img.save_png("%s/%02d_%s.png" % [shots_dir, _i, name])
 	_i += 1
 	print("[shot] %s %s t=%.1fs fps=%d modal=%s" % [name, img.get_size(), Time.get_ticks_msec() / 1000.0, Engine.get_frames_per_second(), ui.modal.name if ui.modal else "-"])
+	_report()
+
+
+func _report() -> void:
+	## Layout facts for the shot: modal rect, which HUD pieces are shown, and
+	## whether the toast column stays inside its slot (clear of the meters).
+	var shown := []
+	for n in ["TopLeft", "TopRight", "Minimap", "Prompts", "Inventory"]:
+		var c: Control = ui.hud.get_node(n)
+		if c.visible and c.modulate.a > 0.5:
+			shown.append(n)
+	var line := "   hud=%s" % ",".join(shown)
+	if ui.modal:
+		var r := Rect2(ui.modal.position, ui.modal.size)
+		if ui.modal.has_meta("self_layout"):
+			r = Rect2(ui.modal.panel.position, ui.modal.panel.size)
+			if ui.prompt_pill.visible:
+				line += " hint='%s'" % ui.prompt_label.text
+		line += " panel=(%d,%d %dx%d)" % [r.position.x, r.position.y, r.size.x, r.size.y]
+	# toasts: the union of the shown pills must stay clear of the visible
+	# top HUD pieces (checked against their real rects, 8 px margin)
+	var pills := Rect2()
+	var n := 0
+	for t in ui.toast_box.get_children():
+		if t.is_queued_for_deletion() or not t.visible:
+			continue
+		var pr := Rect2(t.global_position, t.size)
+		pills = pr if n == 0 else pills.merge(pr)
+		n += 1
+	if n > 0:
+		var hits := []
+		for c in ui._hud_top():
+			if c.visible and c.modulate.a > 0.5 and Rect2(c.position, c.size).grow(8.0).intersects(pills):
+				hits.append(c.name)
+		if ui.modal and not ui.modal.has_meta("self_layout") and Rect2(ui.modal.position, ui.modal.size).intersects(pills):
+			hits.append("card")
+		var tr: Control = ui.hud.get_node("TopRight")
+		line += " toasts=%d pills=(%d,%d %dx%d) right=%d slot=(%d..%d) TopRight.x=%d overlap=%s" % [
+			n, pills.position.x, pills.position.y, pills.size.x, pills.size.y, pills.end.x,
+			ui._toast_rect().position.x, ui._toast_rect().end.x, tr.position.x, ",".join(hits) if hits else "none"]
+	print(line)
 
 
 func _layers() -> void:
@@ -216,11 +259,26 @@ func _layers() -> void:
 	await settle(0.9)
 	await snap("say_player")
 	ui.close()
+	ui.dialog("portrait_kakek", "Kakek Darman", "Nak, jangan lupa mampir. Kopi di rumah masih ada.",
+		[{"text": "Nanti saya mampir, Kek"}, {"text": "Kopinya kopi sachet?", "hint": "energi +12"}, {"text": "Pamit"}])
+	await settle(1.2)
+	await snap("three_choices")
+	ui.close()
 	await settle(0.3)
 	w.deals.open_toko()
 	await settle(0.5)
 	await snap("shop_koperasi")
+	# a toast raised inside a card, then a fresh one after it closed: both must
+	# come back to the HUD slot (they used to stay card-wide over the meters)
+	ui.toast("Uangmu kurang!", "bad")
+	await settle(0.3)
+	await snap("toast_in_card")
 	ui.close()
+	await settle(0.5)
+	await snap("toast_after_card")
+	ui.toast("Misi selesai: Jual TBS ke Pabrik (+Rp 100.000)", "quest")
+	await settle(0.5)
+	await snap("toast_fresh")
 	w.deals.open_warung()
 	await settle(0.5)
 	await snap("shop_warung")

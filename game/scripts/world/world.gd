@@ -12,9 +12,9 @@ const AMBIENT_SCRIPT := preload("res://scripts/world/ambient_life.gd")
 const SHADE_TEX_PATH := "res://assets/textures/world_shade.png"
 const GROUND_DIR := "res://assets/textures/ground/"
 const GROUND_TEX := ["grass", "grass_dry", "dirt", "sand", "mulch"]
-## Day light, tuned against the target at 08:30 (sunlit ground V ~0.77 H ~57, cast
-## shadows ~0.55x): a warm sun from the upper left and a green-teal sky/foliage bounce,
-## so sunlit ground reads warm yellow-green and shade olive-teal
+## Day light, tuned against the target at 08:30 (sunlit lawn V ~0.75 hue ~65, dirt V
+## ~0.88, cast shadows ~0.65x as bright): a warm sun from the upper left and a green-teal
+## sky/foliage bounce, so sunlit ground reads warm yellow-green and shade olive-teal
 const SUN_DAY := Color(1.0, 0.93, 0.74)
 const SUN_ENERGY := 1.25
 const AMBIENT_DAY := Color("a8ccb8")
@@ -83,7 +83,7 @@ var night_k := 0.0   # 0 = day, 1 = night (read by ambient_life.gd)
 ## lead they left the top edge).
 var cam_distance := 16.5
 var cam_pitch := 45.0
-var cam_lead := 1.6
+var cam_lead := 2.0
 ## extra look-ahead in the walking direction (s of travel): about cancels the follow lag,
 ## so the scene ahead of a walking player is in view
 const CAM_MOVE_LEAD := 0.3

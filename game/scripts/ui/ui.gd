@@ -74,6 +74,7 @@ var _paused := false
 var _on_modal_close: Callable
 var _prompt_ok := false
 var _prompt_cache := ""
+var _prompt_args := ["", false]  ## last set_prompt(text, ok) from the world
 var _icons := {}
 var _art_cache := {}
 var _tile_cache := {}
@@ -84,6 +85,7 @@ var _bar_tweens := {}
 var _dialog_key := ""
 var _toast_home := Rect2()
 const TOAST_BAND := 66.0  ## room kept above tall cards for a toast
+const TOAST_PAD := 70.0   ## toast pill width minus its text (badge, gap, margins)
 var _layout_sig := ""
 
 
@@ -191,10 +193,8 @@ func _make_theme() -> Theme:
 	th.set_stylebox("pressed", "ChoiceButton", cp)
 	th.set_stylebox("hover_pressed", "ChoiceButton", cp)
 	th.set_stylebox("disabled", "ChoiceButton", cd)
-	var cf := _box(Color(0, 0, 0, 0), 30, ACCENT, 3)
-	cf.draw_center = false
-	cf.set_expand_margin_all(2)
-	th.set_stylebox("focus", "ChoiceButton", cf)
+	# no focus ring: the selected pill gets an orange dot + warm fill instead
+	th.set_stylebox("focus", "ChoiceButton", StyleBoxEmpty.new())
 	# panels: cream cards with a tan outline and a soft shadow
 	var panel_box := _box(CREAM, 26, LINE, 3, true)
 	panel_box.shadow_size = 16
@@ -413,7 +413,13 @@ func _opaque_edges(img: Image) -> bool:
 func portrait_fallback(portrait: String, key: String) -> Texture2D:
 	## The 3D head render (icons/portrait_<key>.png) or the given icon. Head
 	## renders are tagged "bust" so the badge lets the head pop out on top.
-	var names := ["ui_phone"] if key == "hq" else ["portrait_" + key, portrait]
+	## Speakers without a render of their own get a glyph badge (the phone for
+	## HQ, the stall for Mak Inah) rather than somebody else's face.
+	var names := ["portrait_" + key, portrait]
+	if key == "hq":
+		names = ["ui_phone"]
+	elif key == "mak":
+		names = ["portrait_mak", "ui_warung"]
 	for n in names:
 		var t := icon(n)
 		if t:
@@ -594,9 +600,10 @@ func _layout() -> void:
 	# toasts: top-centre gap between the pill clusters, else below them
 	var gap_l := 16.0 + row1_w + 14.0
 	var gap_r := tr_pos.x - 14.0
-	var tw := minf(560.0, gap_r - gap_l)
+	var tw := floorf(minf(560.0, gap_r - gap_l))
 	if tr_y <= 14.0 and tw >= 360.0:
-		_toast_home = Rect2(roundf((gap_l + gap_r) * 0.5 - tw * 0.5), 14, tw, 0)
+		# floored: the slot never pokes past gap_r by a rounding half-pixel
+		_toast_home = Rect2(floorf((gap_l + gap_r - tw) * 0.5), 14, tw, 0)
 	else:
 		tw = minf(560.0, vp.x - 32.0)
 		var below := maxf(14.0 + tl.get_combined_minimum_size().y, tr_pos.y + trs.y) + 12.0
@@ -608,23 +615,41 @@ func _layout() -> void:
 	_sync_hud()
 
 
-func _place_toasts() -> void:
-	## Toasts sit in the HUD's top gap; while a card modal has cleared the HUD
-	## they move to the top edge, into the band _center_modal keeps free.
-	var vp := root.get_viewport_rect().size
-	var r := _toast_home
+func _toast_rect() -> Rect2:
+	## Where toasts go right now: the HUD's top gap, or the top edge while a
+	## card modal has cleared the HUD (into the band _center_modal keeps free).
 	if modal != null and not modal.has_meta("self_layout"):
+		var vp := root.get_viewport_rect().size
 		var tw := minf(560.0, vp.x - 32.0)
-		r = Rect2(roundf(vp.x * 0.5 - tw * 0.5), 8, tw, 0)
+		return Rect2(roundf(vp.x * 0.5 - tw * 0.5), 8, tw, 0)
+	return _toast_home
+
+
+func _toast_text_w(l: Label, slot_w: float) -> float:
+	## Short messages get a compact pill, long ones wrap at the slot width.
+	return clampf(float(l.get_meta("natural_w", slot_w)), minf(160.0, slot_w - TOAST_PAD), slot_w - TOAST_PAD)
+
+
+func _place_toasts() -> void:
+	var r := _toast_rect()
 	if r.size.x <= 0.0:
 		return
-	toast_box.position = r.position
-	toast_box.custom_minimum_size = Vector2(r.size.x, 0)
-	toast_box.size = Vector2(r.size.x, 0)
+	# rows first: a Control never shrinks below its children, so setting the
+	# box width before the labels left it stuck at the wider card-mode width
 	for t in toast_box.get_children():
 		var l: Label = t.find_child("Text", true, false)
 		if l:
-			l.custom_minimum_size.x = r.size.x - 70.0
+			l.custom_minimum_size.x = _toast_text_w(l, r.size.x)
+	toast_box.custom_minimum_size = Vector2(r.size.x, 0)
+	toast_box.position = r.position
+	toast_box.size = Vector2(r.size.x, 0)
+	# above a tall card only the newest toasts that fit in the band are shown
+	var live := toast_box.get_children().filter(func(t): return not t.is_queued_for_deletion())
+	var room := live.size()
+	if modal != null and not modal.has_meta("self_layout"):
+		room = maxi(1, int((modal.position.y - r.position.y) / 48.0))
+	for i in live.size():
+		live[i].visible = i >= live.size() - room
 
 
 func _place_prompt(vp: Vector2) -> void:
@@ -655,9 +680,12 @@ func _place_prompt(vp: Vector2) -> void:
 # Every HUD piece has a "home" position (set by _layout) and a hide amount k
 # (0 shown .. 1 hidden). Hidden pieces slide off the nearest screen edge and
 # fade, so dialogs / menus never sit on top of pills, the minimap or the
-# hotbar: card modals (menus, reports, pause) clear the whole HUD; dialogs
-# clear the bottom HUD and whatever top piece their panel / portrait would
-# touch (at 1280x720 none: the target keeps the top pills visible).
+# hotbar: card modals (menus, reports, pause) clear the whole HUD (shop menus
+# show the wallet themselves); dialogs clear only the pieces their panel /
+# portrait would touch. On keyboard screens the dialog keeps to the gap
+# between the key hint and the hotbar when it can (dialog_band), so at
+# 1280x720 the whole HUD stays, as in the target; on touch screens the bottom
+# HUD (joystick, action button, hotbar) always makes way.
 func _place(p: Control, home: Vector2) -> void:
 	p.set_meta("home", home)
 	_apply_hud(p)
@@ -720,16 +748,19 @@ func _sync_hud() -> void:
 	var dialog_open := modal != null and modal.has_meta("self_layout")
 	var card := modal != null and not dialog_open
 	var blocked: Array = modal.occupied_rects() if dialog_open and modal.has_method("occupied_rects") else []
-	for p in _hud_top():
+	var prompts: Control = hud.get_node("Prompts")
+	for p in _hud_top() + [prompts, hotbar]:
 		var hide := card
 		if dialog_open:
-			var r := Rect2(_home(p), p.size).grow(10.0)
-			for b in blocked:
-				if r.intersects(b):
-					hide = true
+			if _touch_mode and (p == prompts or p == hotbar):
+				hide = true  # the thumb area: the dialog takes the taps
+			else:
+				var r := Rect2(_home(p), p.size).grow(10.0)
+				for b in blocked:
+					if r.intersects(b):
+						hide = true
 		_hud_hide(p, hide)
-	for p in [hud.get_node("Prompts"), hotbar, touch]:
-		_hud_hide(p, modal != null)
+	_hud_hide(touch, modal != null)
 	if modal != null:
 		tool_tip.visible = false
 	_place_toasts()
@@ -763,6 +794,10 @@ func _refresh_hud() -> void:
 			money_label.add_theme_color_override("font_color", Color("3f7f2a") if GS.money > _last_money else RED)
 			tw.tween_callback(func(): money_label.add_theme_color_override("font_color", BROWN))
 	_last_money = GS.money
+	if modal and modal.has_meta("money_label"):
+		var wl = modal.get_meta("money_label")
+		if is_instance_valid(wl):
+			wl.text = money_label.text
 	clock_label.text = _clock_text()
 	var e: float = GS.energy / GS.max_energy * 100.0
 	_set_bar(energy_bar, e)
@@ -835,28 +870,59 @@ func _context_kind(text: String, ok: bool) -> String:
 
 
 func set_prompt(text: String, ok: bool) -> void:
-	_prompt_ok = ok
+	_prompt_args = [text, ok]
 	var blocking := is_blocking()
-	var cache := "%s|%s|%s|%s" % [text, ok, blocking, _touch_mode]
+	var hint := _modal_hint()
+	var cache := ("hint|" + hint) if hint != "" else "%s|%s|%s|%s" % [text, ok, blocking, _touch_mode]
+	_prompt_ok = ok or hint != ""
 	if cache == _prompt_cache:
 		return
 	_prompt_cache = cache
 	var kind := _context_kind(text, ok) if not blocking else ""
 	hotbar.set_active(kind)
-	if text == "" or blocking:
+	if action_label:
+		action_label.text = _short_verb(text) if ok and not blocking else ""
+		var slot_icon := ""
+		if kind != "":
+			for sl in Hotbar.SLOTS:
+				if sl["kind"] == kind:
+					slot_icon = sl["icon"]
+		action_icon.texture = icon(slot_icon) if slot_icon != "" else null
+		action_label.position.y = 66.0 if action_icon.texture else 0.0
+		action_label.size.y = 44.0 if action_icon.texture else 124.0
+		action_btn.modulate.a = 1.0 if ok and not blocking and text != "" else 0.45
+	if hint != "":
+		# keyboard dialogs keep a key hint bottom-left, like the target's
+		# prompt pills beside its dialog: E picks the highlighted choice
+		_show_key_prompt(hint, "", true)
+	elif text == "" or blocking:
 		prompt_pill.visible = false
-		if action_label:
-			action_label.text = ""
-			action_icon.texture = null
-			action_btn.modulate.a = 0.45
 		return
+	else:
+		# E key on keyboards, a tapping finger on touch screens (the round action
+		# button bottom-right), an info dot when the action is not possible yet
+		_show_key_prompt(text, "" if ok and not _touch_mode else ("ui_tap" if ok else "ui_info"), ok)
+	var pop := prompt_pill.create_tween()
+	prompt_pill.pivot_offset = Vector2(0, prompt_pill.size.y * 0.5)
+	prompt_pill.scale = Vector2(0.94, 0.94)
+	pop.tween_property(prompt_pill, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	call_deferred("_place_prompt", root.get_viewport_rect().size)
+
+
+func _modal_hint() -> String:
+	## Key hint for the open dialog (keyboard screens only), else "".
+	if _touch_mode or modal == null or not modal.has_meta("self_layout") or modal.is_queued_for_deletion():
+		return ""
+	return "Lanjut" if modal.choices.size() <= 1 else "Pilih"
+
+
+func _show_key_prompt(text: String, glyph: String, ok: bool) -> void:
+	## Fills the prompt pill: key badge ("E", or a glyph icon: ui_tap / ui_info)
+	## + label.
 	prompt_pill.visible = true
 	prompt_label.text = text
 	var kb: PanelContainer = prompt_pill.find_child("KeyBadge", true, false)
 	var kic: TextureRect = kb.get_node("Icon")
-	# E key on keyboards, a tapping finger on touch screens (the round action
-	# button bottom-right), an info dot when the action is not possible yet
-	var glyph := "" if ok and not _touch_mode else ("ui_tap" if ok else "ui_info")
 	prompt_key.text = "E"
 	prompt_key.visible = glyph == ""
 	kic.texture = icon(glyph) if glyph != "" else null
@@ -871,22 +937,19 @@ func set_prompt(text: String, ok: bool) -> void:
 	kb.visible = true
 	prompt_label.add_theme_color_override("font_color", BROWN if ok else BROWN_SOFT)
 	prompt_pill.modulate.a = 1.0 if ok else 0.92
-	if action_label:
-		action_label.text = _short_verb(text) if ok else ""
-		var slot_icon := ""
-		if kind != "":
-			for s in Hotbar.SLOTS:
-				if s["kind"] == kind:
-					slot_icon = s["icon"]
-		action_icon.texture = icon(slot_icon) if slot_icon != "" else null
-		action_label.position.y = 66.0 if action_icon.texture else 0.0
-		action_label.size.y = 44.0 if action_icon.texture else 124.0
-		action_btn.modulate.a = 1.0 if ok else 0.45
-	var pop := prompt_pill.create_tween()
-	prompt_pill.pivot_offset = Vector2(0, prompt_pill.size.y * 0.5)
-	prompt_pill.scale = Vector2(0.94, 0.94)
-	pop.tween_property(prompt_pill, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	call_deferred("_place_prompt", root.get_viewport_rect().size)
+
+
+func dialog_band(vp: Vector2) -> Vector2:
+	## Free x-range [from, to] along the bottom edge between the key hint
+	## (bottom-left) and the hotbar (bottom-right) on keyboard screens: a dialog
+	## inside it leaves both in view, as in the target. Zero on touch screens.
+	if _touch_mode:
+		return Vector2.ZERO
+	var prompts: Control = hud.get_node("Prompts")
+	var l := 16.0
+	if prompt_pill.visible and prompts.size.x > 0.0:
+		l = _home(prompts).x + prompts.size.x + 14.0
+	return Vector2(l, _home(hotbar).x - 14.0)
 
 
 func _short_verb(text: String) -> String:
@@ -896,7 +959,7 @@ func _short_verb(text: String) -> String:
 
 func _show_tool_tip(id: String) -> void:
 	var d: Dictionary = hotbar.slot_def(id)
-	if d.is_empty():
+	if d.is_empty() or modal != null:
 		return
 	Sfx.play("click", 1.2, -10.0)
 	var l: Label = tool_tip.get_child(0)
@@ -943,10 +1006,15 @@ func toast(text: String, kind := "info") -> void:
 	var l := _label(text, 19, BROWN)
 	l.name = "Text"
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	l.custom_minimum_size = Vector2(maxf(200.0, toast_box.size.x - 70.0), 0)
+	# sized from the slot toasts go to now (never from toast_box.size, which
+	# only grows)
+	l.set_meta("natural_w", ceilf(_font_semi.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 19).x) + 2.0)
+	l.custom_minimum_size = Vector2(_toast_text_w(l, _toast_rect().size.x), 0)
 	l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	var p := _pill(_hrow([_icon_rect(ic, 32), l], 10), col, 6, 18)
+	p.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	toast_box.add_child(p)
+	_place_toasts()
 	if kind == "quest":
 		Sfx.play("quest")
 	p.modulate.a = 0.0
@@ -987,6 +1055,9 @@ func _open_modal(panel: Control, dim := true, on_close := Callable()) -> void:
 	root.move_child(toast_box, -1)
 	if panel.has_meta("self_layout"):
 		_stage_owner = panel
+		_prompt_cache = ""
+		set_prompt(_prompt_args[0], _prompt_args[1])
+		_place_prompt(root.get_viewport_rect().size)
 		panel.relayout(root.get_viewport_rect().size)
 		panel.play_in()
 	else:
@@ -1081,6 +1152,7 @@ func _center_modal() -> void:
 	if not shown and _stage_owner == modal:
 		portrait_stage.hide_portrait()
 		_stage_owner = null
+	_place_toasts()
 
 
 func _close_modal() -> void:
@@ -1110,7 +1182,9 @@ func _after_close() -> void:
 	if modal == null:
 		_dialog_key = ""
 		_sync_hud()
+		# drop the dialog's key hint; the world refreshes its prompt next frame
 		_prompt_cache = ""
+		set_prompt(_prompt_args[0], _prompt_args[1])
 
 
 func close() -> void:
@@ -1260,14 +1334,34 @@ func menu(title: String, subtitle: String, items: Array, on_close := Callable(),
 	tcol.add_theme_constant_override("separation", 2)
 	tcol.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	tcol.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	tcol.add_child(_title_label(title))
 	var vp := root.get_viewport_rect().size
 	var list_w := minf(680.0, vp.x - 90.0)
+	# the HUD (money pill included) steps aside for menus, so every shop shows
+	# the wallet as a coin chip; a "Uang: ..." part of the subtitle would repeat it
+	var chip := _chip("ui_coins", GS.fmt_rp(GS.money))
+	chip.name = "Wallet"
+	chip.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	panel.set_meta("money_label", chip.find_child("Text", true, false))
+	var parts := PackedStringArray()
+	for part in subtitle.split(" • "):
+		if not part.strip_edges().begins_with("Uang:"):
+			parts.append(part)
+	subtitle = " • ".join(parts)
+	var title_row := _hrow([_title_label(title)], 12)
+	title_row.get_child(0).size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	tcol.add_child(title_row)
+	var wide := vp.x >= vp.y
+	if wide:
+		title_row.add_child(chip)
 	if subtitle != "":
 		var sl := _label(subtitle, 18, BROWN_SOFT)
 		sl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		sl.custom_minimum_size = Vector2(list_w - 100.0, 0)
 		tcol.add_child(sl)
+	if not wide:
+		# phones held upright: no room beside the title, the chip goes below
+		chip.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+		tcol.add_child(chip)
 	head.add_child(tcol)
 	col.add_child(head)
 	col.add_child(_divider())
@@ -1442,6 +1536,7 @@ func _fit_scroll_later(scroll: ScrollContainer, inner: Control, max_h: float) ->
 
 func _chip(icon_name: String, text: String, color := BROWN) -> Control:
 	var l := _label(text, 18, color, true)
+	l.name = "Text"
 	l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	var p := _pill(_hrow([_icon_rect(icon_name, 30), l], 8), CREAM_LIGHT, 4, 14)
 	return p

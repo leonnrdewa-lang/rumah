@@ -65,8 +65,8 @@ uniform float shade_depth = 0.45;
 // barely darkens the lawn and the shade pools under the thickets
 uniform float shade_lo = 0.12;
 uniform float shade_hi = 0.95;
-// warm tan roads like the target's (the dirt texture lights up rather yellow)
-uniform vec3 road_tint = vec3(0.965, 0.92, 1.18);
+// warm cream-tan roads like the target's (#dfc588: H 40, S 0.42, V 0.88 sunlit)
+uniform vec3 road_tint = vec3(0.87, 0.82, 0.97);
 uniform vec3 dry_tint = vec3(0.97, 0.92, 1.08);
 
 varying vec3 wpos;

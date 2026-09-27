@@ -120,7 +120,7 @@ func _flush_batch() -> void:
 			_garden(tv, lists)
 		else:
 			# the weeded circle grows with the palm: a small soft patch on a cleared tile or
-			# around a seedling (the v2 1.0-2.1 m brown discs read as stickers on the lawn),
+			# around a seedling (the v2 2.0-2.4 m brown discs read as stickers on the lawn),
 			# ~1.9 m across under a grown palm
 			var s: float = PIRINGAN_SCALE[0] if t["s"] == "empty" else PIRINGAN_SCALE[clampi(int(t["st"]), 0, 3) + 1]
 			_add(lists, "piringan", Transform3D(Basis(Vector3.UP, tv._yaw).scaled(Vector3(s, 1.0, s)), tv.position + Vector3(0, 0.015, 0)), Color.WHITE)

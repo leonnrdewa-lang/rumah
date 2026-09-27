@@ -116,7 +116,7 @@ CDN is unreachable from this container, the job ids/URLs are recorded in
   colour (AO), keep the see-through hole around the player.
 * Camera ~45° pitch, ~16 m distance, FOV ~35.
   **Chosen (polish round, `world.gd`): 45° pitch, 16.5 m, FOV 35 (≈19 m of ground
-  across 16:9 at the player).** The look point sits 1.6 m up-screen (north) of the
+  across 16:9 at the player).** The look point sits 2 m up-screen (north) of the
   player, plus ~0.3 s of walking look-ahead, so the player stands a little below the
   centre and the crowns of the palms just behind them stay in frame. Portrait phones
   pull back (distance × (2 − aspect), FOV up to 42°: ~8.5 m across at 9:19.5). The

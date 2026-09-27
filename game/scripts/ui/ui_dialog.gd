@@ -1,9 +1,13 @@
 extends Control
 ## Dialog box (built by ui.gd:dialog), laid out like the target screenshot
-## (art/reference/07_target_gameplay.png): a compact cream panel at the bottom
-## centre; top row = round portrait badge + speech bubble (speaker name on
-## top, the line types out below, a small tail points at the speaker); below,
-## the choices as rounded pills with dark dot bullets in a 2-column grid.
+## (art/reference/07_target_gameplay.png): a compact cream panel at the bottom;
+## top row = round portrait badge + speech bubble (speaker name on top, the
+## line types out below, a small tail points at the speaker); below, the
+## choices as rounded pills with dark dot bullets in 2 columns (an odd last
+## pill spans both; a lone "Lanjut" sits beside the bubble).
+## On keyboard screens the panel keeps to the gap between the key hint
+## (bottom-left) and the hotbar (bottom-right) when it fits, so both stay in
+## view as in the target; touch screens get bigger text and the full width.
 ##
 ## Two portrait modes, picked automatically:
 ##  * fallback (no anime art yet): the 3D head render in a round badge inside
@@ -34,13 +38,16 @@ var badge_room: Control
 var badge: Control
 var name_label: Label
 var body: Label
-var grid: GridContainer
-var scrim: TextureRect
+var choice_box: VBoxContainer  ## rows of choice pills (see _arrange)
 var buttons: Array = []
 var portrait_rect := Rect2()  ## canvas rect of the half-body art (empty in badge mode)
 var _queued := false
 var _panel_style: StyleBoxFlat
 var _t := 0.0
+var _arranged := -1  ## choice arrangement built: columns, or 0 = lone button in the top row
+## font / pill sizes: keyboard screens match the target's compact look, touch
+## screens (phones) keep bigger text
+var _fs := {}
 
 
 func setup(p_key: String, p_speaker: String, p_text: String, p_choices: Array, p_art: Texture2D, p_badge: Texture2D, p_chained: bool, p_changed: bool) -> void:
@@ -58,23 +65,9 @@ func setup(p_key: String, p_speaker: String, p_text: String, p_choices: Array, p
 
 
 func _build() -> void:
-	# soft dark gradient behind the panel so text pops over busy foliage
-	scrim = TextureRect.new()
-	var g := Gradient.new()
-	g.set_color(0, Color(0.1, 0.07, 0.03, 0.0))
-	g.set_color(1, Color(0.1, 0.07, 0.03, 0.26))
-	var gt := GradientTexture2D.new()
-	gt.gradient = g
-	gt.fill_from = Vector2(0, 0)
-	gt.fill_to = Vector2(0, 1)
-	gt.width = 4
-	gt.height = 64
-	scrim.texture = gt
-	scrim.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	scrim.stretch_mode = TextureRect.STRETCH_SCALE
-	scrim.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(scrim)
-
+	var touch: bool = ui._touch_mode
+	_fs = {"name": 17, "body": 22, "choice": 20, "hint": 15, "dot": 18, "pill_h": 52.0} if touch \
+		else {"name": 16, "body": 20, "choice": 18, "hint": 14, "dot": 22, "pill_h": 44.0}
 	panel = PanelContainer.new()
 	_panel_style = ui._box(ui.CREAM, 24, ui.LINE, 3, true)
 	_panel_style.shadow_size = 14
@@ -115,10 +108,10 @@ func _build() -> void:
 	bcol.add_theme_constant_override("separation", 0)
 	bcol.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bubble.add_child(bcol)
-	name_label = ui._label(speaker, 17, NAME_COLOR, true)
+	name_label = ui._label(speaker, _fs["name"], NAME_COLOR, true)
 	name_label.name = "Speaker"
 	bcol.add_child(name_label)
-	body = ui._label(text, 22, ui.BROWN)
+	body = ui._label(text, _fs["body"], ui.BROWN)
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	body.add_theme_constant_override("line_spacing", 2)
 	# lay out the whole line up front: the bubble must not grow (and the panel
@@ -127,20 +120,62 @@ func _build() -> void:
 	body.visible_characters = 0
 	bcol.add_child(body)
 
-	grid = GridContainer.new()
-	grid.add_theme_constant_override("h_separation", 12)
-	grid.add_theme_constant_override("v_separation", 10)
-	grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	col.add_child(grid)
+	choice_box = VBoxContainer.new()
+	choice_box.add_theme_constant_override("separation", 10)
+	choice_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	col.add_child(choice_box)
 	var i := 1
 	for c in choices:
-		var b := _make_choice(i, c)
-		grid.add_child(b)
-		buttons.append(b)
+		buttons.append(_make_choice(i, c))
 		i += 1
 
 	panel.minimum_size_changed.connect(_queue_relayout)
-	grid.minimum_size_changed.connect(_queue_relayout)
+	choice_box.minimum_size_changed.connect(_queue_relayout)
+
+
+func _arrange(cols: int, inline_single: bool) -> void:
+	## (Re)builds the choice rows: `cols` pills per row, the last one of an odd
+	## count spanning the row; `inline_single` puts a lone button in the top
+	## row beside the bubble (a "continue" pill instead of a near-empty row).
+	var mode := 0 if inline_single else cols
+	if mode == _arranged:
+		return
+	_arranged = mode
+	for b in buttons:
+		if b.get_parent():
+			b.get_parent().remove_child(b)
+	for r in choice_box.get_children():
+		choice_box.remove_child(r)
+		r.queue_free()
+	if inline_single:
+		var b: Button = buttons[0]
+		b.size_flags_horizontal = Control.SIZE_SHRINK_END
+		b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		b.custom_minimum_size.x = 150.0
+		top_row.add_child(b)
+		choice_box.visible = false
+		return
+	choice_box.visible = true
+	var row: HBoxContainer
+	for i in buttons.size():
+		if i % cols == 0:
+			row = HBoxContainer.new()
+			row.add_theme_constant_override("separation", 12)
+			row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			choice_box.add_child(row)
+		var b: Button = buttons[i]
+		b.size_flags_vertical = Control.SIZE_FILL
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.custom_minimum_size.x = 0.0
+		row.add_child(b)
+
+
+func _notification(what: int) -> void:
+	# pills are built before _arrange parents them: never leave one orphaned
+	if what == NOTIFICATION_PREDELETE:
+		for b in buttons:
+			if is_instance_valid(b) and b.get_parent() == null:
+				b.free()
 
 
 func _make_choice(i: int, c: Dictionary) -> Button:
@@ -161,7 +196,7 @@ func _make_choice(i: int, c: Dictionary) -> Button:
 	b.add_child(row)
 	var touch: bool = ui._touch_mode
 	# dark dot bullet; on keyboard devices it carries the number shortcut
-	var dsz := 18 if touch else 24
+	var dsz: int = _fs["dot"]
 	var dot := PanelContainer.new()
 	dot.name = "Dot"
 	dot.custom_minimum_size = Vector2(dsz, dsz)
@@ -169,7 +204,7 @@ func _make_choice(i: int, c: Dictionary) -> Button:
 	dot.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	dot.add_theme_stylebox_override("panel", ui._box(ui.INK if not b.disabled else Color("b5a38a"), 14))
 	if not touch:
-		var n: Label = ui._label(str(i), 14, ui.CREAM_LIGHT, true)
+		var n: Label = ui._label(str(i), 13, ui.CREAM_LIGHT, true)
 		n.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		n.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		dot.add_child(n)
@@ -180,26 +215,34 @@ func _make_choice(i: int, c: Dictionary) -> Button:
 	tc.add_theme_constant_override("separation", -2)
 	tc.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(tc)
-	var tl: Label = ui._label(str(c.get("text", "")), 20, ui.BROWN)
+	var tl: Label = ui._label(str(c.get("text", "")), _fs["choice"], ui.BROWN)
 	tl.add_theme_font_override("font", ui._font_medium)
 	tl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	tc.add_child(tl)
 	var hint := str(c.get("hint", ""))
 	if hint != "":
-		var hl: Label = ui._label(hint, 15, ui.BROWN_SOFT)
+		var hl: Label = ui._label(hint, _fs["hint"], ui.BROWN_SOFT)
 		hl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		tc.add_child(hl)
 	if b.disabled:
 		row.modulate = Color(1, 1, 1, 0.55)
-	var min_h := 52.0 if touch else 46.0
+	var min_h: float = _fs["pill_h"]
 	var fit := func():
 		b.custom_minimum_size.y = maxf(min_h, row.get_combined_minimum_size().y + 10.0)
 	row.minimum_size_changed.connect(fit)
 	fit.call()
+	# the keyboard-selected pill (what E presses) gets an orange dot and a warm
+	# fill instead of a focus ring (the target shows plain pills)
+	var sel: StyleBoxFlat = ui._box(Color("fff1d2"), 28, ui.LINE_DARK, 2)
+	ui._margins(sel, 8, 4, 8, 4)
 	var hl_on := func(on: bool):
 		if b.disabled:
 			return
 		dot.add_theme_stylebox_override("panel", ui._box(ui.ACCENT if on else ui.INK, 14))
+		if on and b.has_focus():
+			b.add_theme_stylebox_override("normal", sel)
+		elif not b.has_focus():
+			b.remove_theme_stylebox_override("normal")
 	b.focus_entered.connect(hl_on.bind(true))
 	b.focus_exited.connect(func(): hl_on.call(b.is_hovered()))
 	b.mouse_entered.connect(hl_on.bind(true))
@@ -270,9 +313,12 @@ func relayout(vp: Vector2) -> void:
 	var m := 14.0
 	var bottom := vp.y - clampf(vp.y * 0.028, 12.0, 24.0)
 	var cols := _columns(land)
-	grid.columns = cols
+	var inline_single := choices.size() == 1
+	_arrange(cols, inline_single)
 	# badge diameter (fallback) / half-body size (art)
 	var d := clampf(vp.y * 0.14, 84.0, 108.0) if land else clampf(vp.x * 0.24, 88.0, 116.0)
+	if land and not touch:
+		d = clampf(vp.y * 0.125, 80.0, 100.0)
 	var pw := 0.0
 	var ph := 0.0
 	if art:
@@ -290,25 +336,38 @@ func relayout(vp: Vector2) -> void:
 	# comfortable line of text, never wider than the screen allows
 	var w := vp.x - 2.0 * m
 	var pad_left := 16.0
+	var band := Vector2.ZERO  # free x-range between the key hint and the hotbar
 	if land:
-		var dot := 18.0 if touch else 24.0
+		var dot: float = _fs["dot"]
 		var longest := 0.0
 		for c in choices:
-			longest = maxf(longest, _text_w(str(c.get("text", "")), ui._font_medium, 20))
-			longest = maxf(longest, _text_w(str(c.get("hint", "")), ui._font_semi, 15))
+			longest = maxf(longest, _text_w(str(c.get("text", "")), ui._font_medium, _fs["choice"]))
+			longest = maxf(longest, _text_w(str(c.get("hint", "")), ui._font_semi, _fs["hint"]))
 		var col_need := 14.0 + dot + 12.0 + longest + 14.0 + 6.0
 		var need_choices := cols * col_need + (cols - 1) * 12.0 + 32.0
-		if choices.size() == 1:
+		var btn_w := 0.0
+		if inline_single:
 			need_choices = 0.0
+			btn_w = maxf(150.0, col_need) + 16.0
 		var lead := (d + 16.0) if art == null else 0.0
-		var body_px := _text_w(text, ui._font_semi, 22)
-		var need_text := 32.0 + lead + 36.0 + minf(body_px + 8.0, 600.0)
+		var body_px := _text_w(text, ui._font_semi, _fs["body"])
+		var need_text := 32.0 + lead + 36.0 + minf(body_px + 8.0, 560.0 if not touch else 600.0) + btn_w
 		var art_extra := 0.0
 		if art:
 			pad_left = 12.0 + pw + 14.0
 			art_extra = pad_left - 16.0
 		var min_w := maxf(560.0, vp.x * 0.46)
 		var max_w := 880.0
+		if not touch:
+			# keyboard screens: compact like the target (about half the width),
+			# inside the gap beside the hotbar when that gap is roomy enough (the
+			# half-body layout is too wide for it and stays centred)
+			max_w = clampf(vp.x * 0.52, 560.0, 880.0)
+			if art == null:
+				band = ui.dialog_band(vp)
+				if band.y - band.x >= 500.0:
+					max_w = minf(max_w, band.y - band.x)
+			min_w = minf(460.0, max_w)
 		w = clampf(maxf(need_choices, need_text), min_w, max_w) + art_extra
 		w = minf(w, vp.x - 2.0 * m)
 	elif art:
@@ -320,22 +379,17 @@ func relayout(vp: Vector2) -> void:
 		if badge == null or not is_equal_approx(float(badge.get_meta("d", 0.0)), d):
 			_rebuild_badge(d)
 	bubble.tail = true
-	if choices.size() == 1:
-		# a lone "Lanjut" sits bottom-right like a continue arrow
-		grid.size_flags_horizontal = Control.SIZE_SHRINK_END
-		buttons[0].custom_minimum_size.x = 180.0
-	else:
-		grid.size_flags_horizontal = Control.SIZE_FILL
 	var lead_w := (d + 16.0) if art == null else 0.0
+	var inline_w: float = (buttons[0].custom_minimum_size.x + 16.0) if inline_single else 0.0
 	var inner_w := w - pad_left - 16.0
-	body.custom_minimum_size.x = maxf(120.0, inner_w - lead_w - 36.0 - 2.0)
+	body.custom_minimum_size.x = maxf(120.0, inner_w - lead_w - inline_w - 36.0 - 2.0)
 	panel.size = Vector2(w, 0)
 	panel.size = Vector2(w, panel.get_combined_minimum_size().y)
 	var x0 := roundf((vp.x - w) * 0.5)
+	if band.y - band.x >= w:
+		x0 = clampf(x0, band.x, band.y - w)
 	panel.position = Vector2(x0, roundf(bottom - panel.size.y))
 	var ptop := panel.position.y
-	scrim.position = Vector2(0, ptop - 120.0)
-	scrim.size = Vector2(vp.x, vp.y - ptop + 120.0)
 	# half-body art: stands on the panel's bottom-left (landscape) or leans
 	# over its top-left corner (portrait screens)
 	portrait_rect = Rect2()
