@@ -372,13 +372,15 @@ for d in decor:
     if d["model"] in ("tree_big", "sawit_wild"):
         tree_d = np.minimum(tree_d, np.hypot(X - d["pos"][0], Z - d["pos"][2]))
 
-# planting spots: how close each plant may grow to a spot's centre. Low grass reaches
-# the (smaller) piringan's edge, ferns and cover plants stay out of the harvest ring,
-# taller plants keep 1.6-1.8 m clear so the palm, its fruit and the tile state stay
-# readable (world.gd filters again at 0.85 m)
-TILE_R = {"grass_a": 0.95, "grass_b": 0.95, "flowers_white": 1.0, "flowers_yellow": 1.0, "leaf_low": 1.0,
-          "fern_low": 1.05, "rock_a": 1.2, "frond_fallen": 1.5, "fern_a": 1.35, "fern_b": 1.35, "keladi": 1.65,
-          "shrub_a": 1.8, "shrub_b": 1.8, "vine_log": 2.2, "pile_fronds": 2.2}
+# planting spots: how close each plant may grow to a spot's centre. Plantations keep a
+# ~2 m weeded circle (piringan) around every palm: grass may reach its rim, the ferns
+# and leafy cover stay 1.45-1.75 m out (their leaves reach ~0.5-0.9 m) and the taller
+# plants 1.85-2.3 m, so seedlings, cleared tiles and the bush thickets stay readable
+# (fix round: the polish round let cover plants grow to 0.95-1.05 m and hid the tile
+# states). world.gd filters again at 1.05 m.
+TILE_R = {"grass_a": 1.1, "grass_b": 1.15, "flowers_white": 1.2, "flowers_yellow": 1.2, "leaf_low": 1.45,
+          "fern_low": 1.55, "rock_a": 1.3, "frond_fallen": 1.7, "fern_a": 1.75, "fern_b": 1.7, "keladi": 1.85,
+          "shrub_a": 2.0, "shrub_b": 2.0, "vine_log": 2.3, "pile_fronds": 2.3}
 keep_out = [(x, z, r) for (x, z, r) in circles if r < 3.4] + [(x, z, 1.7) for x, z in sign_pts]
 for b in L.BUILDINGS:          # jetty and its road end
     if b["model"] == "dermaga":
@@ -460,7 +462,7 @@ ZONES = [
      2.6, {"grass_b": 1.0, "grass_a": 1.5, "fern_low": 2.6, "leaf_low": 1.6, "frond_fallen": 0.5, "rock_a": 0.06}),
     # the planting grid: low plants only, so paths and tiles stay readable
     ("inner", zone_inner, 0.08, {"fern_a": 1.0, "fern_b": 1.0},
-     4.6, {"grass_b": 0.8, "grass_a": 2.5, "fern_low": 2.6, "leaf_low": 2.0, "flowers_white": 0.5,
+     5.4, {"grass_b": 0.8, "grass_a": 2.5, "fern_low": 2.6, "leaf_low": 2.0, "flowers_white": 0.5,
            "flowers_yellow": 0.3, "frond_fallen": 0.6}),
     ("open", land_ok, 0.14, {"fern_a": 0.5, "fern_b": 0.3, "shrub_b": 0.25, "shrub_a": 0.15, "keladi": 0.3},
      3.3, CARPET_OPEN),
@@ -468,10 +470,12 @@ ZONES = [
 ]
 # the door approach keeps only low plants
 DOOR_LOW = {"grass_a", "grass_b", "flowers_white", "flowers_yellow", "leaf_low"}
-UG_SCALE = {"grass_a": (1.1, 1.7), "grass_b": (1.0, 1.6), "fern_a": (0.9, 1.4), "fern_b": (0.9, 1.4),
-            "keladi": (0.85, 1.3), "shrub_a": (0.95, 1.5), "shrub_b": (0.95, 1.5), "flowers_white": (0.8, 1.2),
+# (fix round: the cover plants are ~20% smaller, so the knee-high carpet does not
+# swallow the 1.15 m characters)
+UG_SCALE = {"grass_a": (0.9, 1.4), "grass_b": (0.8, 1.3), "fern_a": (0.8, 1.25), "fern_b": (0.8, 1.25),
+            "keladi": (0.8, 1.2), "shrub_a": (0.95, 1.45), "shrub_b": (0.9, 1.35), "flowers_white": (0.8, 1.2),
             "flowers_yellow": (0.8, 1.2), "frond_fallen": (0.65, 0.9), "vine_log": (0.8, 1.05),
-            "pile_fronds": (0.9, 1.1), "rock_a": (0.45, 0.9), "fern_low": (1.0, 1.55), "leaf_low": (1.0, 1.6)}
+            "pile_fronds": (0.9, 1.1), "rock_a": (0.45, 0.9), "fern_low": (0.85, 1.35), "leaf_low": (0.9, 1.45)}
 UG_GAP = {"grass_a": 0.3, "grass_b": 0.3, "flowers_white": 0.3, "flowers_yellow": 0.3, "fern_a": 0.55, "fern_b": 0.55,
           "keladi": 0.5, "shrub_a": 0.8, "shrub_b": 0.8, "frond_fallen": 0.9, "vine_log": 1.3, "pile_fronds": 1.1,
           "rock_a": 0.4, "fern_low": 0.52, "leaf_low": 0.42}
@@ -490,10 +494,22 @@ zone_id[blocked_px] = -1
 thick = 0.55 + 1.9 * clump
 vary = (0.85 + 0.3 * n_mid) * DENSITY
 # glades: the carpet thins out in soft patches, so the ground reads as lawn with
-# plant masses (like the target) instead of an even field of small plants
-# (not in and around the parcels: the plantation floor stays covered)
-glade = 0.5 + 0.8 * smoothstep(0.32, 0.62, fractal_noise(N, (6, 50), 1.6, seed=61))
-glade[zone_inner | zone_parcel] = np.maximum(glade[zone_inner | zone_parcel], 1.1)
+# plant masses (like the target) instead of an even field of small plants. The
+# plantation floor (in and around the parcels) keeps milder glades (fix round: without
+# them the garden / field frames read as an even weed field at 0.74-0.79 coverage)
+glade_n = fractal_noise(N, (6, 50), 1.6, seed=61)
+glade = 0.5 + 0.9 * smoothstep(0.36, 0.6, glade_n)
+glade[zone_parcel] = 0.55 + 0.75 * smoothstep(0.34, 0.6, glade_n[zone_parcel])
+glade[zone_inner] = 0.85 + 0.4 * smoothstep(0.3, 0.6, glade_n[zone_inner])
+# ... and the cover plants grow in small clumps (~2-6 m) with lawn between them
+# instead of an even Poisson scatter
+tuft_n = fractal_noise(N, (28, 110), 1.2, seed=71)
+tufts = 0.55 + 0.95 * smoothstep(0.38, 0.6, tuft_n)
+tufts[zone_inner] = 0.75 + 0.55 * smoothstep(0.38, 0.62, tuft_n[zone_inner])
+# road verges keep a dense border strip (the target's path edges are lined with plants)
+border = land_ok & (road_edge > 0.25) & (road_edge < 2.0)
+glade[border] = np.maximum(glade[border], 0.9)
+tufts[border] = np.maximum(tufts[border], 0.9)
 
 undergrowth = {}
 ug_pts = {}
@@ -543,7 +559,7 @@ for big_pass in (True, False):
         zi = zone_id[i, j]
         _, _, bd, bw, cd, cw = ZONES[zi]
         weights = dict(bw if big_pass else cw)
-        dens = bd * thick[i, j] if big_pass else cd * (1.25 - 0.3 * clump[i, j]) * glade[i, j]
+        dens = bd * thick[i, j] if big_pass else cd * (1.25 - 0.3 * clump[i, j]) * glade[i, j] * tufts[i, j]
         if door_low[i, j]:
             weights = {nm: w for nm, w in weights.items() if nm in DOOR_LOW}
             if big_pass or not weights:
@@ -569,6 +585,74 @@ for big_pass in (True, False):
                 rejects["spacing"] += 1
                 continue
             place(m, x, z)
+
+# Villager gardens (fix round 2): their 12 tiles start as bush thickets (tile_view.gd),
+# which already give the parcel its plant mass. With the plantation carpet around and
+# between them the garden frames measured 0.71 land coverage, 2-3% open lawn (target
+# 0.23) and read as an even weed field in which the 4x3 grid disappeared. So the
+# carpet is thinned afterwards (a filter, so the rest of the island keeps its exact
+# plants): inside the parcel only a sparse skirt of grass / low leaves hugs each
+# thicket and the ~1 m lanes between the tile rows and columns stay open lawn; a
+# ~1.2 m lawn border runs round the parcel; beyond it the ring keeps plant masses
+# with broad glades of open lawn between them, fading back to the normal carpet
+# ~7 m out.
+vg_in = np.zeros_like(X, bool)
+vg_ring = np.full_like(X, 1e9)
+vg_tiles = []
+for p in L.PARCELS:
+    if p["owner"] == "player":
+        continue
+    cx, cz = p["center"]
+    hx = L.PARCEL_COLS * L.TILE / 2 + 0.4
+    hz = L.PARCEL_ROWS * L.TILE / 2 + 0.4
+    vg_in |= (np.abs(X - cx) < hx) & (np.abs(Z - cz) < hz)
+    qx = np.maximum(np.abs(X - cx) - hx, 0)
+    qz = np.maximum(np.abs(Z - cz) - hz, 0)
+    vg_ring = np.minimum(vg_ring, np.sqrt(qx ** 2 + qz ** 2))
+    for idx in range(L.PARCEL_COLS * L.PARCEL_ROWS):
+        col, row = idx % L.PARCEL_COLS, idx // L.PARCEL_COLS
+        vg_tiles.append((cx + (col - (L.PARCEL_COLS - 1) * 0.5) * L.TILE,
+                         cz + (row - (L.PARCEL_ROWS - 1) * 0.5) * L.TILE))
+vg_near = vg_ring < 8.0
+# ring: plant masses (glade_n high) and open glades (low), a lawn border next to the
+# parcel, back to the full carpet by ~7 m out
+vg_n = fractal_noise(N, (16, 70), 1.4, seed=81)      # ~3-6 m masses and glades
+vg_mass = smoothstep(0.35, 0.43, vg_n) * smoothstep(0.8, 1.8, vg_ring)
+vg_mass = vg_mass + (1.0 - vg_mass) * smoothstep(4.5, 7.5, vg_ring)
+VG_SKIRT = {"grass_a": 0.6, "grass_b": 0.7, "flowers_white": 0.6, "flowers_yellow": 0.6, "fern_low": 0.5,
+            "leaf_low": 0.5}
+# what is left in the glades: a few flowers and grass tufts on the lawn, as in the target
+VG_GLADE = {"flowers_white": 0.3, "flowers_yellow": 0.25, "grass_a": 0.08, "grass_b": 0.06}
+vrng = random.Random(123)
+
+
+def vg_tile_d(x, z):
+    return min(math.hypot(x - tx, z - tz) for tx, tz in vg_tiles)
+
+
+def vg_keeps(m, x, z):
+    r = vrng.random()
+    if not sample(vg_near, x, z):
+        return True
+    if sample(vg_in, x, z):
+        # a sparse skirt round each thicket (<= 1.45 m out), open lanes between them
+        return vg_tile_d(x, z) < 1.45 and r < VG_SKIRT.get(m, 0.0)
+    k = sample(vg_mass, x, z)
+    return r < k + (1.0 - k) * VG_GLADE.get(m, 0.02)
+
+
+if vg_tiles:
+    # ug_list and the per-model arrays are appended in the same order
+    kept_list, kept_ug, seen = [], {}, {}
+    for e in ug_list:
+        m = e[0]
+        k = seen.get(m, 0)
+        seen[m] = k + 1
+        if vg_keeps(m, e[1], e[2]):
+            kept_list.append(e)
+            kept_ug.setdefault(m, []).extend(undergrowth[m][5 * k:5 * k + 5])
+    rejects["garden"] = len(ug_list) - len(kept_list)
+    ug_list, undergrowth = kept_list, kept_ug
 print("undergrowth:", {m: len(v) // 5 for m, v in sorted(undergrowth.items())}, "total", len(ug_list), "rejected", rejects)
 
 # ------------------------------------------------------------------ world_shade.png (v2)

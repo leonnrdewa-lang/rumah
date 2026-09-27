@@ -123,10 +123,29 @@ CDN is unreachable from this container, the job ids/URLs are recorded in
   shadow range follows the ground at the frame's top edge (~31 m at 16:9); camera far
   plane 90 m. (v2 had shipped 52° / 17 m because at 45° without the look-ahead the
   crowns next to the player left the top edge.)
-* Post: glow (subtle), colour adjustment (saturation 1.0 since the polish round:
-  the palette is set in the materials/light instead, contrast ~1.05).
-* Undergrowth is scattered densely (`blender/terrain.py`, ~19k plants: modelled
+* Light (fix round, `world.gd`): warm sun (energy 1.35) from the upper left and a
+  teal sky light (`9ec6d2`, 0.7); a green-tinted sky light multiplied the green
+  albedos into saturated dark greens, the teal one keeps the shade cool and soft
+  (target: shade hue ~89, S ~0.52). Post: glow (subtle), saturation 1.06 (× 1.1 in
+  "Hemat baterai", which has no shadows and reads flatter), contrast ~1.05.
+* Greens are toned in the materials (`model_lib.gd`): grown palm crowns
+  (green_sat 0.56, tone 0.83), ground cover (grass / ferns / leafy clumps / bushes:
+  green_sat 0.58 + a small warm shift). Young palms (stages 0-2) keep a lighter, fresher
+  green so a seedling stands out from the ferns around it.
+* Undergrowth is scattered densely (`blender/terrain.py`, ~23k plants: modelled
   ferns / shrubs / keladi in thickets over a carpet of grass cards and the cheap
   procedural `fern_low` / `leaf_low` rosettes built in `undergrowth.gd`) and drawn as
   one MultiMesh per model holding only the plants under the camera's view (4 m cells
-  re-packed as the view moves); "Hemat baterai" draws half of every cell.
+  re-packed as the view moves); "Hemat baterai" draws half of every cell, the title
+  fly-over (camera > 21 m up) 30% of the cover plants and 15% of the modelled ones.
+  The carpet grows in clumps (~2-6 m) with glades of open lawn between them and a
+  dense strip along the road edges, so it reads as plant masses on a lawn, not an
+  even weed field (land coverage ~0.5-0.65 in the gameplay views).
+* Tile states must read at a glance: every planting spot keeps a ~2 m weeded circle
+  (the piringan decal, 2.0-2.2 m across with a soft rim); grass may reach 1.1 m from
+  its centre, ferns and leafy cover stay 1.45-1.75 m out, taller plants 1.85-2.3 m.
+  An uncleared tile ("Tebas semak") is a ~1 m tall rounded thicket of bushes with
+  wild grass at its foot, lighter and yellower than the low carpet around it.
+* Low ground plants (grass, ferns, leafy clumps, bushes) bend down and away within
+  ~1 m of the player (`trample` in `foliage_body.gdshaderinc`, global `player_pos`),
+  so the knee-high carpet never hides the character's legs.

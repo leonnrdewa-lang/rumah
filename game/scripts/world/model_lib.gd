@@ -19,6 +19,16 @@ const GLOW_WORDS := ["Glass", "Lamp", "Window", "Bulb"]
 ## small ground plants: their normals are bent towards the sky so alpha cards
 ## shade like the ground instead of flickering between lit and dark
 const GROUND_PLANT_WORDS := ["Grass", "Fern", "Flower", "Petal", "Clover", "Plant", "Keladi", "Taro"]
+## ground-cover greens (grass, ferns, leafy clumps, bushes; not palm fronds / canopies)
+const COVER_GREEN_SAT := 0.62
+const COVER_GREEN_WARM := 0.08
+const COVER_TONE := 1.0
+## young palms keep a fresh, lighter green instead of the crown toning, so a seedling
+## stands out from the ferns around it (stage 0-1; stage 2 is half way to a crown)
+const YOUNG_FROND := {"green_sat": 0.64, "green_warm": 0.08, "tone": 1.1, "tip_light": 0.36,
+	"backlight": Vector3(0.3, 0.32, 0.14)}
+const YOUNG_FROND_2 := {"green_sat": 0.6, "green_warm": 0.07, "tone": 0.96, "tip_light": 0.32,
+	"backlight": Vector3(0.24, 0.26, 0.12)}
 
 static var _scenes := {}
 static var _label_font: FontVariation
@@ -144,7 +154,10 @@ static func convert_material(m: Material, fade := true, rim := 0.0) -> Material:
 		var sway := 1.0
 		var base := 0.4
 		var up := 0.0
+		var trample := 0.0
+		var cover := true
 		if mname.findn("Frond") >= 0:
+			cover = false
 			base = 1.0
 			if mname.findn("Dry") < 0:
 				# the v2 palm crowns read lime (S 0.68 / V 0.65 against the target's 0.54 /
@@ -158,23 +171,43 @@ static func convert_material(m: Material, fade := true, rim := 0.0) -> Material:
 			sway = 2.5
 			base = 0.0
 			up = 0.55
+			trample = 1.0
 		elif mname.findn("Fern") >= 0:
 			sway = 2.0
 			base = 0.05
 			up = 0.4
+			trample = 1.0
 		elif mname.findn("Bush") >= 0:
 			sway = 0.6
 			base = 0.2
+			# (fix round 2: bushes and leafy shrubs tip over less than the low carpet; the
+			# trample is a rigid tilt now, see foliage_body.gdshaderinc)
+			trample = 0.45
 		elif mname.findn("Canopy") >= 0:
 			sway = 0.35
 			base = 2.0
+			cover = false
 		elif _is_ground_plant(mname):
 			sway = 1.6
 			base = 0.05
 			up = 0.35
+			trample = 1.0
+		elif mname.findn("Leaf") >= 0 and mname.findn("Banana") < 0 and mname.findn("Dry") < 0:
+			# keladi / shrub leaves
+			trample = 0.6
+		else:
+			cover = false
+		if cover:
+			# the ground cover fills ~half of a gameplay frame: its greens are pulled
+			# towards the target's soft sunlit olive (it measured S 0.62-0.65 against the
+			# target's 0.52-0.54 in the greens) with a small warm shift
+			sm.set_shader_parameter("green_sat", COVER_GREEN_SAT)
+			sm.set_shader_parameter("green_warm", COVER_GREEN_WARM)
+			sm.set_shader_parameter("tone", COVER_TONE)
 		sm.set_shader_parameter("sway", sway)
 		sm.set_shader_parameter("sway_base", base)
 		sm.set_shader_parameter("normal_up", up)
+		sm.set_shader_parameter("trample", trample)
 	else:
 		sm.shader = WORLD_CUTOUT_SHADER if cut else WORLD_SHADER
 		for w in GLOW_WORDS:
@@ -193,6 +226,31 @@ static func convert_material(m: Material, fade := true, rim := 0.0) -> Material:
 	sm.set_shader_parameter("fade_enabled", 1.0 if fade else 0.0)
 	_materials[key] = sm
 	return sm
+
+
+static func retuned(m: Material, tag: String, params: Dictionary) -> Material:
+	## A cached copy of a converted ShaderMaterial with some uniforms changed.
+	var sm := m as ShaderMaterial
+	if sm == null:
+		return m
+	var key := "%s|%d" % [tag, sm.get_instance_id()]
+	if not _materials.has(key):
+		var c := sm.duplicate() as ShaderMaterial
+		for k in params:
+			c.set_shader_parameter(k, params[k])
+		_materials[key] = c
+	return _materials[key]
+
+
+static func young_palm_overrides(mi: MeshInstance3D, stage: int) -> void:
+	## Seedling / young palm fronds without the grown crowns' toning (see YOUNG_FROND).
+	for i in mi.mesh.get_surface_count():
+		var m := mi.mesh.surface_get_material(i)
+		if m and m.resource_name.findn("Frond") >= 0 and m.resource_name.findn("Dry") < 0:
+			if stage >= 2:
+				mi.set_surface_override_material(i, retuned(m, "young2", YOUNG_FROND_2))
+			else:
+				mi.set_surface_override_material(i, retuned(m, "young", YOUNG_FROND))
 
 
 static func _rel_xform(node: Node, root: Node) -> Transform3D:

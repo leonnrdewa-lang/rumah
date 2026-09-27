@@ -8,12 +8,20 @@ extends Node3D
 ## MultiMeshes (one per model) that are rebuilt whenever a tile changes, so a
 ## parcel costs a handful of draw calls instead of dozens.
 
-## garden cluster = one main plant + small plants around it
-const GARDEN_MAIN := ["shrub_a", "banana", "shrub_b", "keladi", "shrub_a", "banana", "keladi", "shrub_b"]
-const GARDEN_SMALL := ["fern_a", "fern_b", "grass_a", "grass_b", "flowers_white", "flowers_yellow", "keladi", "fern_a"]
+## An uncleared tile ("Tebas semak") is a rounded thicket: a big bush (or a banana /
+## keladi) in the middle, a ring of shrubs around it and wild seed-head grass at its
+## foot. It stands ~1 m tall and dense against the low fern / grass carpet, which
+## keeps 1.5 m away from every planting spot (terrain.py), so the tile state reads at
+## a glance. (Fix round: the v2 garden cluster was one plant + ferns, the same species
+## as the carpet, and disappeared into it.)
+const GARDEN_MAIN := ["bush_a", "shrub_b", "banana", "bush_b", "keladi", "bush_a", "bush_b", "banana"]
+const GARDEN_RING := ["shrub_a", "shrub_b", "keladi", "shrub_a", "bush_b", "shrub_b"]
+const GARDEN_FOOT := ["grass_b", "grass_b", "flowers_white", "grass_a", "flowers_yellow"]
 const SHADOW_MODELS := ["shrub_a", "shrub_b", "banana", "keladi", "bush_a", "bush_b"]
-## piringan scale (model is 2.4 m across): empty tile, palm stage 0..3
-const PIRINGAN_SCALE := [0.58, 0.62, 0.7, 0.76, 0.8]
+## piringan scale (model is 2.4 m across): empty tile, palm stage 0..3. The weeded
+## circle of real plantations is ~2 m across; the fix round's review found the 1.4 m
+## soft patches of the polish round made seedlings and cleared tiles hard to read.
+const PIRINGAN_SCALE := [0.84, 0.86, 0.88, 0.9, 0.9]
 
 static var _tiles := {}     # pid -> {idx: TileView}
 static var _batches := {}   # pid -> Node3D holding the parcel's MultiMeshes
@@ -61,6 +69,8 @@ func refresh() -> void:
 			"palm":
 				var name := "sawit_%d" % int(t["st"])
 				_plant = _mesh_node(name, "", "Fruits")
+				if int(t["st"]) < 3:
+					ModelLib.young_palm_overrides(_plant.get_child(0) as MeshInstance3D, int(t["st"]))
 				if int(t["st"]) == 3:
 					_fruit = MeshInstance3D.new()
 					_fruit.mesh = ModelLib.merged_mesh("sawit_3", true, "Fruits", "")
@@ -170,24 +180,37 @@ static func _add(lists: Dictionary, model: String, xf: Transform3D, col: Color) 
 
 
 static func _garden(tv: TileView, lists: Dictionary) -> void:
-	## A villager's garden patch: one main plant with ferns, grass and flowers around it.
+	## An overgrown tile: a thicket of bushes with wild grass at its foot (see GARDEN_MAIN).
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash(tv.pid * 131 + tv.idx * 7 + 3)
 	var main: String = GARDEN_MAIN[(tv.pid * 5 + tv.idx * 3) % GARDEN_MAIN.size()]
 	var p := tv.position
-	var off := Vector3(rng.randf_range(-0.25, 0.25), 0, rng.randf_range(-0.25, 0.25))
-	var s := rng.randf_range(0.95, 1.2)
-	_add(lists, main, Transform3D(Basis(Vector3.UP, tv._yaw).scaled(Vector3.ONE * s), p + off), _tint(rng))
-	var n := rng.randi_range(4, 6)
+	var off := Vector3(rng.randf_range(-0.2, 0.2), 0, rng.randf_range(-0.2, 0.2))
+	var s := rng.randf_range(1.0, 1.2) if main != "banana" else rng.randf_range(0.8, 0.95)
+	_add(lists, main, Transform3D(Basis(Vector3.UP, tv._yaw).scaled(Vector3.ONE * s), p + off), _tint(rng, true))
+	var n := rng.randi_range(3, 4)
+	var a0 := rng.randf() * TAU
 	for k in n:
-		var a := TAU * (float(k) + rng.randf_range(-0.3, 0.3)) / float(n)
-		var r := rng.randf_range(0.7, 1.35)
-		var m: String = GARDEN_SMALL[rng.randi_range(0, GARDEN_SMALL.size() - 1)]
-		var sc := rng.randf_range(0.8, 1.2)
+		var a := a0 + TAU * (float(k) + rng.randf_range(-0.2, 0.2)) / float(n)
+		var r := rng.randf_range(0.6, 0.95)
+		var m: String = GARDEN_RING[rng.randi_range(0, GARDEN_RING.size() - 1)]
+		var sc := rng.randf_range(1.0, 1.35) if m != "bush_b" else rng.randf_range(0.7, 0.85)
+		var pos := p + Vector3(cos(a) * r, 0, sin(a) * r)
+		_add(lists, m, Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3.ONE * sc), pos), _tint(rng, true))
+	var nf := rng.randi_range(3, 5)
+	for k in nf:
+		var a := a0 + TAU * (float(k) + 0.5 + rng.randf_range(-0.3, 0.3)) / float(nf)
+		var r := rng.randf_range(1.0, 1.3)
+		var m: String = GARDEN_FOOT[rng.randi_range(0, GARDEN_FOOT.size() - 1)]
+		var sc := rng.randf_range(1.0, 1.35)
 		var pos := p + Vector3(cos(a) * r, 0, sin(a) * r)
 		_add(lists, m, Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3.ONE * sc), pos), _tint(rng))
 
 
-static func _tint(rng: RandomNumberGenerator) -> Color:
+static func _tint(rng: RandomNumberGenerator, wild := false) -> Color:
 	var b := rng.randf_range(0.86, 1.0)
+	if wild:
+		# the thicket is a touch yellower and lighter than the carpet, like sunlit scrub
+		b = rng.randf_range(0.98, 1.1)
+		return Color(b * rng.randf_range(1.02, 1.08), b, b * rng.randf_range(0.8, 0.9))
 	return Color(b * rng.randf_range(0.94, 1.0), b, b * rng.randf_range(0.88, 1.0))

@@ -529,7 +529,9 @@ func _run() -> void:
 			world.ui.close()
 			world.ui.visible = false
 			var spots := [[-17.4, 25.4, "hero"], [-17, 30, "parcel"], [-9, 10, "road"], [-3, 36, "kantor"],
-				[-44, 36, "garden"], [-30, -20, "field"]]
+				[-44, 36, "garden"], [-30, -20, "field"],
+				# (fix round 2: the other villager gardens of the tour; only with --spots=)
+				[-20, -40, "garden2"], [18, -40, "garden3"], [22, 34, "garden4"]]
 			var only := ""
 			var masks := true
 			var low := false
@@ -545,6 +547,8 @@ func _run() -> void:
 					hour = float(a.get_slice("=", 1))
 			for s in spots:
 				if only != "" and not str(s[2]) in only.split(","):
+					continue
+				if only == "" and str(s[2]).begins_with("garden") and str(s[2]) != "garden":
 					continue
 				GS.hour = hour
 				tp(s[0], s[1], Vector3(0, 0, -1))
@@ -590,7 +594,7 @@ func _run() -> void:
 						for k in st.get(grp, {}):
 							var fv = st[grp][k]
 							sm.set_shader_parameter(k, Vector3(fv[0], fv[1], fv[2]) if fv is Array else fv)
-				world.env.adjustment_saturation = st.get("sat", 1.0)
+				world.env.adjustment_saturation = st.get("sat", world.POST_SATURATION)
 				if st.has("low"):
 					world.set_quality(not st["low"])
 				for sp in only.split(","):
@@ -643,6 +647,100 @@ func _run() -> void:
 				GS.hour = 8.5
 				tp(s[0], s[1], Vector3(0, 0, -1))
 				await shot("lush_%d_%d" % [s[0], s[1]], 25)
+			world.ui.visible = true
+		"sweep":
+			# budget check over the whole title orbit (16 positions of world._title_t over
+			# one lap, 0..TAU / 0.05 s) and a grid of gameplay spots (--grid, --low)
+			var worst := [0, 0]
+			for k in 16:
+				world._title_t = k * (TAU / 0.05) / 16.0
+				var a: float = world._title_t * 0.05
+				world.cam_rig.global_position = Vector3(sin(a) * 18.0, 0, 6.0 + cos(a) * 10.0)
+				for i in 8:
+					await get_tree().process_frame
+				var dc: int = Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)
+				var pr: int = Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)
+				worst = [maxi(worst[0], dc), maxi(worst[1], pr)]
+				print("sweep title k=%d draw=%d prims=%d" % [k, dc, pr])
+			print("sweep title max: draw=%d prims=%d" % worst)
+			var args := OS.get_cmdline_user_args()
+			if "--split" in args:
+				# where do the title's triangles go? (k = 15, the busiest view)
+				world._title_t = 15 * (TAU / 0.05) / 16.0
+				var a2: float = world._title_t * 0.05
+				world.cam_rig.global_position = Vector3(sin(a2) * 18.0, 0, 6.0 + cos(a2) * 10.0)
+				for i in 8:
+					await get_tree().process_frame
+				var base := [Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME), Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)]
+				var groups := {
+					"undergrowth": [world.undergrowth],
+					"decor": world.get_children().filter(func(n): return n is MultiMeshInstance3D),
+					"tiles": world.tile_views.values(),
+					"parcel_batch": world.get_children().filter(func(n): return str(n.name).begins_with("ParcelDecor")),
+					"buildings": world.building_nodes.values(),
+					"npcs": world.get_children().filter(func(n): return n is Npc),
+					"ambient": [world.ambient],
+					"props": world.get_children().filter(func(n): return n is MeshInstance3D and not n in world.building_nodes.values()),
+				}
+				for g in groups:
+					for n in groups[g]:
+						n.visible = false
+					for i in 3:
+						await get_tree().process_frame
+					print("sweep split %-12s draw=%4d prims=%7d" % [g, base[0] - Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME), base[1] - Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)])
+					for n in groups[g]:
+						n.visible = true
+				world.sun.shadow_enabled = false
+				for i in 3:
+					await get_tree().process_frame
+				print("sweep split %-12s draw=%4d prims=%7d" % ["shadows", base[0] - Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME), base[1] - Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)])
+				world.sun.shadow_enabled = true
+			if "--grid" in args:
+				world.start_game(false)
+				world.ui.close()
+				for q in ([false] if "--low" in args else [true]):
+					world.set_quality(q)
+					worst = [0, 0, ""]
+					for x in [-56, -40, -24, -8, 8, 24, 40, 56]:
+						for z in [-48, -32, -16, 0, 16, 32, 44]:
+							if world.height_at(x, z) < -0.2:
+								continue
+							tp(x, z)
+							for i in 8:
+								await get_tree().process_frame
+							var dc2: int = Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)
+							var pr2: int = Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)
+							if pr2 > worst[1]:
+								worst = [dc2, pr2, "%d,%d" % [x, z]]
+					print("sweep grid%s worst: draw=%d prims=%d at %s" % ["" if q else " (Hemat baterai)", worst[0], worst[1], worst[2]])
+				world.set_quality(true)
+		"tiles":
+			# tile-state readability: every state side by side in Lahan Kantor, the bush
+			# thickets of a villager garden, and the player standing in the carpet
+			world.start_game(false)
+			world.ui.close()
+			world.ui.visible = false
+			var states := [["palm", 3], ["palm", 3], ["palm", 3], ["palm", 3], ["empty", 0], ["palm", 0], ["palm", 1],
+				["palm", 2], ["bush", 0], ["bush", 0], ["empty", 0], ["palm", 1]]
+			for i in 12:
+				var t: Dictionary = GS.parcels[0]["tiles"][i]
+				t["s"] = states[i][0]
+				t["st"] = states[i][1]
+				t["fr"] = states[i][1] == 3
+			GS.parcel_changed.emit(0)
+			GS.hour = 8.5
+			tp(-17, 29.5, Vector3(0, 0, -1))
+			await shot("tiles_kantor", 20)
+			tp(-17.4, 25.4, Vector3(-0.5, 0, -1).normalized())
+			await shot("tiles_hero", 14)
+			tp(-44, 35, Vector3(0, 0, -1))
+			await shot("tiles_garden", 14)
+			# in the carpet: the legs must show
+			# (fix round 2: + on a "Tebas semak" thicket in Kakek's garden and in Lahan Kantor,
+			# and in the fern mass south of the garden)
+			for s in [[-30, -20.5], [-41.5, 36.5], [-9.5, 14.5], [-45.6, 34.2], [-21.8, 30.2], [-44, 39.5]]:
+				tp(s[0], s[1], Vector3(0, 0, 1))
+				await shot("tiles_stand_%d_%d" % [s[0], s[1]], 14)
 			world.ui.visible = true
 		"tour":
 			world.start_game(false)

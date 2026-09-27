@@ -123,3 +123,7 @@ wind_time={
 "type": "float",
 "value": 0.0
 }
+player_pos={
+"type": "vec3",
+"value": Vector3(0, -1000, 0)
+}

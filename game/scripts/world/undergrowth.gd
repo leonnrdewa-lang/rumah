@@ -18,8 +18,14 @@ const CELL := 4.0
 const STRIDE := 16          # floats per instance: 3x4 transform + colour
 const MARGIN := 3.0         # built area = view footprint + this (m)
 ## a camera higher than this (the title fly-over, 25 m up) sees ~3x the gameplay ground
-## area with every plant a few pixels big: it gets a third of every cell
+## area with every plant a few pixels big: it gets FAR_DENSITY of every cell (fix round:
+## a third was not enough; sampled over the whole title orbit it peaked at 452k tris)
 const FAR_HEIGHT := 21.0
+const FAR_DENSITY := 0.3
+## ... and the modelled plants (ferns, shrubs, keladi: 200-320 tris, ~10% of the plants
+## but ~75% of the undergrowth triangles) only FAR_DENSITY * FAR_HEAVY
+const FAR_HEAVY := 0.5
+const HEAVY_TRIS := 100
 ## v1 models used when a v2 asset has not been exported (model, scale factor)
 const FALLBACK := {
 	"grass_a": ["grass_tuft", 1.2], "grass_b": ["grass_tuft", 1.5], "flowers_white": ["flowers", 1.0],
@@ -39,6 +45,7 @@ var mmis: Array[MultiMeshInstance3D] = []
 var total := 0
 var density := 1.0
 var _cells: Array[Dictionary] = []    # per MultiMesh: Vector2i -> PackedFloat32Array
+var _heavy: Array[bool] = []          # per MultiMesh: a modelled plant (> HEAVY_TRIS)
 var _built := Rect2()
 var _dirty := true
 var _far := false
@@ -75,9 +82,15 @@ func build(data: Dictionary, is_blocked: Callable) -> void:
 			if not cells.has(key):
 				cells[key] = []
 			var s: float = float(arr[k + 4]) * sfac
+			# soft patches (~15-30 m) where the plants run a little bigger and yellower or
+			# smaller and bluer, so the rosettes do not repeat evenly across a field
+			var pa := 0.5 + 0.5 * sin(x * 0.21 + 1.7 * sin(z * 0.15)) * cos(z * 0.18 - 0.9 * sin(x * 0.11))
+			var pb := 0.5 + 0.5 * sin(z * 0.17 + 1.3 * cos(x * 0.13) + 2.0)
+			s *= lerpf(0.86, 1.12, pb)
 			var basis := Basis(Vector3.UP, deg_to_rad(float(arr[k + 3]))).scaled(Vector3(s, s * rng.randf_range(0.9, 1.1), s))
-			var b := rng.randf_range(0.84, 1.0)
-			var tint := Color(b * rng.randf_range(0.93, 1.0), b, b * rng.randf_range(0.86, 1.0))
+			var b := rng.randf_range(0.86, 1.0) * lerpf(0.96, 1.05, pa)
+			var tint := Color(b * rng.randf_range(0.93, 1.0) * lerpf(0.93, 1.04, pa), b,
+				b * rng.randf_range(0.88, 1.0) * lerpf(0.98, 0.84, pa))
 			cells[key].append([Transform3D(basis, Vector3(x, float(arr[k + 1]), z)), tint])
 		# pack: one scratch MultiMesh with every instance, cell after cell (each cell
 		# shuffled with our own rng so the order is deterministic), then slice its buffer
@@ -122,6 +135,13 @@ func build(data: Dictionary, is_blocked: Callable) -> void:
 		add_child(mmi)
 		mmis.append(mmi)
 		_cells.append(packed)
+		var tris := 0
+		var am := mesh as ArrayMesh
+		for si in mesh.get_surface_count():
+			if am:
+				var idx: int = am.surface_get_array_index_len(si)
+				tris += (idx if idx > 0 else am.surface_get_array_len(si)) / 3
+		_heavy.append(tris > HEAVY_TRIS)
 		total += n
 	_dirty = true
 
@@ -179,8 +199,10 @@ func _rebuild(area: Rect2) -> void:
 	var c0 := Vector2i(floori(area.position.x / CELL), floori(area.position.y / CELL))
 	var c1 := Vector2i(floori(area.end.x / CELL), floori(area.end.y / CELL))
 	var aabb := AABB(Vector3(area.position.x, -2.0, area.position.y), Vector3(area.size.x, 7.0, area.size.y))
-	var dens := density * (0.35 if _far else 1.0)
 	for m in mmis.size():
+		var dens := density
+		if _far:
+			dens *= FAR_DENSITY * (FAR_HEAVY if _heavy[m] else 1.0)
 		var cells: Dictionary = _cells[m]
 		var out := PackedFloat32Array()
 		for cz in range(c0.y, c1.y + 1):
@@ -192,8 +214,13 @@ func _rebuild(area: Rect2) -> void:
 				if dens >= 0.999:
 					out.append_array(arr)
 				else:
-					var cnt := arr.size() / STRIDE
-					out.append_array(arr.slice(0, int(ceil(cnt * dens)) * STRIDE))
+					# round up or down by a fixed per-cell dither, so thin densities keep
+					# their average (ceil kept >= 1 plant of every model in every cell)
+					var want := float(arr.size() / STRIDE) * dens
+					var cnt := int(want)
+					if float(absi(hash(key) + m * 7919) % 1000) * 0.001 < want - float(cnt):
+						cnt += 1
+					out.append_array(arr.slice(0, cnt * STRIDE))
 		var n := out.size() / STRIDE
 		var mm := mmis[m].multimesh
 		# grow-only capacity: no GPU buffer reallocation while walking around
@@ -251,22 +278,24 @@ static func _cover_material(mat_name: String, tex: Texture2D) -> Material:
 
 
 static func _fern_rosette(mesh: ArrayMesh, tex: Texture2D) -> void:
-	## 6 arching fern fronds (fern.png: one frond, stem at the bottom), 2 segments each:
-	## 24 triangles for a ~1.2 m wide plant
+	## 7 arching fern fronds (fern.png: one frond, stem at the bottom), 2 segments each:
+	## 28 triangles for a ~1.2 m wide plant. The fronds are deliberately uneven (short
+	## and long, low and raised, bunched to one side) so the randomly rotated copies do
+	## not read as the same regular star (fix round review: "rosettes repeat visibly")
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 11
 	var u0 := 22.0 / 256.0
 	var u1 := 241.0 / 256.0
-	var n := 6
+	var n := 7
 	for k in n:
-		var a := TAU * (float(k) + rng.randf_range(-0.22, 0.22)) / float(n)
+		var a := TAU * (float(k) + rng.randf_range(-0.34, 0.34)) / float(n) * 0.92
 		var dir := Vector3(cos(a), 0, sin(a))
 		var side := Vector3(-dir.z, 0, dir.x)
-		var ln := rng.randf_range(0.5, 0.68)
+		var ln := rng.randf_range(0.36, 0.7)
 		var hw := ln * 0.215
-		var rise := rng.randf_range(0.22, 0.34)
+		var rise := rng.randf_range(0.14, 0.36)
 		# [distance out, height, v, AO]
 		var secs := [[0.03, 0.03, 1.0, 0.62], [ln * 0.5, rise, 0.5, 0.9], [ln, rise * 0.45, 0.0, 1.0]]
 		var pts := []

@@ -4,12 +4,14 @@
 //
 // wind sway + optional albedo texture + vertex-colour AO (COLOR) + normals bent
 // towards the sky for small plants (so cards shade like the ground) + translucency
-// + the see-through hole near the player.
+// + the see-through hole near the player + low plants bending away from the player.
 
 global uniform vec2 occlude_center;
 global uniform float occlude_depth;
 global uniform float occlude_radius;
 global uniform float wind_time;
+// the player's feet (world.gd; far below the island when nobody walks)
+global uniform vec3 player_pos;
 
 uniform vec4 albedo : source_color = vec4(1.0);
 uniform sampler2D albedo_tex : source_color, hint_default_white, filter_linear_mipmap, repeat_enable;
@@ -29,10 +31,15 @@ uniform float green_warm = 0.05;
 uniform float tone = 1.0;
 // translucency of the leaves when lit from behind
 uniform vec3 backlight = vec3(0.26, 0.28, 0.14);
+// low ground plants (grass, ferns, leafy clumps) bend down and away around the player,
+// so the knee-high carpet never hides the character's legs (0 = off)
+uniform float trample = 0.0;
 uniform sampler2D noise_tex : hint_default_white, filter_linear_mipmap, repeat_enable;
 
 varying vec3 world_pos;
 varying float height_tint;
+// where the vertex ends up after the trample (for the leg window below)
+varying vec3 bent_pos;
 
 void vertex() {
 	vec3 wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
@@ -45,7 +52,32 @@ void vertex() {
 	VERTEX.z += cos(wind_time * 1.1 + phase) * sway * gust * h * 0.02;
 	// leaf tips flutter a little on their own
 	VERTEX.y += sin(wind_time * 3.1 + wp.x * 1.3 + wp.z * 1.1) * sway * h * 0.006;
+	if (trample > 0.0) {
+		// Fix round 2: the whole plant tips over as a rigid body (a rotation about its
+		// base, away from the player) instead of the lower leaves being sheared sideways,
+		// which stretched shrub and keladi leaves at close range. The amount depends on
+		// where the plant stands, not on each vertex, so nothing tears or stretches.
+		vec2 d = origin.xz - player_pos.xz;
+		// reaches further on the camera side (+z), where the leaves would cover the legs
+		float dist = length(vec2(d.x, d.y * (d.y > 0.0 ? 0.7 : 1.4)));
+		float k = trample * (1.0 - smoothstep(0.35, 1.3, dist)) * step(abs(origin.y - player_pos.y), 1.5);
+		if (k > 0.001) {
+			// a plant right under the player falls away from the camera (behind the legs)
+			vec2 dir = normalize(d + vec2(0.0, -0.08));
+			vec3 ax = vec3(dir.y, 0.0, -dir.x);   // horizontal axis: the top moves along +dir
+			float th = k * 1.05;
+			vec3 r = wp - origin;
+			vec3 rr = r * cos(th) + cross(ax, r) * sin(th) + ax * dot(ax, r) * (1.0 - cos(th));
+			// a plant the player stands in is also pressed down (a bush thicket otherwise
+			// buried the character up to the hat)
+			rr.y *= 1.0 - 0.6 * (1.0 - smoothstep(0.25, 0.95, dist));
+			// world offset -> local (instances are rotated and ~uniformly scaled)
+			mat3 m = mat3(MODEL_MATRIX);
+			VERTEX += transpose(m) * (rr - r) / max(dot(m[0], m[0]), 1e-4);
+		}
+	}
 	world_pos = wp;
+	bent_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	height_tint = clamp(VERTEX.y * 0.12, 0.0, 1.0);
 }
 
@@ -73,6 +105,20 @@ void fragment() {
 	ALBEDO = c * tone;
 	ROUGHNESS = 1.0;
 	BACKLIGHT = backlight;
+	if (trample > 0.0) {
+		// a small see-through window in the leaves right in front of the player's legs
+		// (camera side), so a character standing in a thicket still shows
+		vec2 dp = bent_pos.xz - player_pos.xz;
+		float lw = length(vec2(dp.x, dp.y * 0.8));
+		if (dp.y > -0.15 && lw < 0.9 && bent_pos.y < player_pos.y + 0.95) {
+			int wx = int(FRAGCOORD.x) % 4;
+			int wy = int(FRAGCOORD.y) % 4;
+			float wb[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
+			if ((wb[wx + wy * 4] + 0.5) / 16.0 < (1.0 - smoothstep(0.45, 0.9, lw)) * 0.8) {
+				discard;
+			}
+		}
+	}
 	if (fade_enabled > 0.5) {
 		vec2 d = (SCREEN_UV - occlude_center) * vec2(VIEWPORT_SIZE.x / VIEWPORT_SIZE.y, 1.0);
 		float r = length(d);

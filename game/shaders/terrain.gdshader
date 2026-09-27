@@ -36,16 +36,19 @@ uniform float tile_m = 5.5;
 uniform float world_size = 200.0;
 uniform float water_level = -0.3;
 uniform float shade_strength = 1.0;
-uniform float tex_saturation = 0.85;
+uniform float tex_saturation = 0.74;
 // linear multiplier: texture -> the target's warm yellow-green lawn (sunlit V ~0.75,
 // hue ~66: #b3bb62; tan patches come from the dry-grass layer)
-uniform vec3 grass_tint = vec3(1.28, 1.05, 1.6);
+uniform vec3 grass_tint = vec3(1.40, 1.12, 1.5);
 // average colour of grass_tex (linear), set by world.gd; detail is scaled around it
 uniform vec3 grass_avg = vec3(0.27, 0.39, 0.065);
-// < 1 flattens the texture's fine blade noise into a smoother, painterly ground
-uniform float detail_contrast = 0.7;
+// < 1 flattens the texture's fine blade noise into a smoother, painterly ground.
+// Fix round 2: 0.7 / 1.5 left the open lawn a busy mottle (mean local gradient
+// 0.18-0.22 against the target's 0.16, only 2-11% of a frame smooth against 23%);
+// the target's lawn is soft, broad strokes of yellow-green and olive
+uniform float detail_contrast = 0.5;
 // mip bias (as a gradient scale) for the grass: > 1 = softer
-uniform float grass_blur = 1.5;
+uniform float grass_blur = 2.0;
 // v1 procedural palette (fallbacks) + tints anchored to the target palette
 uniform vec3 grass_dark : source_color = vec3(0.30, 0.45, 0.235);
 uniform vec3 grass_mid : source_color = vec3(0.43, 0.57, 0.28);
@@ -58,8 +61,13 @@ uniform vec3 mulch_col : source_color = vec3(0.45, 0.35, 0.24);
 uniform vec3 shade_tint : source_color = vec3(0.78, 0.95, 0.82);
 // macro variation: shady olive <-> sunlit yellow-green (linear multipliers; a narrow
 // range, the v2 1.9x spread made open fields glare next to dull parcels)
-uniform vec3 macro_shady = vec3(0.78, 0.82, 0.76);
-uniform vec3 macro_sunny = vec3(1.0, 0.99, 0.88);
+// (fix round 2: sunny patches lean yellow, shady ones a deeper leaf green, and the
+// ~13 m noise weighs more, so the smoother lawn keeps the target's soft patches of
+// yellow-green and green: its lawn samples run from H 65 V 0.82 to H 80 V 0.60)
+uniform vec3 macro_shady = vec3(0.64, 0.78, 0.66);
+uniform vec3 macro_sunny = vec3(1.07, 1.0, 0.82);
+// weight of the ~13 m noise in that variation (0.35 before fix round 2)
+uniform float macro_mid = 0.6;
 uniform float shade_depth = 0.45;
 // contact-shade response: the baked mask is remapped so faint shade (the grass carpet)
 // barely darkens the lawn and the shade pools under the thickets
@@ -118,7 +126,7 @@ void fragment() {
 		gdetail = clamp(dot(ga, vec3(0.9)) * 1.2, 0.0, 1.0);
 		g = sat(g, tex_saturation) * grass_tint;
 		// shady olive <-> sunny yellow-green macro variation
-		float t = smoothstep(0.25, 0.85, tone + (n2.b - 0.5) * 0.35);
+		float t = smoothstep(0.25, 0.85, tone + (n2.b - 0.5) * macro_mid);
 		g *= mix(macro_shady, macro_sunny, t);
 	} else {
 		g = mix(grass_dark, grass_mid, smoothstep(0.22, 0.48, tone + (n2.g - 0.5) * 0.2));

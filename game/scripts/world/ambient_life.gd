@@ -30,6 +30,7 @@ var _flowers := {}             # Vector2i(8 m cell) -> PackedVector3Array
 
 var _smoke: Array[CPUParticles3D] = []
 var _smoke_mat: StandardMaterial3D
+var _steam_mat: StandardMaterial3D
 var _leaves: CPUParticles3D
 var _fireflies: CPUParticles3D
 var _dust: CPUParticles3D
@@ -387,14 +388,17 @@ func _front_vent(faces: PackedVector3Array, aabb: AABB, stacks: Array[Vector2], 
 func _build_smoke() -> void:
 	var tops := _chimney_tops()
 	var tex := _soft_dot(64, 0.25)
-	var mat := _particle_material(tex, Color(1, 1, 1, 1))
-	# unshaded, so it is tinted by the night factor every frame (v2 showed glowing white
-	# orbs over the dark mill at night)
-	_smoke_mat = mat
+	# unshaded, so both are tinted by the time of day every frame (v2 showed glowing
+	# white orbs over the dark mill at night). The low steam gets its own, fainter
+	# material: in daylight a full-white unshaded puff is brighter than anything around
+	# it and read as a white blob in front of the hopper (fix round)
+	_smoke_mat = _particle_material(tex, Color(1, 1, 1, 1))
+	_steam_mat = _particle_material(_soft_dot(64), Color(1, 1, 1, 1))
 	for top in tops:
 		# the breeze blows south, towards the camera, so both the chimney plume and
 		# the low steam drift into the gameplay frame
 		var low: bool = top.y < 6.0
+		var mat: StandardMaterial3D = _steam_mat if low else _smoke_mat
 		var p := CPUParticles3D.new()
 		p.name = "MillSteam" if low else "ChimneySmoke"
 		p.amount = 18
@@ -415,9 +419,9 @@ func _build_smoke() -> void:
 		p.scale_amount_max = 1.4
 		var curve := Curve.new()
 		curve.add_point(Vector2(0, 0.45))
-		curve.add_point(Vector2(1, 2.4 if low else 2.8))
+		curve.add_point(Vector2(1, 3.0 if low else 2.8))
 		p.scale_amount_curve = curve
-		p.color_ramp = _fade_ramp(Color(0.97, 0.96, 0.93, 0.62) if low else Color(0.93, 0.92, 0.88, 0.8), 0.14)
+		p.color_ramp = _fade_ramp(Color(0.97, 0.96, 0.93, 0.5) if low else Color(0.93, 0.92, 0.88, 0.8), 0.2 if low else 0.14)
 		p.local_coords = false
 		p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(p)
@@ -540,8 +544,11 @@ func _process(delta: float) -> void:
 		_flock.visible = false
 	_update_butterflies(delta)
 	if _smoke_mat:
-		# day: soft cream steam; night: a faint cool grey wisp in the dark
-		_smoke_mat.albedo_color = Color(1, 1, 1, 1).lerp(Color(0.2, 0.23, 0.32, 0.45), _night)
+		# day: soft cream smoke; night: a faint cool grey wisp in the dark
+		_smoke_mat.albedo_color = Color(0.95, 0.95, 0.93, 0.95).lerp(Color(0.2, 0.23, 0.32, 0.45), _night)
+		# the low steam in the gameplay frame: a thin haze about as bright as the sunlit
+		# walls behind it (V ~0.8), not a white glow
+		_steam_mat.albedo_color = Color(0.84, 0.86, 0.85, 0.5).lerp(Color(0.2, 0.23, 0.32, 0.35), _night)
 	_leaves.global_position = c + Vector3(0, 7.5, -2.0)
 	_leaves.emitting = _night < 0.5
 	var ff := _night > 0.45

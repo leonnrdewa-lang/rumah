@@ -13,21 +13,36 @@ const SHADE_TEX_PATH := "res://assets/textures/world_shade.png"
 const GROUND_DIR := "res://assets/textures/ground/"
 const GROUND_TEX := ["grass", "grass_dry", "dirt", "sand", "mulch"]
 ## Day light, tuned against the target at 08:30 (sunlit lawn V ~0.75 hue ~65, dirt V
-## ~0.88, cast shadows ~0.65x as bright): a warm sun from the upper left and a green-teal
-## sky/foliage bounce, so sunlit ground reads warm yellow-green and shade olive-teal
-const SUN_DAY := Color(1.0, 0.93, 0.74)
-const SUN_ENERGY := 1.25
-const AMBIENT_DAY := Color("a8ccb8")
-const AMBIENT_ENERGY := 0.67
+## ~0.88, cast shadows ~0.65x as bright): a warm sun from the upper left and a teal
+## sky/foliage bounce, so sunlit ground reads warm yellow-green and shade olive-teal.
+## Fix round: the sky light is bluer (was a8ccb8) and the sun a little stronger. The
+## green-tinted bounce multiplied the green albedos into saturated dark greens (S 0.63 in
+## shade against the target's 0.52, hue 83 against 89); with the teal sky the shade
+## reads cool and soft, and the post saturation (1.06) gives the sunlit mids back.
+## Fix round 2: the shade greens still measured S 0.56 against the target's 0.52 and the
+## sunlit mids / highlights 0.50 / 0.48 against 0.55 / 0.53. A bluer sky light and a
+## yellower sun pull the two apart (shade cooler and softer, sunlit greens richer and
+## warmer), a little more of both keeps the frame's brightness.
+const SUN_DAY := Color("fff0a8")
+const SUN_ENERGY := 1.42
+const AMBIENT_DAY := Color("94bfe2")
+const AMBIENT_ENERGY := 0.77
+const POST_SATURATION := 1.08
 ## "Hemat baterai" turns the sun's shadows off. In the Compatibility renderer that
 ## moves the sun from its own additive pass into the base pass, where our custom-shader
 ## materials receive far less of it (measured 0.43x on a 0.5 albedo), so the sun is
 ## boosted back. With nothing in shade the boosted warm sun turned the whole frame
 ## khaki (hue 64-67 against 74-78 at full quality), so it is boosted less, made a
 ## little cooler, and the green-teal sky light makes up the difference.
+## Fix round 2: the fix round's frames still sat 7-11 hue steps yellower than full
+## quality (mid greens 68-76 against 79-85), because every pixel gets the warm sun.
+## The sun is now close to neutral here and the sky light a touch bluer; the lost
+## saturation comes back in the post pass (x1.25 instead of x1.1).
 const LQ_SUN_BOOST := 1.8
-const LQ_SUN_TINT := Color(0.96, 1.0, 1.1)
+const LQ_SUN_TINT := Color(0.92, 1.0, 1.22)
 const LQ_AMBIENT := 1.3
+const LQ_AMBIENT_TINT := Color(0.95, 0.98, 1.03)
+const LQ_SATURATION := 1.25
 
 const DECOR_COLLIDE := {"tree_big": 0.55, "coconut": 0.35, "banana": 0.3, "rock_b": -1.0, "rock_c": -1.0,
 	"cliff_a": -1.0, "bush_a": 0.45, "bush_b": 0.45, "sawit_wild": 0.45}
@@ -214,7 +229,7 @@ func _build_environment() -> void:
 	env.adjustment_enabled = true
 	env.adjustment_brightness = 1.0
 	env.adjustment_contrast = 1.05
-	env.adjustment_saturation = 1.0
+	env.adjustment_saturation = POST_SATURATION
 	we.environment = env
 	add_child(we)
 	sun = DirectionalLight3D.new()
@@ -247,6 +262,9 @@ func _apply_quality() -> void:
 	env.glow_enabled = quality_high
 	# the additive glow brightens the frame a little; keep "Hemat baterai" as bright
 	env.tonemap_exposure = 1.0 if quality_high else 1.07
+	# without shadows the frame is flatter and read greyer (S 0.45 against 0.52 at full
+	# quality); a little more post saturation costs nothing
+	env.adjustment_saturation = POST_SATURATION * (1.0 if quality_high else LQ_SATURATION)
 	# "Hemat baterai" halves the undergrowth and drops its shadows
 	if undergrowth:
 		undergrowth.set_density(1.0 if quality_high else 0.5)
@@ -423,11 +441,11 @@ func _build_plant_mask() -> void:
 	for id in door_points:
 		var d: Vector3 = door_points[id]
 		_mask_circle(d.x, d.z, 1.4)
-	# planting spots: terrain.py keeps ferns 1.2 m and taller plants 1.6 m away; low grass
-	# may reach the (smaller) piringan's edge
+	# planting spots: terrain.py keeps the ferns / leafy cover 1.5 m and taller plants
+	# 1.6-2.3 m away (a ~2 m weeded circle); grass may reach the piringan's rim at 1.1 m
 	for key in tile_views:
 		var tp: Vector3 = tile_views[key].position
-		_mask_circle(tp.x, tp.z, 0.85)
+		_mask_circle(tp.x, tp.z, 1.05)
 	for it in interactables:
 		if it.has("pos") and not it.has("tile"):
 			var ip: Vector3 = it["pos"]
@@ -1024,6 +1042,7 @@ func _update_daylight() -> void:
 	if not sun.shadow_enabled:
 		col *= LQ_SUN_TINT
 		energy *= LQ_SUN_BOOST
+		amb *= LQ_AMBIENT_TINT
 		amb_energy *= LQ_AMBIENT
 	sun.light_color = col
 	sun.light_energy = energy
@@ -1045,7 +1064,10 @@ func _update_camera(delta: float) -> void:
 		var a := _title_t * 0.05
 		var center := Vector3(sin(a) * 18.0, 0, 6.0 + cos(a) * 10.0)
 		cam_rig.global_position = cam_rig.global_position.lerp(center, clampf(delta * 0.8, 0.0, 1.0))
-		_place_camera(34.0, 48.0)
+		# the fly-over's shadows stop ~45 m out (the far half of its frame is a few pixels
+		# per plant; full range cost ~100k extra shadow triangles over the 400k budget)
+		_place_camera(34.0, 48.0, 45.0)
+		RenderingServer.global_shader_parameter_set("player_pos", Vector3(0, -1000, 0))
 		return
 	# smooth, frame-rate independent follow (a touch of lag reads as "floaty" camera)
 	var vel: Vector3 = player.velocity
@@ -1072,9 +1094,11 @@ func _update_camera(delta: float) -> void:
 	var local := camera.global_transform.affine_inverse() * pp
 	RenderingServer.global_shader_parameter_set("occlude_depth", -local.z)
 	RenderingServer.global_shader_parameter_set("occlude_radius", 0.13 * 24.0 / dist)
+	# low plants bend away from the player's feet (foliage_body.gdshaderinc)
+	RenderingServer.global_shader_parameter_set("player_pos", player.global_position if player.visible else Vector3(0, -1000, 0))
 
 
-func _place_camera(dist: float, pitch_deg: float) -> void:
+func _place_camera(dist: float, pitch_deg: float, max_shadow := 70.0) -> void:
 	var pitch := deg_to_rad(pitch_deg)
 	camera.position = Vector3(0, sin(pitch) * dist, cos(pitch) * dist)
 	camera.rotation = Vector3(-pitch, 0, 0)
@@ -1084,7 +1108,7 @@ func _place_camera(dist: float, pitch_deg: float) -> void:
 	var half := deg_to_rad(camera.fov * 0.5)
 	var h := sin(pitch) * dist + 1.0
 	var depth := h / sin(maxf(pitch - half, 0.2)) * cos(half)
-	var sd := clampf(depth / 0.8, 20.0, 70.0)
+	var sd := clampf(depth / 0.8, 20.0, max_shadow)
 	if absf(sd - sun.directional_shadow_max_distance) > 0.05:
 		sun.directional_shadow_max_distance = sd
 
