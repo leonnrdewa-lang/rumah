@@ -867,6 +867,38 @@ func _tile_action(pid: int, idx: int) -> void:
 			Sfx.play("harvest")
 			burst(tv.global_position + Vector3(0, 2.6, 0), Color("c9401f"), 16)
 			float_text(tv.global_position + Vector3(0, 1.0, 0), "+TBS", Color("b8401f"))
+			_drop_bunches(tv.global_position)
+
+
+func _drop_bunches(at: Vector3) -> void:
+	## Cut fruit bunches thud down beside the palm and lie there for a few seconds.
+	if not ModelLib.has_model("tbs"):
+		return
+	for i in 2:
+		var mi := MeshInstance3D.new()
+		mi.mesh = ModelLib.merged_mesh("tbs", false)
+		var a := randf() * TAU
+		var land := at + Vector3(cos(a), 0, sin(a)) * randf_range(0.9, 1.4)
+		land.y = height_at(land.x, land.z)
+		mi.position = at + Vector3(0, 2.6, 0)
+		mi.rotation = Vector3(randf() * 0.6, randf() * TAU, randf() * 0.6)
+		add_child(mi)
+		var shadow := GroundFx.blob(0.32, 0.4)
+		shadow.position = land + Vector3(0, 0.03, 0)
+		shadow.visible = false
+		add_child(shadow)
+		var tw := create_tween()
+		tw.tween_interval(i * 0.12)
+		tw.tween_property(mi, "position:x", land.x, 0.45)
+		tw.parallel().tween_property(mi, "position:z", land.z, 0.45)
+		tw.parallel().tween_property(mi, "position:y", land.y + 0.12, 0.45).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		tw.tween_callback(shadow.show)
+		tw.tween_property(mi, "position:y", land.y + 0.2, 0.08)
+		tw.tween_property(mi, "position:y", land.y + 0.12, 0.1)
+		tw.tween_interval(6.0)
+		tw.tween_property(mi, "scale", Vector3.ONE * 0.01, 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+		tw.tween_callback(mi.queue_free)
+		tw.tween_callback(shadow.queue_free)
 
 
 func burst(pos: Vector3, color: Color, amount := 14) -> void:

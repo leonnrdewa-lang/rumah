@@ -153,7 +153,7 @@ func _build_flock() -> void:
 		var row := ceilf(i / 2.0)
 		var off := Vector3(((i % 2) * 2.0 - 1.0) * 0.9 * row, _rng.randf_range(-0.3, 0.3), -0.9 * row)
 		_bird_offsets.append(off)
-		mm.set_instance_transform(i, Transform3D(Basis().scaled(Vector3.ONE * 0.8), off))
+		mm.set_instance_transform(i, Transform3D(Basis().scaled(Vector3.ONE * 0.65), off))
 		mm.set_instance_color(i, Color("f4efe4"))
 	_flock = MultiMeshInstance3D.new()
 	_flock.name = "Birds"
@@ -171,7 +171,8 @@ func _launch_flock() -> void:
 	dir = dir.normalized()
 	var speed := _rng.randf_range(5.0, 6.5)
 	var start := c - dir * 26.0 + Vector3(dir.z, 0, -dir.x) * _rng.randf_range(-5.0, 5.0)
-	start.y = c.y + _rng.randf_range(5.5, 7.0)
+	# low over the fields: high birds pass right in front of the camera and look huge
+	start.y = c.y + _rng.randf_range(3.2, 4.4)
 	_flock.global_position = start
 	_flock.look_at(start + dir, Vector3.UP, true)
 	_flock_vel = dir * speed
