@@ -130,28 +130,62 @@
 <script>
 (function () {
   const GODOT_CONFIG = /*GODOT_CONFIG*/{};
-  const GZ = /*GZ_FILES*/[];
+  const PACKED = /*PACKED*/{};  // file -> {src, size, b64}
 
-  // Large files are shipped gzip-compressed and inflated in the browser.
+  const fill = document.getElementById("fill");
+  const status = document.getElementById("status");
+  const got = {};
+  const total = Object.values(PACKED).reduce((n, p) => n + p.size, 0);
+  function showProgress() {
+    const done = Object.values(got).reduce((n, v) => n + v, 0);
+    const pct = total ? Math.min(100, Math.round((done / total) * 100)) : 0;
+    fill.style.width = Math.max(4, pct) + "%";
+    status.textContent = pct < 100 ? "Mengunduh game… " + pct + "% (" + (done / 1048576).toFixed(1) + " / " + (total / 1048576).toFixed(1) + " MB)"
+                                   : "Menyiapkan kebun…";
+  }
+
+  function decodeBase64(text) {
+    const bin = atob(text.replace(/\s+/g, ""));
+    const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+
+  async function download(name, info) {
+    const res = await nativeFetch(info.src);
+    if (!res.ok) throw new Error("Gagal mengunduh " + info.src + " (" + res.status + ")");
+    const reader = res.body.getReader();
+    const chunks = [];
+    got[name] = 0;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      got[name] += value.length;
+      showProgress();
+    }
+    got[name] = info.size;
+    showProgress();
+    let blob = new Blob(chunks);
+    if (info.b64) blob = new Blob([decodeBase64(await blob.text())]);
+    return blob;
+  }
+
+  // Big files ship gzip-compressed (as base64 text where the host only serves text);
+  // Godot's loader asks for index.wasm / index.pck and gets the inflated bytes.
   const nativeFetch = window.fetch.bind(window);
   window.fetch = function (input, init) {
     const url = typeof input === "string" ? input : (input && input.url) || "";
     const clean = url.split("?")[0];
-    const hit = GZ.find((name) => clean.endsWith(name));
-    if (hit && typeof DecompressionStream === "function") {
-      return nativeFetch(url.replace(hit, hit + ".gz"), init).then((res) => {
-        if (!res.ok) return res;
-        const type = hit.endsWith(".wasm") ? "application/wasm" : "application/octet-stream";
-        return new Response(res.body.pipeThrough(new DecompressionStream("gzip")), {
-          status: 200, headers: { "Content-Type": type },
-        });
-      });
+    const name = Object.keys(PACKED).find((n) => clean.endsWith(n));
+    if (name && typeof DecompressionStream === "function") {
+      return download(name, PACKED[name]).then((blob) => new Response(
+        blob.stream().pipeThrough(new DecompressionStream("gzip")),
+        { status: 200, headers: { "Content-Type": name.endsWith(".wasm") ? "application/wasm" : "application/octet-stream" } }));
     }
     return nativeFetch(input, init);
   };
 
-  const fill = document.getElementById("fill");
-  const status = document.getElementById("status");
   const loader = document.getElementById("loader");
   const errorBox = document.getElementById("error");
   const tips = [
@@ -177,22 +211,14 @@
     fail("Browser ini belum mendukung WebGL 2. Coba Chrome atau Firefox versi terbaru.");
     return;
   }
-  if (GZ.length && typeof DecompressionStream !== "function") {
+  if (typeof DecompressionStream !== "function") {
     fail("Browser ini terlalu lama (tidak mendukung DecompressionStream). Coba Chrome/Firefox/Safari terbaru.");
     return;
   }
 
   const engine = new Engine(GODOT_CONFIG);
   engine.startGame({
-    onProgress: function (current, total) {
-      if (total > 0) {
-        const pct = Math.min(100, Math.round((current / total) * 100));
-        fill.style.width = Math.max(4, pct) + "%";
-        status.textContent = "Mengunduh game… " + pct + "%";
-      } else {
-        status.textContent = "Mengunduh game… " + Math.round(current / 1048576) + " MB";
-      }
-    },
+    onProgress: function () {},
   }).then(() => {
     clearInterval(tipTimer);
     loader.classList.add("gone");

@@ -1,6 +1,7 @@
 """Exports the Godot project for the web and packages two ready-to-host builds:
 
-  dist/artifact/  page body + files for a claude.ai Artifact (no <html> skeleton)
+  dist/artifact/  page body + files for a claude.ai Artifact (no <html> skeleton;
+                  big files as base64 text because the host only serves web types)
   docs/           full static site for GitHub Pages (Settings -> Pages -> /docs)
 
 Large binaries (index.wasm, index.pck) are gzip-compressed; the page inflates them
@@ -8,6 +9,7 @@ in the browser with DecompressionStream, so any static host works.
 
 python3 tools/build_web.py [--skip-export]
 """
+import base64
 import gzip
 import json
 import os
@@ -53,7 +55,6 @@ def godot_config():
 def package():
     cfg = godot_config()
     shell = open(SHELL, encoding="utf-8").read()
-    body = shell.replace("/*GODOT_CONFIG*/{}", json.dumps(cfg)).replace("/*GZ_FILES*/[]", json.dumps(GZIP))
     for name, out in TARGETS.items():
         if os.path.isdir(out):
             shutil.rmtree(out)
@@ -62,9 +63,20 @@ def package():
             src = os.path.join(BUILD, f)
             if os.path.exists(src):
                 shutil.copy(src, os.path.join(out, f))
+        packed = {}
         for f in GZIP:
-            with open(os.path.join(BUILD, f), "rb") as fi, gzip.open(os.path.join(out, f + ".gz"), "wb", 9) as fo:
-                shutil.copyfileobj(fi, fo)
+            raw = open(os.path.join(BUILD, f), "rb").read()
+            gz = gzip.compress(raw, 9)
+            if name == "artifact":
+                # the Artifact host only serves known web types: ship gzip bytes as base64 text
+                data = base64.b64encode(gz)
+                fname = f + ".gz.txt"
+            else:
+                data = gz
+                fname = f + ".gz"
+            open(os.path.join(out, fname), "wb").write(data)
+            packed[f] = {"src": fname, "size": len(data), "b64": name == "artifact"}
+        body = shell.replace("/*GODOT_CONFIG*/{}", json.dumps(cfg)).replace("/*PACKED*/{}", json.dumps(packed))
         if name == "artifact":
             page = body
         else:

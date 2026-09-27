@@ -333,6 +333,8 @@ func talk(vid: String) -> void:
 		var price: int = GS.OIL_PRICES[GS.oil_price_level]
 		choices.append({"text": "Tawarkan minyak goreng", "hint": GS.fmt_short(price), "enabled": int(v["oil_day"]) != GS.day,
 			"cb": func(): _sell_oil(vid)})
+	if int(GS.upgrades["preman"]) > 0 and int(v["money"]) >= 50000:
+		choices.append({"text": "Suruh preman memalak uangnya", "hint": "rampok " + GS.fmt_short(v["money"]), "cb": func(): _extort(vid)})
 	if v["status"] == "landless" and not v["worker"]:
 		choices.append({"text": "Tawari kerja jadi buruh", "hint": GS.fmt_short(GS.PRICE["buruh_murah"]) + "/hari",
 			"enabled": GS.workers.size() < GS.MAX_WORKERS, "cb": func(): _hire_villager(vid)})
@@ -393,7 +395,7 @@ func land_menu(vid: String) -> void:
 	choices.append({"text": "Tawar murah", "hint": GS.fmt_short(int(value * 0.45)), "enabled": GS.money >= int(value * 0.45), "cb": func(): _lowball(vid)})
 	choices.append({"text": "Tipu pakai surat palsu", "hint": "punya %d surat" % GS.inv["surat"], "enabled": int(GS.inv["surat"]) > 0,
 		"cb": func(): _fraud(vid)})
-	choices.append({"text": "Gusur paksa pakai preman", "hint": "preman siap: %d" % GS.upgrades["preman"], "enabled": int(GS.upgrades["preman"]) > 0,
+	choices.append({"text": "Rampas paksa (gusur) pakai preman", "hint": "preman siap: %d" % GS.upgrades["preman"], "enabled": int(GS.upgrades["preman"]) > 0,
 		"cb": func(): _evict(vid)})
 	if d.get("sogok", false):
 		var cost := int(value * 0.5) + 1500000
@@ -488,10 +490,28 @@ func _evict(vid: String) -> void:
 	v["evicted"] = true
 	_acquire(vid, "seized")
 	world.npcs[vid].emote("!!", 4.0)
+	var house: Vector3 = world.door_points.get(GS.VILLAGERS[vid]["home"], world.player.global_position)
+	world.spawn_temp_actor("char_preman", "Bang Codet", house + Vector3(1.2, 0, 1.0), 2.5)
+	world.spawn_temp_actor("char_preman", "Anak buah Codet", house + Vector3(-1.4, 0, 1.4), 2.5)
 	var extra := " Mas Joko sempat live di media sosial... (Kecurigaan ekstra!)" if d.get("aktivis", false) else ""
 	ui.info_panel("Relokasi 'Sukarela'", ["Bang Codet dan kawan-kawan datang membawa pentungan dan senyum ramah.",
 		"%s dan keluarganya kini tinggal di tenda biru dekat warung." % GS.vname(vid),
 		"Kecurigaan +%d • Reputasi -30 • Semua warga makin tidak percaya padamu.%s" % [38 + (20 if d.get("aktivis", false) else 0), extra]], "...Lanjut", Callable(), ui.RED)
+
+
+func _extort(vid: String) -> void:
+	var v: Dictionary = GS.villagers[vid]
+	var loot := int(v["money"])
+	GS.upgrades["preman"] = int(GS.upgrades["preman"]) - 1
+	v["money"] = 0
+	v["trust"] = 0.0
+	GS.add_money(loot)
+	GS.add_heat(22)
+	GS.add_rep(-15)
+	Sfx.play("cash")
+	world.npcs[vid].emote("!!", 4.0)
+	world.spawn_temp_actor("char_preman", "Bang Codet", world.npcs[vid].global_position + Vector3(1.2, 0, 0.8), 2.0)
+	say(vp(vid), GS.vname(vid), "Ampun, Bang! Ini uang tabungan buat sekolah anak... Ambil, ambil saja! (Kamu merampok %s. Kecurigaan +22, reputasi -15)" % GS.fmt_rp(loot))
 
 
 func _bribe_kades(vid: String, cost: int) -> void:
@@ -643,6 +663,11 @@ func run_morning_events() -> void:
 	var ev: String = GS.pending_events.pop_front()
 	match ev:
 		"demo":
+			var kd: Vector3 = world.door_points.get("kantor", Vector3.ZERO)
+			world.spawn_banner(kd + Vector3(-2.5, 0, 2.2), "KEMBALIKAN\nTANAH KAMI!")
+			for vid in GS.villagers:
+				if GS.villagers[vid]["status"] == "landless":
+					world.npcs[vid].set_anchor(kd + Vector3(randf_range(-3, 3), 0, randf_range(2.5, 4.5)), 1.5, true)
 			ui.dialog("portrait_pemuda", "Mas Joko (Demo Warga)", "Warga berkumpul di depan kantormu membawa spanduk 'KEMBALIKAN TANAH KAMI!'. Mereka menunggu jawabanmu, Juragan.",
 				[{"text": "Bayar uang damai", "hint": "Rp 1 jt", "enabled": GS.money >= 1000000, "cb": func():
 					GS.spend(1000000)

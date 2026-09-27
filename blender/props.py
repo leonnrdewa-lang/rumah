@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import bpy  # noqa: E402
 import bmesh  # noqa: E402
-from mathutils import Vector  # noqa: E402
+from mathutils import Matrix, Vector  # noqa: E402
 
 import common as C  # noqa: E402
 from common import (reset_scene, mat, add_box, add_cyl, add_sphere, add_ico, mesh_from_data,  # noqa: E402
@@ -130,12 +130,38 @@ def facing_rot(f):
     return math.atan2(f[0], -f[1])
 
 
-def center_root(root, keep_y=False):
-    """Shift the root's children so the XY bounding-box centre is at the origin."""
-    mn, mx = C._bounds(root)
-    off = Vector((-(mn.x + mx.x) / 2, 0 if keep_y else -(mn.y + mx.y) / 2, -mn.z if mn.z > 0.001 else 0))
+def world_bounds(root):
+    """Exact world-space bounds of all mesh vertices under root (evaluated, modifiers applied)."""
+    dg = bpy.context.evaluated_depsgraph_get()
+    mn = Vector((1e9, 1e9, 1e9))
+    mx = Vector((-1e9, -1e9, -1e9))
+    for o in all_descendants(root):
+        if o.type != "MESH":
+            continue
+        ev = o.evaluated_get(dg)
+        me = ev.to_mesh()
+        for v in me.vertices:
+            w = o.matrix_world @ v.co
+            mn = Vector((min(mn.x, w.x), min(mn.y, w.y), min(mn.z, w.z)))
+            mx = Vector((max(mx.x, w.x), max(mx.y, w.y), max(mx.z, w.z)))
+        ev.to_mesh_clear()
+    return mn, mx
+
+
+def center_root(root, keep_y=False, ground=True):
+    """Shift the root's children so the XY bounding-box centre is at the origin (and the lowest
+    point at z = 0 when `ground`)."""
+    bpy.context.view_layer.update()
+    mn, mx = world_bounds(root)
+    off = Vector((-(mn.x + mx.x) / 2, 0 if keep_y else -(mn.y + mx.y) / 2, -mn.z if ground else 0))
+    if off.length < 1e-6:
+        return
     for ch in root.children:
-        ch.location += off
+        if ch.type == "MESH" and ch.name.endswith("_mesh"):
+            ch.data.transform(Matrix.Translation(off))   # merged static mesh keeps an identity node
+            ch.data.update()
+        else:
+            ch.location += off                            # special children keep their own origin
     bpy.context.view_layer.update()
 
 
@@ -159,12 +185,17 @@ def finish(root, parts, name):
         print("[tris]", name, sorted(agg.items(), key=lambda kv: -kv[1]))
     o = join(parts, name + "_mesh")
     o.data.name = name + "_mesh"
+    bpy.ops.object.select_all(action="DESELECT")
+    o.select_set(True)
+    bpy.context.view_layer.objects.active = o
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     reparent(o, root)
     return o
 
 
 def dims(root):
-    mn, mx = C._bounds(root)
+    bpy.context.view_layer.update()
+    mn, mx = world_bounds(root)
     d = mx - mn
     return d.x, d.y, d.z
 
@@ -354,3 +385,741 @@ def crate_parts(P, m_wood, m_dark, loc=(0, 0, 0), size=(0.6, 0.45, 0.4), rotz=0.
             P.append(bx("crate_post", (0.07, 0.07, sz), fr(ax * (sx / 2 - 0.035), ay * (sy / 2 - 0.035), sz / 2),
                         m_wood, 0.015, 1, rotz))
     P.append(bx("crate_top", (sx - 0.1, sy - 0.1, 0.03), fr(0, 0, sz - 0.02), m_wood, 0, rotz=rotz))
+
+
+def prop_root(name):
+    return empty(name)
+
+
+def gold_mat(name="M_Gold", col="#f2c14e", metallic=0.55, rough=0.35):
+    m = mat(name, col, roughness=rough)
+    m.node_tree.nodes["Principled BSDF"].inputs["Metallic"].default_value = metallic
+    return m
+
+
+# ============================================================ props
+def build_crate():
+    name = "crate"
+    root = prop_root(name)
+    P = []
+    crate_parts(P, mat("M_Wood", "wood_light"), mat("M_WoodDark", "wood_dark"), size=(0.62, 0.46, 0.42))
+    finish(root, P, name)
+    return root
+
+
+def build_karung_pupuk():
+    name = "karung_pupuk"
+    root = prop_root(name)
+    P = [sack("sack", mat("M_Sack", "white"), mat("M_Print", "green_sign"), rotz=0.0, seed=2)]
+    finish(root, P, name)
+    center_root(root)
+    return root
+
+
+def build_jerigen():
+    """Yellow jerry can of cooking oil: chunky bevelled body, top grip, red cap, white label."""
+    name = "jerigen"
+    root = prop_root(name)
+    M = dict(pl=mat("M_Plastic", "#f2c14e"), cap=mat("M_Cap", "red"), lab=mat("M_Label", "white"))
+    P = []
+    w, d, h = 0.34, 0.2, 0.42
+    P.append(bx("body", (w, d, h), (0, 0, h / 2), M['pl'], 0.05, 2))
+    P.append(bx("shoulder", (w - 0.06, d - 0.04, 0.05), (0, 0, h + 0.015), M['pl'], 0))
+    # grip: two posts + bar along X at the back half
+    for x in (-0.1, 0.06):
+        P.append(bx("grip_post", (0.04, 0.06, 0.08), (x, 0.03, h + 0.07), M['pl'], 0.012, 1))
+    P.append(bx("grip", (0.22, 0.06, 0.045), (-0.02, 0.03, h + 0.12), M['pl'], 0.018, 1))
+    # spout + cap at the front-right corner
+    P.append(add_cyl("neck", 0.035, 0.05, loc=(0.11, -0.03, h + 0.05), material=M['pl'], verts=8))
+    P.append(add_cyl("cap", 0.045, 0.05, loc=(0.11, -0.03, h + 0.095), material=M['cap'], verts=8))
+    # label on the front face + moulded ribs on the sides
+    P.append(bx("label", (0.22, 0.012, 0.2), (0, -d / 2 - 0.004, 0.2), M['lab'], 0.006, 1))
+    P.append(bx("label_band", (0.22, 0.014, 0.05), (0, -d / 2 - 0.006, 0.2), M['cap'], 0))
+    for sx in (-1, 1):
+        P.append(bx("rib", (0.012, d * 0.7, 0.28), (sx * (w / 2 + 0.003), 0, 0.2), M['pl'], 0))
+    finish(root, P, name)
+    center_root(root)
+    return root
+
+
+def picket(name, x, y, w, h, t, m, z0=0.0):
+    """Pointed fence picket (pentagon prism) facing -Y."""
+    prof = [(-w / 2, 0), (w / 2, 0), (w / 2, h - w / 2), (0, h), (-w / 2, h - w / 2)]
+    vs = [(x + px, y - t / 2, z0 + pz) for px, pz in prof] + [(x + px, y + t / 2, z0 + pz) for px, pz in prof]
+    fs = [(0, 1, 2, 3, 4), (9, 8, 7, 6, 5)] + [(i, 5 + i, 5 + (i + 1) % 5, (i + 1) % 5) for i in range(5)]
+    o = mesh_from_data(name, vs, fs, m)
+    fix_normals(o)
+    return o
+
+
+def build_pagar():
+    """Wooden picket fence segment, 2 m along X (posts sit exactly on the segment ends so segments tile)."""
+    name = "pagar"
+    root = prop_root(name)
+    M = dict(w=mat("M_Wood", "wood_light"), d=mat("M_WoodDark", "wood"))
+    P = []
+    for x in (-1.0, 0.0, 1.0):
+        P.append(bx("post", (0.12, 0.12, 1.0), (x, 0.02, 0.5), M['d'], 0.025, 1))
+        P.append(bx("post_cap", (0.16, 0.16, 0.05), (x, 0.02, 1.02), M['d'], 0.015, 1))
+    for z in (0.3, 0.72):
+        P.append(bx("rail", (2.0, 0.06, 0.09), (0, 0.06, z), M['d'], 0.02, 1))
+    for i in range(8):
+        x = -0.875 + i * 0.25
+        if abs(x) < 0.08:
+            continue
+        P.append(picket("picket", x, -0.0, 0.14, 0.92 + (0.04 if i % 2 else 0.0), 0.03, M['w'], z0=0.04))
+    finish(root, P, name)
+    return root
+
+
+def build_papan():
+    """Signpost: one post with a blank cream board facing -Y. The board is child `Board`
+    (origin = centre of its front face, front face UV 0..1) so text can be put on it."""
+    name = "papan"
+    root = prop_root(name)
+    M = dict(w=mat("M_Wood", "wood"), b=mat("M_Board", "cream"))
+    P = []
+    P.append(bx("post", (0.12, 0.12, 1.55), (0, 0.04, 0.775), M['w'], 0.025, 1))
+    P.append(bx("frame", (1.0, 0.06, 0.62), (0, -0.04, 1.2), M['w'], 0.03, 2))
+    P.append(beam("cap", (-0.58, -0.04, 1.55), (0.58, -0.04, 1.55), 0.2, 0.05, Z, M['w'], 0.02))
+    P.append(bx("mound", (0.3, 0.3, 0.06), (0, 0.04, 0.03), M['w'], 0.02, 1))
+    finish(root, P, name)
+    b = board_with_uv("Board", 0.9, 0.52, 0.03, M['b'], (0, -0.1, 1.2), bevel=0.008)
+    b.parent = root
+    return root
+
+
+def build_bangku():
+    """Wooden bench with a low backrest (seat front toward -Y)."""
+    name = "bangku"
+    root = prop_root(name)
+    M = dict(w=mat("M_Wood", "wood_light"), d=mat("M_WoodDark", "wood"))
+    P = []
+    L = 1.4
+    for y in (-0.1, 0.1):
+        P.append(bx("seat", (L, 0.18, 0.06), (0, y, 0.45), M['w'], 0.025, 1))
+    for sx in (-1, 1):
+        x = sx * (L / 2 - 0.16)
+        P.append(bx("leg_f", (0.08, 0.08, 0.42), (x, -0.13, 0.21), M['d'], 0.02, 1))
+        P.append(bx("leg_b", (0.08, 0.08, 0.86), (x, 0.17, 0.43), M['d'], 0.02, 1, rot=(math.radians(-6), 0, 0)))
+        P.append(bx("side_rail", (0.06, 0.36, 0.07), (x, 0.02, 0.36), M['d'], 0.015, 1))
+    P.append(bx("back", (L, 0.05, 0.16), (0, 0.21, 0.76), M['w'], 0.02, 1, rot=(math.radians(-6), 0, 0)))
+    P.append(bx("stretcher", (L - 0.32, 0.05, 0.06), (0, 0.0, 0.14), M['d'], 0.015, 1))
+    finish(root, P, name)
+    center_root(root)
+    return root
+
+
+def tray_mesh(name, top, bot, depth, z0, t, m_out, m_in):
+    """Open tapered tub (wheelbarrow tray): outer shell, inner shell, rim. top/bot = (half x, half y front, half y back)."""
+    def rect(hx, yf, yb, z):
+        return [(-hx, -yf, z), (hx, -yf, z), (hx, yb, z), (-hx, yb, z)]
+    ot = rect(top[0], top[1], top[2], z0 + depth)
+    ob = rect(bot[0], bot[1], bot[2], z0)
+    it = rect(top[0] - t, top[1] - t, top[2] - t, z0 + depth)
+    ib = rect(bot[0] - t, bot[1] - t, bot[2] - t, z0 + t)
+    vs = ot + ob + it + ib
+    fs, fm = [], []
+    for i in range(4):
+        j = (i + 1) % 4
+        fs.append((4 + i, 4 + j, j, i)); fm.append(0)           # outer walls
+        fs.append((i, j, 8 + j, 8 + i)); fm.append(0)           # rim
+        fs.append((8 + i, 8 + j, 12 + j, 12 + i)); fm.append(1)  # inner walls
+    fs.append((7, 6, 5, 4)); fm.append(0)
+    fs.append((12, 13, 14, 15)); fm.append(1)
+    o = mk_multi(name, vs, fs, [m_out, m_in], fm)
+    fix_normals(o)
+    bevel_obj(o, 0.02, 1)
+    return o
+
+
+def gerobak_parts(P, M):
+    # tray: deep tapered tub, front (-Y) slanted forward
+    P.append(tray_mesh("tray", (0.36, 0.55, 0.32), (0.22, 0.22, 0.2), 0.34, 0.42, 0.03, M['tray'], M['tray']))
+    # wheel at the front
+    P.append(add_cyl("tyre", 0.2, 0.1, loc=(0, -0.62, 0.2), material=M['tyre'], verts=12, rot=(0, math.pi / 2, 0),
+                     bevel=0.03))
+    P.append(add_cyl("hub", 0.08, 0.13, loc=(0, -0.62, 0.2), material=M['metal'], verts=8, rot=(0, math.pi / 2, 0)))
+    for sx in (-1, 1):
+        P.append(beam("fork", (sx * 0.08, -0.62, 0.2), (sx * 0.17, -0.25, 0.46), 0.03, 0.03, Z, M['metal'], 0))
+        # handles run back (+Y), under the tray
+        P.append(beam("handle", (sx * 0.14, -0.45, 0.4), (sx * 0.27, 0.8, 0.6), 0.05, 0.05, Z, M['wood'], 0.015))
+        P.append(add_cyl("grip", 0.037, 0.2, loc=(sx * 0.272, 0.76, 0.595), material=M['tyre'], verts=6,
+                         rot=(math.radians(-80), 0, 0)))
+        P.append(beam("leg", (sx * 0.2, 0.28, 0.5), (sx * 0.22, 0.4, 0.0), 0.035, 0.035, (0, 1, 0), M['metal'], 0))
+        P.append(bx("foot", (0.05, 0.14, 0.03), (sx * 0.22, 0.42, 0.015), M['metal'], 0))
+
+
+def build_gerobak():
+    """Wheelbarrow (gerobak sorong): blue tray, wheel at the front (-Y), wooden handles."""
+    name = "gerobak"
+    root = prop_root(name)
+    M = dict(tray=mat("M_Tray", "blue"), wood=mat("M_Wood", "wood"), tyre=mat("M_Tyre", "black"),
+             metal=mat("M_Metal", "metal_dark"))
+    P = []
+    gerobak_parts(P, M)
+    finish(root, P, name)
+    center_root(root)
+    return root
+
+
+def lathe(name, prof, n, m, cap_top=False, cap_bot=False, loc=(0, 0, 0)):
+    """Revolve profile [(r, z), ...] around Z with n segments."""
+    vs, fs = [], []
+    for k in range(n):
+        a = 2 * math.pi * k / n
+        for r, z in prof:
+            vs.append((loc[0] + r * math.cos(a), loc[1] + r * math.sin(a), loc[2] + z))
+    np_ = len(prof)
+    for k in range(n):
+        k2 = (k + 1) % n
+        for i in range(np_ - 1):
+            fs.append((k * np_ + i, k2 * np_ + i, k2 * np_ + i + 1, k * np_ + i + 1))
+    if cap_top:
+        fs.append(tuple(k * np_ + np_ - 1 for k in range(n)))
+    if cap_bot:
+        fs.append(tuple(k * np_ for k in range(n))[::-1])
+    o = mesh_from_data(name, vs, fs, m)
+    fix_normals(o) if (cap_top and cap_bot) else None
+    return o
+
+
+def build_sumur():
+    """Village well: round stone wall with coursed grooves, water inside, two posts with a crank
+    roller, a little clay-tile roof and a bucket on a rope."""
+    name = "sumur"
+    root = prop_root(name)
+    M = dict(stone=mat("M_Stone", "rock"), wood=mat("M_Wood", "wood"), roof=mat("M_Roof", "roof"),
+             water=mat("M_Water", "#3f8f99", roughness=0.3))
+    P = []
+    R, r, H = 0.62, 0.46, 0.78
+    prof = [(R + 0.04, 0.0), (R, 0.08), (R, 0.24), (R - 0.03, 0.27), (R, 0.3), (R, 0.47), (R - 0.03, 0.5), (R, 0.53),
+            (R, H - 0.06), (R + 0.05, H - 0.03), (R + 0.05, H + 0.03), (R - 0.02, H + 0.07), (r, H + 0.07), (r, H - 0.05),
+            (r, 0.35)]
+    o = lathe("wall", prof, 12, M['stone'])
+    smooth_angle(o, 40)
+    P.append(o)
+    P.append(add_cyl("water", r + 0.01, 0.02, loc=(0, 0, 0.42), material=M['water'], verts=12))
+    for sx in (-1, 1):
+        P.append(bx("post", (0.1, 0.12, 1.75), (sx * (R + 0.02), 0, 0.875), M['wood'], 0.025, 1))
+    P.append(rod("roller", (-R - 0.08, 0, 1.3), (R + 0.08, 0, 1.3), 0.07, M['wood'], 8))
+    P.append(bx("crank", (0.04, 0.05, 0.2), (R + 0.12, 0, 1.22), M['wood'], 0.01, 1))
+    P.append(rod("crank_h", (R + 0.12, 0, 1.13), (R + 0.24, 0, 1.13), 0.025, M['wood'], 6))
+    P.append(add_cyl("rope_coil", 0.085, 0.3, loc=(0, 0, 1.3), material=M['stone'], verts=8, rot=(0, math.pi / 2, 0)))
+    P.append(rod("rope", (0.05, 0, 1.24), (0.05, 0, 0.98), 0.012, M['stone'], 4))
+    P.append(add_cyl("bucket", 0.12, 0.2, loc=(0.05, 0, 0.88), material=M['wood'], verts=8, radius2=0.14))
+    P.append(bx("bucket_rim", (0.24, 0.02, 0.02), (0.05, 0, 0.99), M['stone'], 0))
+    # little gable roof (ridge along X)
+    pitch = math.radians(35)
+    c, s_ = math.cos(pitch), math.sin(pitch)
+    zr, sl = 1.97, 0.72
+    for sy in (-1, 1):
+        P.append(bx("roof", (1.6, sl, 0.07), (0, sy * sl / 2 * c, zr - sl / 2 * s_ - 0.02), M['roof'], 0.03, 1,
+                    rot=(-sy * pitch, 0, 0)))
+        for k in range(3):
+            d = 0.16 + k * 0.24
+            P.append(bx("tile_row", (1.62, 0.05, 0.04), (0, sy * d * c, zr - d * s_ + 0.03), M['roof'], 0.0,
+                        rot=(-sy * pitch, 0, 0)))
+    P.append(rod("ridge", (-0.85, 0, 1.99), (0.85, 0, 1.99), 0.07, M['roof'], 6))
+    finish(root, P, name)
+    center_root(root)
+    return root
+
+
+def build_lampu():
+    """Village street lamp ~3 m: stone base, green pole, curved arm toward -Y, hanging lantern whose
+    glass panes use M_Lamp (lit at night)."""
+    name = "lampu"
+    root = prop_root(name)
+    M = dict(pole=mat("M_Pole", "#3f5b4f"), lamp=mat("M_Lamp", "#fff1b0", roughness=0.4),
+             base=mat("M_Base", "rock"))
+    P = []
+    P.append(add_cyl("base", 0.24, 0.34, loc=(0, 0, 0.17), material=M['base'], verts=8, radius2=0.19, bevel=0.03))
+    P.append(add_cyl("pole", 0.085, 2.7, loc=(0, 0, 0.34 + 1.35), material=M['pole'], verts=8, radius2=0.065))
+    P.append(add_cyl("collar", 0.115, 0.1, loc=(0, 0, 0.42), material=M['pole'], verts=8))
+    P.append(add_cyl("collar", 0.1, 0.08, loc=(0, 0, 1.4), material=M['pole'], verts=8))
+    pts = [(0, 0, 2.95), (0, -0.2, 3.1), (0, -0.48, 3.12), (0, -0.66, 3.04)]
+    for a_, b_ in zip(pts, pts[1:]):
+        P.append(rod("arm", a_, b_, 0.05, M['pole'], 6))
+    P.append(add_sphere("knob", 0.09, loc=(0, 0, 3.05), material=M['pole'], segments=8, rings=4))
+    # hanging lantern: glowing panes (M_Lamp) under a little pyramid cap
+    lx, ly, lz = 0.0, -0.66, 2.72
+    P.append(rod("hanger", (lx, ly, 3.04), (lx, ly, lz + 0.26), 0.02, M['pole'], 4))
+    P.append(bx("lantern_glass", (0.26, 0.26, 0.34), (lx, ly, lz), M['lamp'], 0.02, 1))
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            P.append(bx("lantern_post", (0.04, 0.04, 0.38), (lx + sx * 0.13, ly + sy * 0.13, lz), M['pole'], 0))
+    P.append(bx("lantern_base", (0.32, 0.32, 0.05), (lx, ly, lz - 0.19), M['pole'], 0.015, 1))
+    P.append(add_cyl("lantern_cap", 0.28, 0.16, loc=(lx, ly, lz + 0.25), material=M['pole'], verts=4, radius2=0.03,
+                     rot=(0, 0, math.pi / 4)))
+    finish(root, P, name)
+    center_root(root)
+    return root
+
+
+def build_tumpukan_tbs():
+    """Pile of 6 palm fruit bunches (~1 m wide)."""
+    name = "tumpukan_tbs"
+    root = prop_root(name)
+    mats = (mat("M_Fruit", "fruit"), mat("M_FruitOrange", "fruit_orange"), mat("M_FruitDark", "fruit_dark"))
+    P = []
+    rnd = random.Random(5)
+    spots = [(-0.3, -0.18, 0), (0.08, -0.26, 0), (0.36, 0.05, 0), (-0.22, 0.24, 0), (0.12, 0.2, 0.0),
+             (-0.04, 0.0, 0.3)]
+    for i, (x, y, z) in enumerate(spots):
+        P.append(bunch("tbs", mats, loc=(x, y, z), size=rnd.uniform(0.95, 1.1), seed=i + 3,
+                       rot=(rnd.uniform(-0.45, 0.45), rnd.uniform(-0.45, 0.45), rnd.uniform(0, 6.28))))
+    finish(root, P, name)
+    center_root(root)
+    return root
+
+
+def build_tenda():
+    """Sad little blue-tarp tent for displaced villagers: saggy A-frame tarp on crooked sticks,
+    a grey patch, a guy rope and a dented cooking pot. Opening faces -Y."""
+    name = "tenda"
+    root = prop_root(name)
+    M = dict(tarp=mat("M_Tarp", "#4a7fbf"), wood=mat("M_Wood", "wood"), patch=mat("M_Patch", "#9aa08a"),
+             pot=mat("M_Pot", "metal_dark"))
+    P = []
+    L, hw, H = 2.0, 0.85, 1.05
+    nl, nw = 5, 3
+    verts, faces = [], []
+    rnd = random.Random(4)
+    for i in range(nl + 1):
+        y = -L / 2 + L * i / nl
+        ridge = H - 0.12 * math.sin(math.pi * i / nl) - (0.1 if i == nl else 0.0)   # sagging ridge
+        for j in range(-nw, nw + 1):
+            u = j / nw
+            x = hw * u * (1.0 + 0.08 * (i == 0))
+            z = ridge * (1 - abs(u)) + 0.02
+            z -= 0.08 * math.sin(math.pi * abs(u)) * (1.0 + 0.6 * (j < 0))       # belly between ridge and ground
+            verts.append((x + rnd.uniform(-0.02, 0.02), y + rnd.uniform(-0.02, 0.02), max(0.0, z)))
+    row = 2 * nw + 1
+    for i in range(nl):
+        for j in range(row - 1):
+            a = i * row + j
+            faces.append((a, a + 1, a + row + 1, a + row))
+    top = mesh_from_data("tarp", verts, faces, M['tarp'])
+    fix_normals(top)
+    # make sure normals point outward/up
+    if sum(p.normal.z for p in top.data.polygons) < 0:
+        for p in top.data.polygons:
+            p.flip()
+    shade_smooth(top)
+    P.append(top)
+    under = mesh_from_data("tarp_in", [(x, y, z - 0.015) for x, y, z in verts], [f[::-1] for f in faces], M['tarp'])
+    shade_smooth(under)
+    P.append(under)
+    # patch on the right slope
+    P.append(bx("patch", (0.36, 0.4, 0.02), (0.42, 0.25, H * 0.52), M['patch'], 0.008, 1,
+                rot=(0, -math.atan2(H, hw), 0.1)))
+    # crooked sticks + ridge pole
+    P.append(rod("stick", (0.03, -L / 2 - 0.02, 0), (0.0, -L / 2, H + 0.1), 0.035, M['wood'], 6))
+    P.append(rod("stick", (-0.04, L / 2 + 0.02, 0), (0.05, L / 2, H - 0.02), 0.035, M['wood'], 6))
+    P.append(rod("ridge", (0.0, -L / 2 - 0.05, H + 0.04), (0.05, L / 2 + 0.05, H - 0.06), 0.03, M['wood'], 6))
+    # guy rope to a peg, and a dented pot on three stones
+    P.append(rod("rope", (0.0, -L / 2, H + 0.05), (0.0, -L / 2 - 0.55, 0.05), 0.01, M['patch'], 4))
+    P.append(rod("peg", (0.0, -L / 2 - 0.55, 0.0), (0.02, -L / 2 - 0.58, 0.14), 0.02, M['wood'], 4))
+    P.append(add_cyl("pot", 0.13, 0.14, loc=(0.75, -1.1, 0.17), material=M['pot'], verts=8, radius2=0.11))
+    for k in range(3):
+        a = k * 2.1
+        P.append(add_ico("stone", 0.07, loc=(0.75 + 0.14 * math.cos(a), -1.1 + 0.14 * math.sin(a), 0.05),
+                         material=M['patch'], subdiv=1))
+    P.append(bx("mat", (0.9, 0.6, 0.02), (-0.05, 0.1, 0.01), M['patch'], 0))
+    finish(root, P, name)
+    center_root(root)
+    return root
+
+
+def build_spanduk():
+    """Protest banner: blank white cloth ~2.5 x 0.8 m between two bamboo poles (faces -Y).
+    The cloth is child `Cloth` (origin at its centre, front UV 0..1)."""
+    name = "spanduk"
+    root = prop_root(name)
+    M = dict(bam=mat("M_Bamboo", "#c8a15e"), cloth=mat("M_Cloth", "white"))
+    P = []
+    W, Hc, zc = 2.5, 0.8, 1.55
+    for sx in (-1, 1):
+        x = sx * (W / 2 + 0.06)
+        P.append(add_cyl("pole", 0.045, 2.25, loc=(x, 0, 1.125), material=M['bam'], verts=6))
+        for z in (0.7, 1.4):
+            P.append(add_cyl("node", 0.056, 0.04, loc=(x, 0, z), material=M['bam'], verts=6))
+        for z in (zc - Hc / 2 + 0.05, zc + Hc / 2 - 0.05):
+            P.append(rod("tie", (x, 0, z), (sx * W / 2, 0, z), 0.018, M['bam'], 4))
+    finish(root, P, name)
+    # cloth: gently waving grid, double sided, UVs 0..1 on the front
+    nx, nz = 8, 2
+    vs, uvs = [], []
+    for j in range(nz + 1):
+        for i in range(nx + 1):
+            u, v = i / nx, j / nz
+            x = -W / 2 + W * u
+            z = -Hc / 2 + Hc * v - 0.04 * math.sin(math.pi * u) * (1 - v)
+            y = 0.035 * math.sin(u * math.pi * 3)
+            vs.append((x, y, z))
+            uvs.append((u, v))
+    fs = []
+    for j in range(nz):
+        for i in range(nx):
+            a = j * (nx + 1) + i
+            fs.append((a, a + 1, a + nx + 2, a + nx + 1))
+    n0 = len(vs)
+    vs2 = vs + [(x, y + 0.008, z) for x, y, z in vs]
+    fs2 = fs + [tuple(n0 + k for k in f[::-1]) for f in fs]
+    me = bpy.data.meshes.new("Cloth")
+    me.from_pydata(vs2, [], fs2)
+    me.update()
+    uv = me.uv_layers.new(name="UVMap")
+    for poly in me.polygons:
+        for li in poly.loop_indices:
+            vi = me.loops[li].vertex_index
+            uu, vv = uvs[vi % n0]
+            uv.data[li].uv = (uu if vi < n0 else 1 - uu, vv)
+    cloth = bpy.data.objects.new("Cloth", me)
+    C.link(cloth)
+    set_mat(cloth, M['cloth'])
+    shade_smooth(cloth)
+    cloth.location = (0, 0, zc)
+    cloth.parent = root
+    return root
+
+
+def build_meja():
+    """Small wooden table (~0.9 x 0.6 x 0.72 m)."""
+    name = "meja"
+    root = prop_root(name)
+    M = dict(w=mat("M_Wood", "wood_light"), d=mat("M_WoodDark", "wood"))
+    P = []
+    P.append(bx("top", (0.9, 0.6, 0.06), (0, 0, 0.71), M['w'], 0.025, 2))
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            P.append(bx("leg", (0.07, 0.07, 0.68), (sx * 0.37, sy * 0.22, 0.34), M['d'], 0.018, 1))
+    for sy in (-1, 1):
+        P.append(bx("apron", (0.7, 0.03, 0.08), (0, sy * 0.22, 0.63), M['d'], 0.01, 1))
+    for sx in (-1, 1):
+        P.append(bx("apron", (0.03, 0.4, 0.08), (sx * 0.37, 0, 0.63), M['d'], 0.01, 1))
+    P.append(bx("shelf", (0.72, 0.42, 0.03), (0, 0, 0.16), M['w'], 0.01, 1))
+    finish(root, P, name)
+    return root
+
+
+# ============================================================ icon-only scenes
+def icon_surat():
+    """Paper document with text lines, a red stamp and a signature squiggle, slightly tilted."""
+    root = empty("icon_surat")
+    M = dict(p=mat("M_Paper", "#fbf6ea"), ink=mat("M_Ink", "#5a6270"), red=mat("M_Stamp", "#d23c32"),
+             sig=mat("M_Sig", "#26324a"))
+    P = []
+    w, h = 0.7, 0.95
+    # slightly curled sheet
+    nx, ny = 4, 5
+    vs, fs = [], []
+    for j in range(ny + 1):
+        for i in range(nx + 1):
+            x, y = -w / 2 + w * i / nx, -h / 2 + h * j / ny
+            vs.append((x, y, 0.03 * ((i / nx) - 0.5) ** 2 * 4 + 0.025 * (j == ny)))
+    for j in range(ny):
+        for i in range(nx):
+            a = j * (nx + 1) + i
+            fs.append((a, a + 1, a + nx + 2, a + nx + 1))
+    sheet = mesh_from_data("sheet", vs, fs, M['p'])
+    P.append(sheet)
+    P.append(bx("sheet_back", (w, h, 0.01), (0, 0, -0.006), M['p'], 0))
+    # title + text lines
+    P.append(bx("title", (0.34, 0.05, 0.01), (0, 0.36, 0.035), M['sig'], 0))
+    for k in range(6):
+        ln = 0.52 if k % 3 != 2 else 0.34
+        P.append(bx("line", (ln, 0.028, 0.008), (-0.03 - (0.52 - ln) / 2, 0.24 - k * 0.075, 0.03), M['ink'], 0))
+    # red stamp: ring + inner mark
+    bpy.ops.mesh.primitive_torus_add(major_radius=0.1, minor_radius=0.018, major_segments=20, minor_segments=4,
+                                     location=(0.17, -0.3, 0.04))
+    t = C._active()
+    t.scale = (1, 1, 0.3)
+    set_mat(t, M['red'])
+    P.append(t)
+    P.append(bx("stamp_star", (0.1, 0.03, 0.01), (0.17, -0.3, 0.04), M['red'], 0, rotz=0.4))
+    P.append(bx("stamp_star", (0.1, 0.03, 0.01), (0.17, -0.3, 0.04), M['red'], 0, rotz=-0.6))
+    # signature squiggle (flat ribbon along a loopy curve)
+    pts = []
+    for k in range(26):
+        s_ = k / 25
+        x = -0.28 + 0.34 * s_
+        y = -0.3 + 0.05 * math.sin(s_ * 14) + 0.03 * math.sin(s_ * 5)
+        pts.append(Vector((x + 0.025 * math.cos(s_ * 14), y, 0.036)))
+    vs2, fs2 = [], []
+    for k, p in enumerate(pts):
+        d = (pts[min(k + 1, len(pts) - 1)] - pts[max(k - 1, 0)]).normalized()
+        n = Vector((-d.y, d.x, 0)) * 0.011
+        vs2 += [p + n, p - n]
+    for k in range(len(pts) - 1):
+        fs2.append((2 * k, 2 * k + 1, 2 * k + 3, 2 * k + 2))
+    sig = mesh_from_data("sig", vs2, fs2, M['sig'])
+    P.append(sig)
+    P.append(bx("sig_line", (0.36, 0.012, 0.006), (-0.11, -0.37, 0.03), M['ink'], 0))
+    o = finish(root, P, "icon_surat")
+    o.rotation_euler = (math.radians(-12), math.radians(6), math.radians(-14))
+    return root
+
+
+def icon_koin():
+    """Stack of gold coins plus one leaning coin."""
+    root = empty("icon_koin")
+    M = dict(g=gold_mat(), d=gold_mat("M_GoldDark", "#d49a2e", 0.5, 0.4))
+    P = []
+    rnd = random.Random(2)
+
+    def coin(loc, rot=(0, 0, 0)):
+        c = add_cyl("coin", 0.3, 0.08, loc=(0, 0, 0), material=M['d'], verts=20)
+        bevel_obj(c, 0.02, 1)
+        P.append(c)
+        c.location = loc
+        c.rotation_euler = rot
+        f = add_cyl("face", 0.22, 0.086, loc=(0, 0, 0), material=M['g'], verts=20)
+        f.location = loc
+        f.rotation_euler = rot
+        P.append(f)
+    for k in range(6):
+        coin((rnd.uniform(-0.03, 0.03) - 0.12, rnd.uniform(-0.03, 0.03), 0.04 + k * 0.085))
+    for k in range(3):
+        coin((0.42 + rnd.uniform(-0.03, 0.03), 0.2, 0.04 + k * 0.085))
+    coin((0.25, -0.28, 0.27), rot=(math.radians(70), 0, math.radians(15)))
+    finish(root, P, "icon_koin")
+    return root
+
+
+def icon_pupuk():
+    """Fertiliser sack standing up, print band facing the viewer."""
+    root = empty("icon_pupuk")
+    o = sack("sack", mat("M_Sack", "white"), mat("M_Print", "green_sign"), seed=2, T=0.28)
+    o.rotation_euler = (math.radians(8), math.radians(90), math.radians(-90))
+    finish(root, [o], "icon_pupuk")
+    return root
+
+
+def icon_uang():
+    """Thick bundle of reddish-pink banknotes (Rp 100.000 style) held by a cream paper band."""
+    root = empty("icon_uang")
+    M = dict(n=mat("M_Note", "#e98d98"), d=mat("M_NoteDark", "#c85a6c"), band=mat("M_Band", "#f6ecd2"),
+             g=mat("M_NoteLight", "#f8d2d6"))
+    P = []
+    w, h, t = 1.0, 0.5, 0.028
+    n = 9
+    for k in range(n):
+        P.append(bx("note", (w, h, t), (0.006 * (k % 3), -0.005 * (k % 2), t / 2 + k * t), M['n'] if k % 2 else M['d'],
+                    0.004, 1, rotz=0.012 * (k % 3 - 1)))
+    top = n * t
+    P.append(bx("frame", (w - 0.08, h - 0.08, 0.008), (0, 0, top + 0.002), M['d'], 0))
+    P.append(bx("field", (w - 0.14, h - 0.14, 0.008), (0, 0, top + 0.005), M['n'], 0))
+    P.append(add_cyl("portrait", 0.13, 0.01, loc=(0.24, 0, top + 0.009), material=M['g'], verts=14))
+    P.append(bx("num", (0.2, 0.07, 0.01), (-0.28, 0.12, top + 0.009), M['g'], 0))
+    P.append(bx("num2", (0.14, 0.05, 0.01), (-0.3, -0.13, top + 0.009), M['d'], 0))
+    P.append(bx("band", (0.2, h + 0.04, top + 0.04), (-0.05, 0, top / 2 + 0.01), M['band'], 0.012, 1))
+    o = finish(root, P, "icon_uang")
+    o.rotation_euler = (0, 0, math.radians(-18))
+    return root
+
+
+def blade_mesh(name, outline, t, m, edge_m=None):
+    """Extrude a 2D outline (XY) to thickness t (Z)."""
+    n = len(outline)
+    vs = [(x, y, t / 2) for x, y in outline] + [(x, y, -t / 2) for x, y in outline]
+    fs = [tuple(range(n)), tuple(range(2 * n - 1, n - 1, -1))]
+    for i in range(n):
+        j = (i + 1) % n
+        fs.append((i, n + i, n + j, j))
+    o = mesh_from_data(name, vs, fs, m)
+    fix_normals(o)
+    return o
+
+
+def lay_diagonal(o, tilt=12.0):
+    """Lay a flat XY icon object (long axis +X) along the screen diagonal for a pitch-70 camera."""
+    o.rotation_euler = (math.radians(tilt), 0, math.radians(38))
+
+
+def icon_parang():
+    """Parang (machete): broad blade widening to an angled tip, pale sharpened edge, wooden grip."""
+    root = empty("icon_parang")
+    M = dict(bl=mat("M_Blade", "#b9c6ca", roughness=0.35), edge=mat("M_Edge", "#eef4f5", roughness=0.3),
+             wood=mat("M_Handle", "#7a4d2e"), rivet=mat("M_Rivet", "#e0c080"))
+    P = []
+    spine, belly = [], []
+    for k in range(9):
+        s_ = k / 8
+        x = 0.02 + 1.05 * s_
+        spine.append((x, 0.09 + 0.03 * s_ + 0.02 * math.sin(s_ * math.pi)))
+        belly.append((x, -0.08 - 0.14 * s_ ** 1.5))
+    outline = belly + [(1.2, -0.2), (1.16, 0.15)] + spine[::-1]
+    P.append(blade_mesh("blade", outline, 0.04, M['bl']))
+    edge = belly + [(1.2, -0.2), (1.17, -0.13)] + [(x, y + 0.055) for x, y in belly[::-1]]
+    P.append(blade_mesh("edge", edge, 0.05, M['edge']))
+    P.append(bx("guard", (0.07, 0.3, 0.1), (0.0, 0.0, 0), M['rivet'], 0.02, 1))
+    P.append(bx("grip", (0.5, 0.17, 0.12), (-0.27, 0.0, 0), M['wood'], 0.05, 2))
+    P.append(bx("pommel", (0.08, 0.2, 0.13), (-0.53, 0.0, 0), M['rivet'], 0.03, 1))
+    for x in (-0.15, -0.38):
+        P.append(add_cyl("rivet", 0.03, 0.14, loc=(x, 0.0, 0), material=M['rivet'], verts=8))
+    o = finish(root, P, "icon_parang")
+    lay_diagonal(o)
+    return root
+
+
+def icon_egrek():
+    """Egrek: long harvesting pole with a big curved sickle blade (framed along the diagonal)."""
+    root = empty("icon_egrek")
+    M = dict(pole=mat("M_Pole", "#c8a15e"), bl=mat("M_Blade", "#b9c6ca", roughness=0.35),
+             bind=mat("M_Bind", "#3f5b4f"), edge=mat("M_Edge", "#eef4f5", roughness=0.3))
+    P = []
+    L = 1.3
+    P.append(rod("pole", (0, 0, 0), (L, 0, 0), 0.055, M['pole'], 8))
+    for x in (0.35, 0.75):
+        P.append(rod("node", (x - 0.025, 0, 0), (x + 0.025, 0, 0), 0.068, M['pole'], 8))
+    P.append(rod("bind", (L - 0.2, 0, 0), (L - 0.02, 0, 0), 0.072, M['bind'], 8))
+    P.append(rod("butt", (-0.04, 0, 0), (0.09, 0, 0), 0.07, M['bind'], 8))
+    outer, inner = [], []
+    cx, cy, R = L + 0.0, -0.3, 0.38
+    for k in range(12):
+        a = math.radians(92 - 155 * k / 11)
+        wdt = 0.13 * (1 - k / 12.5) + 0.02
+        outer.append((cx + R * math.cos(a), cy + R * math.sin(a)))
+        inner.append((cx + (R - wdt) * math.cos(a), cy + (R - wdt) * math.sin(a)))
+    outline = [(L - 0.16, 0.06), (L - 0.16, -0.06)] + inner + outer[::-1]
+    P.append(blade_mesh("sickle", outline, 0.035, M['bl']))
+    edge = inner[2:] + [(cx + (x - cx) * 1.08, cy + (y - cy) * 1.08) for x, y in inner[2:][::-1]]
+    P.append(blade_mesh("edge", edge, 0.045, M['edge']))
+    o = finish(root, P, "icon_egrek")
+    lay_diagonal(o)
+    return root
+
+
+def icon_helm():
+    """Yellow worker hard hat: dome with a raised centre rib and a peaked brim."""
+    root = empty("icon_helm")
+    M = dict(y=mat("M_Helmet", "#f5c443", roughness=0.4), d=mat("M_HelmetDark", "#e0a52c", roughness=0.45))
+    P = []
+
+    def dome(name, sx, sy, sz, m, seg=20):
+        bpy.ops.mesh.primitive_uv_sphere_add(segments=seg, ring_count=10, radius=1.0)
+        o = C._active()
+        o.name = name
+        for v in o.data.vertices:
+            v.co.z = max(0.0, v.co.z)
+            v.co = Vector((v.co.x * sx, v.co.y * sy, v.co.z * sz))
+        set_mat(o, m)
+        shade_smooth(o)
+        o.location = (0, 0, 0.1)
+        return o
+    P.append(dome("dome", 0.48, 0.55, 0.46, M['y']))
+    P.append(dome("rib", 0.09, 0.575, 0.495, M['d'], seg=12))
+    brim = add_cyl("brim", 0.6, 0.05, loc=(0, 0, 0.1), material=M['y'], verts=24)
+    for v in brim.data.vertices:
+        v.co.x *= 0.95
+        if v.co.y < 0:
+            v.co.y *= 1.35                       # peak at the front
+            v.co.z += 0.06 * (-v.co.y / 0.8)     # tipped up slightly
+        else:
+            v.co.y *= 1.05
+    bevel_obj(brim, 0.02, 1)
+    shade_smooth(brim)
+    P.append(brim)
+    P.append(add_cyl("band", 0.5, 0.06, loc=(0, 0, 0.16), material=M['d'], verts=24, radius2=0.49))
+    o = finish(root, P, "icon_helm")
+    o.data.polygons.foreach_set("use_smooth", [True] * len(o.data.polygons))
+    return root
+
+
+def icon_kunci():
+    """Chunky golden key (land deed) with a small cream tag and green sprout."""
+    root = empty("icon_kunci")
+    M = dict(g=gold_mat(), d=gold_mat("M_GoldDark", "#d49a2e", 0.5, 0.4), tag=mat("M_Tag", "cream"),
+             leaf=mat("M_Leaf", "green_sign"))
+    P = []
+    bpy.ops.mesh.primitive_torus_add(major_radius=0.26, minor_radius=0.085, major_segments=20, minor_segments=8,
+                                     location=(-0.5, 0, 0))
+    bow = C._active()
+    bow.name = "bow"
+    set_mat(bow, M['g'])
+    shade_smooth(bow)
+    P.append(bow)
+    P.append(add_cyl("bow_gem", 0.11, 0.08, loc=(-0.5, 0, 0), material=M['d'], verts=12))
+    P.append(rod("collar", (-0.27, 0, 0), (-0.17, 0, 0), 0.085, M['d'], 12))
+    P.append(rod("shaft", (-0.24, 0, 0), (0.62, 0, 0), 0.06, M['g'], 12, smooth=True))
+    P.append(add_sphere("tip", 0.065, loc=(0.62, 0, 0), material=M['g'], segments=12, rings=6))
+    for x, hgt in ((0.34, 0.24), (0.47, 0.15), (0.58, 0.24)):
+        P.append(bx("tooth", (0.09, hgt, 0.08), (x, -hgt / 2 - 0.03, 0), M['g'], 0.02, 1))
+    P.append(rod("string", (-0.72, 0.1, 0), (-0.8, 0.28, 0.0), 0.015, M['tag'], 4))
+    P.append(bx("tag", (0.22, 0.15, 0.025), (-0.84, 0.36, 0), M['tag'], 0.02, 1, rotz=-0.4))
+    P.append(add_sphere("leaf", 0.06, loc=(-0.84, 0.36, 0.02), material=M['leaf'], segments=8, rings=4,
+                        scale=(1.4, 0.7, 0.3)))
+    o = finish(root, P, "icon_kunci")
+    lay_diagonal(o, tilt=18)
+    return root
+
+
+# ============================================================ registry / main
+BUILDERS = {
+    "crate": build_crate,
+    "karung_pupuk": build_karung_pupuk,
+    "jerigen": build_jerigen,
+    "pagar": build_pagar,
+    "papan": build_papan,
+    "bangku": build_bangku,
+    "gerobak": build_gerobak,
+    "sumur": build_sumur,
+    "lampu": build_lampu,
+    "tumpukan_tbs": build_tumpukan_tbs,
+    "tenda": build_tenda,
+    "spanduk": build_spanduk,
+    "meja": build_meja,
+}
+# icons rendered from the finished prop
+PROP_ICONS = {
+    "jerigen": dict(name="icon_minyak", pitch_deg=25, yaw_deg=30, margin=1.02),
+    "gerobak": dict(name="icon_gerobak", pitch_deg=32, yaw_deg=55, margin=0.96),
+}
+# dedicated icon-only scenes: builder, render kwargs
+ICON_SCENES = {
+    "icon_pupuk": (icon_pupuk, dict(pitch_deg=22, yaw_deg=25, margin=1.0)),
+    "icon_surat": (icon_surat, dict(pitch_deg=75, yaw_deg=0, margin=0.8)),
+    "icon_koin": (icon_koin, dict(pitch_deg=30, yaw_deg=20, margin=0.8)),
+    "icon_uang": (icon_uang, dict(pitch_deg=42, yaw_deg=18, margin=0.82)),
+    "icon_parang": (icon_parang, dict(pitch_deg=70, yaw_deg=0, margin=0.8)),
+    "icon_egrek": (icon_egrek, dict(pitch_deg=70, yaw_deg=0, margin=0.8)),
+    "icon_helm": (icon_helm, dict(pitch_deg=28, yaw_deg=25, margin=0.86)),
+    "icon_kunci": (icon_kunci, dict(pitch_deg=70, yaw_deg=0, margin=0.8)),
+}
+
+
+def main():
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    no_render = "--no-render" in sys.argv
+    names = args or (list(BUILDERS) + ["icons"])
+    if "icons" in names:
+        names = [n for n in names if n != "icons"] + list(ICON_SCENES)
+    for n in names:
+        reset_scene()
+        if n in ICON_SCENES:
+            fn, kw = ICON_SCENES[n]
+            root = fn()
+            bpy.context.view_layer.update()
+            print(f"[icon-scene] {n} tris={count_tris(root)}")
+            if not no_render:
+                render_icon(root, n, **kw)
+            continue
+        root = BUILDERS[n]()
+        bpy.context.view_layer.update()
+        d = dims(root)
+        print(f"[dims] {n}: {d[0]:.2f} x {d[1]:.2f} x {d[2]:.2f} m  tris={count_tris(root)}  "
+              f"mats={sorted({s.material.name for o in all_descendants(root) if o.type == 'MESH' for s in o.material_slots})}")
+        if not no_render:
+            render_preview(root, n)
+            if DEBUG:
+                debug_view(root, n + "_game", 55, 0)
+        export_glb(root, n)
+        if not no_render and n in PROP_ICONS:
+            kw = dict(PROP_ICONS[n])
+            render_icon(root, kw.pop("name"), **kw)
+
+
+if __name__ == "__main__":
+    main()

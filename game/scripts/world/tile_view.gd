@@ -4,7 +4,7 @@ extends Node3D
 ## oil palm at growth stage 0–3 (with fruit bunches when ready to harvest).
 
 const GARDEN := ["banana", "bush_a", "bush_b", "bush_a", "flowers", "bush_b"]
-const SOIL_COLOR := Color("7d6147")
+const SOIL_COLOR := Color("745d48")
 
 static var _soil_mesh: Mesh
 static var _soil_mat: Material

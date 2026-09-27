@@ -32,6 +32,20 @@ func wait(sec: float) -> void:
 	await get_tree().create_timer(sec).timeout
 
 
+func press(key: Key) -> void:
+	var ev := InputEventKey.new()
+	ev.keycode = key
+	ev.physical_keycode = key
+	ev.pressed = true
+	Input.parse_input_event(ev)
+	await get_tree().process_frame
+	var up := ev.duplicate()
+	up.pressed = false
+	Input.parse_input_event(up)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+
 func tp(x: float, z: float, face := Vector3(0, 0, 1)) -> void:
 	world.player.global_position = Vector3(x, world.height_at(x, z), z)
 	world.player.facing = face
@@ -143,6 +157,75 @@ func _run() -> void:
 			GS.sleep()
 			print("after raid game_active=", GS.game_active)
 			await wait(0.2)
+		"walk":
+			world.start_game(false)
+			world.ui.close()
+			var pl: Player = world.player
+			# into the sea from the south beach
+			tp(0, 38)
+			pl.touch_vec = Vector2(0, 1)
+			await wait(4.0)
+			print("sea test: z=%.1f walkable=%s h=%.2f" % [pl.global_position.z, world.is_walkable(pl.global_position.x, pl.global_position.z), pl.global_position.y])
+			# into the kantor from the north side
+			var k: Vector3 = world.building_nodes["kantor"].global_position
+			tp(k.x, k.z - 6)
+			pl.touch_vec = Vector2(0, 1)
+			await wait(2.5)
+			print("building test: dist to kantor centre=%.2f" % Vector2(pl.global_position.x - k.x, pl.global_position.z - k.z).length())
+			# along the jetty
+			var j: Vector3 = world.building_nodes["dermaga"].global_position
+			tp(j.x - 1.0, j.z)
+			pl.touch_vec = Vector2(1, 0)
+			await wait(2.0)
+			print("jetty test: x=%.1f (start %.1f) y=%.2f" % [pl.global_position.x, j.x - 1.0, pl.global_position.y])
+			pl.touch_vec = Vector2.ZERO
+			await shot("jetty", 10)
+		"input":
+			# drive the game with synthetic key presses like a player would
+			world.start_game(false)
+			var presses := 0
+			while world.ui.modal != null and presses < 12:
+				await press(KEY_E)
+				await wait(0.15)
+				presses += 1
+			print("after intro: modal=", world.ui.modal != null, " presses=", presses)
+			var tv: Node3D = world.tile_views["0:0"]
+			tp(tv.global_position.x, tv.global_position.z + 1.3, Vector3(0, 0, -1))
+			await wait(0.3)
+			await press(KEY_E)
+			await wait(0.6)
+			print("tbs after E=", GS.inv["tbs"], " target=", world.target.get("prompt", func(): return "none").call())
+			# walk to the kantor door and open its menu
+			var d: Vector3 = world.door_points["kantor"]
+			tp(d.x, d.z + 0.5, Vector3(0, 0, -1))
+			await wait(0.3)
+			await press(KEY_E)
+			await wait(0.4)
+			print("kantor menu open=", world.ui.modal != null)
+			await shot("kantor_menu", 5)
+			await press(KEY_ESCAPE)
+			await wait(0.3)
+			print("closed=", world.ui.modal == null)
+			await press(KEY_ESCAPE)
+			await wait(0.3)
+			print("pause open=", world.ui.modal != null and world.ui.modal.has_meta("pause"))
+			await shot("pause", 5)
+			await press(KEY_ESCAPE)
+			await wait(0.3)
+			await press(KEY_TAB)
+			await wait(0.3)
+			await shot("status", 5)
+		"perf":
+			world.start_game(false)
+			world.ui.close()
+			for s in [[-17, 30], [-3, 5], [48, 0], [0, -40]]:
+				tp(s[0], s[1])
+				for i in 30:
+					await get_tree().process_frame
+				print("perf at %s: draw calls=%d objects=%d primitives=%d" % [s,
+					Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),
+					Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME),
+					Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)])
 		"tour":
 			world.start_game(false)
 			world.ui.close()

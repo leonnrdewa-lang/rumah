@@ -249,20 +249,44 @@ def bill_vf(w, l, t, n=10, bend=0.0):
     return verts, faces
 
 
-def hair_locks(c, m, locks, center, radii, width=0.05, thick=0.026):
-    """Soft swept locks lying on a head-shaped surface: (yaw, el, direction, length)."""
-    hs = ell_surf(center, radii)
-    for (y, e, d, L) in locks:
-        a, el = rad(y), rad(e)
-        p = hs(a, el)
-        n = snormal(hs, a, el)
-        d = Vector(d)
-        d = (d - d.dot(n) * n).normalized()
-        z = (d + n * 0.3).normalized()
-        y_ = (n - n.dot(z) * z).normalized()
-        mm = Matrix((y_.cross(z), y_, z)).transposed().to_4x4()
-        mm.translation = p + z * (L * 0.4) - n * 0.006
-        c.add("Head", xf(ellipsoid_vf((width, thick, L), 6, 4), mm), m)
+def hood_vf(radii, open_h=50.0, open_up=30.0, open_dn=44.0, seg=24, rings=7, rim=0.9):
+    """Ellipsoid hood with an oval face opening, parametrised around the face axis (-Y) so the
+    opening edge is one clean ring. psi = angle from the face axis, beta = angle around it."""
+    rx, ry, rz = radii
+
+    def psi0(b):
+        av = open_up if math.sin(b) > 0 else open_dn
+        c_, s_ = math.cos(b) / open_h, math.sin(b) / av
+        return rad(1.0 / math.sqrt(c_ * c_ + s_ * s_))
+
+    def pt(psi, b, sc=1.0):
+        d = Vector((math.sin(psi) * math.cos(b), -math.cos(psi), math.sin(psi) * math.sin(b)))
+        return Vector((d.x * rx * sc, d.y * ry * sc, d.z * rz * sc))
+
+    verts, rings_ = [], []
+    if rim:
+        ring = []
+        for i in range(seg):
+            b = TAU * i / seg
+            ring.append(len(verts))
+            verts.append(pt(psi0(b) + 0.05, b, rim))
+        rings_.append(ring)
+    for j in range(rings):
+        ring = []
+        for i in range(seg):
+            b = TAU * i / seg
+            p0 = psi0(b)
+            ring.append(len(verts))
+            verts.append(pt(p0 + (math.pi - p0) * j / rings, b))
+        rings_.append(ring)
+    pole = len(verts)
+    verts.append(pt(math.pi, 0.0))
+    faces = []
+    for A, B in zip(rings_, rings_[1:]):
+        faces += [(A[i], B[i], B[(i + 1) % seg], A[(i + 1) % seg]) for i in range(seg)]
+    L = rings_[-1]
+    faces += [(L[i], pole, L[(i + 1) % seg]) for i in range(seg)]
+    return verts, faces
 
 
 # ---- parametric surfaces (for decals): f(a, z) -> point; a = angle around, z = height/elevation
@@ -575,6 +599,34 @@ def hair(c, m, front=68, side=95, back=118, part=0.0, lift=0.018, rim=0.93, seg=
     c.add("Head", xf(shell_vf(radii, tmax, seg, rings, rim, rmod, rad(tmin)), T(c.hc + Vector(off))), m)
 
 
+def messy_hair(c, m, front=66, side=94, back=112, teeth=14, amp=13.0, lump=0.045, lump2=0.03, lift=0.022, seg=28,
+               rings=5):
+    """Hair cap with a zig-zag edge all round and a lumpy surface (tousled look)."""
+    def tooth(phi):
+        t = ((phi + 0.1) / (TAU / teeth)) % 2.0
+        return 1.0 - abs(t - 1.0)
+
+    def tmax(phi):
+        return rad(blend3(phi, front, side, back) + amp * tooth(phi))
+
+    def lumpy(phi, th):
+        return 1.0 + lump * math.sin(3 * phi + 1.0) * math.sin(2.2 * th) + lump2 * math.sin(7 * phi) * th
+
+    radii = tuple(r + lift for r in c.hr)
+    c.add("Head", xf(shell_vf(radii, tmax, seg, rings, 0.9, lumpy), T(c.hc + Vector((0, 0.006, 0.01)))), m)
+
+
+def cowlick(c, m, spots, lift=0.03):
+    """Short, wide, slightly flattened cones sticking up from the crown: (yaw, el, dir, length)."""
+    hs = ell_surf(c.hc + Vector((0, 0.006, 0.01)), tuple(r + lift for r in c.hr))
+    for (y, e, d, L) in spots:
+        p = hs(rad(y), rad(e))
+        n = snormal(hs, rad(y), rad(e))
+        z = (n + Vector(d)).normalized()
+        c.add("Head", xf(lathe_vf([(0.06, -0.04), (0.045, 0.01), (0.0, L)], 7, 1.0, 0.6),
+                         align_z(p - n * 0.02, z)), m)
+
+
 def moustache(c, m, thick=1.0, droop=4.0, width=15.0, el=-15.0):
     ys = [-width, -width * 0.6, -width * 0.27, 0.0, width * 0.27, width * 0.6, width]
     es = [el - droop, el - 0.3, el + 0.5, el, el + 0.5, el - 0.3, el - droop]
@@ -737,13 +789,11 @@ def build_kakek():
             (0.0, 0.345)]
     c.add("Head", xf(lathe_vf(cone, 24), H), "M_Bamboo")
     c.add("Head", xf(ellipsoid_vf((0.026, 0.026, 0.028), 6, 4), H @ T(0, 0, 0.345)), "M_Bamboo")
-    top = lathe_surf([(0.45, 0.076), (0.3, 0.16), (0.15, 0.255)][::-1])
     for rr in (0.41, 0.24):
-        # radius -> height on the cone's top surface
+        # radius -> height on the cone's top surface, then a thin raised ring following the slope
         z = 0.076 + (0.45 - rr) / 0.15 * 0.084 if rr > 0.3 else 0.16 + (0.3 - rr) / 0.15 * 0.095
-        prof = [(rr + 0.014, z - 0.008 + 0.004), (rr + 0.001, z + 0.009), (rr - 0.013, z + 0.017 + 0.002)]
+        prof = [(rr + 0.014, z - 0.004), (rr + 0.001, z + 0.009), (rr - 0.013, z + 0.019)]
         c.add("Head", xf(lathe_vf(prof, 24), H @ T(0, 0, 0.003)), "M_Sarong")
-    del top
     # faded shirt over a checked sarong
     torso(c, PALE, [SHIRT[0], (0.13, 0.327), (0.165, 0.335)] + SHIRT[3:])
     sar = [(0.0, 0.1), (0.14, 0.09), (0.17, 0.092), (0.172, 0.12), (0.162, 0.25), (0.153, 0.345), (0.0, 0.35)]
@@ -761,26 +811,17 @@ def build_kakek():
 
 
 def build_ibu():
-    c = Char("ibu")
+    c = Char("ibu", sh_x=0.14, sh_z=0.47, arm_len=0.165)
     SK = "M_Skin"
     face(c, SK, eyes="dot", mouth="smile", brows="soft", ears=False)
-    # hijab: shell around the head leaving an oval face opening ...
-    radii = (c.hr[0] + 0.022, c.hr[1] + 0.026, c.hr[2] + 0.022)
-
-    def tmax(phi):
-        a = abs(math.atan2(math.sin(phi), math.cos(phi)))
-        d = math.degrees(a)
-        return rad(58 + (122 - 58) * sstep((d - 30) / 45.0) + 28 * sstep((d - 90) / 60.0))
-    c.add("Head", xf(shell_vf(radii, tmax, 24, 7, 0.9), T(c.hc + Vector((0, 0.008, 0.004)))), "M_Hijab")
-
-    # ... draping over the shoulders as a gentle cone (on the body so it doesn't turn with the head);
-    # the front is pulled down so it stays tucked under the chin in the top-down view
-    def drop_front(p, a, z):
-        p.z -= 0.045 * max(0.0, math.cos(a)) ** 2 * max(0.0, z - 0.4) / 0.2
-        return p
-    cape = [(0.0, 0.40), (0.19, 0.395), (0.236, 0.40), (0.238, 0.416), (0.214, 0.47), (0.17, 0.52),
-            (0.115, 0.555), (0.0, 0.575)]
-    c.add("Body", lathe_vf(cape, 22, 1.0, 0.82, deform=drop_front), "M_Hijab")
+    # hijab: a hood framing the face (wrapping under the chin) ...
+    radii = (c.hr[0] + 0.024, c.hr[1] + 0.03, c.hr[2] + 0.03)
+    c.add("Head", xf(hood_vf(radii, 52, 30, 46, 24, 7, 0.9), T(c.hc + Vector((0, 0.012, -0.008)))), "M_Hijab")
+    # ... flowing into a bell-shaped drape over the shoulders and upper arms (on the body, so it
+    # doesn't turn with the head; the arms sit just inside it and the hands come out below)
+    cape = [(0.0, 0.37), (0.2, 0.365), (0.25, 0.37), (0.254, 0.386), (0.24, 0.44), (0.222, 0.5), (0.198, 0.55),
+            (0.16, 0.6), (0.0, 0.62)]
+    c.add("Body", lathe_vf(cape, 22, 1.0, 0.86), "M_Hijab")
     # long floral dress, bell shaped
     dress = [(0.0, 0.075), (0.2, 0.07), (0.242, 0.08), (0.247, 0.1), (0.226, 0.19), (0.19, 0.28), (0.16, 0.36),
              (0.145, 0.42), (0.11, 0.5), (0.0, 0.53)]
@@ -804,7 +845,7 @@ def build_kades():
     moustache(c, DK, thick=1.2, droop=3.0, width=14)
     # black peci
     H = T(c.hc) @ R("X", -4)
-    peci = [(0.236, 0.10), (0.242, 0.112), (0.236, 0.215), (0.222, 0.242), (0.12, 0.251), (0.0, 0.253)]
+    peci = [(0.245, 0.09), (0.251, 0.102), (0.247, 0.206), (0.233, 0.237), (0.13, 0.25), (0.0, 0.253)]
     c.add("Head", xf(lathe_vf(peci, 24, 1.0, 0.93), H), DK)
 
     # crisp white shirt with a round belly, tucked into dark trousers
@@ -869,22 +910,10 @@ def build_pemuda():
     c = Char("pemuda")
     SK, DK = "M_Skin", "M_Dark"
     face(c, SK, eyes="dot", mouth="open", brows="normal")
-    # messy hair: zig-zag edge all round + lumpy volume + a couple of clumps at the crown
-    def tooth(phi, w):
-        t = (phi / w) % 2.0
-        return 1.0 - abs(t - 1.0)
-
-    def tmax(phi):
-        return rad(blend3(phi, 66, 94, 112) + 13 * tooth(phi + 0.1, TAU / 14))
-
-    def lumpy(phi, th):
-        return 1.0 + 0.045 * math.sin(3 * phi + 1.0) * math.sin(2.2 * th) + 0.03 * math.sin(7 * phi) * th
-
-    radii = tuple(r + 0.022 for r in c.hr)
-    c.add("Head", xf(shell_vf(radii, tmax, 28, 5, 0.9, lumpy), T(c.hc + Vector((0, 0.006, 0.01)))), DK)
-    hair_locks(c, DK, [(-15, 62, (0.3, 1, 0.6), 0.09), (22, 58, (-0.2, 1, 0.8), 0.085),
-                       (175, 60, (0.4, 1, 0.3), 0.08)],
-               c.hc + Vector((0, 0.006, 0.01)), tuple(r + 0.03 for r in c.hr), width=0.06, thick=0.03)
+    # messy hair: zig-zag edge all round, lumpy volume and a cowlick
+    messy_hair(c, DK)
+    cowlick(c, DK, [(-8, 64, (0.1, 0.6, 0.3), 0.075), (14, 60, (-0.3, 0.8, 0.1), 0.065),
+                    (178, 58, (0.2, 0.9, -0.2), 0.06)])
     # bright green tee + jeans shorts + sarong slung over the left shoulder
     torso(c, "M_GreenTee")
     pelvis(c, "M_Jeans")
@@ -942,7 +971,7 @@ def build_anak():
     c = Char("anak", scale=0.78, head_r=(0.285, 0.265, 0.258))
     SK, DK = "M_Skin", "M_Dark"
     face(c, SK, eyes="big", mouth="open", brows="soft", eye_yaw=25, eye_el=-6)
-    hair(c, DK, front=74, side=97, back=118, part=10)
+    messy_hair(c, DK, front=76, side=97, back=116, teeth=18, amp=9.0, lump=0.0, lump2=0.0, lift=0.014, seg=36, rings=4)
     # baseball cap worn backwards: crown + flat (orange) bill sticking out at the back
     capr = (c.hr[0] + 0.026, c.hr[1] + 0.026, c.hr[2] + 0.022)
     Hc = T(c.hc + Vector((0, 0.006, 0.008)))
@@ -953,11 +982,8 @@ def build_anak():
     c.add("Head", xf(ellipsoid_vf((0.026, 0.026, 0.015), 6, 3), Hc @ T(0, 0, capr[2])), "M_TeeOrange")
     c.add("Head", xf(bill_vf(0.165, 0.19, 0.008, 10, bend=0.6), Hc @ T(0, 0.2, 0.05) @ R("X", 8) @ R("Z", 180)),
           "M_CapBlue", smooth=False)
-    # hair: a tuft through the strap opening + soft fringe locks under the cap
-    hr_ = tuple(r + 0.018 for r in c.hr)
-    hair_locks(c, DK, [(0, 28, (0, -0.5, -1), 0.06), (-16, 18, (0.3, 0, -1), 0.05), (16, 18, (-0.3, 0, -1), 0.05),
-                       (-40, 12, (0, 0.3, -1), 0.05), (40, 12, (0, 0.3, -1), 0.05)],
-               c.hc + Vector((0, 0.004, 0.006)), hr_, width=0.042, thick=0.02)
+    # a tuft of hair poking out of the strap opening
+    cowlick(c, DK, [(0, 24, (0, -0.9, 0.2), 0.06)], lift=0.03)
     cs = ell_surf(Vector((0, 0, 0)), capr)
     c.add("Head", tube_vf([Hc @ cs(rad(a_), rad(20 + 0.014 * a_ * a_)) for a_ in (-28, -14, 0, 14, 28)],
                           0.007, 4), "M_CapBlue")
@@ -1162,8 +1188,8 @@ def portrait(c, root):
     top = max((head.matrix_world @ v.co).z for v in head.data.vertices)
     hc = c.hc.z * S
     bottom = hc - 0.36 * S
-    F = min(0.8 * S, max(0.64 * S, top - bottom + 0.05 * S))
-    cz = bottom + F / 2 - 0.01 * S
+    F = min(0.82 * S, max(0.66 * S, top - bottom + 0.08 * S))
+    cz = bottom + F / 2 - 0.02 * S
     a = F / math.sqrt(2.0) / 2.0
     me = bpy.data.meshes.new("_frame")
     me.from_pydata([(-a, 0, cz - a), (a, 0, cz - a), (a, 0, cz + a), (-a, 0, cz + a)], [], [(0, 1, 2, 3)])

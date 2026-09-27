@@ -43,8 +43,9 @@ func _ready() -> void:
 	_wait = randf_range(0.5, 3.0)
 	_emote = Label3D.new()
 	_emote.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_emote.font = ModelLib.label_font()
 	_emote.font_size = 72
-	_emote.outline_size = 18
+	_emote.outline_size = 14
 	_emote.modulate = Color("5a3b22")
 	_emote.outline_modulate = Color("fdf3dc")
 	_emote.position.y = 1.75
@@ -54,8 +55,9 @@ func _ready() -> void:
 	_name_label = Label3D.new()
 	_name_label.text = display_name
 	_name_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	_name_label.font_size = 34
-	_name_label.outline_size = 12
+	_name_label.font = ModelLib.label_font()
+	_name_label.font_size = 36
+	_name_label.outline_size = 9
 	_name_label.pixel_size = 0.01
 	_name_label.modulate = Color("5a3b22")
 	_name_label.outline_modulate = Color("fdf3dc")

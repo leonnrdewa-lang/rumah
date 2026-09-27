@@ -137,15 +137,6 @@ def steps(P, M, xc, y_edge, width, top_z, n, depth=0.26, m='trim', along=-1):
         P.append(bx("step", (width, d, k * h), (xc, yc, k * h / 2), M[m], 0.035, 1))
 
 
-def steps_x(P, M, yc, x_edge, width, top_z, n, depth=0.26, m='trim', along=-1):
-    """Steps descending along X (along=-1 → towards -X)."""
-    h = top_z / (n + 1)
-    for k in range(1, n + 1):
-        d = (n + 1 - k) * depth
-        xc = x_edge + along * d / 2
-        P.append(bx("step", (d, width, k * h), (xc, yc, k * h / 2), M[m], 0.035, 1))
-
-
 def railing(P, M, p1, p2, z0, height=0.55, spacing=0.2, m='trim', posts=True, bal_m=None):
     """Porch railing between two floor points: top/bottom rail + balusters."""
     p1, p2 = Vector((p1[0], p1[1], z0)), Vector((p2[0], p2[1], z0))
@@ -232,13 +223,6 @@ def slope_frame(ridge_pt, down_dir, along, pitch):
     ev = d * c - Z * s
     en = d * s + Z * c
     return Vector(ridge_pt), Vector(along).normalized(), ev, en
-
-
-def corrugated_slope(verts, faces, origin, ex, ev, en, v_len, x0, x1, sheets=2, period=0.2, amp=0.035,
-                     step=0.03, thick=0.06):
-    """Zinc sheet slope: fine corrugation, a couple of overlapping sheet rows."""
-    tile_slope(verts, faces, origin, ex, ev, en, v_len, lambda v: (x0, x1), sheets, period=period, amp=amp,
-               step=step, cham=0.06, thick=thick)
 
 
 def gable_roof(P, M, a, b, half_w, pitch, rows, tile='roof', lip='trim', trim='trim', ridge_r=0.14,
@@ -1013,7 +997,7 @@ def build_dermaga():
         shade_smooth(ty)
         P.append(ty)
     finish(root, P, name)
-    center_root(root, keep_y=True)
+    center_root(root, keep_y=True, ground=False)
     return root
 
 
@@ -1175,6 +1159,7 @@ def build_truck():
                            rot=(rnd.uniform(-0.5, 0.5), rnd.uniform(-0.5, 0.5), rnd.uniform(0, 6.28))))
     cargo = join(CP, "Cargo")
     cargo.data.name = "Cargo"
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     cargo.parent = root
     center_root(root)
     return root
@@ -1196,7 +1181,7 @@ BUILDERS = {
 }
 ICONS = {
     "truck": lambda root: render_icon(root, "icon_truk", pitch_deg=30, yaw_deg=42, margin=0.86),
-    "rumah_a": lambda root: render_icon(root, "icon_rumah", pitch_deg=32, yaw_deg=28, margin=0.9),
+    "rumah_a": lambda root: render_icon(root, "icon_rumah", pitch_deg=32, yaw_deg=28, margin=0.84),
 }
 
 

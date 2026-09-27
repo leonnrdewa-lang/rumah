@@ -10,6 +10,15 @@ const FOLIAGE_WORDS := ["Frond", "Leaf", "Leaves", "Grass", "Foliage", "Canopy",
 const GLOW_WORDS := ["Glass", "Lamp", "Window", "Bulb"]
 
 static var _scenes := {}
+static var _label_font: FontVariation
+
+
+static func label_font() -> FontVariation:
+	if _label_font == null:
+		_label_font = FontVariation.new()
+		_label_font.base_font = load("res://assets/fonts/Fredoka.ttf")
+		_label_font.variation_opentype = {"wght": 650}
+	return _label_font
 static var _materials := {}
 static var _merged := {}
 

@@ -12,6 +12,10 @@ Node / material names the game relies on:
     (toggle `Fruits` visibility for harvest state).
   * `M_Frond` is the single leaf material of every palm (sawit_*, coconut,
     banana); it has backface culling OFF so Godot imports it double-sided.
+    Other thin materials (grass, petals, bush leaves, dry leaves) are double-sided
+    too; every closed/solid material is exported with backface culling ON.
+
+Set VEG_SCRATCH=<dir> to also write extra close-up debug renders there.
 """
 import math
 import os
@@ -25,7 +29,7 @@ from mathutils import Vector, Matrix, noise  # noqa: E402
 
 import common  # noqa: E402
 from common import (  # noqa: E402
-    PALETTE, reset_scene, mat, add_box, add_cyl, add_ico, add_sphere, join, shade_smooth, set_mat,
+    reset_scene, mat, add_box, add_cyl, add_ico, join, shade_smooth, set_mat,
     empty, export_glb, render_preview, render_icon, count_tris, all_descendants,
 )
 
@@ -84,25 +88,6 @@ def lerp(a, b, t):
     return a + (b - a) * t
 
 
-def smooth_noise_displace(o, amp, freq, seed, flatten=None, zmin=None):
-    """Displace verts along their normal with low-frequency noise (organic lumps)."""
-    off = Vector((seed * 7.31, seed * 3.17, seed * 5.53))
-    me = o.data
-    for v in me.vertices:
-        n = v.normal.copy()
-        d = noise.noise(v.co * freq + off) * amp
-        v.co += n * d
-    if flatten is not None:
-        for v in me.vertices:
-            v.co.z *= flatten
-    if zmin is not None:
-        for v in me.vertices:
-            if v.co.z < zmin:
-                v.co.z = zmin
-    me.update()
-    return o
-
-
 def ground(o):
     """Move object so its lowest vertex sits at z=0 (in object space, identity transforms)."""
     zmin = min(v.co.z for v in o.data.vertices)
@@ -112,10 +97,16 @@ def ground(o):
     return o
 
 
-def frond_mat():
-    m = mat("M_Frond", "#4a8030")
+def leafy(m):
+    """Mark a material double-sided (thin leaves / blades). Every other material is exported
+    with backface culling ON (see finish()), so Godot only disables culling for leaves."""
     m.use_backface_culling = False
+    m["double_sided"] = True
     return m
+
+
+def frond_mat():
+    return leafy(mat("M_Frond", "#528a33"))
 
 
 def _debug_camera(center, scale, pitch_deg, yaw_deg):
@@ -156,7 +147,28 @@ def extra_views(root, name, views):
             bpy.data.objects.remove(o, do_unlink=True)
 
 
+def finalize(root):
+    """Cull back faces on closed (non-leaf) materials and make sure nothing dips below z=0."""
+    for o in all_descendants(root):
+        if o.type != "MESH":
+            continue
+        for slot in o.material_slots:
+            m = slot.material
+            if m is not None and not m.get("double_sided", False):
+                m.use_backface_culling = True
+        mw = o.matrix_world
+        inv = mw.inverted()
+        for v in o.data.vertices:
+            w = mw @ v.co
+            if w.z < 0.0:
+                w.z = 0.0
+                v.co = inv @ w
+        o.data.update()
+
+
 def finish(root, name, icon=None, icon_kw=None, views=()):
+    bpy.context.view_layer.update()
+    finalize(root)
     render_preview(root, name)
     extra_views(root, name, views)
     export_glb(root, name)
@@ -176,8 +188,7 @@ def frond_profile(u):
 
 
 def frond(g, mi, base, phi, elev, L, droop, rnd, n_side=18, lmax=0.8, lw=0.09, bare=0.22,
-          vfold=18.0, theta0=62.0, twist=0.0, rachis_w=0.05, segs=8, leaf_droop=0.28,
-          spines=False):
+          vfold=18.0, theta0=62.0, twist=0.0, rachis_w=0.05, segs=8, leaf_droop=0.28):
     """Add one pinnate frond (curved rachis + leaflets on both sides) to Geo `g`.
 
     base: attachment point, phi: azimuth (rad), elev: start angle above horizon (deg),
@@ -408,6 +419,7 @@ def build_palm(name, P, seed=3):
                boot_t=P["boot_t"], boot_z0=min(0.35, H * 0.25), rings=max(2, int(H / 0.45)))
     n = P["n"]
     top = H + 0.05
+    first_frond_vert = len(g.v)
     for i in range(n):
         f = i / (n - 1)  # 0 youngest (upright) -> 1 oldest (drooping)
         phi = i * GOLDEN + rnd.uniform(-0.1, 0.1)
@@ -430,7 +442,7 @@ def build_palm(name, P, seed=3):
         for i in range(4):
             g.face((sb[i], sb[(i + 1) % 4], st), 0,
                    ref=(g.v[sb[i]] + g.v[sb[(i + 1) % 4]]) * 0.5 - Vector((0, 0, top)))
-    for v in g.v:  # old fronds of young palms rest on the ground instead of piercing it
+    for v in g.v[first_frond_vert:]:  # old fronds of young palms rest on the ground instead of piercing it
         if v.z < 0.02:
             v.z = 0.02 + 0.01 * (v.x * 7 % 1)
     body = g.obj(name + "_body", [m_frond, m_trunk, m_dark], root)
@@ -494,6 +506,7 @@ def build_sawit_0():
     for i in range(3):
         g.face((stem[0][i], stem[0][(i + 1) % 3], stem[1][(i + 1) % 3], stem[1][i]), 3,
                ref=Vector((math.cos(i * 2.09 + 1), math.sin(i * 2.09 + 1), 0)))
+    g.face(stem[1], 3, ref=UP)
     # 5 stiff young fronds fanning out evenly
     for i in range(5):
         phi = i * 2 * math.pi / 5 + 0.5 + rnd.uniform(-0.2, 0.2)
@@ -680,7 +693,7 @@ def build_bush(name, seed, blobs, ferns, grass, twigs, leaves=40):
     m = [mat("M_Leaf", "#55833a"), mat("M_LeafDark", "#3a6030"), mat("M_LeafLight", "#7ea544"),
          mat("M_Dry", "#a08a58")]
     for x in m:
-        x.use_backface_culling = False
+        leafy(x)
     parts = []
     for i, (x, y, z, r, sx, sy, sz, mi) in enumerate(blobs):
         o = blob(f"{name}_b{i}", r * 0.92, (x, y, z), (sx, sy, sz), m[0 if mi == 2 else mi], seed * 10 + i,
@@ -734,15 +747,15 @@ def build_bush_a():
     blobs = [(0.0, 0.0, 0.5, 0.5, 1.0, 0.9, 1.05, 0), (0.45, 0.2, 0.32, 0.36, 1.0, 1.0, 0.9, 1),
              (-0.42, -0.1, 0.3, 0.35, 1.1, 0.9, 0.85, 2), (0.08, -0.25, 0.9, 0.32, 1.0, 1.0, 1.05, 2)]
     ferns = [(0.4, -0.3, 0.3, -0.9, 40, 0.8), (-0.5, 0.2, 0.3, 2.6, 35, 0.75)]
-    grass = [(0.55, -0.4, 5, 1.05), (-0.45, -0.45, 4, 0.8), (0.1, 0.5, 3, 1.2)]
-    twigs = [(0.05, 0.05, 0.6, 0.6, 62, 0.95)]
+    grass = [(0.55, -0.4, 5, 1.0), (-0.45, -0.45, 4, 0.8), (0.1, 0.5, 3, 1.05)]
+    twigs = [(0.05, 0.05, 0.6, 0.6, 62, 0.8)]
     return build_bush("bush_a", 31, blobs, ferns, grass, twigs, leaves=62)
 
 
 def build_bush_b():
     # low, sprawling scrub (~1.0 m) with tall alang-alang and a sideways dead branch
-    blobs = [(-0.3, 0.0, 0.32, 0.44, 1.2, 1.0, 0.85, 0), (0.38, 0.12, 0.28, 0.4, 1.1, 1.0, 0.8, 1),
-             (0.05, -0.28, 0.24, 0.33, 1.2, 1.0, 0.75, 2), (-0.75, 0.25, 0.2, 0.3, 1.0, 1.0, 0.8, 1)]
+    blobs = [(-0.3, 0.0, 0.4, 0.46, 1.15, 1.0, 1.0, 0), (0.38, 0.12, 0.34, 0.42, 1.1, 1.0, 0.95, 1),
+             (0.05, -0.28, 0.28, 0.34, 1.2, 1.0, 0.85, 2), (-0.75, 0.25, 0.22, 0.3, 1.0, 1.0, 0.9, 1)]
     ferns = [(0.62, -0.1, 0.25, -0.2, 30, 0.65), (-0.3, -0.38, 0.3, 4.4, 40, 0.7)]
     grass = [(0.8, 0.3, 6, 1.1), (-0.1, 0.45, 5, 0.95), (-0.9, -0.25, 4, 0.8)]
     twigs = [(-0.2, 0.1, 0.45, 2.9, 25, 0.85)]
@@ -757,7 +770,7 @@ def build_stump():
     m_wood = mat("M_Wood", "#d9b27a")
     m_ring = mat("M_WoodDark", "#b8864f")
     m_dry = mat("M_DryLeaf", "#b98a45")
-    m_dry.use_backface_culling = False
+    leafy(m_dry)
     g = Geo()
     sides = 11
     R = 0.16
@@ -865,17 +878,16 @@ def build_coconut():
     rnd = random.Random(17)
     root = empty("coconut")
     m_frond = mat("M_Frond", "#7ea63c")
-    m_frond.use_backface_culling = False
+    leafy(m_frond)
     m_trunk = mat("M_Trunk", "#a08e70")
     m_ring = mat("M_TrunkRing", "#6f604b")
     m_nut = mat("M_Coconut", "#8fa232")
     g = Geo()
     H, lean = 5.7, 1.35
     bands = 20
-    path, radii, mats_row = [], [], []
+    path, radii = [], []
     for j in range(bands):
-        for k, dz in enumerate((0.0, 0.07)):
-            t = min(1.0, (j + dz / (H / bands) * 1.0) / bands)
+        for k in range(2):  # ridge row + plain row -> dark ring band between them
             t = (j + (0.25 if k else 0.0)) / bands
             x = lean * (1 - (1 - t) ** 2)
             z = H * t
@@ -969,10 +981,10 @@ def build_banana():
     rnd = random.Random(23)
     root = empty("banana")
     m_leaf = mat("M_Frond", "#6fa640")
-    m_leaf.use_backface_culling = False
+    leafy(m_leaf)
     m_stem = mat("M_Stem", "#9aa655")
     m_dry = mat("M_DryLeaf", "#a3814a")
-    m_dry.use_backface_culling = False
+    leafy(m_dry)
     m_fruit = mat("M_Banana", "#a6bb3c")
     g = Geo()
     # pseudostem (main) + a small sucker
@@ -1016,7 +1028,7 @@ def build_banana():
 
 
 # ============================================================ rocks
-def boulder(name, size, seed, material, flat=0.58, stretch=(1.0, 0.82), subdiv=3, sink=0.1, loc=(0, 0, 0)):
+def boulder(name, size, seed, material, flat=0.7, stretch=(1.0, 0.82), subdiv=3, sink=0.1, loc=(0, 0, 0)):
     """Soft rounded boulder: lumpy, a bit flattened, broad flat-ish top, flat bottom at z=0."""
     h = size * flat
     o = blob(name, 0.5, (0, 0, 0), (size * stretch[0], size * stretch[1], h), material, seed, subdiv=subdiv,
@@ -1094,7 +1106,7 @@ def build_cliff_a():
     m_top = mat("M_CliffTop", "#979890")
     m_dk = mat("M_CliffDark", "#4f504c")
     m_grass = mat("M_Grass", "#6f9a45")
-    m_grass.use_backface_culling = False
+    leafy(m_grass)
     parts = []
     # (x, y, z_bottom, w, d, h) per slab; each stratum steps back (+y) and up
     strata = [  # (x, y, z_bottom, w, d, h, rot_z): long slabs, joints offset between strata
@@ -1143,7 +1155,7 @@ def build_grass_tuft():
     m = mat("M_Grass", "#78a84a")
     m2 = mat("M_GrassLight", "#a3c45a")
     for x in (m, m2):
-        x.use_backface_culling = False
+        leafy(x)
     g = Geo()
     n = 15
     for k in range(n):
@@ -1165,7 +1177,7 @@ def build_flowers():
     m_y = mat("M_PetalYellow", "#f4c542")
     m_p = mat("M_PetalPink", "#ef8fae")
     for x in (m_stem, m_w, m_y, m_p):
-        x.use_backface_culling = False
+        leafy(x)
     g = Geo()
     # (x, y, height, petal mat, centre mat, radius)
     fl = [(0.0, 0.0, 0.26, 1, 2, 0.055), (0.12, 0.08, 0.2, 3, 2, 0.05), (-0.11, 0.07, 0.22, 2, 1, 0.045),
@@ -1213,7 +1225,6 @@ def asset(name):
     return deco
 
 
-PALM_VIEWS = (("game", 55, 0), ("side", 8, 0), ("top", 89, 0))
 SAWIT3_VIEWS = (("game", 55, 0, (0, 0, 2.2), 7.5), ("side", 8, 0, (0, 0, 2.6), 7.0),
                 ("trunk", 12, 30, (0, 0, 1.9), 3.2), ("crown", 40, 30, (0, 0, 2.7), 2.6),
                 ("far", 55, 0, (0, 0, 2.0), 16.0))
@@ -1273,13 +1284,12 @@ _simple("flowers", build_flowers, views=(("game", 55, 0, (0, 0, 0.1), 0.65), ("s
 
 def main(argv):
     names = argv or list(ASSETS)
-    results = {}
     for n in names:
         if n not in ASSETS:
             raise SystemExit(f"unknown asset {n!r}; choose from {list(ASSETS)}")
+    for n in names:
         reset_scene()
         ASSETS[n]()
-    return results
 
 
 if __name__ == "__main__":

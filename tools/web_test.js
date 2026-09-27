@@ -48,8 +48,20 @@ async function run(name, contextOpts, steps) {
     await page.waitForTimeout(4000);
     await page.screenshot({ path: `${out}/web_phone_title.png` });
     const vp = page.viewportSize();
-    await page.touchscreen.tap(vp.width / 2, vp.height * 0.66);
+    await page.touchscreen.tap(vp.width / 2, vp.height * 0.62);
     await page.waitForTimeout(3000);
     await page.screenshot({ path: `${out}/web_phone_game.png` });
+    // dismiss the intro dialog, then drag the virtual joystick to the left
+    for (let i = 0; i < 3; i++) { await page.touchscreen.tap(vp.width / 2, vp.height - 30); await page.waitForTimeout(700); }
+    const cdp = await page.context().newCDPSession(page);
+    const sx = vp.width * 0.2, sy = vp.height * 0.7;
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: sx, y: sy }] });
+    for (let k = 1; k <= 10; k++) {
+      await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: sx - k * 6, y: sy }] });
+      await page.waitForTimeout(60);
+    }
+    await page.waitForTimeout(1200);
+    await page.screenshot({ path: `${out}/web_phone_walk.png` });
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
   });
 })();

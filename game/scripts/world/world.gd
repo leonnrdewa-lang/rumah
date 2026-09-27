@@ -33,6 +33,8 @@ var door_points := {}
 var npcs := {}
 var extras := {}
 var worker_npcs: Array = []
+var temp_nodes: Array = []
+var boats: Array = []
 var tents: Array = []
 var lamps: Array[OmniLight3D] = []
 var player: Player
@@ -159,7 +161,7 @@ func _build_environment() -> void:
 	sun.shadow_opacity = 0.62
 	sun.shadow_blur = 1.6
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
-	sun.directional_shadow_max_distance = 48.0
+	sun.directional_shadow_max_distance = 36.0
 	sun.shadow_bias = 0.06
 	sun.shadow_normal_bias = 1.2
 	add_child(sun)
@@ -174,6 +176,9 @@ func _build_environment() -> void:
 
 
 func _apply_quality() -> void:
+	if OS.has_feature("web_android") or OS.has_feature("web_ios") or OS.has_feature("mobile"):
+		RenderingServer.directional_shadow_atlas_set_size(1024, true)
+		sun.directional_shadow_max_distance = 36.0
 	sun.shadow_enabled = quality_high
 	get_viewport().msaa_3d = Viewport.MSAA_2X if quality_high else Viewport.MSAA_DISABLED
 	get_viewport().scaling_3d_scale = 1.0 if quality_high else 0.75
@@ -273,14 +278,17 @@ func _add_box(xf: Transform3D, aabb: AABB, shrink := 0.9) -> void:
 
 
 func _build_decor() -> void:
+	# group by model and 24 m chunk so off-screen decoration is frustum-culled
 	var groups := {}
 	for d in layout.get("decor", []):
 		var m: String = d["model"]
-		if not groups.has(m):
-			groups[m] = []
-		groups[m].append(d)
-	for m in groups:
-		var list: Array = groups[m]
+		var key := "%s|%d|%d" % [m, floori(float(d["pos"][0]) / 24.0), floori(float(d["pos"][2]) / 24.0)]
+		if not groups.has(key):
+			groups[key] = []
+		groups[key].append(d)
+	for key in groups:
+		var m: String = key.get_slice("|", 0)
+		var list: Array = groups[key]
 		var mesh := ModelLib.merged_mesh(m, true)
 		if mesh.get_surface_count() == 0:
 			continue
@@ -312,7 +320,9 @@ func _build_decor() -> void:
 
 func _build_buildings() -> void:
 	for b in layout.get("buildings", []):
-		var node := ModelLib.instance(b["model"], true)
+		# one merged mesh per building keeps draw calls low on phones
+		var node := MeshInstance3D.new()
+		node.mesh = ModelLib.merged_mesh(b["model"], true)
 		node.position = v3(b["pos"])
 		node.rotation.y = deg_to_rad(b["rot"])
 		add_child(node)
@@ -340,25 +350,29 @@ func _build_buildings() -> void:
 
 
 func _decorate_kantor(node: Node3D) -> void:
-	var board: Node3D = node.find_child("SignBoard", true, false)
+	var src := ModelLib.instance("kantor", true)
+	var board: Node3D = src.find_child("SignBoard", true, false)
 	var label := Label3D.new()
 	label.text = "KANTOR SAWIT\nThe Franchise™"
+	label.font = ModelLib.label_font()
 	label.font_size = 64
 	label.outline_size = 0
 	label.modulate = Color("3b5d2a")
 	label.pixel_size = 0.006
 	label.line_spacing = -6
+	node.add_child(label)
 	if board:
 		var ab := AABB()
 		var meshes := ModelLib.find_meshes(board)
 		if not meshes.is_empty():
 			ab = meshes[0].mesh.get_aabb()
-		board.add_child(label)
-		label.position = ab.get_center() + Vector3(0, 0, ab.size.z * 0.5 + 0.02)
+			var xf := ModelLib._rel_xform(meshes[0], src)
+			ab = xf * ab
+		label.position = ab.get_center() + Vector3(0, 0, ab.size.z * 0.5 + 0.03)
 		label.pixel_size = clampf(ab.size.x / 520.0, 0.003, 0.01)
 	else:
-		node.add_child(label)
 		label.position = Vector3(0, 3.2, 2.6)
+	src.free()
 
 
 func _build_props() -> void:
@@ -371,6 +385,10 @@ func _build_props() -> void:
 		mi.position = v3(p["pos"])
 		mi.rotation.y = deg_to_rad(p["rot"])
 		add_child(mi)
+		if m == "perahu":
+			mi.position.y = maxf(mi.position.y, water_level - 0.08)
+			boats.append(mi)
+			continue
 		if m in PROP_COLLIDE:
 			var aabb := mi.mesh.get_aabb()
 			if aabb.size.x > 1.6 or aabb.size.z > 1.6:
@@ -421,8 +439,10 @@ func _build_parcels() -> void:
 		add_child(sign)
 		var label := Label3D.new()
 		label.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
-		label.font_size = 40
-		label.outline_size = 14
+		label.font = ModelLib.label_font()
+		label.font_size = 42
+		label.outline_size = 9
+		label.no_depth_test = true
 		label.modulate = Color("4a3322")
 		label.outline_modulate = Color("fdf3dc")
 		label.pixel_size = 0.01
@@ -614,6 +634,9 @@ func refresh_all() -> void:
 		tile_views[key].refresh()
 	for pid in parcel_signs:
 		_update_sign(pid)
+	for t in tents:
+		t[1].queue_free()
+	tents.clear()
 	refresh_workers()
 	player.update_carry(int(GS.inv.get("tbs", 0)))
 
@@ -626,7 +649,44 @@ func _on_parcel_changed(pid: int) -> void:
 	_update_sign(pid)
 
 
+func spawn_temp_actor(model: String, label: String, pos: Vector3, radius := 2.0) -> Npc:
+	## Characters that only show up for the rest of the day (preman, satgas, demonstrators).
+	var n := _extra(model, label, pos, radius, false)
+	temp_nodes.append(n)
+	return n
+
+
+func spawn_banner(pos: Vector3, text: String) -> void:
+	var mi := MeshInstance3D.new()
+	mi.mesh = ModelLib.merged_mesh("spanduk", true)
+	mi.position = pos
+	add_child(mi)
+	temp_nodes.append(mi)
+	var l := Label3D.new()
+	l.text = text
+	l.font = ModelLib.label_font()
+	l.font_size = 40
+	l.outline_size = 0
+	l.modulate = Color("b8321f")
+	l.pixel_size = 0.008
+	var ab := mi.mesh.get_aabb()
+	l.position = Vector3(0, ab.get_center().y + 0.1, ab.end.z + 0.03)
+	mi.add_child(l)
+
+
+func clear_temp() -> void:
+	for n in temp_nodes:
+		if is_instance_valid(n):
+			n.queue_free()
+	temp_nodes.clear()
+
+
 func _on_day_started(report: Array) -> void:
+	clear_temp()
+	for line in report:
+		if str(line).begins_with("[SIDAK]"):
+			var d: Vector3 = door_points.get("kantor", Vector3.ZERO)
+			spawn_temp_actor("char_petugas", "Petugas Satgas", d + Vector3(2.5, 0, 1.5), 1.5)
 	refresh_all()
 	player.global_position = door_points.get("kantor", player.global_position)
 	ui.show_morning(report)
@@ -693,8 +753,9 @@ func float_text(pos: Vector3, text: String, color: Color) -> void:
 	var l := Label3D.new()
 	l.text = text
 	l.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	l.font_size = 44
-	l.outline_size = 14
+	l.font = ModelLib.label_font()
+	l.font_size = 46
+	l.outline_size = 10
 	l.modulate = color
 	l.outline_modulate = Color("fdf3dc")
 	l.no_depth_test = true
@@ -716,6 +777,10 @@ func _process(delta: float) -> void:
 		GS.advance(delta)
 	_update_daylight()
 	_update_camera(delta)
+	for i in boats.size():
+		var b: MeshInstance3D = boats[i]
+		b.position.y = water_level - 0.08 + sin(_t * 1.3 + i * 2.0) * 0.05
+		b.rotation.z = sin(_t * 0.9 + i) * 0.03
 	if state == "play":
 		_update_target()
 	else:
@@ -735,9 +800,9 @@ func _update_daylight() -> void:
 	var night_col := Color(0.55, 0.62, 1.0)
 	var col := day_col.lerp(dusk_col, clampf(dusk, 0.0, 1.0)).lerp(night_col, night)
 	sun.light_color = col
-	sun.light_energy = lerpf(1.05, 0.22, night) * lerpf(0.85, 1.0, day_k)
+	sun.light_energy = lerpf(1.05, 0.32, night) * lerpf(0.85, 1.0, day_k)
 	env.ambient_light_color = Color("a9c7d2").lerp(Color("5b6fa8"), night).lerp(Color("e0b090"), clampf(dusk, 0.0, 1.0) * 0.4)
-	env.ambient_light_energy = lerpf(0.5, 0.34, night)
+	env.ambient_light_energy = lerpf(0.5, 0.46, night)
 	env.background_color = Color("3a8f94").lerp(Color("14304a"), night)
 	RenderingServer.global_shader_parameter_set("night", night)
 	for l in lamps:

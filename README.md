@@ -42,7 +42,8 @@ cd docs && python3 -m http.server 8060
    - **Beli harga wajar** — mahal, reputasi naik.
    - **Tawar murah** — peluang tergantung kepercayaan & sifat warga.
    - **Tipu pakai surat palsu** — beli suratnya dari Bang Jeki (calo) di dermaga.
-   - **Gusur paksa** — sewa preman Bang Codet; warga pindah ke tenda biru.
+   - **Rampas paksa (gusur)** — sewa preman Bang Codet; warga pindah ke tenda biru.
+   - **Palak/rampok** — preman yang sama bisa merampas tabungan warga.
    - **Kemitraan franchise** — warga tetap "pemilik", kamu ambil 60% hasil, sisanya jadi cicilan utang berbunga 5%/hari... lalu **sita kebun** kalau utang menumpuk.
    - Pak Kades bisa disogok amplop.
 4. Beli Mesin Olah Minyak, olah TBS jadi minyak goreng, jual ke warga (harga Normal / Mahal / Gila-gilaan). Warga tanpa lahan terpaksa beli, kalau perlu ngutang.

@@ -100,21 +100,6 @@
   }
   .keys { font-size: 14px; color: var(--bark-soft); max-width: 44ch; }
   #error { display: none; color: var(--fruit); font-weight: 600; }
-  #fs {
-    position: fixed;
-    right: 12px;
-    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-    z-index: 3;
-    font: 600 14px "Fredoka", system-ui, sans-serif;
-    color: var(--bark);
-    background: rgba(253, 243, 220, .85);
-    border: 0;
-    border-radius: 999px;
-    padding: 6px 14px;
-    box-shadow: 0 2px 6px rgba(90, 59, 34, .25);
-    cursor: pointer;
-  }
-  #fs:focus-visible { outline: 3px solid #e9b949; }
   #rotate {
     display: none;
     position: fixed;
@@ -147,35 +132,68 @@
     <div id="error"></div>
   </div>
 </div>
-<button id="fs" type="button" hidden>Layar penuh</button>
 <div id="rotate">Putar HP ke mode landscape untuk pengalaman terbaik</div>
 
 <script src="index.js"></script>
 <script>
 (function () {
-  const GODOT_CONFIG = {"args": [], "canvasResizePolicy": 2, "emscriptenPoolSize": 8, "ensureCrossOriginIsolationHeaders": true, "executable": "index", "experimentalVK": false, "fileSizes": {"index.pck": 4385372, "index.wasm": 38034280}, "focusCanvas": true, "gdextensionLibs": [], "godotPoolSize": 4};
-  const GZ = ["index.wasm", "index.pck"];
+  const GODOT_CONFIG = {"args": [], "canvasResizePolicy": 2, "emscriptenPoolSize": 8, "ensureCrossOriginIsolationHeaders": true, "executable": "index", "experimentalVK": false, "fileSizes": {"index.pck": 6117580, "index.wasm": 38034280}, "focusCanvas": true, "gdextensionLibs": [], "godotPoolSize": 4};
+  const PACKED = {"index.wasm": {"src": "index.wasm.gz", "size": 9237412, "b64": false}, "index.pck": {"src": "index.pck.gz", "size": 5540903, "b64": false}};  // file -> {src, size, b64}
 
-  // Large files are shipped gzip-compressed and inflated in the browser.
+  const fill = document.getElementById("fill");
+  const status = document.getElementById("status");
+  const got = {};
+  const total = Object.values(PACKED).reduce((n, p) => n + p.size, 0);
+  function showProgress() {
+    const done = Object.values(got).reduce((n, v) => n + v, 0);
+    const pct = total ? Math.min(100, Math.round((done / total) * 100)) : 0;
+    fill.style.width = Math.max(4, pct) + "%";
+    status.textContent = pct < 100 ? "Mengunduh game… " + pct + "% (" + (done / 1048576).toFixed(1) + " / " + (total / 1048576).toFixed(1) + " MB)"
+                                   : "Menyiapkan kebun…";
+  }
+
+  function decodeBase64(text) {
+    const bin = atob(text.replace(/\s+/g, ""));
+    const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+
+  async function download(name, info) {
+    const res = await nativeFetch(info.src);
+    if (!res.ok) throw new Error("Gagal mengunduh " + info.src + " (" + res.status + ")");
+    const reader = res.body.getReader();
+    const chunks = [];
+    got[name] = 0;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      got[name] += value.length;
+      showProgress();
+    }
+    got[name] = info.size;
+    showProgress();
+    let blob = new Blob(chunks);
+    if (info.b64) blob = new Blob([decodeBase64(await blob.text())]);
+    return blob;
+  }
+
+  // Big files ship gzip-compressed (as base64 text where the host only serves text);
+  // Godot's loader asks for index.wasm / index.pck and gets the inflated bytes.
   const nativeFetch = window.fetch.bind(window);
   window.fetch = function (input, init) {
     const url = typeof input === "string" ? input : (input && input.url) || "";
     const clean = url.split("?")[0];
-    const hit = GZ.find((name) => clean.endsWith(name));
-    if (hit && typeof DecompressionStream === "function") {
-      return nativeFetch(url.replace(hit, hit + ".gz"), init).then((res) => {
-        if (!res.ok) return res;
-        const type = hit.endsWith(".wasm") ? "application/wasm" : "application/octet-stream";
-        return new Response(res.body.pipeThrough(new DecompressionStream("gzip")), {
-          status: 200, headers: { "Content-Type": type },
-        });
-      });
+    const name = Object.keys(PACKED).find((n) => clean.endsWith(n));
+    if (name && typeof DecompressionStream === "function") {
+      return download(name, PACKED[name]).then((blob) => new Response(
+        blob.stream().pipeThrough(new DecompressionStream("gzip")),
+        { status: 200, headers: { "Content-Type": name.endsWith(".wasm") ? "application/wasm" : "application/octet-stream" } }));
     }
     return nativeFetch(input, init);
   };
 
-  const fill = document.getElementById("fill");
-  const status = document.getElementById("status");
   const loader = document.getElementById("loader");
   const errorBox = document.getElementById("error");
   const tips = [
@@ -201,22 +219,14 @@
     fail("Browser ini belum mendukung WebGL 2. Coba Chrome atau Firefox versi terbaru.");
     return;
   }
-  if (GZ.length && typeof DecompressionStream !== "function") {
+  if (typeof DecompressionStream !== "function") {
     fail("Browser ini terlalu lama (tidak mendukung DecompressionStream). Coba Chrome/Firefox/Safari terbaru.");
     return;
   }
 
   const engine = new Engine(GODOT_CONFIG);
   engine.startGame({
-    onProgress: function (current, total) {
-      if (total > 0) {
-        const pct = Math.min(100, Math.round((current / total) * 100));
-        fill.style.width = Math.max(4, pct) + "%";
-        status.textContent = "Mengunduh game… " + pct + "%";
-      } else {
-        status.textContent = "Mengunduh game… " + Math.round(current / 1048576) + " MB";
-      }
-    },
+    onProgress: function () {},
   }).then(() => {
     clearInterval(tipTimer);
     loader.classList.add("gone");
@@ -224,26 +234,6 @@
     document.getElementById("canvas").focus();
   }, (err) => fail(String(err && err.message ? err.message : err)));
 
-  const fs = document.getElementById("fs");
-  const root = document.documentElement;
-  if (root.requestFullscreen || root.webkitRequestFullscreen) {
-    fs.hidden = false;
-    fs.addEventListener("click", () => {
-      const req = root.requestFullscreen || root.webkitRequestFullscreen;
-      if (document.fullscreenElement) {
-        document.exitFullscreen && document.exitFullscreen().catch(() => {});
-      } else {
-        try {
-          const p = req.call(root);
-          if (p && p.then) {
-            p.then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock("landscape").catch(() => {}))
-             .catch(() => { fs.hidden = true; });
-          }
-        } catch (e) { fs.hidden = true; }
-      }
-      document.getElementById("canvas").focus();
-    });
-  }
   const rotate = document.getElementById("rotate");
   if (matchMedia("(pointer: coarse)").matches) rotate.classList.add("show");
 })();

@@ -21,7 +21,7 @@ ROADS = [
     [(-4, 8), (-4, 22)],                                      # to Kantor
     [(-46, 8), (-46, 22)],                                    # to Kakek's plot
     [(30, 7), (30, 22)],                                      # to Tarno's plot
-    [(62, 8), (68, 12)],                                      # to the jetty
+    [(62, 8), (73, 12.5)],                                      # to the jetty
     [(-20, -26), (-20, -36)],
     [(18, -26), (18, -36)],
 ]
@@ -54,7 +54,7 @@ BUILDINGS = [
     {"id": "rumah_nenek", "model": "rumah_a", "pos": (-33, -38), "rot": 90},
     {"id": "rumah_pemuda", "model": "rumah_b", "pos": (31, -38), "rot": -90},
     {"id": "rumah_petani", "model": "rumah_c", "pos": (37, 24), "rot": -90},
-    {"id": "dermaga", "model": "dermaga", "pos": (69, 13), "rot": -90},
+    {"id": "dermaga", "model": "dermaga", "pos": (73, 13), "rot": -90},
 ]
 
 # Small set pieces (model, pos, rot)
@@ -65,7 +65,7 @@ PROPS = [
     ("karung_pupuk", (-18.5, 3.2), 20), ("karung_pupuk", (-17.6, 3.6), -10), ("crate", (-9.5, 3.4), 10),
     ("gerobak", (3, 34), 30), ("tumpukan_tbs", (45, 0.5), 0), ("tumpukan_tbs", (48.5, 0.2), 40),
     ("truck", (57, 1), -20), ("crate", (60, 21), 0), ("crate", (60.8, 20.2), 25), ("meja", (5, 5), 0),
-    ("perahu", (74, 20), 80), ("perahu", (70, -10), 20), ("jerigen", (11.5, 4.6), 0), ("jerigen", (12.1, 4.9), 30),
+    ("perahu", (81, 17.5), 80), ("perahu", (76, -12), 20), ("jerigen", (11.5, 4.6), 0), ("jerigen", (12.1, 4.9), 30),
     ("pagar", (-27, 21.5), 0), ("pagar", (-25, 21.5), 0), ("pagar", (-9, 21.5), 0), ("pagar", (-7, 21.5), 0),
 ]
 

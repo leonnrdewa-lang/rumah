@@ -55,7 +55,7 @@ func _ready() -> void:
 	layer = 10
 	_font_bold = FontVariation.new()
 	_font_bold.base_font = FONT
-	_font_bold.variation_opentype = {"wght": 650}
+	_font_bold.variation_opentype = {"wght": 680}
 	_font_semi = FontVariation.new()
 	_font_semi.base_font = FONT
 	_font_semi.variation_opentype = {"wght": 520}
@@ -119,7 +119,12 @@ func _make_theme() -> Theme:
 	th.set_color("font_focus_color", "Button", BROWN)
 	th.set_color("font_disabled_color", "Button", Color(0.55, 0.47, 0.38, 0.8))
 	th.set_font("font", "Button", _font_bold)
-	th.set_stylebox("panel", "PanelContainer", _box(CREAM, 22, true))
+	var panel_box := _box(CREAM, 22, true)
+	panel_box.content_margin_left = 22
+	panel_box.content_margin_right = 22
+	panel_box.content_margin_top = 16
+	panel_box.content_margin_bottom = 16
+	th.set_stylebox("panel", "PanelContainer", panel_box)
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0, 0, 0, 0)
 	th.set_stylebox("panel", "ScrollContainer", sb)
@@ -330,6 +335,13 @@ func _build_hud() -> void:
 
 
 func _layout() -> void:
+	# phones held upright: enlarge the UI so text stays readable
+	var win := Vector2(get_tree().root.size)
+	var want := 1.0 if win.x >= win.y else 1.75
+	if _touch_mode and win.x >= win.y:
+		want = 1.25
+	if not is_equal_approx(get_tree().root.content_scale_factor, want):
+		get_tree().root.content_scale_factor = want
 	var vp := root.get_viewport_rect().size
 	var tr: Control = hud.get_node("TopRight")
 	tr.position = Vector2(vp.x - tr.get_combined_minimum_size().x - 16, 14)
@@ -628,6 +640,12 @@ func _input(event: InputEvent) -> void:
 			if i < _dialog_choices.size() and _dialog_choices[i].get("enabled", true):
 				get_viewport().set_input_as_handled()
 				_choose(_dialog_choices[i])
+	if modal and event is InputEventKey and event.is_action_pressed("action") and not event.is_action_pressed("ui_accept"):
+		var f := get_viewport().gui_get_focus_owner()
+		if f is Button and not (f as Button).disabled:
+			get_viewport().set_input_as_handled()
+			(f as Button).pressed.emit()
+			return
 	if modal and event.is_action_pressed("pause"):
 		get_viewport().set_input_as_handled()
 		if _dialog_choices.size() <= 1:
@@ -825,7 +843,7 @@ func show_help(on_close := Callable()) -> void:
 		"Aksi: E / Spasi (atau tombol bulat kanan bawah di HP) — tebas semak, tanam, pupuk, panen, ngobrol.",
 		"Menu: Esc / P.  Status: Tab / I.  Pilihan dialog: tombol angka 1–6.",
 		"Sawit butuh ±6 hari untuk berbuah; pupuk mempercepat. Panen TBS lalu jual ke Pabrik di timur.",
-		"Lahan warga bisa dibeli wajar, ditawar murah, ditipu pakai surat palsu, atau digusur pakai preman (dari Bang Jeki di dermaga).",
+		"Lahan warga bisa dibeli wajar, ditawar murah, ditipu pakai surat palsu, atau dirampas pakai preman (sewa dari Bang Jeki dekat dermaga). Preman juga bisa memalak tabungan warga.",
 		"Makin culas, makin tinggi Kecurigaan. Kalau penuh (100), Satgas datang menyidak: denda besar. Sidak ke-3 = tamat.",
 		"Punya Mesin Olah Minyak? Olah TBS jadi minyak goreng lalu jual ke warga... harganya kamu yang atur.",
 		"Warga tanpa lahan bisa kamu jadikan buruh murah. Warga yang masih punya lahan bisa diajak 'kemitraan franchise'.",

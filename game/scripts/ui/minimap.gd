@@ -71,8 +71,13 @@ func _draw() -> void:
 		draw_circle(pt, 4.5 if not big else 6.0, Color("fdf3dc"))
 		draw_circle(pt, 3.0 if not big else 4.0, Color("c9563c"))
 		if big or id in ["pabrik", "kantor"]:
-			draw_string_outline(font, pt + Vector2(6, 4), LABELS[id], HORIZONTAL_ALIGNMENT_LEFT, -1, fs, 4, Color("fdf3dc"))
-			draw_string(font, pt + Vector2(6, 4), LABELS[id], HORIZONTAL_ALIGNMENT_LEFT, -1, fs, Color("5a3b22"))
+			var text: String = LABELS[id]
+			var tw := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
+			var at := pt + Vector2(6, 4)
+			if at.x + tw > size.x - 6:
+				at.x = pt.x - 6 - tw
+			draw_string_outline(font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, 4, Color("fdf3dc"))
+			draw_string(font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, Color("5a3b22"))
 	var target: Variant = quest_target()
 	if target != null:
 		var tp := world_to_map(target, area)
