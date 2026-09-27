@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<link rel="icon" href="favicon.png">
+<title>Sawit The Franchise</title>
+<meta name="description" content="Game farming sim satir tentang juragan kebun sawit. Main di browser PC & Android.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --cream: #fdf3dc;
+    --cream-deep: #f1e2bf;
+    --bark: #5a3b22;
+    --bark-soft: #8a6a4a;
+    --palm: #4f8a2a;
+    --fruit: #c9563c;
+    --lagoon: #3a8f94;
+  }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--cream);
+    color: var(--bark);
+    font-family: "Fredoka", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+  #canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    outline: none;
+    touch-action: none;
+    background: var(--lagoon);
+  }
+  #loader {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding-inline: 16px;
+    background:
+      radial-gradient(120% 80% at 50% 110%, #9ccf8a 0 38%, transparent 39%),
+      radial-gradient(90% 60% at 50% 115%, #efdfb0 0 40%, transparent 41%),
+      var(--cream);
+    transition: opacity .45s ease;
+    z-index: 2;
+  }
+  #loader.gone { opacity: 0; pointer-events: none; }
+  .card { width: min(520px, 100%); text-align: center; display: grid; gap: 14px; justify-items: center; }
+  .logo {
+    font-weight: 700;
+    font-size: clamp(64px, 16vw, 120px);
+    line-height: .9;
+    color: var(--palm);
+    letter-spacing: .01em;
+    text-shadow: 0 5px 0 rgba(90, 59, 34, .18);
+    -webkit-text-stroke: 3px var(--cream);
+    paint-order: stroke fill;
+  }
+  .ribbon {
+    background: var(--fruit);
+    color: var(--cream);
+    font-weight: 600;
+    font-size: clamp(20px, 5vw, 32px);
+    padding: 2px 26px 5px;
+    border-radius: 12px;
+    letter-spacing: .06em;
+    box-shadow: 0 4px 10px rgba(90, 59, 34, .25);
+  }
+  .bar {
+    width: 100%;
+    height: 16px;
+    border-radius: 999px;
+    background: var(--cream-deep);
+    box-shadow: inset 0 2px 3px rgba(90, 59, 34, .18);
+    overflow: hidden;
+    margin-top: 10px;
+  }
+  .bar > i {
+    display: block;
+    height: 100%;
+    width: 4%;
+    border-radius: inherit;
+    background: repeating-linear-gradient(-45deg, #6fa343 0 12px, #5c8f38 12px 24px);
+    transition: width .25s ease;
+  }
+  #status { font-size: 17px; color: var(--bark-soft); font-variant-numeric: tabular-nums; min-height: 1.4em; }
+  .tip {
+    font-size: 16px;
+    background: #fff9ea;
+    border-radius: 999px;
+    padding: 8px 18px;
+    box-shadow: 0 3px 8px rgba(90, 59, 34, .15);
+    max-width: 100%;
+  }
+  .keys { font-size: 14px; color: var(--bark-soft); max-width: 44ch; }
+  #error { display: none; color: var(--fruit); font-weight: 600; }
+  #fs {
+    position: fixed;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    z-index: 3;
+    font: 600 14px "Fredoka", system-ui, sans-serif;
+    color: var(--bark);
+    background: rgba(253, 243, 220, .85);
+    border: 0;
+    border-radius: 999px;
+    padding: 6px 14px;
+    box-shadow: 0 2px 6px rgba(90, 59, 34, .25);
+    cursor: pointer;
+  }
+  #fs:focus-visible { outline: 3px solid #e9b949; }
+  #rotate {
+    display: none;
+    position: fixed;
+    left: 50%;
+    top: calc(10px + env(safe-area-inset-top, 0px));
+    transform: translateX(-50%);
+    z-index: 3;
+    font-size: 14px;
+    background: rgba(253, 243, 220, .92);
+    padding: 6px 14px;
+    border-radius: 999px;
+    box-shadow: 0 2px 6px rgba(90, 59, 34, .2);
+    white-space: nowrap;
+  }
+  @media (orientation: portrait) and (max-width: 700px) { #rotate.show { display: block; } }
+  @media (prefers-reduced-motion: reduce) { .bar > i, #loader { transition: none; } }
+</style>
+
+</head>
+<body>
+<canvas id="canvas" tabindex="0">Browser kamu tidak mendukung canvas.</canvas>
+<div id="loader" role="status" aria-live="polite">
+  <div class="card">
+    <div class="logo">SAWIT</div>
+    <div class="ribbon">THE FRANCHISE</div>
+    <div class="bar" aria-hidden="true"><i id="fill"></i></div>
+    <div id="status">Menyiapkan kebun…</div>
+    <div class="tip" id="tip">Tip: pohon sawit butuh ±6 hari untuk berbuah. Pupuk mempercepatnya.</div>
+    <div class="keys">PC: WASD/panah untuk jalan, E/Spasi untuk aksi, Esc untuk menu. HP: geser jempol kiri untuk jalan, tombol bulat kanan untuk aksi.</div>
+    <div id="error"></div>
+  </div>
+</div>
+<button id="fs" type="button" hidden>Layar penuh</button>
+<div id="rotate">Putar HP ke mode landscape untuk pengalaman terbaik</div>
+
+<script src="index.js"></script>
+<script>
+(function () {
+  const GODOT_CONFIG = {"args": [], "canvasResizePolicy": 2, "emscriptenPoolSize": 8, "ensureCrossOriginIsolationHeaders": true, "executable": "index", "experimentalVK": false, "fileSizes": {"index.pck": 4385372, "index.wasm": 38034280}, "focusCanvas": true, "gdextensionLibs": [], "godotPoolSize": 4};
+  const GZ = ["index.wasm", "index.pck"];
+
+  // Large files are shipped gzip-compressed and inflated in the browser.
+  const nativeFetch = window.fetch.bind(window);
+  window.fetch = function (input, init) {
+    const url = typeof input === "string" ? input : (input && input.url) || "";
+    const clean = url.split("?")[0];
+    const hit = GZ.find((name) => clean.endsWith(name));
+    if (hit && typeof DecompressionStream === "function") {
+      return nativeFetch(url.replace(hit, hit + ".gz"), init).then((res) => {
+        if (!res.ok) return res;
+        const type = hit.endsWith(".wasm") ? "application/wasm" : "application/octet-stream";
+        return new Response(res.body.pipeThrough(new DecompressionStream("gzip")), {
+          status: 200, headers: { "Content-Type": type },
+        });
+      });
+    }
+    return nativeFetch(input, init);
+  };
+
+  const fill = document.getElementById("fill");
+  const status = document.getElementById("status");
+  const loader = document.getElementById("loader");
+  const errorBox = document.getElementById("error");
+  const tips = [
+    "Tip: pohon sawit butuh ±6 hari untuk berbuah. Pupuk mempercepatnya.",
+    "Tip: Bang Jeki si calo menjual surat palsu dan jasa preman. Hati-hati kecurigaan!",
+    "Tip: tidur di Kantor untuk menyimpan permainan.",
+    "Tip: warga yang polos lebih mudah ditawar murah... kasihan sih.",
+    "Tip: Mesin Olah Minyak mengubah 1 TBS jadi 3 jerigen minyak goreng.",
+  ];
+  let tipIndex = 0;
+  const tipTimer = setInterval(() => {
+    tipIndex = (tipIndex + 1) % tips.length;
+    document.getElementById("tip").textContent = tips[tipIndex];
+  }, 3500);
+
+  function fail(msg) {
+    errorBox.style.display = "block";
+    errorBox.textContent = msg;
+    status.textContent = "Gagal memuat.";
+  }
+
+  if (!Engine.isWebGLAvailable(2)) {
+    fail("Browser ini belum mendukung WebGL 2. Coba Chrome atau Firefox versi terbaru.");
+    return;
+  }
+  if (GZ.length && typeof DecompressionStream !== "function") {
+    fail("Browser ini terlalu lama (tidak mendukung DecompressionStream). Coba Chrome/Firefox/Safari terbaru.");
+    return;
+  }
+
+  const engine = new Engine(GODOT_CONFIG);
+  engine.startGame({
+    onProgress: function (current, total) {
+      if (total > 0) {
+        const pct = Math.min(100, Math.round((current / total) * 100));
+        fill.style.width = Math.max(4, pct) + "%";
+        status.textContent = "Mengunduh game… " + pct + "%";
+      } else {
+        status.textContent = "Mengunduh game… " + Math.round(current / 1048576) + " MB";
+      }
+    },
+  }).then(() => {
+    clearInterval(tipTimer);
+    loader.classList.add("gone");
+    setTimeout(() => loader.remove(), 600);
+    document.getElementById("canvas").focus();
+  }, (err) => fail(String(err && err.message ? err.message : err)));
+
+  const fs = document.getElementById("fs");
+  const root = document.documentElement;
+  if (root.requestFullscreen || root.webkitRequestFullscreen) {
+    fs.hidden = false;
+    fs.addEventListener("click", () => {
+      const req = root.requestFullscreen || root.webkitRequestFullscreen;
+      if (document.fullscreenElement) {
+        document.exitFullscreen && document.exitFullscreen().catch(() => {});
+      } else {
+        try {
+          const p = req.call(root);
+          if (p && p.then) {
+            p.then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock("landscape").catch(() => {}))
+             .catch(() => { fs.hidden = true; });
+          }
+        } catch (e) { fs.hidden = true; }
+      }
+      document.getElementById("canvas").focus();
+    });
+  }
+  const rotate = document.getElementById("rotate");
+  if (matchMedia("(pointer: coarse)").matches) rotate.classList.add("show");
+})();
+</script>
+</body>
+</html>
