@@ -372,17 +372,17 @@ blocked_px = (road_edge < 0.25) | door_block | (bld_dist <= 0.15) | (sd < 2.0)
 
 # plants per m^2 in each zone (the densest zone wins) and species weights
 ZONES = [
-    ("verge", zone_verge, 1.3, {"grass_a": 3, "grass_b": 3, "flowers_white": 1.6, "flowers_yellow": 1.3, "fern_a": 1.0,
-                                 "rock_a": 0.35, "keladi": 0.4, "shrub_a": 0.5, "frond_fallen": 0.25}),
-    ("bld", zone_bld, 1.1, {"shrub_a": 2, "shrub_b": 2, "keladi": 1.6, "flowers_white": 1.1, "flowers_yellow": 1.0,
-                            "fern_b": 1.0, "grass_a": 1.2, "pile_fronds": 0.25}),
-    ("parcel", zone_parcel, 0.95, {"fern_a": 2, "fern_b": 2, "frond_fallen": 1.2, "grass_b": 2, "keladi": 0.8,
-                                  "shrub_b": 0.8, "pile_fronds": 0.3, "flowers_white": 0.6}),
-    ("forest", zone_forest, 0.7, {"fern_a": 2, "fern_b": 2, "shrub_a": 1.2, "shrub_b": 1.2, "vine_log": 0.22,
-                                  "frond_fallen": 0.6, "keladi": 1.0, "rock_a": 0.3, "grass_b": 0.6}),
-    ("inner", zone_inner, 0.28, {"fern_a": 1.0, "grass_b": 1.5, "frond_fallen": 1.4, "grass_a": 1.0}),
-    ("open", land_ok, 0.28, {"grass_a": 2, "grass_b": 2, "flowers_white": 1.0, "flowers_yellow": 0.8, "fern_a": 0.6,
-                            "shrub_b": 0.3, "rock_a": 0.2}),
+    ("verge", zone_verge, 1.3, {"grass_a": 3.5, "grass_b": 3.5, "flowers_white": 1.8, "flowers_yellow": 1.4, "fern_a": 0.7,
+                                 "rock_a": 0.08, "keladi": 0.45, "shrub_a": 0.45, "frond_fallen": 0.25}),
+    ("bld", zone_bld, 1.1, {"shrub_a": 1.8, "shrub_b": 1.8, "keladi": 1.8, "flowers_white": 1.3, "flowers_yellow": 1.1,
+                            "fern_b": 0.8, "grass_a": 1.6, "pile_fronds": 0.25}),
+    ("parcel", zone_parcel, 0.95, {"fern_a": 1.4, "fern_b": 1.4, "frond_fallen": 1.2, "grass_b": 2.6, "keladi": 1.0,
+                                  "shrub_b": 0.7, "pile_fronds": 0.3, "flowers_white": 0.8}),
+    ("forest", zone_forest, 0.7, {"fern_a": 1.5, "fern_b": 1.5, "shrub_a": 1.1, "shrub_b": 1.1, "vine_log": 0.2,
+                                  "frond_fallen": 0.6, "keladi": 1.2, "rock_a": 0.1, "grass_b": 1.0}),
+    ("inner", zone_inner, 0.28, {"fern_a": 0.8, "grass_b": 1.8, "frond_fallen": 1.4, "grass_a": 1.2}),
+    ("open", land_ok, 0.28, {"grass_a": 2.4, "grass_b": 2.4, "flowers_white": 1.1, "flowers_yellow": 0.9, "fern_a": 0.45,
+                            "shrub_b": 0.3, "keladi": 0.2}),
     ("beach", zone_beach, 0.1, {"grass_b": 1.0, "grass_a": 0.5}),
 ]
 UG_SCALE = {"grass_a": (0.9, 1.4), "grass_b": (0.9, 1.4), "fern_a": (0.9, 1.4), "fern_b": (0.9, 1.4),

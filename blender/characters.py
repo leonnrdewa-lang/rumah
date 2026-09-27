@@ -40,7 +40,7 @@ import bpy  # noqa: E402
 from mathutils import Matrix, Quaternion, Vector  # noqa: E402
 
 import common  # noqa: E402
-from common import (ICONS_DIR, PREVIEW_DIR, bake_vertex_ao, count_tris, export_glb, link,  # noqa: E402
+from common import (ICONS_DIR, PREVIEW_DIR, bake_vertex_ao, count_tris, link,  # noqa: E402
                     mat, reset_scene)
 
 TAU = math.tau
@@ -1514,7 +1514,7 @@ GAIT = {
     "walk": dict(N=27, sigma=0.55, front=0.14, back=0.18, td_toe=-18.0, to_toe=38.0, lift=0.036,
                  bob=0.03, lean=6.0, arm=34.0, yaw=7.0),
     "run": dict(N=18, sigma=0.30, front=0.16, back=0.24, td_toe=3.0, to_toe=56.0, lift=0.12,
-                bob=0.03, lean=15.0, arm=46.0, yaw=10.0),
+                bob=0.03, lean=19.0, arm=46.0, yaw=10.0),
 }
 def gait_dims(c, st, kind):
     """Scaled stride numbers of one character for one gait (unscaled metres, like pose specs)."""
@@ -1912,6 +1912,9 @@ def clip_harvest(rig, st):
         ktL.append((f, gL))
         kg.append((f, D))
     hc = b["chest"][0]
+    tab = foot_table(rig.c)     # up on the balls of the feet for the thrust (heels rise, toes stay put)
+    tipL = (0.02,) + foot_roll(-0.04, 22.0, tab) + (22.0, 10.0)
+    tipR = (-0.02,) + foot_roll(0.04, 22.0, tab) + (22.0, -10.0)
     tr = one_shot(N, b, {
         "iksp": [(0, (1,)), (36, (1,))],
         "ikR": [(0, (1,)), (36, (1,))], "ikL": [(0, (1,)), (36, (1,))],
@@ -1930,11 +1933,10 @@ def clip_harvest(rig, st):
         "neck": [(0, b["neck"]), (8, (-4, 0, 0)), (17, (-6, 0, 0)), (25, (0, 0, 0)), (32, (-2, 0, 0))],
         "head": [(0, b["head"]), (8, (-8, 4, 0)), (12, (-6, 4, 0)), (17, (-12, 5, 2)), (21, (-12, 5, 2)),
                  (25, (-2, 4, 0)), (28, (0, 4, 0)), (33, (-4, 2, 0))],
-        "legL": [(0, b["legL"]), (7, (0.02, -0.04, 0.0, 0, 10)), (15, (0.02, -0.04, 0.012, 12, 10)),
-                 (20, (0.02, -0.04, 0.012, 12, 10)), (23, (0.02, -0.04, 0.0, 0, 10)), (30, (0.02, -0.04, 0.0, 0, 10))],
-        "legR": [(0, b["legR"]), (7, (-0.02, 0.04, 0.0, 0, -10)), (15, (-0.02, 0.04, 0.014, 14, -10)),
-                 (20, (-0.02, 0.04, 0.014, 14, -10)), (23, (-0.02, 0.04, 0.0, 0, -10)),
-                 (30, (-0.02, 0.04, 0.0, 0, -10))],
+        "legL": [(0, b["legL"]), (7, (0.02, -0.04, 0.0, 0, 10)), (15, tipL), (20, tipL),
+                 (23, (0.02, -0.04, 0.0, 0, 10)), (30, (0.02, -0.04, 0.0, 0, 10))],
+        "legR": [(0, b["legR"]), (7, (-0.02, 0.04, 0.0, 0, -10)), (15, tipR), (20, tipR),
+                 (23, (-0.02, 0.04, 0.0, 0, -10)), (30, (-0.02, 0.04, 0.0, 0, -10))],
         "jaw": [(0, (1,)), (21, (1,)), (23, (2.4,)), (27, (1.6,)), (31, (1,))],
         "eyes": [(0, (1, 1)), (21, (1, 1)), (23, (0.45, 0.45)), (27, (0.6, 0.6)), (31, (1, 1))],
         "brow": [(0, (0, 0)), (10, (0, 0.004)), (21, (0, 0.004)), (23, (8, -0.003)), (29, (0, 0))],
@@ -2031,9 +2033,11 @@ def clip_plant(rig, st):
     kneel_r = (-0.012 * kz, y_ank, tab[int(toe_k)][1], toe_k, -10.0)
     foot_l = (0.035 * kz, -0.085 * kz, 0.0, 0.0, 26.0)
     hc, hs, hh, hn = b["chest"][0], b["spine"][0], b["head"][0], b["neck"][0]
-    # the head keeps ~34 deg net pitch whatever the torso does
+    # the head stays fairly upright (~4-10 deg net pitch, the neck taking part of the bend) whatever the
+    # torso does: the hat brim then stays level and the hands show below it from the 45 deg camera
     tot = lh + ls + lc + (hs + hc)
-    head_p = 34.0 - tot - (hn - 4.0)
+    neck_p = hn - 0.3 * (tot - 4.0)
+    head_p = 4.0 - tot - neck_p
     bob = 0.006 * kz
 
     def dz(z):
@@ -2042,7 +2046,7 @@ def clip_plant(rig, st):
         "hips_off": [(0, b["hips_off"]), (3, (0.012, -0.004, -0.02)), (6, (0.006, back * 0.6, drop * 0.75)),
                      (9, dz(-0.004)), (10, dz(-bob)), (12, dz(0.0)), (14, dz(-bob)), (16, dz(0.0)),
                      (20, dz(-bob * 0.5)), (22, dz(-bob)), (24, dz(-bob)), (26, dz(0.0)),
-                     (29, (0.004, back * 0.4, drop * 0.45)), (32, (0.0, 0.0, 0.008)), (35, (0, 0, -0.007))],
+                     (29, (0.004, back * 0.4, drop * 0.45)), (32, (0.0, 0.0, -0.001)), (35, (0, 0, -0.007))],
         "hips": [(0, b["hips"]), (3, (3, 4, -2)), (6, (lh * 0.7, -4, 0)), (9, (lh, -8, 0)), (24, (lh, -8, 0)),
                  (28, (lh * 0.5, -4, 0)), (32, (-4, 0, 0))],
         "spine": [(0, b["spine"]), (7, (hs + ls * 0.6, -2, 0)), (10, (hs + ls, -3, 0)), (25, (hs + ls, -3, 0)),
@@ -2051,10 +2055,10 @@ def clip_plant(rig, st):
                   (14, (hc + lc, -6, -2)), (16, (hc + lc - 3, -2, 0)), (19, (hc + lc, 6, 3)),
                   (22, (hc + lc + 1, 0, 0)), (24, (hc + lc + 1, 0, 0)), (27, (hc + lc * 0.5, 0, 0)),
                   (31, (hc - 8, 0, 0)), (34, (hc + 1, 0, 0))],
-        "neck": [(0, b["neck"]), (8, (hn - 2, 0, 0)), (11, (hn - 4, -2, 0)), (25, (hn - 4, 2, 0)),
+        "neck": [(0, b["neck"]), (8, (hn + (neck_p - hn) * 0.6, 0, 0)), (11, (neck_p, -2, 0)), (25, (neck_p, 2, 0)),
                  (30, (hn, 0, 0)), (33, (hn + 2, 0, 0))],
-        "head": [(0, b["head"]), (4, (hh + 4, 0, 0)), (9, (head_p + 4, -6, 3)), (12, (head_p, -9, 4)),
-                 (16, (head_p + 2, -7, 3)), (20, (head_p, 7, -3)), (24, (head_p + 2, 2, 0)),
+        "head": [(0, b["head"]), (4, (hh + 4, 0, 0)), (9, (head_p + 6, -6, 3)), (12, (head_p + 1, -9, 4)),
+                 (16, (head_p + 4, -7, 3)), (20, (head_p + 2, 7, -3)), (24, (head_p + 4, 2, 0)),
                  (28, (hh + 2, 0, 0)), (32, (hh - 10, 0, 0))],
         "kneeout": [(0, (0.12, 0.12)), (4, (0.9, 0.12)), (28, (0.9, 0.12))],
         "legL": [(0, b["legL"]), (3, (0.02 * kz, -0.045 * kz, 0.035 * kz, -6, 16)), (6, foot_l), (26, foot_l),
@@ -2074,9 +2078,12 @@ def clip_plant(rig, st):
                  (25, (0.03, -0.035, G)), (27, (0.02, -0.03, G + 0.06))],
         "armR": [(0, b["armR"]), (7, (40, 16, 10, 40)), (25, (40, 16, 10, 40))],
         "armL": [(0, b["armL"]), (7, (40, 16, 10, 40)), (26, (40, 16, 10, 40))],
-        "handR": [(0, b["handR"]), (10, (35, 0, 0)), (12, (-5, 0, 0)), (14, (35, 0, 0)), (16, (-5, 0, 0)),
-                  (22, (25, 0, 0)), (26, (0, 0, 0))],
-        "handL": [(0, b["handL"]), (18, (10, 0, 0)), (21, (30, 0, 0)), (25, (30, 0, 0)), (28, b["handL"])],
+        # wrists stay nearly straight while the fists are on the soil (the IK aims the fist, not the
+        # wrist), with a small scoop on each dig
+        "handR": [(0, b["handR"]), (8, (6, 0, 0)), (10, (-4, 0, 0)), (12, (14, 0, 0)), (14, (-4, 0, 0)),
+                  (16, (14, 0, 0)), (22, (0, 0, 0)), (26, (4, 0, 0))],
+        "handL": [(0, b["handL"]), (8, (10, 0, 0)), (18, (6, 0, 0)), (21, (-2, 0, 0)), (25, (0, 0, 0)),
+                  (28, b["handL"])],
         "eyes": [(0, (1, 1)), (26, (1, 1)), (29, (0.4, 0.4)), (33, (0.8, 0.8))],
         "mouth": [(0, (1,)), (26, (1,)), (30, (1.3,))],
     })
@@ -2099,6 +2106,10 @@ def apply_pose(rig, basis):
         pb.location = loc
         pb.rotation_euler = q.to_euler("XYZ", pb.rotation_euler)
         pb.scale = sc
+
+
+LOC_BONES = ("hips", "extra_brow_L", "extra_brow_R")                        # translated (pelvis bob, brow lift)
+SCALE_BONES = ("extra_eye_L", "extra_eye_R", "extra_mouth", "extra_jaw")   # scaled only (blink, mouth)
 
 
 def bake_actions(rig, st, names=None):
@@ -2124,13 +2135,17 @@ def bake_actions(rig, st, names=None):
                 prev[pb.name] = e
                 row[pb.name] = (loc, e, sc)
             frames[f] = row
-        # first frame: keyframe_insert creates the action slot + F-curves; the rest is bulk-filled
+        # first frame: keyframe_insert creates the action slot + F-curves; the rest is bulk-filled.
+        # Only channels some clip really uses are keyed (every clip keys the same set, so Godot
+        # blends like with like; the rest stay at the rest pose and are not exported).
         for pb in ob.pose.bones:
             loc, e, sc = frames[0][pb.name]
             pb.location, pb.rotation_euler, pb.scale = loc, e, sc
-            pb.keyframe_insert("rotation_euler", frame=0, group=pb.name)
-            pb.keyframe_insert("location", frame=0, group=pb.name)
-            if pb.name.startswith("extra_"):
+            if pb.name not in SCALE_BONES:
+                pb.keyframe_insert("rotation_euler", frame=0, group=pb.name)
+            if pb.name in LOC_BONES:
+                pb.keyframe_insert("location", frame=0, group=pb.name)
+            if pb.name in SCALE_BONES:
                 pb.keyframe_insert("scale", frame=0, group=pb.name)
         for fc in act.fcurves:
             bname = fc.data_path.split('"')[1]
@@ -2468,10 +2483,12 @@ def build_preman():
                                 (rad(s * 140), 0.74), (rad(s * 152), 0.67)], 0.004)
         c.add("torso", tube_vf(path, (0.03, 0.007), 4, up=(0, 0, 1)), DK)
     # gold chain resting on the chest
-    N = 22
-    chain = [(TAU * i / N, 0.777 - 0.065 * (0.5 + 0.5 * math.cos(TAU * i / N)) ** 1.5) for i in range(N)]
-    cp = surf_path(surf, chain, 0.012)
-    c.add("torso_rigid", tube_vf(cp, [0.011 if i % 2 else 0.007 for i in range(N)], 4, closed=True), "M_Gold")
+    # (fine links: many short segments, round section, alternating thickness; hugs the chest surface)
+    N = 44
+    chain = [(TAU * i / N, 0.777 - 0.068 * (0.5 + 0.5 * math.cos(TAU * i / N)) ** 1.6) for i in range(N)]
+    cr = [0.0095 if i % 2 else 0.0068 for i in range(N)]
+    cp = [surf(a_, z_) + snormal(surf, a_, z_) * (0.0075 + 0.4 * r_) for (a_, z_), r_ in zip(chain, cr)]
+    c.add("torso_rigid", tube_vf(cp, cr, 6, closed=True), "M_Gold")
     c.add("torso_rigid", xf(ellipsoid_vf((0.022, 0.01, 0.026), 6, 4), T(surf(0.0, 0.68) + Vector((0, -0.02, 0)))),
           "M_Gold")
     pelvis(c, "M_Army", [(0.0, 0.3), (0.1, 0.305), (0.16, 0.33), (0.18, 0.37), (0.184, 0.42), (0.0, 0.43)],
@@ -2517,9 +2534,11 @@ def build_calo():
     for i, (k, z) in enumerate(placed):
         a = TAU * (k + 0.15) / 9
         c.add("torso", decal_vf(surf, a, z, flower(0.033 if i % 2 else 0.028, 5, 12, rot=i * 0.7)), "M_HawaiiBloom")
-    strap = surf_path(lathe_surf(TORSO), [(TAU * i / 18, 0.345 + 0.035 * math.cos(TAU * i / 18 + 0.9)) for i in
-                                          range(18)], 0.007)
-    c.add("torso_rigid", tube_vf(strap, (0.009, 0.014), 4, closed=True), DK)
+    # bum-bag strap: follows the real (elliptic) waist and uses the shirt's own skin weights, so it
+    # stays on the body when the hips and legs move
+    strap = surf_path(lathe_surf(TORSO, 1.0, BODY_SY), [(TAU * i / 28, 0.35 + 0.03 * math.cos(TAU * i / 28 + 0.9))
+                                                        for i in range(28)], 0.006)
+    c.add("torso", tube_vf(strap, (0.008, 0.014), 4, closed=True), DK)
     bb = surf(rad(-10), 0.335) + Vector((0, -0.04, 0))
     c.add("torso_rigid", xf(ellipsoid_vf((0.085, 0.043, 0.052), 12, 6), T(bb) @ R("Y", 12)), DK)
     c.add("torso_rigid", xf(tube_vf([(-0.066, -0.043, 0.012), (0.0, -0.048, 0.014), (0.066, -0.043, 0.012)],
@@ -2874,6 +2893,40 @@ def mark_loops_in_import(name):
 
 
 
+def gait_extras(c, st):
+    """Numbers the game needs to drive the clips, stored as glTF extras on the armature node
+    (Godot imports them as the node's "extras" metadata)."""
+    out = {"grip_offset": round(0.036 * c.S * c.d["hand_k"], 4)}
+    for kind in ("walk", "run"):
+        v, ratio = gait_speed(c, st, kind)
+        sig = GAIT[kind]["sigma"]
+        out["%s_speed" % kind] = round(v, 3)                 # ground speed (m/s) at playback 1.0
+        out["%s_stance" % kind] = sig                        # share of the cycle a foot is planted
+        out["%s_stance_ankle" % kind] = round(sig * ratio, 3)  # = (ankle travel / ground travel) * stance
+    return out
+
+
+def export_char(rig_ob, name, extras):
+    """common.export_glb(root, name, animations=True) plus: glTF extras on (only) the armature node,
+    and constant channels of never-keyed bone properties dropped (they stay at the rest pose)."""
+    for k, v in extras.items():
+        rig_ob[k] = v
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in common.all_descendants(rig_ob):
+        o.select_set(True)
+    path = os.path.join(common.MODELS_DIR, name + ".glb")
+    bpy.ops.export_scene.gltf(
+        filepath=path, export_format="GLB", use_selection=True, export_apply=True, export_yup=True,
+        export_materials="EXPORT", export_animations=True, export_extras=True, export_cameras=False,
+        export_lights=False, export_vertex_color="ACTIVE" if common._has_colors(rig_ob) else "NONE",
+        export_animation_mode="ACTIONS", export_skins=True, export_force_sampling=True,
+        export_optimize_animation_size=True, export_optimize_animation_keep_anim_armature=False)
+    for k in extras:
+        del rig_ob[k]
+    print(f"[export] {name}.glb  tris={count_tris(rig_ob)}  extras={extras}")
+    return path
+
+
 def mesh_bounds(ob):
     pts = [ob.matrix_world @ v.co for v in ob.data.vertices]
     return (Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts))),
@@ -2899,7 +2952,7 @@ def build_one(name, out=True, sheets=None):
     if out:
         rig_ob.animation_data.action = acts["idle"]
         bpy.context.scene.frame_set(0)
-        export_glb(rig_ob, "char_" + name, animations=True)
+        export_char(rig_ob, "char_" + name, gait_extras(c, st))
         mark_loops_in_import("char_" + name)
         preview_materials(True)
         render_preview_posed(c, rig, body, acts, "char_" + name)
@@ -2926,7 +2979,7 @@ def lineup(names):
         snaps.append(snapshot(body, "snapL%d" % i, ((col - (per_row - 1) / 2) * 0.95, row * 1.3, 0.0), 0.0))
         body.hide_render = True
     preview_materials(True)
-    tmp = _scene_setup(1600, 1000, samples=16, ground="#8fb35c")
+    tmp = _scene_setup(1200, 750, samples=12, ground="#8fb35c")
     tmp.append(_camera((0, 0.62, 0.5), 30.0, 0.0, 20, ortho=5.9))
     bpy.context.scene.render.filepath = os.path.join(PREVIEW_DIR, "lineup.png")
     bpy.ops.render.render(write_still=True)

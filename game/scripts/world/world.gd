@@ -196,7 +196,7 @@ func _build_environment() -> void:
 	sun.shadow_opacity = 0.68
 	sun.shadow_blur = 2.2
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
-	sun.directional_shadow_max_distance = 32.0
+	sun.directional_shadow_max_distance = 27.0
 	sun.shadow_bias = 0.05
 	sun.shadow_normal_bias = 1.1
 	add_child(sun)
@@ -213,11 +213,13 @@ func _build_environment() -> void:
 func _apply_quality() -> void:
 	if OS.has_feature("web_android") or OS.has_feature("web_ios") or OS.has_feature("mobile"):
 		RenderingServer.directional_shadow_atlas_set_size(1024, true)
-		sun.directional_shadow_max_distance = 30.0
+		sun.directional_shadow_max_distance = 27.0
 	sun.shadow_enabled = quality_high
 	get_viewport().msaa_3d = Viewport.MSAA_2X if quality_high else Viewport.MSAA_DISABLED
 	get_viewport().scaling_3d_scale = 1.0 if quality_high else 0.75
 	env.glow_enabled = quality_high
+	# the additive glow brightens the frame a little; keep "Hemat baterai" as bright
+	env.tonemap_exposure = 1.0 if quality_high else 1.07
 	# "Hemat baterai" halves the undergrowth and drops its shadows
 	if undergrowth:
 		undergrowth.set_density(1.0 if quality_high else 0.5)

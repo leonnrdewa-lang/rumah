@@ -1392,7 +1392,7 @@ def palm_trunk(g, mi, H, r, rnd, boots, boot, rings, sides=12, z0=0.3, z1=None, 
         g.face(ci, mi, ref=D + Rn)
 
 
-FRUIT_TINTS = (  # vertex-colour multipliers on M_Fruit (#ec6c30); every channel stays >= 0.5
+FRUIT_TINTS = (  # vertex-colour multipliers on M_Fruit (#f07a34); every channel stays >= 0.5
     (1.0, 1.0, 1.0),      # ripe orange
     (0.92, 0.8, 0.78),    # orange-red
     (0.8, 0.56, 0.55),    # red (#d04a26-ish)
@@ -1475,7 +1475,7 @@ def fruit_bunch(name, center, axis, length, rnd, mats, parent=None, n=20, sides=
 
 
 def M_fruit():
-    return vmat("M_Fruit", "#ec6c30", rough=0.42, spec=0.5), vmat("M_FruitDark", "#3a1f18", rough=0.4, spec=0.5)
+    return vmat("M_Fruit", "#f07a34", rough=0.42, spec=0.5), vmat("M_FruitDark", "#3a1f18", rough=0.4, spec=0.5)
 
 
 PALMS = {
@@ -1493,7 +1493,7 @@ PALMS = {
     # win: the crown's camera window - the spreading tiers leave the -Y sector (+-window deg) open so the trunk
     # and the front bunches show from the game camera (as in the target); the steep young fronds still cover it.
     "sawit_3": dict(H=3.4, r=0.31, wr=0.62, boots=48, boot=(0.42, 0.3, 0.14), rings=7, spear=1.1, segs=7,
-                    fruits=6, epi=1, crown_r=0.24, ao=0.55, fruit=(0.8, 0.9), pet=0.18, window=42,
+                    fruits=6, epi=1, crown_r=0.24, ao=0.55, fruit=(0.86, 0.96), pet=0.18, window=36, window2=36,
                     tiers=[dict(n=6, el=(76, 62), droop=(45, 60), zr=(-0.12, 0.0), L=(2.1, 2.4), pw=1.5),
                            dict(n=8, el=(54, 44), droop=(80, 92), zr=(0.02, 0.1), L=(2.75, 3.0), pw=2.1, win=True),
                            dict(n=6, el=(38, 30), droop=(88, 95), zr=(0.12, 0.2), L=(2.5, 2.7), pw=2.2, win=True,
@@ -1512,7 +1512,7 @@ def build_palm(name, P, seed=3):
     rnd = random.Random(seed)
     root = empty(name)
     mf = M_frond()
-    mt = vmat("M_Trunk", "#8f714c")
+    mt = vmat("M_Trunk", "#a3875e")
     prof = alpha_profile("frond")
     H, r = P["H"], P["r"]
     tg = Geo()
@@ -1524,6 +1524,24 @@ def build_palm(name, P, seed=3):
     N = sum(T["n"] for T in P["tiers"])
     vm = petiole_map(P["pet"])
     win = math.radians(P.get("window", 0))
+    wins = [(-math.pi / 2, win)] + ([(math.pi / 2, math.radians(P["window2"]))] if P.get("window2") else [])
+    # arcs of azimuth left open for the spreading tiers, as (start, length)
+    arcs = []
+    if win > 0:
+        ws = sorted(wins)
+        for j, (c, h) in enumerate(ws):
+            c2, h2 = ws[(j + 1) % len(ws)]
+            a0, a1 = c + h, c2 - h2 + (2 * math.pi if j == len(ws) - 1 else 0.0)
+            arcs.append((a0, a1 - a0))
+    arc_len = sum(l for _, l in arcs)
+
+    def arc_angle(u):
+        d = u * arc_len
+        for a0, l in arcs:
+            if d <= l:
+                return a0 + d
+            d -= l
+        return arcs[-1][0] + arcs[-1][1]
     i = 0
     for T in P["tiers"]:
         for k in range(T["n"]):
@@ -1532,7 +1550,7 @@ def build_palm(name, P, seed=3):
             if T.get("win") and win > 0:
                 # spread evenly over the arc outside the camera window (centred on -Y)
                 u = ((k + 0.5 + T.get("off", 0.0)) / T["n"]) % 1.0
-                phi = -math.pi / 2 + win + u * (2 * math.pi - 2 * win) + rnd.uniform(-0.08, 0.08)
+                phi = arc_angle(u) + rnd.uniform(-0.08, 0.08)
             else:
                 phi = i * GOLDEN + rnd.uniform(-0.12, 0.12)
             i += 1
