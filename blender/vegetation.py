@@ -126,10 +126,13 @@ class Geo:
 
     def __init__(self):
         self.v, self.c, self.f, self.fm, self.fs, self.fuv = [], [], [], [], [], []
+        self.n = {}  # optional custom vertex normals (index -> Vector), e.g. dome-shaded fruitlets
 
-    def vert(self, co, col=(1.0, 1.0, 1.0)):
+    def vert(self, co, col=(1.0, 1.0, 1.0), nrm=None):
         self.v.append(Vector(co))
         self.c.append(tuple(col)[:3])
+        if nrm is not None:
+            self.n[len(self.v) - 1] = Vector(nrm).normalized()
         return len(self.v) - 1
 
     def face(self, idx, mi=0, ref=None, smooth=False, uv=None):
@@ -168,6 +171,9 @@ class Geo:
         me.color_attributes.active_color = attr
         me.color_attributes.render_color_index = me.color_attributes.active_color_index
         me.update()
+        if self.n:
+            nrm = [self.n.get(i) or me.vertices[i].normal.copy() for i in range(len(self.v))]
+            me.normals_split_custom_set_from_vertices(nrm)
         o = bpy.data.objects.new(name, me)
         bpy.context.scene.collection.objects.link(o)
         if parent is not None:
@@ -1392,90 +1398,184 @@ def palm_trunk(g, mi, H, r, rnd, boots, boot, rings, sides=12, z0=0.3, z1=None, 
         g.face(ci, mi, ref=D + Rn)
 
 
-FRUIT_TINTS = (  # vertex-colour multipliers on M_Fruit (#f07a34); every channel stays >= 0.5
-    (1.0, 1.0, 1.0),      # ripe orange
-    (0.92, 0.8, 0.78),    # orange-red
-    (0.8, 0.56, 0.55),    # red (#d04a26-ish)
-)
+# Fruit colours come from a tiny ramp texture (fruit.png) picked by UV, so a whole bunch is ONE opaque material:
+#   columns  0..7   near-black fruitlet tips (#3a1f18)
+#   columns  8..47  ramp: deep maroon #5e1a12 -> #8a2a18 -> #c43b1c -> #e0572a -> #f08a3a -> light orange #f7a94f
+#   columns 52..63  pale spines / stalk fibre (#d9c58c)
+# Band edges sit on 4-texel boundaries so GPU block compression never mixes two bands.
+FRUIT_TEX_W = 64
+U_DARK = 4.0 / FRUIT_TEX_W
+U_SPINE = 56.0 / FRUIT_TEX_W
+FRUIT_V = 0.5
 
 
-def fruit_bunch(name, center, axis, length, rnd, mats, parent=None, n=20, sides=5, dark=0.3, width=0.4):
-    """Oil-palm fresh fruit bunch (TBS): an ovoid core packed with plump fruitlets that taper into
-    short spikes.  Bright orange-red (M_Fruit x vertex tint >= 0.5); only the spike tips of ~`dark`
-    of the fruitlets are near-black (M_FruitDark).  Apex (narrow end) along +axis.
-    mats = (M_Fruit, M_FruitDark)."""
+def fruit_u(k):
+    """Ramp position: k=0 light orange (top of a bunch, lit fruitlet domes) .. k=1 deep maroon."""
+    return (8.5 + (1.0 - clamp01(k)) * 38.5) / FRUIT_TEX_W
+
+
+@texture("fruit", (FRUIT_TEX_W, 8))
+def _t_fruit(w, h):
+    def srgb(hx):
+        hx = hx.lstrip("#")
+        return np.array([int(hx[i:i + 2], 16) for i in (0, 2, 4)], np.float32) / 255.0
+    stops = [(0.0, "#5e1a12"), (0.18, "#8a2a18"), (0.4, "#c43b1c"), (0.62, "#e0572a"), (0.82, "#f08a3a"),
+             (1.0, "#f7a94f")]
+    arr = np.ones((h, w, 4), np.float32)
+    for x in range(w):
+        if x < 8:
+            c = srgb("#2c1712") * (1 - x / 7.0) + srgb("#3a1f18") * (x / 7.0)
+        elif x < 48:
+            t = (x - 8) / 39.0
+            for (t0, c0), (t1, c1) in zip(stops, stops[1:]):
+                if t <= t1:
+                    c = srgb(c0) + (srgb(c1) - srgb(c0)) * ((t - t0) / (t1 - t0))
+                    break
+        elif x < 52:
+            c = srgb("#f7a94f")
+        else:
+            c = srgb("#d9c58c")
+        arr[:, x, :3] = c
+    _tex_save(arr, "fruit")
+
+
+def M_fruit():
+    """Oil-palm fruit: one opaque material (fruit.png ramp by UV) x vertex-colour shading."""
+    if "M_Fruit" in bpy.data.materials:
+        return bpy.data.materials["M_Fruit"]
+    m = bpy.data.materials.new("M_Fruit")
+    m.use_nodes = True
+    nt = m.node_tree
+    b = nt.nodes["Principled BSDF"]
+    t = nt.nodes.new("ShaderNodeTexImage")
+    t.image = tex_image("fruit")
+    t.extension = "EXTEND"
+    _multiply_col(nt, t.outputs["Color"], b)
+    b.inputs["Roughness"].default_value = 0.38
+    b.inputs["Metallic"].default_value = 0.0
+    b.inputs["Specular IOR Level"].default_value = 0.5
+    m.diffuse_color = hex_rgba("#e0572a")
+    return m
+
+
+def _frame(D):
+    U = D.cross(Vector((0.31, 0.83, 0.47)))
+    if U.length < 1e-4:
+        U = D.cross(Vector((1.0, 0.0, 0.0)))
+    U.normalize()
+    return U, D.cross(U)
+
+
+def fruit_bunch(name, center, axis, length, rnd, mat_, parent=None, n=44, width=0.4, dark=0.2, spines=10, sides=6,
+                out=None, stalk_to=None, fsize=0.115, redness=0.0):
+    """Oil-palm fresh fruit bunch (TBS): an egg-shaped core packed with `n` small rounded fruitlets.
+    Each fruitlet is a low cone (6 tris) with custom dome normals, so it shades like a round bead;
+    ~`dark` of them get a small near-black cap (mid ring + dark apex).  Colour by UV on the fruit.png ramp:
+    orange towards the stalk end, maroon-red at the apex end and on the side facing `out` (away from the
+    trunk), lighter on each dome top, deep maroon in the crevices; `spines` pale spikes between them.
+    Apex (narrow end) along +axis; the stalk end is at -axis (stalk_to: optional point for a short stalk)."""
     g = Geo()
     ax = Vector(axis).normalized()
     R = ax.to_track_quat("Z", "Y").to_matrix()
     C = Vector(center)
     a_, b_ = length * 0.5, length * width
+    ca, cb = a_ * 0.76, b_ * 0.76  # core semi-axes (fruitlets stick out of it)
+    outv = Vector(out).normalized() if out is not None else None
 
-    def surf(c):
-        egg = 1.0 - 0.14 * c.z
-        return Vector((c.x * b_ * egg, c.y * b_ * egg, c.z * a_))
+    def egg(z):
+        return 1.0 - 0.13 * z  # narrower towards the apex
 
-    # core: every fruitlet base is buried in it (no loose parts)
+    def core_pt(c):
+        e = egg(c.z)
+        return Vector((c.x * cb * e, c.y * cb * e, c.z * ca))
+
+    def core_nrm(c):
+        e = egg(c.z)
+        return Vector((c.x / (cb * e), c.y / (cb * e), c.z / ca)).normalized()
+
+    W = lambda q: C + R @ q  # noqa: E731  local -> world
+    uv_of = lambda u: (u, FRUIT_V)  # noqa: E731
+    # core: deep maroon, dark (seen only in the crevices)
     verts, faces = ico_data(2)
     base = len(g.v)
+    u_core = fruit_u(1.0)
     for co in verts:
         nn = co.normalized()
-        g.vert(C + R @ (surf(nn) * 0.86), (0.6, 0.52, 0.5))
+        g.vert(W(core_pt(nn)), grey(0.62), nrm=R @ core_nrm(nn))
     for f in faces:
         ctr = sum((verts[i] for i in f), Vector()) / 3
-        g.face([base + i for i in f], 0, ref=R @ ctr, smooth=True)
+        g.face([base + i for i in f], 0, ref=R @ ctr, smooth=True, uv=[uv_of(u_core)] * 3)
+    rf0 = fsize * length
     for k in range(n):
-        zc = lerp(0.9, -0.84, (k + 0.5) / n) + rnd.uniform(-0.03, 0.03)
-        ang = k * GOLDEN + rnd.uniform(-0.2, 0.2)
+        zc = lerp(0.96, -0.8, (k + 0.5) / n) + rnd.uniform(-0.025, 0.025)
+        ang = k * GOLDEN + rnd.uniform(-0.15, 0.15)
         rc = math.sqrt(max(0.0, 1 - zc * zc))
         c = Vector((rc * math.cos(ang), rc * math.sin(ang), zc))
-        p = surf(c) * 0.8
-        egg = 1.0 - 0.14 * c.z
-        nrm = Vector((c.x / (b_ * egg), c.y / (b_ * egg), c.z / a_)).normalized()
+        p = core_pt(c)
+        nrm = core_nrm(c)
         apex = Vector((0, 0, 1)) - nrm * nrm.z
         apex = apex.normalized() if apex.length > 1e-3 else Vector((1, 0, 0))
-        tilt = math.radians(rnd.uniform(22, 40) * (0.4 + 0.6 * rc))
-        D = (nrm * math.cos(tilt) + apex * math.sin(tilt)).normalized()
-        sz = length * 0.3 * rnd.uniform(0.9, 1.1) * (0.74 + 0.26 * rc)
-        rw = sz * 0.5
-        U = D.cross(Vector((0.31, 0.83, 0.47))).normalized()
-        V = D.cross(U)
-        tint = FRUIT_TINTS[0 if rnd.random() < 0.4 else (1 if rnd.random() < 0.5 else 2)]
-        lit = lerp(0.9, 1.0, (zc + 0.85) / 1.75)  # a touch darker towards the stalk end
-        body = cscale(tint, lit)
-        foot = cmul(body, (0.76, 0.68, 0.68))
+        D = (nrm * math.cos(math.radians(rnd.uniform(8, 22))) + apex * math.sin(math.radians(15))).normalized()
+        rf = rf0 * rnd.uniform(0.88, 1.12) * (0.78 + 0.22 * rc)
+        hf = rf * rnd.uniform(1.0, 1.25)
+        U, V_ = _frame(D)
+        # colour: orange at the stalk end -> maroon-red at the apex / outer side, random per fruitlet
+        t_ax = (zc + 0.8) / 1.76
+        kk = redness + 0.12 + 0.5 * t_ax + rnd.uniform(-0.2, 0.2)
+        if outv is not None:
+            kk += 0.22 * max(0.0, (R @ nrm).dot(outv))
+        kk = clamp01(kk)
+        u_base, u_top = fruit_u(kk + 0.14), fruit_u(kk - 0.16)
         ph = rnd.uniform(0, 6.28)
-        ring = lambda f, r: [p + D * sz * f + (U * math.cos(q) + V * math.sin(q)) * rw * r
-                             for q in (ph + 2 * math.pi * s_ / sides for s_ in range(sides))]
-        rA, rB = ring(-0.25, 0.8), ring(0.36, 1.0)
-        iA = [g.vert(C + R @ q, foot) for q in rA]
-        iB = [g.vert(C + R @ q, body) for q in rB]
-        P = C + R @ p
-        for s_ in range(sides):
-            q = (iA[s_], iA[(s_ + 1) % sides], iB[(s_ + 1) % sides], iB[s_])
-            g.face(q, 0, ref=sum((g.v[x] for x in q), Vector()) / 4 - P, smooth=True)
+        dirs = [U * math.cos(ph + 2 * math.pi * s_ / sides) + V_ * math.sin(ph + 2 * math.pi * s_ / sides)
+                for s_ in range(sides)]
+        b0 = p - D * rf * 0.35
+        ring = [g.vert(W(b0 + d * rf), grey(0.8), nrm=R @ (d + D * 0.2)) for d in dirs]
         Dw = R @ D
+        P0 = W(p)
         if rnd.random() < dark:
-            # plump body -> short near-black spike tip
-            rC = ring(0.66, 0.5)
-            iC = [g.vert(C + R @ q, cmul(body, (0.9, 0.85, 0.85))) for q in rC]
-            iCd = [g.vert(C + R @ q, (1.0, 1.0, 1.0)) for q in rC]
-            it = g.vert(C + R @ (p + D * sz * 0.92), (1.0, 1.0, 1.0))
+            # red body -> small near-black cap
+            mid = [g.vert(W(p + D * hf * 0.5 + d * rf * 0.62), grey(0.97), nrm=R @ (d * 0.8 + D * 0.7))
+                   for d in dirs]
+            tip = g.vert(W(p + D * hf * 0.78), grey(1.0), nrm=Dw)
+            u_mid = fruit_u(max(kk, 0.55))
             for s_ in range(sides):
-                q = (iB[s_], iB[(s_ + 1) % sides], iC[(s_ + 1) % sides], iC[s_])
-                g.face(q, 0, ref=sum((g.v[x] for x in q), Vector()) / 4 - P + Dw * 0.2, smooth=True)
-                tri = (iCd[s_], iCd[(s_ + 1) % sides], it)
-                g.face(tri, 1, ref=(g.v[iCd[s_]] + g.v[iCd[(s_ + 1) % sides]]) * 0.5 - P + Dw * 0.3, smooth=True)
+                s1 = (s_ + 1) % sides
+                q = (ring[s_], ring[s1], mid[s1], mid[s_])
+                g.face(q, 0, ref=sum((g.v[x] for x in q), Vector()) / 4 - P0, smooth=True,
+                       uv=[uv_of(fruit_u(kk + 0.14))] * 2 + [uv_of(u_mid)] * 2)
+                g.face((mid[s_], mid[s1], tip), 0, ref=Dw, smooth=True,
+                       uv=[uv_of(U_DARK + 0.02)] * 2 + [uv_of(U_DARK)])
         else:
-            # plump body tapering into an orange spike, a little redder at the point
-            it = g.vert(C + R @ (p + D * sz * 0.96), cmul(body, (0.8, 0.62, 0.62)))
+            tip = g.vert(W(p + D * hf), grey(1.0), nrm=Dw)
             for s_ in range(sides):
-                tri = (iB[s_], iB[(s_ + 1) % sides], it)
-                g.face(tri, 0, ref=(g.v[iB[s_]] + g.v[iB[(s_ + 1) % sides]]) * 0.5 - P + Dw * 0.3, smooth=True)
-    return g.obj(name, list(mats), parent)
-
-
-def M_fruit():
-    return vmat("M_Fruit", "#f07a34", rough=0.42, spec=0.5), vmat("M_FruitDark", "#3a1f18", rough=0.4, spec=0.5)
+                s1 = (s_ + 1) % sides
+                tri = (ring[s_], ring[s1], tip)
+                g.face(tri, 0, ref=(g.v[ring[s_]] + g.v[ring[s1]]) * 0.5 - P0 + Dw * 0.3 * rf, smooth=True,
+                       uv=[uv_of(u_base), uv_of(u_base), uv_of(u_top)])
+    for k in range(spines):
+        # pale fibrous spikes poking out between the fruitlets (mostly around the middle / stalk half)
+        zc = rnd.uniform(-0.7, 0.55)
+        ang = rnd.uniform(0, 6.28)
+        rc = math.sqrt(max(0.0, 1 - zc * zc))
+        c = Vector((rc * math.cos(ang), rc * math.sin(ang), zc))
+        p = core_pt(c)
+        nrm = core_nrm(c)
+        D = (nrm + Vector((0, 0, -0.35))).normalized()
+        U, V_ = _frame(D)
+        ln = length * rnd.uniform(0.2, 0.26)
+        bw = length * 0.022
+        bs = [g.vert(W(p + (U * math.cos(q) + V_ * math.sin(q)) * bw), grey(0.85)) for q in (0.0, 2.09, 4.19)]
+        tip = g.vert(W(p + D * ln), grey(1.0))
+        for s_ in range(3):
+            g.face((bs[s_], bs[(s_ + 1) % 3], tip), 0, ref=R @ ((g.v[bs[s_]] + g.v[bs[(s_ + 1) % 3]]) * 0.5 - C),
+                   smooth=True, uv=[uv_of(U_SPINE)] * 3)
+    if stalk_to is not None:
+        top = W(Vector((0, 0, -ca * 0.9)))
+        tube(g, [top, (top + Vector(stalk_to)) * 0.5 + Vector((0, 0, 0.04)), Vector(stalk_to)],
+             [length * 0.07, length * 0.06, length * 0.055], 4, 0, smooth=True,
+             col_fn=lambda j, i, q: grey(0.7), uv_fn=lambda q: uv_of(U_SPINE))
+    return g.obj(name, [mat_], parent)
 
 
 PALMS = {
@@ -1490,13 +1590,15 @@ PALMS = {
                     epi=1, crown_r=0.12, ao=0.58, pet=0.16,
                     tiers=[dict(n=7, el=(78, 58), droop=(20, 40), zr=(-0.1, 0.08), L=(1.3, 1.75), pw=1.5),
                            dict(n=9, el=(44, 26), droop=(58, 72), zr=(0.14, 0.26), L=(1.8, 2.05), pw=1.7)]),
-    # win: the crown's camera window - the spreading tiers leave the -Y sector (+-window deg) open so the trunk
-    # and the front bunches show from the game camera (as in the target); the steep young fronds still cover it.
+    # sawit_3 must show its ripe bunches from the 45 deg game camera at ANY yaw (the game rotates palms at random):
+    # 4 bunches hang low on the trunk (fruit_z), well out from it (fruit_r past the trunk surface), each under a
+    # gap of +-`gap` deg in the spreading tiers; the spreading fronds attach above them.
     "sawit_3": dict(H=3.4, r=0.31, wr=0.62, boots=48, boot=(0.42, 0.3, 0.14), rings=7, spear=1.1, segs=7,
-                    fruits=6, epi=1, crown_r=0.24, ao=0.55, fruit=(0.86, 0.96), pet=0.18, window=36, window2=36,
+                    fruits=4, epi=1, crown_r=0.24, ao=0.55, fruit=(0.66, 0.74), fruit_z=(2.4, 2.1), fruit_r=0.42,
+                    fruit_out=0.45, fruit_az=0.0, gap=30, pet=0.18,
                     tiers=[dict(n=6, el=(76, 62), droop=(45, 60), zr=(-0.12, 0.0), L=(2.1, 2.4), pw=1.5),
-                           dict(n=8, el=(54, 44), droop=(80, 92), zr=(0.02, 0.1), L=(2.75, 3.0), pw=2.1, win=True),
-                           dict(n=6, el=(38, 30), droop=(88, 95), zr=(0.12, 0.2), L=(2.5, 2.7), pw=2.2, win=True,
+                           dict(n=8, el=(54, 44), droop=(74, 86), zr=(0.02, 0.1), L=(2.75, 3.0), pw=2.1, win=True),
+                           dict(n=6, el=(50, 44), droop=(70, 80), zr=(0.12, 0.2), L=(2.5, 2.7), pw=2.2, win=True,
                                 off=0.5)]),
 }
 
@@ -1523,12 +1625,18 @@ def build_palm(name, P, seed=3):
     top = H + 0.05
     N = sum(T["n"] for T in P["tiers"])
     vm = petiole_map(P["pet"])
-    win = math.radians(P.get("window", 0))
-    wins = [(-math.pi / 2, win)] + ([(math.pi / 2, math.radians(P["window2"]))] if P.get("window2") else [])
-    # arcs of azimuth left open for the spreading tiers, as (start, length)
+    # bunch azimuths first: the crown's frond gaps can be centred over them
+    nf = P["fruits"]
+    fa = [math.radians(P.get("fruit_az", 0.0)) + (k + 0.5) * 2 * math.pi / max(1, nf) + rnd.uniform(-0.1, 0.1)
+          for k in range(nf)]
+    # arcs of azimuth left open by the spreading ("win") tiers, as (centre, half width) in radians
+    wins = [(math.radians(c), math.radians(h)) for c, h in P.get("wins", ())]
+    if P.get("gap") and nf:
+        wins = [(a, math.radians(P["gap"])) for a in fa]
+    win = len(wins) > 0
     arcs = []
-    if win > 0:
-        ws = sorted(wins)
+    if win:
+        ws = sorted(((c + math.pi) % (2 * math.pi) - math.pi, h) for c, h in wins)
         for j, (c, h) in enumerate(ws):
             c2, h2 = ws[(j + 1) % len(ws)]
             a0, a1 = c + h, c2 - h2 + (2 * math.pi if j == len(ws) - 1 else 0.0)
@@ -1547,8 +1655,8 @@ def build_palm(name, P, seed=3):
         for k in range(T["n"]):
             f = k / max(1, T["n"] - 1)
             age = i / max(1, N - 1)  # 0 youngest (upright, top) -> 1 oldest (spreading, drooping)
-            if T.get("win") and win > 0:
-                # spread evenly over the arc outside the camera window (centred on -Y)
+            if T.get("win") and win:
+                # spread evenly over the arcs outside the gaps
                 u = ((k + 0.5 + T.get("off", 0.0)) / T["n"]) % 1.0
                 phi = arc_angle(u) + rnd.uniform(-0.08, 0.08)
             else:
@@ -1584,21 +1692,23 @@ def build_palm(name, P, seed=3):
     crown = g.obj(name + "_crown", [mf, mt])
     body = join([trunk, crown], name + "_body")
     body.parent = root
-    if P["fruits"]:
+    if nf:
+        # 3-4 separate egg-shaped bunches hanging on the trunk under the crown, spread in angle and height so
+        # the trunk shows between them; axis mostly down and a little out, a short stalk into the trunk
         fr = empty("Fruits", parent=root)
-        mats = M_fruit()
-        nf = P["fruits"]
-        k0 = -math.pi / 2 - math.pi / nf if P.get("window") else rnd.uniform(0, 6.28)
+        mfr = M_fruit()
+        z_hi, z_lo = P["fruit_z"]
         for k in range(nf):
-            a = k0 + (k + 0.5) * (2 * math.pi / nf) + rnd.uniform(-0.12, 0.12)
+            a = fa[k]
             ln = rnd.uniform(*P["fruit"])
-            # hanging on the trunk below the crown: upper / lower alternate, axis mostly down and out
-            z = H - 0.52 - 0.2 * (k % 2) + rnd.uniform(-0.05, 0.05)
-            rr = trunk_radius(z, H, r) + ln * 0.4 * 0.62
+            z = lerp(z_hi, z_lo, (k % 2) if nf % 2 == 0 else k / max(1, nf - 1)) + rnd.uniform(-0.05, 0.05)
             out = Vector((math.cos(a), math.sin(a), 0.0))
-            c = out * rr + UP * z
-            axis = out * rnd.uniform(0.38, 0.5) - UP * 0.9
-            fruit_bunch(f"Fruit_{k}", c, axis, ln, rnd, mats, fr, n=20)
+            side = Vector((-out.y, out.x, 0.0)) * rnd.uniform(-0.12, 0.12)
+            c = out * (trunk_radius(z, H, r) + P["fruit_r"]) + UP * z
+            axis = out * P.get("fruit_out", 0.4) + side - UP * 0.9
+            stalk_to = out * trunk_radius(z, H, r) * 0.7 + UP * (z + ln * 0.5)
+            fruit_bunch(f"Fruit_{k}", c, axis, ln, rnd, mfr, fr, n=P.get("fruit_n", 44), width=0.4, out=out,
+                        stalk_to=stalk_to, redness=rnd.uniform(-0.08, 0.08))
     return root
 
 
@@ -1656,26 +1766,30 @@ def build_sawit_0():
 
 
 def build_tbs():
-    """A harvested bunch (carried by the player and dropped on the ground): one solid piece, stalk stub.
-    No loose fruitlets - the model is also carried, so everything must stay attached."""
+    """A harvested bunch (carried by the player and dropped on the ground): the same egg of small rounded
+    fruitlets as on the palm (~400 tris), one solid piece with a cut stalk stub, lying on its side."""
     rnd = random.Random(21)
     root = empty("tbs")
-    m_fruit, m_dark = M_fruit()
-    m_stalk = vmat("M_Stalk", "#a88a55")
     L = 0.5
-    axis = Vector((1.0, 0.15, 0.25))
-    body = fruit_bunch("tbs_bunch", (0, 0, 0), axis, L, rnd, (m_fruit, m_dark), None, n=30, sides=5, width=0.42)
-    g = Geo()
-    ax = axis.normalized()
-    p0 = -ax * (L * 0.3)
-    tube(g, [p0, p0 - ax * 0.16, p0 - ax * 0.24 + Vector((0, 0, -0.02))], [0.055, 0.045, 0.036], 6, 0, cap_top=True,
-         col_fn=lambda j, i, q: grey(0.75 + 0.1 * j))
-    extra = g.obj("tbs_extra", [m_stalk])
-    o = join([body, extra], "tbs_mesh")
+    axis = Vector((1.0, 0.15, 0.25)).normalized()
+    stalk_to = -axis * (L * 0.5 + 0.13) + Vector((0.0, 0.0, -0.02))
+    o = fruit_bunch("tbs_mesh", (0, 0, 0), axis, L, rnd, M_fruit(), None, n=32, width=0.42, spines=6,
+                    stalk_to=stalk_to, fsize=0.13)
     bpy.context.view_layer.update()
     zmin = min(v.co.z for v in o.data.vertices)
     for v in o.data.vertices:
         v.co.z -= zmin
+    # soft contact shadow on the underside (the bunch lies on the ground)
+    h = max(v.co.z for v in o.data.vertices)
+    cols, dom = get_cols(o)
+    me = o.data
+    for pg in me.polygons:
+        for li in pg.loop_indices:
+            z = me.vertices[me.loops[li].vertex_index].co.z
+            f = lerp(0.72, 1.0, smoothstep(0.0, h * 0.6, z))
+            for c in range(3):
+                cols[li * 4 + c] *= f
+    me.color_attributes["Col"].data.foreach_set("color", cols)
     o.parent = root
     return root
 

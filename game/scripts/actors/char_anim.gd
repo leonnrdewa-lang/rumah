@@ -31,18 +31,38 @@ const CLIP_FALLBACK := {
 const BLEND_LOCO := 0.2
 const BLEND_ACTION_IN := 0.12
 const BLEND_ACTION_OUT := 0.25
-const RUN_ON := 2.9     # m/s: switch walk -> run
-const RUN_OFF := 2.4    # m/s: switch run -> walk (hysteresis)
-const STANCE := {"walk": 0.55, "run": 0.4}   # share of the cycle a foot is on the ground
-## Chibi legs are short for the game's speeds: beyond these playback rates the
-## cadence looks frantic, so the stride is lengthened instead (leg swing scaled
-## up to STRIDE_MAX) and whatever is left over slides.
-const MAX_RATE := {"walk": 2.6, "run": 2.3}
-const STRIDE_MAX := 1.7
+## Locomotion playback. Every v2 GLB carries the ground speed its walk and run
+## clips cover at 1x (glTF extras on the armature node: walk_speed, run_speed);
+## playback rate = velocity / that speed, so a planted foot keeps pace with the
+## ground. The run clip takes over once the walk would need more than
+## WALK_TO_RUN x (about 1.5 m/s on the player: the normal keyboard speed of
+## 5.2 m/s would need an 8x walk, so the player runs on purpose and the walk shows
+## on villagers and with a half-pushed stick).
+const WALK_TO_RUN := 2.35
+const RUN_TO_WALK := 0.85   # hysteresis: back to walk below this share of the switch speed
+const MIN_RATE := 0.35
+## Beyond these rates the cadence looks frantic, so the stride is lengthened
+## instead (leg swing scaled, calibrated per clip, up to STRIDE_MAX) and only the
+## rest is made up with a faster cadence, up to HARD_RATE.
+const MAX_RATE := {"walk": 2.5, "run": 2.45}
+const HARD_RATE := 3.4
+const STRIDE_MAX := 1.5
+const STRIDE_KS := [1.0, 1.1, 1.2, 1.3, 1.4, 1.5]
+## Fallback when a GLB has no gait extras: the speed is estimated from the ankle's
+## travel, which covers this share of a cycle's ground travel (v2 clips).
+const STANCE := {"walk": 0.55, "run": 0.30}
 const STRIDE_BONES := ["thigh_L", "shin_L", "thigh_R", "shin_R"]
 const SWING_BONES := ["upperarm_L", "upperarm_R", "forearm_L", "forearm_R"]
+## The harvesting pole: while harvesting it follows the two-handed grip of the
+## clip; carried outside an action it rests against the right shoulder, leaning
+## back (model space: +Z front, -X the character's right). Its direction is eased
+## over time (exponential, POLE_FOLLOW per second, at most POLE_MAX_SPEED rad/s).
+const POLE_CARRY_DIR := Vector3(0.1, 1.0, -0.42)
+const POLE_CARRY_SLIDE := 0.28   # m the pole rides up in the fist when carried
+const POLE_FOLLOW := 16.0
+const POLE_MAX_SPEED := 9.0
 
-static var _stride_cache := {}
+static var _gait_cache := {}
 static var _tool_meshes := {}
 static var _tool_mats := {}
 
@@ -65,16 +85,27 @@ var _act_left := 0.0
 var _act_rate := 1.0
 var _act_alt := false
 var _act_kind := ""
-var _nat := {"walk": 1.1, "run": 2.6}
+var _nat := {"walk": 1.1, "run": 2.6}   # m/s each clip covers at 1x (model units, unscaled)
+var _gain := {}                          # clip -> stride gain per STRIDE_KS entry
+var _gait_src := "default"               # "extras" / "measured" / "default"
+var _grip_offset := -1.0                 # fist centre past the wrist (m), from the extras
+var _run_on := 2.9
+var _run_off := 2.4
 var _running := false
 var _idle_rate := 1.0
 var _head := -1
 var _neck := -1
+var _hips := -1
+var _hips_rest_pos := Vector3.ZERO
+var _feet: Array[int] = []
 var _override_bones: Array[int] = []
 var _rest_rot := {}
 var _stride_bones: Array[int] = []
 var _swing_bones: Array[int] = []
 var _stride_k := 1.0
+var _pole_dir := Vector3.UP              # model space
+var _pole_slide := 0.0
+var _pole_fresh := true
 var _sk_xf := Transform3D.IDENTITY   # skeleton -> model space
 var _sk_up := Vector3.UP
 var _sk_fwd := Vector3.BACK
@@ -184,6 +215,35 @@ func is_busy() -> bool:
 
 func action_kind_playing() -> String:
 	return _act_kind if is_busy() else ""
+
+
+func tick(delta: float) -> void:
+	## Call instead of update() while the character is not animated (off screen,
+	## hidden): timers keep running, so an action still ends on time and gameplay
+	## never waits on a frozen clip. The next update() blends back to locomotion.
+	talk_t = maxf(0.0, talk_t - delta)
+	action_t = maxf(0.0, action_t - delta)
+	if _act_left > 0.0:
+		_act_left -= delta
+		if _act_left <= BLEND_ACTION_OUT:
+			_act_left = 0.0
+			_act_kind = ""
+			if _cur_kind == "action":
+				_cur_kind = ""
+	if _tool_kind != "":
+		_tool_timer -= delta
+		if _tool_timer <= 0.0:
+			if _tools.has(_tool_kind):
+				(_tools[_tool_kind] as Node3D).visible = false
+			_tool_kind = ""
+			_tool_s = 0.0
+			_pole_fresh = true
+
+
+func walk_run_speeds() -> Vector2:
+	## Ground speed (m/s) the walk and run clips cover at 1x playback, and
+	## (debug) where they come from: see _gait_src.
+	return Vector2(_speed_of("walk"), _speed_of("run"))
 
 
 func turn_towards(target_yaw: float, delta: float, max_rate := 10.0) -> void:
@@ -310,6 +370,14 @@ func _init_v2() -> void:
 			_override_bones.append(bi)
 	for bi in _override_bones:
 		_rest_rot[bi] = skel.get_bone_rest(bi).basis.get_rotation_quaternion()
+	_hips = skel.find_bone("hips")
+	if _hips >= 0:
+		_hips_rest_pos = skel.get_bone_rest(_hips).origin
+	for n in ["foot_L", "foot_R"]:
+		var fi := skel.find_bone(n)
+		if fi >= 0:
+			_feet.append(fi)
+	_measure_gait()
 	_hand_idx = skel.find_bone("hand_R")
 	if _hand_idx >= 0:
 		hand_r = _attachment("hand_R")
@@ -323,7 +391,6 @@ func _init_v2() -> void:
 		_grip_l_root.name = "GripL"
 		_attachment("hand_L").add_child(_grip_l_root)
 		_grip_l_root.transform = _grip_xform(hl)
-	_measure_strides()
 	_idle_rate = randf_range(0.88, 1.12)
 	var idle := _resolve("idle")
 	if idle != "":
@@ -346,9 +413,19 @@ func _update_v2(delta: float, speed: float, t: float) -> void:
 	elif idle_clip != "idle":
 		want_kind = idle_clip
 	talk_t = maxf(0.0, talk_t - delta)
+	# stride warping: when even the fastest sensible cadence can't keep up with
+	# the ground speed, swing the legs (and arms) further; the playback rate is
+	# then set from the stride actually shown, so the planted foot never skates
+	var gait := "run" if _running else "walk"
+	var target_k := 1.0
+	if moving:
+		var need := speed / (_speed_of(gait) * float(MAX_RATE[gait]))
+		if need > 1.0:
+			target_k = _k_for_gain(gait, need)
+	_stride_k = lerpf(_stride_k, target_k, clampf(delta * 6.0, 0.0, 1.0))
 	var want_rate := _idle_rate
 	if want_kind == "walk" or want_kind == "run":
-		want_rate = clampf(speed / float(_nat[want_kind]), 0.6, float(MAX_RATE[want_kind]))
+		want_rate = clampf(speed / (_speed_of(want_kind) * _gain_at(want_kind, _stride_k)), MIN_RATE, HARD_RATE)
 	if _act_left > 0.0:
 		_act_left -= delta
 		if _act_left <= BLEND_ACTION_OUT:
@@ -357,33 +434,75 @@ func _update_v2(delta: float, speed: float, t: float) -> void:
 			_switch(want_kind, want_rate, BLEND_ACTION_OUT)
 	elif want_kind != _cur_kind:
 		_switch(want_kind, want_rate, BLEND_LOCO)
-	if _cur_kind != "action":
+	if _cur_kind == "walk" or _cur_kind == "run":
+		# follow the ground speed closely (it is already smooth: characters accelerate)
+		_rate = lerpf(_rate, want_rate, clampf(delta * 25.0, 0.0, 1.0))
+	elif _cur_kind != "action":
 		_rate = lerpf(_rate, want_rate, clampf(delta * 8.0, 0.0, 1.0))
 	# the mixer rewrites only bones that have tracks: put the look bones back
 	# to rest first so the additive look below never accumulates
 	for bi in _override_bones:
 		skel.set_bone_pose_rotation(bi, _rest_rot[bi])
+	if _hips >= 0:
+		skel.set_bone_pose_position(_hips, _hips_rest_pos)
 	ap.advance(delta * _rate)
-	# stride warping: when even the fastest sensible cadence can't keep up with
-	# the ground speed, swing the legs (and arms) further instead of sliding
-	var need := 1.0
-	if moving and _cur_kind in ["walk", "run"]:
-		need = speed / (float(_nat[_cur_kind]) * float(MAX_RATE[_cur_kind]))
-	_stride_k = lerpf(_stride_k, clampf(need, 1.0, STRIDE_MAX), clampf(delta * 6.0, 0.0, 1.0))
-	if _stride_k > 1.01:
+	if _stride_k > 1.005:
+		var y0 := _lowest_foot()
 		_scale_swing(_stride_bones, _stride_k)
 		_scale_swing(_swing_bones, 1.0 + (_stride_k - 1.0) * 0.6)
+		# longer swings lift the planted foot (the leg reaches further out):
+		# sink the hips by as much so it stays on the ground
+		var lift := _lowest_foot() - y0
+		if lift > 0.0 and _hips >= 0:
+			var d := _sk_xf.basis.inverse() * Vector3(0.0, -lift, 0.0)
+			skel.set_bone_pose_position(_hips, skel.get_bone_pose_position(_hips) + d)
 	_apply_look(delta, moving)
 
 
+func _speed_of(kind: String) -> float:
+	return float(_nat.get(kind, 1.0)) * absf(_base_scale.z)
+
+
+func _lowest_foot() -> float:
+	var y := INF
+	for f in _feet:
+		y = minf(y, (_sk_xf * skel.get_bone_global_pose(f).origin).y)
+	return 0.0 if y == INF else y
+
+
 func _scale_swing(bones: Array[int], k: float) -> void:
+	## Scale each bone's rotation away from its rest pose by k (a longer swing).
 	for bi in bones:
 		var r: Quaternion = _rest_rot[bi]
-		var d := r.inverse() * skel.get_bone_pose_rotation(bi)
+		var d := (r.inverse() * skel.get_bone_pose_rotation(bi)).normalized()
 		var ang := d.get_angle()
 		if ang < 0.0001 or ang > PI * 0.9:
 			continue
-		skel.set_bone_pose_rotation(bi, r * Quaternion(d.get_axis(), minf(ang * k, PI * 0.8)))
+		var axis := d.get_axis().normalized()
+		skel.set_bone_pose_rotation(bi, (r * Quaternion(axis, minf(ang * k, PI * 0.8))).normalized())
+
+
+func _gain_at(kind: String, k: float) -> float:
+	## How much longer the stride is when the leg swing is scaled by k.
+	var g: PackedFloat32Array = _gain.get(kind, PackedFloat32Array())
+	if k <= 1.0 or g.size() < 2:
+		return maxf(k, 1.0) if g.size() < 2 else 1.0
+	var x := (k - float(STRIDE_KS[0])) / (float(STRIDE_KS[1]) - float(STRIDE_KS[0]))
+	var i := clampi(int(floor(x)), 0, g.size() - 2)
+	return lerpf(g[i], g[i + 1], clampf(x - i, 0.0, 1.0))
+
+
+func _k_for_gain(kind: String, need: float) -> float:
+	## Smallest leg swing scale (<= STRIDE_MAX) whose stride gain reaches `need`.
+	var g: PackedFloat32Array = _gain.get(kind, PackedFloat32Array())
+	if g.size() < 2:
+		return clampf(need, 1.0, STRIDE_MAX)
+	for i in g.size() - 1:
+		if need <= g[i + 1]:
+			var span := g[i + 1] - g[i]
+			var u := (need - g[i]) / span if span > 0.0001 else 1.0
+			return minf(lerpf(float(STRIDE_KS[i]), float(STRIDE_KS[i + 1]), clampf(u, 0.0, 1.0)), STRIDE_MAX)
+	return STRIDE_MAX
 
 
 func _switch(kind: String, rate: float, blend: float) -> void:
@@ -426,40 +545,91 @@ func _resolve(clip: String) -> String:
 	return ""
 
 
-func _measure_strides() -> void:
-	## Ground speed each locomotion clip was authored for, from how far the foot
-	## travels while planted: playback rate = velocity / this, so feet don't skate.
+func _measure_gait() -> void:
+	## Ground speed each locomotion clip covers at 1x (playback rate = velocity /
+	## this, so feet don't skate), how much a scaled leg swing lengthens the
+	## stride, and the grip offset. Cached per model file.
 	var key := root.scene_file_path
-	if key != "" and _stride_cache.has(key):
-		_nat = (_stride_cache[key] as Dictionary).duplicate()
-		return
+	var g: Dictionary
+	if key != "" and _gait_cache.has(key):
+		g = _gait_cache[key]
+	else:
+		g = _build_gait()
+		if key != "":
+			_gait_cache[key] = g
+	_nat = (g["nat"] as Dictionary).duplicate()
+	_gain = g["gain"]
+	_gait_src = g["src"]
+	_grip_offset = g["grip"]
+	_run_on = _speed_of("walk") * WALK_TO_RUN
+	_run_off = _run_on * RUN_TO_WALK
+
+
+func _gait_extras() -> Dictionary:
+	## The numbers blender/characters.py exports as glTF extras on the armature
+	## node (Godot: "extras" metadata of the Skeleton3D's parent).
+	var n: Node = skel
+	while n != null:
+		if n.has_meta("extras"):
+			var ex = n.get_meta("extras")
+			if ex is Dictionary and (ex as Dictionary).has("walk_speed"):
+				return ex
+		if n == root:
+			break
+		n = n.get_parent()
+	return {}
+
+
+func _build_gait() -> Dictionary:
+	var nat := {"walk": 1.1, "run": 2.6}
+	var gain := {}
+	var src := "default"
+	var ex := _gait_extras()
 	var foot := skel.find_bone("foot_L")
 	if foot < 0:
 		foot = skel.find_bone("shin_L")
-	if foot >= 0:
-		for clip in ["walk", "run"]:
-			var nm := _resolve(clip)
-			if nm == "" or nm != clip and clip == "run":
-				continue
-			var a := ap.get_animation(nm)
-			if a.length <= 0.0:
-				continue
-			ap.play(nm)
+	for clip in ["walk", "run"]:
+		var nm := _resolve(clip)
+		if nm == "" or nm != clip and clip == "run":
+			continue
+		var a := ap.get_animation(nm)
+		if a.length <= 0.0 or foot < 0:
+			continue
+		ap.play(nm)
+		var spans := PackedFloat32Array()
+		for k in STRIDE_KS:
 			var zmin := INF
 			var zmax := -INF
-			for i in 24:
-				ap.seek(a.length * i / 24.0, true)
+			for i in 20:
+				for bi in _override_bones:
+					skel.set_bone_pose_rotation(bi, _rest_rot[bi])
+				ap.seek(a.length * i / 20.0, true)
+				if k > 1.0:
+					_scale_swing(_stride_bones, k)
 				var p := _sk_xf * skel.get_bone_global_pose(foot).origin
 				zmin = minf(zmin, p.z)
 				zmax = maxf(zmax, p.z)
-			var span := (zmax - zmin) * root.scale.z
-			if span > 0.02:
-				_nat[clip] = clampf(span / (a.length * float(STANCE[clip])), 0.3, 8.0)
-		ap.stop()
+			spans.append(zmax - zmin)
+		var g := PackedFloat32Array()
+		for s in spans:
+			g.append(s / spans[0] if spans[0] > 0.001 else 1.0)
+		gain[clip] = g
+		var key := clip + "_speed"
+		if ex.has(key) and float(ex[key]) > 0.05:
+			nat[clip] = float(ex[key])
+			src = "extras"
+		elif spans[0] > 0.02:
+			# the ankle covers ~stance share of a cycle's ground travel
+			var st := float(ex.get(clip + "_stance", STANCE[clip]))
+			nat[clip] = clampf(spans[0] / (a.length * st), 0.3, 8.0)
+			src = "measured"
+	ap.stop()
+	for bi in _override_bones:
+		skel.set_bone_pose_rotation(bi, _rest_rot[bi])
 	if _resolve("run") != "run":
-		_nat["run"] = maxf(_nat["walk"] * 2.0, 2.0)
-	if key != "":
-		_stride_cache[key] = _nat.duplicate()
+		nat["run"] = maxf(nat["walk"] * 2.0, 2.0)
+	var grip := float(ex.get("grip_offset", -1.0))
+	return {"nat": nat, "gain": gain, "src": src, "grip": grip}
 
 
 func _apply_look(delta: float, moving: bool) -> void:
@@ -528,7 +698,9 @@ func _grip_xform(bi: int) -> Transform3D:
 	var sc: float = _sk_xf.basis.get_scale().x
 	var grip := 0.036 / maxf(sc, 0.0001)
 	var par := skel.get_bone_parent(bi)
-	if par >= 0:
+	if _grip_offset > 0.0:
+		grip = _grip_offset / maxf(sc, 0.0001)   # exported by blender/characters.py
+	elif par >= 0:
 		grip = rest.origin.distance_to(skel.get_bone_global_rest(par).origin) * 0.37
 	# tools are modelled in metres: undo any armature scale
 	return Transform3D(local.scaled(Vector3.ONE / maxf(sc, 0.0001)), Vector3(0, grip, 0))
@@ -550,6 +722,9 @@ func _show_tool(kind: String, seconds: float) -> void:
 		elif kind != "sack":
 			parent = hand_r if hand_r else root
 		if parent == null:
+			# nowhere to hold it (a v1 model has no left fist): no tool, and no
+			# stale kind either, so a held tool comes back after the action
+			_tool_kind = ""
 			return
 		var mi := MeshInstance3D.new()
 		mi.name = "Tool_" + kind
@@ -558,7 +733,9 @@ func _show_tool(kind: String, seconds: float) -> void:
 		mi.visible = false
 		parent.add_child(mi)
 		_tools[kind] = mi
-	_tool_s = 0.0 if not (_tools[kind] as Node3D).visible else _tool_s
+	if not (_tools[kind] as Node3D).visible:
+		_tool_s = 0.0
+		_pole_fresh = true
 
 
 func _update_tool(delta: float) -> void:
@@ -575,32 +752,61 @@ func _update_tool(delta: float) -> void:
 	var s := ease(_tool_s, 0.4) if _tool_s > 0.0 else 0.0
 	tool.visible = _tool_s > 0.01
 	if not tool.visible:
+		_pole_fresh = true
 		if not on:
 			_tool_kind = ""
 		return
 	var b := Basis.IDENTITY
+	var origin := Vector3.ZERO
 	if not skinned:
 		b = Basis(Vector3.RIGHT, PI * 0.5) if tool.get_parent() == hand_r else Basis.IDENTITY
 	elif _tool_kind == "egrek":
-		b = _egrek_basis()
-	tool.transform = Transform3D(b.scaled(Vector3.ONE * maxf(s, 0.001)), Vector3.ZERO)
+		b = _egrek_basis(delta)
+		origin = b.y * _pole_slide
+	tool.transform = Transform3D(b.scaled(Vector3.ONE * maxf(s, 0.001)), origin)
 
 
-func _egrek_basis() -> Basis:
-	## The pole runs along the grip axis (hand_R local +Z in the v2 rigs, whose
-	## harvest clip steers both hands along the pole). If a rig's hand points
-	## the pole backwards or down, lean it toward the crown in front instead.
-	## The sickle hook always faces back toward the harvester.
+func pole_working() -> bool:
+	## True while the harvest clip steers the pole (otherwise it is carried).
+	return _act_left > 0.0 and ACTIONS.get(_act_kind, ["", 1.0, ""])[2] == "egrek"
+
+
+func _egrek_basis(delta: float) -> Basis:
+	## While harvesting the pole runs along the grip axis (hand_R local +Z in the
+	## v2 rigs, whose harvest clip steers both hands along the pole); where a
+	## rig's hand points it down or backwards it leans toward the crown in front
+	## instead, blended over a wide band. Carried outside an action it rests on
+	## the right shoulder. The direction is eased over time (model space, so the
+	## pole turns rigidly with the body) and never jumps between frames. The
+	## sickle hook always faces back toward the harvester.
 	var grip_w := skel.global_transform * skel.get_bone_global_pose(_hand_idx) * _grip_root.transform
-	var fwd := (root.global_transform.basis * Vector3.BACK)
-	fwd.y = 0.0
-	fwd = fwd.normalized() if fwd.length() > 0.01 else Vector3.BACK
-	var hand_dir := grip_w.basis.y.normalized()
-	var aim := (root.global_position + fwd * 1.0 + Vector3.UP * 3.0 - grip_w.origin).normalized()
-	var q := smoothstep(0.2, 0.45, hand_dir.y) * smoothstep(-0.2, 0.1, hand_dir.dot(fwd))
-	var y := aim.slerp(hand_dir, q).normalized()
-	var z := -fwd - y * (-fwd).dot(y)
-	z = z.normalized() if z.length() > 0.01 else Vector3.BACK
+	var mb := root.global_transform.basis.orthonormalized()
+	var mb_inv := mb.inverse()
+	var target := POLE_CARRY_DIR.normalized()
+	var slide := POLE_CARRY_SLIDE
+	if pole_working():
+		var fwd := mb * Vector3.BACK
+		fwd.y = 0.0
+		fwd = fwd.normalized() if fwd.length() > 0.01 else Vector3.BACK
+		var hand_dir := grip_w.basis.y.normalized()
+		var aim := (root.global_position + fwd * 1.0 + Vector3.UP * 3.0 - grip_w.origin).normalized()
+		var q := smoothstep(-0.45, 0.1, hand_dir.y) * smoothstep(-0.6, 0.0, hand_dir.dot(fwd))
+		target = (mb_inv * aim.slerp(hand_dir, q)).normalized()
+		slide = 0.0
+	if _pole_fresh:
+		_pole_dir = target
+		_pole_slide = slide
+		_pole_fresh = false
+	else:
+		var ang := _pole_dir.angle_to(target)
+		if ang > 0.0001:
+			var step := minf(ang * (1.0 - exp(-POLE_FOLLOW * delta)), POLE_MAX_SPEED * delta)
+			_pole_dir = _pole_dir.slerp(target, step / ang).normalized()
+		_pole_slide = move_toward(_pole_slide, slide, delta * 1.5)
+	var y := (mb * _pole_dir).normalized()
+	var back := mb * Vector3.FORWARD
+	var z := back - y * back.dot(y)
+	z = z.normalized() if z.length() > 0.01 else (mb * Vector3.DOWN)
 	var x := y.cross(z).normalized()
 	return grip_w.basis.orthonormalized().inverse() * Basis(x, y, z)
 
