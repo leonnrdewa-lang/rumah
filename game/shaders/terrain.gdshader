@@ -1,5 +1,5 @@
 // Painterly island ground. Tileable textures from game/assets/textures/ground/
-// (grass, grass_dry, dirt, sand, mulch) are sampled in world space (~4 m per
+// (grass, grass_dry, dirt, sand, mulch) are sampled in world space (~5.5 m per
 // tile), with a second rotated grass sample and macro colour variation to hide
 // the tiling. Masks:
 //   data_tex  (world_data.png)  R height, G sand, B road, A grass tone
@@ -7,6 +7,12 @@
 //                               G dryness, B forest-floor litter, A road direction
 //                               (1 = road runs along x, 0 = along z)
 // Any missing texture falls back to the v1 procedural colours (has_* uniforms).
+//
+// Cost: high quality ~11 fetches on grass (+ mulch / sand / 2 dirt where those
+// show), "Hemat baterai" (hq = 0) ~7 (no rotated grass sample, no very-fine
+// noise, one dirt sample). Samples inside the per-pixel branches use
+// textureGrad with derivatives taken outside them (implicit derivatives are
+// undefined in non-uniform control flow).
 shader_type spatial;
 render_mode cull_back, diffuse_lambert_wrap, specular_disabled;
 
@@ -24,13 +30,20 @@ uniform float has_dirt = 0.0;
 uniform float has_sand = 0.0;
 uniform float has_mulch = 0.0;
 uniform float has_shade = 0.0;
-uniform float tile_m = 4.0;
+// 1 = full quality, 0 = "Hemat baterai" (set by world.gd set_quality)
+uniform float hq = 1.0;
+uniform float tile_m = 5.5;
 uniform float world_size = 200.0;
 uniform float water_level = -0.3;
 uniform float shade_strength = 1.0;
 uniform float tex_saturation = 0.9;
-uniform vec3 grass_tint = vec3(1.28, 1.04, 1.6);   // linear multiplier: lime texture -> target olive
-uniform float detail_contrast = 1.15;
+uniform vec3 grass_tint = vec3(1.28, 1.04, 1.6);   // linear multiplier: texture -> target olive
+// average colour of grass_tex (linear), set by world.gd; detail is scaled around it
+uniform vec3 grass_avg = vec3(0.27, 0.39, 0.065);
+// < 1 flattens the texture's fine blade noise into a smoother, painterly ground
+uniform float detail_contrast = 0.85;
+// mip bias (as a gradient scale) for the grass: > 1 = softer
+uniform float grass_blur = 1.5;
 // v1 procedural palette (fallbacks) + tints anchored to the target palette
 uniform vec3 grass_dark : source_color = vec3(0.30, 0.45, 0.235);
 uniform vec3 grass_mid : source_color = vec3(0.43, 0.57, 0.28);
@@ -41,6 +54,10 @@ uniform vec3 road_col : source_color = vec3(0.79, 0.69, 0.50);
 uniform vec3 dry_col : source_color = vec3(0.78, 0.73, 0.42);
 uniform vec3 mulch_col : source_color = vec3(0.45, 0.35, 0.24);
 uniform vec3 shade_tint : source_color = vec3(0.80, 0.93, 0.88);
+// macro variation: shady olive <-> sunlit yellow-green (linear multipliers)
+uniform vec3 macro_shady = vec3(0.52, 0.66, 0.56);
+uniform vec3 macro_sunny = vec3(0.9, 0.95, 0.84);
+uniform float shade_depth = 0.36;
 
 varying vec3 wpos;
 
@@ -66,24 +83,33 @@ void fragment() {
 	vec3 n1 = texture(noise_tex, wpos.xz * 0.018).rgb;   // macro, ~55 m
 	vec3 n2 = texture(noise_tex, wpos.xz * 0.075).rgb;   // mid, ~13 m
 	float n3 = texture(noise_tex, wpos.xz * 0.37).g;      // fine, ~2.7 m
-	float n4 = texture(noise_tex, vec2(wpos.x * 0.9, wpos.z * 0.9) + 0.5).r; // very fine
+	float n4 = 0.5;
+	if (hq > 0.5) {
+		n4 = texture(noise_tex, vec2(wpos.x * 0.9, wpos.z * 0.9) + 0.5).r; // very fine
+	}
 	vec2 tuv = wpos.xz / tile_m;
+	// derivatives for the samples inside the per-pixel branches below
+	vec2 tdx = dFdx(tuv);
+	vec2 tdy = dFdy(tuv);
 
 	// ---------------------------------------------------------------- grass
 	float tone = d.a * 0.55 + n1.r * 0.45;
 	vec3 g;
 	float gdetail = 0.5;
 	if (has_grass > 0.5) {
-		vec3 ga = texture(grass_tex, tuv).rgb;
-		vec3 gb = texture(grass_tex, rot2(tuv, 1.13) * 0.71 + vec2(0.37, 0.71)).rgb;
-		g = mix(ga, gb, smoothstep(0.3, 0.7, n2.g));
-		vec3 gavg = textureLod(grass_tex, tuv, 9.0).rgb;
-		g = max(gavg + (g - gavg) * detail_contrast, vec3(0.0));
+		vec3 ga = textureGrad(grass_tex, tuv, tdx * grass_blur, tdy * grass_blur).rgb;
+		g = ga;
+		if (hq > 0.5) {
+			vec2 ruv = rot2(tuv, 1.13) * 0.71 + vec2(0.37, 0.71);
+			vec3 gb = textureGrad(grass_tex, ruv, rot2(tdx, 1.13) * 0.71 * grass_blur, rot2(tdy, 1.13) * 0.71 * grass_blur).rgb;
+			g = mix(ga, gb, smoothstep(0.3, 0.7, n2.g));
+		}
+		g = max(grass_avg + (g - grass_avg) * detail_contrast, vec3(0.0));
 		gdetail = clamp(dot(ga, vec3(0.9)) * 1.2, 0.0, 1.0);
 		g = sat(g, tex_saturation) * grass_tint;
 		// shady olive <-> sunny yellow-green macro variation
-		float t = smoothstep(0.22, 0.8, tone + (n2.b - 0.5) * 0.35);
-		g *= mix(vec3(0.58, 0.72, 0.62), vec3(1.1, 1.14, 1.0), t);
+		float t = smoothstep(0.25, 0.85, tone + (n2.b - 0.5) * 0.35);
+		g *= mix(macro_shady, macro_sunny, t);
 	} else {
 		g = mix(grass_dark, grass_mid, smoothstep(0.22, 0.48, tone + (n2.g - 0.5) * 0.2));
 		g = mix(g, grass_light, smoothstep(0.58, 0.82, tone + (n2.b - 0.5) * 0.35));
@@ -93,18 +119,19 @@ void fragment() {
 	// ---------------------------------------------------------------- dry grass
 	vec3 gd;
 	if (has_grass_dry > 0.5) {
-		gd = texture(grass_dry_tex, rot2(tuv, 0.6) * 0.93 + vec2(0.21, 0.13)).rgb;
+		vec2 duv = rot2(tuv, 0.6) * 0.93 + vec2(0.21, 0.13);
+		gd = textureGrad(grass_dry_tex, duv, rot2(tdx, 0.6) * 0.93, rot2(tdy, 0.6) * 0.93).rgb;
 	} else {
 		gd = dry_col * (0.88 + 0.16 * n3 + 0.06 * n4);
 	}
 	float dry = sh.g + (n2.r - 0.5) * 0.55 + (n3 - 0.5) * 0.2;
-	vec3 col = mix(g, gd, smoothstep(0.58, 0.88, dry) * 0.75);
+	vec3 col = mix(g, gd * 0.9, smoothstep(0.58, 0.88, dry) * 0.7);
 
 	// ---------------------------------------------------------------- forest-floor litter
 	if (sh.b > 0.01) {
 		vec3 m;
 		if (has_mulch > 0.5) {
-			m = texture(mulch_tex, tuv * 1.3 + vec2(0.5, 0.2)).rgb;
+			m = textureGrad(mulch_tex, tuv * 1.6 + vec2(0.5, 0.2), tdx * 1.6, tdy * 1.6).rgb;
 		} else {
 			m = mulch_col * (0.8 + 0.3 * n3 + 0.1 * n4);
 		}
@@ -116,7 +143,7 @@ void fragment() {
 	if (sandm > 0.001) {
 		vec3 s;
 		if (has_sand > 0.5) {
-			s = texture(sand_tex, tuv * 0.8).rgb * (0.96 + 0.08 * n3);
+			s = textureGrad(sand_tex, tuv * 0.8, tdx * 0.8, tdy * 0.8).rgb * (0.96 + 0.08 * n3);
 		} else {
 			s = sand_col * (0.95 + 0.07 * n3);
 		}
@@ -131,25 +158,33 @@ void fragment() {
 		float e = d.b + (n2.r - 0.5) * 0.3 + (n3 - 0.5) * 0.22 + (n4 - 0.5) * 0.22 + (gdetail - 0.5) * 0.25;
 		float verge = smoothstep(0.12, 0.44, e);
 		float roadm = smoothstep(0.44, 0.6, e);
-		col = mix(col, mix(col, gd, 0.7) * 1.03, verge * (1.0 - roadm) * 0.65);
+		col = mix(col, mix(col, gd, 0.6), verge * (1.0 - roadm) * 0.6);
 		vec3 r;
 		if (has_dirt > 0.5) {
-			// tyre tracks run along the road: rotate the texture for roads along z
-			vec3 rx = texture(dirt_tex, tuv.yx * vec2(1.0, 1.0) + vec2(0.13, 0.0)).rgb;
-			vec3 rz = texture(dirt_tex, tuv).rgb;
-			r = mix(rz, rx, smoothstep(0.3, 0.7, sh.a));
+			// tyre tracks run along the road: rotate the texture for roads along x
+			vec2 xuv = tuv.yx * 1.3 + vec2(0.13, 0.0);
+			float along_x = smoothstep(0.3, 0.7, sh.a);
+			if (hq > 0.5) {
+				vec3 rx = textureGrad(dirt_tex, xuv, tdx.yx * 1.3, tdy.yx * 1.3).rgb;
+				vec3 rz = textureGrad(dirt_tex, tuv * 1.3, tdx * 1.3, tdy * 1.3).rgb;
+				r = mix(rz, rx, along_x);
+			} else {
+				// one sample in the dominant direction
+				bool ax = along_x > 0.5;
+				r = textureGrad(dirt_tex, ax ? xuv : tuv * 1.3, (ax ? tdx.yx : tdx) * 1.3, (ax ? tdy.yx : tdy) * 1.3).rgb;
+			}
 			r *= 0.95 + 0.08 * n2.g;
 		} else {
 			r = road_col * (0.9 + 0.14 * n3 + 0.06 * n4);
 		}
-		// slightly lighter, dusty centre
-		r *= 0.92 + 0.08 * smoothstep(0.7, 1.0, d.b);
+		// slightly lighter, dusty centre; darker, grassier rim
+		r *= 0.88 + 0.12 * smoothstep(0.6, 1.0, d.b);
 		col = mix(col, r, roadm);
 	}
 
 	// ---------------------------------------------------------------- contact shade
 	float shade = clamp(sh.r * shade_strength, 0.0, 1.0);
-	col = mix(col, col * shade_tint * 0.42, shade);
+	col = mix(col, col * shade_tint * shade_depth, shade);
 
 	ALBEDO = col;
 	ROUGHNESS = 1.0;

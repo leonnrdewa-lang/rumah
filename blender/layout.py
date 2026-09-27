@@ -76,4 +76,6 @@ TENT_SPOTS = [(12, 16), (16, 17), (20, 15.5), (9, 19), (24, 18), (14, 20)]
 CLIFFS = [("cliff_a", (-44, -55), 10), ("cliff_a", (-30, -58), -8), ("cliff_a", (40, -56), 170),
           ("rock_c", (-56, -48), 0), ("rock_c", (54, -49), 40), ("rock_c", (8, -60), 0)]
 
-PLAYER_SPAWN = (-3, 26)
+# in front of (south of) the kantor: the first frame shows its door and sign instead of
+# its roof covering the bottom of the screen
+PLAYER_SPAWN = (-3.5, 37.5)

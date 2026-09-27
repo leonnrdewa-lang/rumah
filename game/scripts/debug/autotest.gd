@@ -388,6 +388,19 @@ func _run() -> void:
 			tp(-17, 32.5, Vector3(0, 0, -1))
 			await shot("vis_parcel_low", 30)
 			world.set_quality(true)
+		"lush":
+			# render tuning: UI-free frames at 08:30 (tour spots + curated views) for
+			# measuring brightness / shade coverage against the target screenshot
+			world.start_game(false)
+			world.ui.close()
+			world.ui.visible = false
+			var spots := [[-3, 34], [-14, 3], [8, 5], [50, -2], [-44, 36], [-20, -40], [18, -40], [66, 13], [30, 45],
+				[-9, 10], [-3, 36], [-30, -20], [-17, 28], [-17.4, 25.4], [-3, 26], [-26, -2]]
+			for s in spots:
+				GS.hour = 8.5
+				tp(s[0], s[1], Vector3(0, 0, -1))
+				await shot("lush_%d_%d" % [s[0], s[1]], 25)
+			world.ui.visible = true
 		"tour":
 			world.start_game(false)
 			world.ui.close()

@@ -156,7 +156,15 @@ def M(name):
 # --------------------------------------------------------------------------- primitives
 # Each primitive returns (verts, faces) in local space; xf() moves them.
 def xf(vf, m):
+    if len(vf) > 2:
+        return [m @ Vector(v) for v in vf[0]], vf[1], [m @ Vector(a) for a in vf[2]]
     return [m @ Vector(v) for v in vf[0]], vf[1]
+
+
+def anchored(vf, surf):
+    """Attach weight anchors to geometry lying on a lathe surface (straps, piping): each vertex takes
+    the skin weights of the surface point radially below it."""
+    return vf[0], vf[1], [surf.anchor(Vector(p)) for p in vf[0]]
 
 
 def lathe_vf(prof, seg=16, sx=1.0, sy=1.0, phase=0.0, deform=None):
@@ -294,11 +302,12 @@ def tube_vf(pts, radius, seg=6, closed=False, up=(0.0, 0.0, 1.0), caps=True, rou
             verts.append(p + b * (rw * math.cos(th)) + nn * (rh * math.sin(th)))
         return ring
 
+    rc0, rc1 = round_caps if isinstance(round_caps, tuple) else (round_caps, round_caps)
     t0, nn0, b0 = frame(0)
-    if round_caps and not closed:
+    if rc0 and not closed:
         rw, rh = rr(0)
-        for k in range(round_caps, 0, -1):
-            a = (math.pi / 2) * k / (round_caps + 1)
+        for k in range(rc0, 0, -1):
+            a = (math.pi / 2) * k / (rc0 + 1)
             rings.append(ring_at(pts[0] - t0 * (max(rw, rh) * math.sin(a)), nn0, b0, rw * math.cos(a),
                                  rh * math.cos(a)))
     for i, p in enumerate(pts):
@@ -306,10 +315,10 @@ def tube_vf(pts, radius, seg=6, closed=False, up=(0.0, 0.0, 1.0), caps=True, rou
         rw, rh = rr(i)
         rings.append(ring_at(p, nn, b, rw, rh))
     t1, nn1, b1 = frame(n - 1)
-    if round_caps and not closed:
+    if rc1 and not closed:
         rw, rh = rr(n - 1)
-        for k in range(1, round_caps + 1):
-            a = (math.pi / 2) * k / (round_caps + 1)
+        for k in range(1, rc1 + 1):
+            a = (math.pi / 2) * k / (rc1 + 1)
             rings.append(ring_at(pts[-1] + t1 * (max(rw, rh) * math.sin(a)), nn1, b1, rw * math.cos(a),
                                  rh * math.cos(a)))
     nr = len(rings)
@@ -318,11 +327,11 @@ def tube_vf(pts, radius, seg=6, closed=False, up=(0.0, 0.0, 1.0), caps=True, rou
         faces += [(A[j], B[j], B[(j + 1) % seg], A[(j + 1) % seg]) for j in range(seg)]
     if caps and not closed:
         c0 = len(verts)
-        first = pts[0] - (t0 * max(rr(0)) if round_caps else Vector())
+        first = pts[0] - (t0 * max(rr(0)) if rc0 else Vector())
         verts.append(first)
         faces += [(c0, rings[0][j], rings[0][(j + 1) % seg]) for j in range(seg)]
         c1 = len(verts)
-        last = pts[-1] + (t1 * max(rr(n - 1)) if round_caps else Vector())
+        last = pts[-1] + (t1 * max(rr(n - 1)) if rc1 else Vector())
         verts.append(last)
         faces += [(c1, rings[-1][(j + 1) % seg], rings[-1][j]) for j in range(seg)]
     return verts, faces
@@ -413,6 +422,12 @@ def lathe_surf(prof, sx=1.0, sy=1.0, deform=None, m=None):
             p = m @ p
         return p
     f.r_at = r_at
+    minv = m.inverted() if m is not None else None
+
+    def anchor(p):
+        q = minv @ p if minv is not None else p
+        return f(math.atan2(q.x / sx, -q.y / sy), q.z)
+    f.anchor = anchor
     return f
 
 
@@ -435,28 +450,31 @@ def decal_vf(f, a, z, outline, off=0.004, thick=0.0):
     def P(aa, zz, o):
         return f(aa, zz) + snormal(f, aa, zz) * o
     k = len(outline)
+    anch = [f(a, z)] + [f(a + u / du, z + v / dz) for (u, v) in outline]
     if thick <= 0:
         verts = [P(a, z, off)] + [P(a + u / du, z + v / dz, off) for (u, v) in outline]
-        return verts, [(0, i + 1, (i + 1) % k + 1) for i in range(k)]
+        return verts, [(0, i + 1, (i + 1) % k + 1) for i in range(k)], anch
     verts = [P(a, z, off + thick)] + [P(a + u / du, z + v / dz, off + thick) for (u, v) in outline]
     verts += [P(a + u * 1.06 / du, z + v * 1.06 / dz, off - 0.002) for (u, v) in outline]
+    anch += [f(a + u * 1.06 / du, z + v * 1.06 / dz) for (u, v) in outline]
     faces = [(0, i + 1, (i + 1) % k + 1) for i in range(k)]
     faces += [(i + 1, k + 1 + i, k + 1 + (i + 1) % k, (i + 1) % k + 1) for i in range(k)]
-    return verts, faces
+    return verts, faces, anch
 
 
 def strip_vf(f, a, z0, z1, width, off=0.004, steps=6):
-    verts, faces = [], []
+    verts, faces, anch = [], [], []
     for k in range(steps + 1):
         z = z0 + (z1 - z0) * k / steps
         du, _ = _metric(f, a, z)
         for u in (-width / 2, width / 2):
             aa = a + u / du
+            anch.append(f(aa, z))
             verts.append(f(aa, z) + snormal(f, aa, z) * off)
     for k in range(steps):
         i = 2 * k
         faces.append((i, i + 1, i + 3, i + 2))
-    return verts, faces
+    return verts, faces, anch
 
 
 def surf_path(f, pts_az, off):
@@ -547,7 +565,9 @@ class Char:
 
     # ---- geometry bookkeeping
     def add(self, rule, vf, m, smooth=True):
-        self.chunks.append((vf[0], vf[1], m, smooth, rule))
+        """vf = (verts, faces) or (verts, faces, anchors): anchors are the points whose skin weights
+        the vertices take (decals use the cloth surface point under them, so they ride the cloth)."""
+        self.chunks.append((vf[0], vf[1], m, smooth, rule, vf[2] if len(vf) > 2 else None))
 
     def hp(self, yaw, el, lift=0.0):
         a, e = rad(yaw), rad(el)
@@ -595,41 +615,52 @@ class Char:
             w[k] *= 1.0 - a
         w[bone] = w.get(bone, 0.0) + a
 
+    # Around the hips several layers overlap (shirt over trousers/skirt over the tops of the leg
+    # tubes). They all take their weights from ONE field there (thigh_share + hip_field), so that
+    # the layers deform alike and cannot cross when the hips flex (kneeling, high knees): a layer
+    # with even a little more thigh weight than the one under it folds through it.
+    def zones(self):
+        """(waist, top's hem, crotch) heights: the thigh share starts at the waist, is 0.3 at the
+        hem line of the tops and rises to its full value at the crotch (visible trousers)."""
+        d = self.d
+        return d["hip_z"] + 0.03, d["hip_z"] - 0.04, d.get("crotch_z", d["hip_z"] - 0.073)
+
+    def thigh_share(self, p, low=0.55, top=0.3):
+        zw, zh, zc = self.zones()
+        k = top * ss(zw, zh, p.z) + low * ss(zh, zc, p.z)
+        return k * (1.0 - 0.45 * ss(-0.02, 0.1, p.y))   # the seat stays with the pelvis
+
+    def hip_field(self, p, k, split=0.05):
+        w = {b: v * (1.0 - k) for b, v in self.w_spine(p.z).items()}
+        sL = ss(-split, split, p.x)
+        w["thigh_L"] = w.get("thigh_L", 0.0) + k * sL
+        w["thigh_R"] = w.get("thigh_R", 0.0) + k * (1.0 - sL)
+        return w
+
     def w_torso(self, p, arm_k=0.5, thigh_k=0.3, arm_r=0.085):
         d = self.d
-        w = self.w_spine(p.z)
+        w = self.hip_field(p, self.thigh_share(p, low=0.0, top=thigh_k)) if thigh_k > 0 else self.w_spine(p.z)
         for side in (1, -1):
             S = Vector((side * d["sh_x"], 0.0, d["sh_z"]))
             lat = p.x * side
             if lat > 0.02:
                 a = arm_k * ss(arm_r, 0.02, (p - S).length) * ss(0.03, 0.09, lat)
                 self._mix(w, "upperarm_" + sfx(side), a)
-        if p.z < d["hip_z"] + 0.03 and thigh_k > 0:
-            k = thigh_k * ss(d["hip_z"] + 0.03, d["hip_z"] - 0.04, p.z)
-            sL = ss(-0.05, 0.05, p.x)
-            self._mix(w, "thigh_L", k * sL)
-            self._mix(w, "thigh_R", k * (1 - sL) / max(1e-6, 1 - k * sL))
         return w
 
     def w_pelvis(self, p):
-        d = self.d
-        w = self.w_spine(p.z)
-        k = 0.85 * ss(d["hip_z"] + 0.01, d["hip_z"] - 0.055, p.z)
-        sL = ss(-0.035, 0.035, p.x)
-        self._mix(w, "thigh_L", k * sL)
-        self._mix(w, "thigh_R", k * (1 - sL) / max(1e-6, 1 - k * sL))
-        return w
+        return self.hip_field(p, self.thigh_share(p, low=0.55))
 
     def w_skirt(self, p, kmax=0.72):
         d = self.d
-        k = kmax * ss(d["hip_z"] + 0.04, d["ankle_z"] + 0.02, p.z)
-        sL = ss(-0.08, 0.08, p.x)
+        zw, zh, zc = self.zones()
+        lo = ss(zh, d["ankle_z"] + 0.02, p.z)
+        k = self.thigh_share(p, low=0.0) + (kmax - 0.3) * lo * (1.0 - 0.45 * ss(-0.02, 0.1, p.y))
+        w = self.hip_field(p, k, split=0.05 + 0.03 * ss(zh, zh - 0.08, p.z))
         sh = 0.45 * ss(d["knee_z"] + 0.02, d["ankle_z"], p.z)
-        w = {b: v * (1 - k) for b, v in self.w_spine(p.z).items()}
-        w["thigh_L"] = k * sL * (1 - sh)
-        w["shin_L"] = k * sL * sh
-        w["thigh_R"] = k * (1 - sL) * (1 - sh)
-        w["shin_R"] = k * (1 - sL) * sh
+        for x in ("L", "R"):
+            t = w.pop("thigh_" + x)
+            w["thigh_" + x], w["shin_" + x] = t * (1 - sh), t * sh
         return w
 
     def w_arm(self, p, side):
@@ -652,7 +683,13 @@ class Char:
         t2 = ss(la - 0.012, la + 0.012, s)
         x = sfx(side)
         w = {"thigh_" + x: 1 - t1, "shin_" + x: t1 * (1 - t2), "foot_" + x: t1 * t2}
-        self._mix(w, "hips", 0.45 * ss(0.03, -0.035, s))
+        # inside the pelvis the leg tube's top takes the shared hip field, so it stays under the
+        # trousers and the shirt; it becomes a plain leg just below the crotch
+        zw, zh, zc = self.zones()
+        t = ss(zc + 0.01, zc - 0.035, p.z)
+        if t < 1.0:
+            hf = self.hip_field(p, self.thigh_share(p, low=0.55))
+            w = {b: (1 - t) * hf.get(b, 0.0) + t * w.get(b, 0.0) for b in set(hf) | set(w)}
         return w
 
     def weights(self, rule, p):
@@ -1060,14 +1097,16 @@ def build_rig(c, name):
 
 def build_mesh(c, name):
     verts, faces, fmat, fsmooth, mats, vw = [], [], [], [], [], []
-    for (vs, fs, mname, smooth, rule) in c.chunks:
+    c.vranges = []
+    for (vs, fs, mname, smooth, rule, anchors) in c.chunks:
         if mname not in mats:
             mats.append(mname)
         mi = mats.index(mname)
         base = len(verts)
-        for v in vs:
+        c.vranges.append((base, base + len(vs), rule, mname))
+        for k, v in enumerate(vs):
             v = Vector(v)
-            vw.append(c.weights(rule, v))
+            vw.append(c.weights(rule, Vector(anchors[k]) if anchors is not None else v))
             verts.append(v * c.S)
         for f in fs:
             faces.append(tuple(base + i for i in f))
@@ -1555,7 +1594,7 @@ def foot_table(c):
     Returns {deg: (dy, dz)} relative to the flat foot, deg in -40..90."""
     d = c.d
     A = Vector((d["leg_x"], 0.0, d["ankle_z"]))
-    pts = [Vector(v) - A for (vs, fs, m, sm, rule) in c.chunks if rule == ("foot", 1) for v in vs]
+    pts = [Vector(v) - A for ch in c.chunks if ch[4] == ("foot", 1) for v in ch[0]]
     yz = [(p.y, p.z) for p in pts]
 
     def contact(deg):
@@ -1673,21 +1712,72 @@ def gait(rig, st, kind):
         z_lo = min(z_hi - bob, (hip_allowed(0.0, y_td, z_td) - z_hi * prof(0.0)) / (1.0 - prof(0.0)),
                    (hip_allowed(sig, y_to, z_to) - z_hi * prof(sig)) / (1.0 - prof(sig)))
 
+    def hips_off_at(ph):
+        return (0.014 * st["energy"] * math.sin(TAU * (ph - 1 / N)), 0.0, z_lo + (z_hi - z_lo) * prof(ph))
+
+    def hips_rot_at(ph):
+        c1, s1 = cyc(ph)
+        return (lean * 0.5 + 1.5 * math.cos(2 * TAU * ph), -Y0 * c1, -roll * s1)
+
+    # Run swing leg in forward kinematics: thigh angle and knee bend are keyed curves (heel kick,
+    # knee drive, reach, paw back), joined to the exact planted-foot IK angles at toe-off and
+    # touchdown, so the ankle path never folds through the hip and the thigh turns smoothly.
+    L1u, L2u = d["hip_z"] - d["knee_z"], d["knee_z"] - d["ankle_z"]
+    head = Vector((0.0, 0.0, d["pelvis_z"]))
+
+    def hip_joint(ph, side):
+        Rh = rotw(*hips_rot_at(ph))
+        return head + Vector(hips_off_at(ph)) + Rh @ (Vector((side * d["leg_x"], 0.0, d["hip_z"])) - head)
+
+    def leg_angles(J, y, z):
+        """(thigh forward angle from straight down, knee bend) in degrees reaching ankle offset (y, z)."""
+        dy, dz = y - J.y, d["ankle_z"] + z - J.z
+        dist = clamp(math.hypot(dy, dz), abs(L1u - L2u) + 1e-4, (L1u + L2u) * 0.9999)
+        al = math.acos(clamp((L1u * L1u + dist * dist - L2u * L2u) / (2 * L1u * dist), -1.0, 1.0))
+        ka = math.pi - math.acos(clamp((L1u * L1u + L2u * L2u - dist * dist) / (2 * L1u * L2u), -1.0, 1.0))
+        return math.degrees(math.atan2(-dy, -dz) + al), math.degrees(ka)
+
+    def leg_fk(J, th, ka):
+        t, k = rad(th), rad(th - ka)
+        return (J.y - L1u * math.sin(t) - L2u * math.sin(k),
+                J.z - L1u * math.cos(t) - L2u * math.cos(k) - d["ankle_z"])
+
+    swing_fk = {}
+    if run:
+        E = st["energy"]
+        for side in (1, -1):
+            off = 0.0 if side > 0 else 0.5
+            keys = []
+            for v in (0.0, 0.34, 0.67, 1.0):          # planted: sampled from the exact stance IK
+                uu = v * sig
+                y, z, _ = foot(uu)
+                keys.append((uu,) + leg_angles(hip_joint((uu - off) % 1.0, side), y, z))
+            th_td, ka_td = keys[0][1], keys[0][2]
+            th_to = keys[-1][1]
+            for w, th, ka in ((0.12, th_to - 3.0, 70.0), (0.32, 4.0, 112.0 + 10.0 * (E - 1)),
+                              (0.55, 44.0 + 10.0 * (E - 1), 100.0), (0.76, 58.0 + 10.0 * (E - 1), 56.0),
+                              (0.9, th_td + 7.0, ka_td + 5.0)):
+                keys.append((sig + w * (1 - sig), th, ka))
+            swing_fk[side] = (Curve([(k[0], k[1]) for k in keys], 1.0), Curve([(k[0], k[2]) for k in keys], 1.0))
+
     def get(ch, f):
         ph = f / N
         if ch in ("legL", "legR"):
             side = 1 if ch == "legL" else -1
             u = (ph + (0.0 if side > 0 else 0.5)) % 1.0
-            y, z, toe = foot(u)
+            if run and u >= sig:
+                thc, kac = swing_fk[side]
+                y, z = leg_fk(hip_joint(ph, side), thc(u), kac(u))
+                toe = sw_toe((u - sig) / (1 - sig))
+            else:
+                y, z, toe = foot(u)
             return (side * 0.006, y, z, toe, side * 5.0)
         bounce = abs(math.sin(TAU * ph))                    # 0 at contacts, 1 at passing
         bl = abs(math.sin(TAU * (ph - 2 / N)))
-        c1, s1 = cyc(ph)
         if ch == "hips_off":
-            zz = z_lo + (z_hi - z_lo) * prof(ph)
-            return (0.014 * st["energy"] * math.sin(TAU * (ph - 1 / N)), 0.0, zz)
+            return hips_off_at(ph)
         if ch == "hips":
-            return (lean * 0.5 + 1.5 * math.cos(2 * TAU * ph), -Y0 * c1, -roll * s1)
+            return hips_rot_at(ph)
         if ch == "spine":
             c2, s2 = cyc(ph - 2 / N)
             return (base["spine"][0] + lean * 0.3, 0.35 * Y0 * c2, 2.4 * s2)
@@ -2157,6 +2247,80 @@ def leg_metrics(legs_fk, loop):
     return step, side_
 
 
+def cloth_layer(rule, mname, skin):
+    """Layer of a chunk for the clipping check: bare legs < trouser legs < pelvis/skirt < top < shawl.
+    None = not checked (head, arms, feet, accessories)."""
+    kind = rule[0] if isinstance(rule, tuple) else rule
+    if kind == "leg":
+        return 1.0 if mname == skin else 1.5
+    if kind in ("pelvis", "skirt"):
+        return 2.0
+    if kind == "torso":
+        return None if mname == skin else 3.0
+    if kind == "cape":
+        return 4.0
+    return None
+
+
+def layer_check(c, body, set_pose, frames, near=0.035, far=0.08, verbose=False):
+    """Cloth clipping check on the skinned mesh: every vertex of an inner layer that is hidden inside
+    an outer layer at rest (a ray along its normal leaves through an outer surface within `near`)
+    must still be hidden in the pose (within `far`). set_pose(frame) poses the rig.
+    Returns {frame: (exposed count, {material: count})}."""
+    from mathutils.bvhtree import BVHTree
+    me = body.data
+    vlayer = [None] * len(me.vertices)
+    vmat = [None] * len(me.vertices)
+    for (a, b, rule, mname) in c.vranges:
+        L = cloth_layer(rule, mname, c.skin)
+        for i in range(a, b):
+            vlayer[i], vmat[i] = L, mname
+    polys = [tuple(p.vertices) for p in me.polygons]
+    play = [vlayer[p[0]] for p in polys]            # a face lies in one chunk
+    levels = sorted({L for L in vlayer if L is not None})
+
+    def trees(co):
+        out = {}
+        for L in levels:
+            ps = [p for p, pl in zip(polys, play) if pl is not None and pl > L]
+            out[L] = BVHTree.FromPolygons(co, ps, all_triangles=False) if ps else None
+        return out
+
+    def covered(tr, p, n, dist):
+        if tr is None:
+            return False
+        hit = tr.ray_cast(p, n, dist)
+        return hit[0] is not None and hit[1].dot(n) > 0.0
+
+    co0 = [v.co.copy() for v in me.vertices]
+    tr0 = trees(co0)
+    down = Vector((0.0, 0.0, -0.7))
+    # hidden at rest = covered along the normal and along the normal tipped down (so vertices
+    # peeking out right at a hem line, which are visible anyway, are not counted)
+    test = [i for i, L in enumerate(vlayer) if L is not None and L in tr0 and
+            covered(tr0[L], co0[i], me.vertices[i].normal, near * c.S) and
+            covered(tr0[L], co0[i], (me.vertices[i].normal + down).normalized(), near * c.S)]
+    res = {}
+    for f in frames:
+        set_pose(f)
+        dg = bpy.context.evaluated_depsgraph_get()
+        ev = body.evaluated_get(dg)
+        em = ev.to_mesh()
+        co = [v.co.copy() for v in em.vertices]
+        nr = [v.normal.copy() for v in em.vertices]
+        ev.to_mesh_clear()
+        tr = trees(co)
+        bad = {}
+        for i in test:
+            if not covered(tr[vlayer[i]], co[i], nr[i], far * c.S):
+                bad[vmat[i]] = bad.get(vmat[i], 0) + 1
+                if verbose:
+                    print("    exposed f%d v%d %s L%.1f rest=(%.3f %.3f %.3f)" % ((f, i, vmat[i], vlayer[i]) +
+                                                                            tuple(co0[i] / c.S)))
+        res[f] = (sum(bad.values()), bad)
+    return res
+
+
 def bake_actions(rig, st, names=None):
     """Evaluate every clip at each frame and write it as Bezier keys into one action per clip."""
     ob = rig.ob
@@ -2517,7 +2681,8 @@ def build_preman():
              hip_z=0.4, leg_x=0.092, knee_z=0.245, ankle_z=0.085, toe_y=-0.1, thigh_r=0.062, knee_r=0.054,
              shin_r=0.052, ankle_r=0.042, pelvis_z=0.415, spine_z=0.5, chest_z=0.585, neck_z=0.76, head_z=0.81,
              sh_x=0.2, sh_z=0.71, arm_a=30.0, l_up=0.135, l_fore=0.12, l_hand=0.09, up_r=0.05, elbow_r=0.044,
-             fore_r=0.045, wrist_r=0.036, hand_k=1.35, head_c=1.012, head_r=(0.222, 0.208, 0.2))
+             fore_r=0.045, wrist_r=0.036, hand_k=1.35, head_c=1.012, head_r=(0.222, 0.208, 0.2),
+             crotch_z=0.315)
     SK, DK, INK = "M_SkinTan", "M_Dark", "M_Ink"
     face(c, SK, eyes="narrow", mouth="frown", brows="angry", hl=None)
     hair(c, DK, front=60, side=90, back=122, lift=0.006, rim=None, seg=22, rings=4)
