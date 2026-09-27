@@ -1527,7 +1527,7 @@ def fruit_bunch(name, center, axis, length, rnd, mat_, parent=None, n=54, width=
         U, V_ = _frame(D)
         # colour: orange at the stalk end -> maroon-red at the apex / outer side, random per fruitlet
         t_ax = (zc + 0.94) / 1.91
-        kk = redness + 0.16 + 0.5 * t_ax + rnd.uniform(-0.2, 0.2)
+        kk = redness + 0.22 + 0.5 * t_ax + rnd.uniform(-0.2, 0.2)
         if outv is not None:
             kk += 0.15 * max(0.0, (R @ nrm).dot(outv))
         kk = clamp01(kk)
@@ -1602,7 +1602,7 @@ PALMS = {
     # gap of +-`gap` deg in the spreading tiers; the spreading fronds attach above them.
     "sawit_3": dict(H=3.4, r=0.31, wr=0.7, boots=48, boot=(0.42, 0.3, 0.14), rings=7, spear=1.1, segs=7,
                     fruits=4, epi=1, crown_r=0.24, ao=0.55, fruit=(0.86, 0.94), fruit_z=(2.2, 1.9), fruit_r=0.46,
-                    fruit_out=0.45, fruit_az=0.0, gap=34, pet=0.18,
+                    fruit_out=0.32, fruit_az=0.0, gap=34, pet=0.18,
                     tiers=[dict(n=8, el=(76, 62), droop=(45, 60), zr=(-0.12, 0.0), L=(2.1, 2.4), pw=1.5),
                            dict(n=8, el=(58, 50), droop=(74, 86), zr=(0.02, 0.1), L=(2.9, 3.15), pw=2.1, win=True),
                            dict(n=6, el=(56, 50), droop=(70, 80), zr=(0.12, 0.2), L=(2.5, 2.7), pw=2.2, win=True,
@@ -1714,8 +1714,8 @@ def build_palm(name, P, seed=3):
             c = out * (trunk_radius(z, H, r) + P["fruit_r"]) + UP * z
             axis = out * P.get("fruit_out", 0.4) + side - UP * 0.9
             stalk_to = out * trunk_radius(z, H, r) * 0.8 + UP * (z + ln * 0.33)
-            fruit_bunch(f"Fruit_{k}", c, axis, ln, rnd, mfr, fr, n=P.get("fruit_n", 50), width=0.35, out=out,
-                        stalk_to=stalk_to, redness=rnd.uniform(-0.05, 0.1), fsize=0.1)
+            fruit_bunch(f"Fruit_{k}", c, axis, ln, rnd, mfr, fr, n=P.get("fruit_n", 50), width=0.33, out=out,
+                        stalk_to=stalk_to, redness=rnd.uniform(-0.08, 0.06), fsize=0.1, dark=0.14)
     return root
 
 
@@ -2470,18 +2470,6 @@ def clamp_floor(o, z0=0.0):
             v.co.z = z0
     o.data.update()
     return o
-
-
-def moss_faces(o, m_moss, thr=0.5, amp=0.3, freq=1.6, mi=None):
-    """Assign the moss material to upward-facing faces with a noisy border."""
-    me = o.data
-    if m_moss.name not in [m.name for m in me.materials]:
-        me.materials.append(m_moss)
-    idx = [m.name for m in me.materials].index(m_moss.name)
-    for p in me.polygons:
-        c = p.center
-        if p.normal.z > thr + amp * noise.noise(c * freq + Vector((3.1, 1.7, 0.4))):
-            p.material_index = idx
 
 
 def lin2hex(c):
