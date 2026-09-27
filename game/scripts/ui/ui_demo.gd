@@ -4,7 +4,10 @@ extends Node
 ##   godot --path game --rendering-driver opengl3 --resolution 1280x720 -- --uidemo=dialogs --shots=/tmp/shots
 ## Scenarios: dialogs (HUD, villager dialog with 4+ choices, speaker change,
 ## shop menus, morning report, pause, status), touch (shorter, touch layout),
-## quick (dialog layouts only), title. Quits when done.
+## quick (dialog layouts only), title, layers / layers_touch (lean modal
+## layering check on low graphics, ~20 s: run at 1280x720, 915x412, 720x1280;
+## drop stand-in PNGs into assets/portraits/ of a test copy to see the
+## half-body layout). Quits when done.
 
 var ui: Node
 var scenario := "dialogs"

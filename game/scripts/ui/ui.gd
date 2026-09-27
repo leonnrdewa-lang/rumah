@@ -1,10 +1,13 @@
 extends CanvasLayer
 ## All 2D interface, styled after art/reference/07_target_gameplay.png:
 ## cream rounded pills with round icon badges (money, day/clock, Reputasi,
-## Kecurigaan, energy, quest), key-prompt pills bottom-left, a tool hotbar
-## bottom-right, visual-novel dialogs with half-body anime portraits, shop /
+## Kecurigaan, energy, quest), key-prompt pills bottom-left (a tap badge next
+## to the action button on touch screens), a tool hotbar bottom-right, dialogs
+## (round portrait badge + speech bubble + 2-column choice pills; half-body
+## anime portraits take over when assets/portraits/<name>.png exist), shop /
 ## list menus, morning report, pause/status panels, the title screen and the
-## on-screen touch controls for phones.
+## on-screen touch controls for phones. Open dialogs / menus push the HUD
+## pieces they would cover off-screen (see _sync_hud).
 
 const DialogView := preload("res://scripts/ui/ui_dialog.gd")
 const PortraitStage := preload("res://scripts/ui/ui_portrait.gd")

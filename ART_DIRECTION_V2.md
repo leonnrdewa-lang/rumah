@@ -115,6 +115,18 @@ CDN is unreachable from this container, the job ids/URLs are recorded in
 * Shaders take an optional albedo texture + alpha scissor, multiply by vertex
   colour (AO), keep the see-through hole around the player.
 * Camera ~45° pitch, ~16 m distance, FOV ~35.
-* Post: glow (subtle), colour adjustment (saturation ~1.12, contrast ~1.05).
-* Undergrowth is scattered densely with chunked MultiMeshes (24 m chunks) and
-  thinned by the "Hemat baterai" quality setting.
+  **Chosen (polish round, `world.gd`): 45° pitch, 16.5 m, FOV 35 (≈19 m of ground
+  across 16:9 at the player).** The look point sits 1.6 m up-screen (north) of the
+  player, plus ~0.3 s of walking look-ahead, so the player stands a little below the
+  centre and the crowns of the palms just behind them stay in frame. Portrait phones
+  pull back (distance × (2 − aspect), FOV up to 42°: ~8.5 m across at 9:19.5). The
+  shadow range follows the ground at the frame's top edge (~31 m at 16:9); camera far
+  plane 90 m. (v2 had shipped 52° / 17 m because at 45° without the look-ahead the
+  crowns next to the player left the top edge.)
+* Post: glow (subtle), colour adjustment (saturation 1.0 since the polish round:
+  the palette is set in the materials/light instead, contrast ~1.05).
+* Undergrowth is scattered densely (`blender/terrain.py`, ~19k plants: modelled
+  ferns / shrubs / keladi in thickets over a carpet of grass cards and the cheap
+  procedural `fern_low` / `leaf_low` rosettes built in `undergrowth.gd`) and drawn as
+  one MultiMesh per model holding only the plants under the camera's view (4 m cells
+  re-packed as the view moves); "Hemat baterai" draws half of every cell.
