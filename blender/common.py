@@ -258,17 +258,76 @@ def count_tris(root):
     return n
 
 
-def export_glb(root, name):
-    """Export `root` and all of its children to game/assets/models/<name>.glb."""
+def bake_vertex_ao(objs, samples=48, distance=1.0, floor=0.45, gamma=0.8, ground=True):
+    """Bake Cycles ambient occlusion into an active colour attribute `Col` on each mesh.
+
+    The AO is remapped to [floor, 1] (never pitch black) and softened with `gamma`.
+    `ground=True` adds a temporary ground plane so bases darken where they meet the floor.
+    Modifiers are applied first so the colours match the exported geometry.
+    """
+    objs = [o for o in objs if o.type == "MESH"]
+    if not objs:
+        return
+    scene = bpy.context.scene
+    scene.render.engine = "CYCLES"
+    scene.cycles.device = "CPU"
+    scene.cycles.samples = samples
+    if scene.world is None:
+        scene.world = bpy.data.worlds.new("World")
+    scene.world.light_settings.distance = distance
+    tmp = None
+    if ground:
+        bpy.ops.mesh.primitive_plane_add(size=200, location=(0, 0, 0))
+        tmp = _active()
+        tmp.name = "_AOGround"
+    for o in objs:
+        apply_modifiers(o)
+        me = o.data
+        if "Col" in me.color_attributes:
+            me.color_attributes.remove(me.color_attributes["Col"])
+        attr = me.color_attributes.new("Col", "BYTE_COLOR", "CORNER")
+        me.color_attributes.active_color = attr
+        me.color_attributes.render_color_index = me.color_attributes.active_color_index
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in objs:
+        o.select_set(True)
+    bpy.context.view_layer.objects.active = objs[0]
+    scene.render.bake.target = "VERTEX_COLORS"
+    bpy.ops.object.bake(type="AO")
+    for o in objs:
+        attr = o.data.color_attributes["Col"]
+        for d in attr.data:
+            v = d.color[0] ** gamma
+            v = floor + (1.0 - floor) * v
+            d.color = (v, v, v, 1.0)
+    if tmp is not None:
+        bpy.data.objects.remove(tmp, do_unlink=True)
+
+
+def _has_colors(root):
+    return any(o.type == "MESH" and len(o.data.color_attributes) > 0 for o in all_descendants(root))
+
+
+def export_glb(root, name, animations=False):
+    """Export `root` and all of its children to game/assets/models/<name>.glb.
+
+    Vertex colours (baked AO, attribute `Col`) are exported when present; pass
+    animations=True for rigged characters (all actions are exported).
+    """
     bpy.ops.object.select_all(action="DESELECT")
     for o in all_descendants(root):
         o.select_set(True)
     path = os.path.join(MODELS_DIR, name + ".glb")
-    bpy.ops.export_scene.gltf(
+    kwargs = dict(
         filepath=path, export_format="GLB", use_selection=True, export_apply=True,
-        export_yup=True, export_materials="EXPORT", export_animations=False,
+        export_yup=True, export_materials="EXPORT", export_animations=animations,
         export_extras=False, export_cameras=False, export_lights=False,
+        export_vertex_color="ACTIVE" if _has_colors(root) else "NONE",
     )
+    if animations:
+        kwargs.update(export_animation_mode="ACTIONS", export_skins=True, export_force_sampling=True,
+                      export_optimize_animation_size=True)
+    bpy.ops.export_scene.gltf(**kwargs)
     print(f"[export] {name}.glb  tris={count_tris(root)}")
     return path
 
