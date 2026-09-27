@@ -8,7 +8,8 @@ extends RefCounted
 
 
 static func run(at: Node) -> void:
-	## Optional `--anim-only=loco,work,talk,wave,worker,village` runs a subset.
+	## Optional `--anim-only=bench,loco,work,talk,wave,worker,village,offscreen`
+	## runs a subset; `--anim-noshots` skips the bench's frame captures.
 	var only := ""
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--anim-only="):
@@ -19,6 +20,17 @@ static func run(at: Node) -> void:
 	GS.hour = 9.0   # villagers are up and about
 	var pl: Player = world.player
 	var tree: SceneTree = at.get_tree()
+	if _on(only, "bench"):
+		var fails: Array = await AnimBench.run(at)
+		print("[anim] BENCH %s" % ("PASS" if fails.is_empty() else "FAIL: " + ", ".join(fails)))
+	if only != "" and only.split(",").size() == 1 and _on(only, "bench"):
+		return
+	if _on(only, "offscreen"):
+		await _offscreen_check(at)
+	# the dense undergrowth hides the close follow camera: off while filming
+	var ug: Node3D = world.get("undergrowth")
+	if ug:
+		ug.visible = false
 	var cam := Camera3D.new()
 	cam.fov = 38.0
 	world.add_child(cam)
@@ -201,27 +213,52 @@ static func run(at: Node) -> void:
 	# village life with the normal game camera: chats, work, glances
 	tree.process_frame.disconnect(follow)
 	world.camera.current = true
+	if ug:
+		ug.visible = true
 	if not _on(only, "village"):
 		cam.queue_free()
 		return
 	at.tp(-4, 4)
-	for i in 10:
-		await at.wait(2.0)
+	# count chats that start and visits that end in a chat or fail
+	var partner_prev := {}
+	var chat_starts := 0
+	var pairs := {}
+	var visits := {}
+	var visit_ok := 0
+	var visit_fail := 0
+	var steps := int(120.0 / 0.25)
+	for i in steps:
+		await at.wait(0.25)
 		var chat := 0
 		var busy := 0
 		var visit := 0
 		for n in world.npcs.values() + world.extras.values() + world.worker_npcs:
-			if n._chat_with != null:
+			var partner: Npc = n._chat_with
+			if partner != null:
 				chat += 1
+				if partner_prev.get(n) != partner and n.display_name < partner.display_name:
+					chat_starts += 1
+					pairs[n.display_name + "+" + partner.display_name] = true
+			partner_prev[n] = partner
 			if n._visit != null:
 				visit += 1
+				visits[n] = n._visit
+			elif visits.has(n):
+				if n._chat_with == visits[n]:
+					visit_ok += 1
+				else:
+					visit_fail += 1
+				visits.erase(n)
 			if n.anim.is_busy():
 				busy += 1
-		print("[anim] village t=%d chatting=%d visiting=%d busy=%d" % [i * 2, chat, visit, busy])
-		if i == 0 or i == 9:
+		if i % 8 == 7:
+			print("[anim] village t=%d chatting=%d visiting=%d busy=%d" % [(i + 1) / 4, chat, visit, busy])
+		if i == 0 or i == steps - 1:
 			for n in world.npcs.values() + world.extras.values():
 				print("[anim]     %s pos=(%.0f,%.0f) idle=%s cd=%.1f wait=%.1f vis=%s" % [n.display_name, n.position.x, n.position.z,
 					n.is_idle(), n._social_cd, n._wait, n.visible])
+	print("[anim] village 120 s: chats started=%d between %d pairs %s; visits ok=%d failed=%d" % [chat_starts,
+		pairs.size(), pairs.keys(), visit_ok, visit_fail])
 	await at.shot("village", 1)
 
 	# every character model in the village, sanity-checked
@@ -232,6 +269,36 @@ static func run(at: Node) -> void:
 			n_skinned += 1
 	print("[anim] npcs skinned=%d / %d" % [n_skinned, all.size()])
 	cam.queue_free()
+
+
+static func _offscreen_check(at: Node) -> void:
+	## A villager whose work clip starts near the player must not freeze once the
+	## player leaves (beyond Npc.ANIM_RANGE it is no longer animated).
+	var world: Node = at.world
+	var n: Npc = world.npcs.get("petani")
+	if n == null:
+		return
+	at.tp(n.global_position.x + 3.0, n.global_position.z + 3.0)
+	await at.wait(0.3)
+	n.anim.play_action("harvest")
+	await at.wait(0.2)
+	var busy0 := n.anim.is_busy()
+	var far := Vector3.ZERO
+	for p in [Vector3(-17, 0, 30), Vector3(56, 0, 20), Vector3(-3, 0, 22), Vector3(0, 0, 14), Vector3(8, 0, 5)]:
+		if Vector2(p.x - n.position.x, p.z - n.position.z).length() > far.distance_to(n.position) or far == Vector3.ZERO:
+			far = p
+	at.tp(far.x, far.z)
+	await at.wait(2.0)
+	var dist: float = world.player.global_position.distance_to(n.global_position)
+	var busy1 := n.anim.is_busy()
+	var p0 := n.position
+	var moved := 0.0
+	for i in 30:
+		await at.wait(0.5)
+		moved = maxf(moved, n.position.distance_to(p0))
+	var ok: bool = busy0 and not busy1 and dist > Npc.ANIM_RANGE
+	print("[anim] offscreen %s: busy at start=%s, 2 s after the player went %.0f m away busy=%s, wandered %.1f m in 15 s" % [
+		"PASS" if ok else "FAIL", busy0, dist, busy1, moved])
 
 
 static func _on(only: String, part: String) -> bool:

@@ -1466,8 +1466,8 @@ def _frame(D):
     return U, D.cross(U)
 
 
-def fruit_bunch(name, center, axis, length, rnd, mat_, parent=None, n=44, width=0.4, dark=0.2, spines=10, sides=6,
-                out=None, stalk_to=None, fsize=0.115, redness=0.0):
+def fruit_bunch(name, center, axis, length, rnd, mat_, parent=None, n=54, width=0.35, dark=0.2, spines=10, sides=6,
+                out=None, stalk_to=None, fsize=0.1, redness=0.0):
     """Oil-palm fresh fruit bunch (TBS): an egg-shaped core packed with `n` small rounded fruitlets.
     Each fruitlet is a low cone (6 tris) with custom dome normals, so it shades like a round bead;
     ~`dark` of them get a small near-black cap (mid ring + dark apex).  Colour by UV on the fruit.png ramp:
@@ -1498,16 +1498,16 @@ def fruit_bunch(name, center, axis, length, rnd, mat_, parent=None, n=44, width=
     # core: deep maroon, dark (seen only in the crevices)
     verts, faces = ico_data(2)
     base = len(g.v)
-    u_core = fruit_u(1.0)
+    u_core = fruit_u(0.9)
     for co in verts:
         nn = co.normalized()
-        g.vert(W(core_pt(nn)), grey(0.62), nrm=R @ core_nrm(nn))
+        g.vert(W(core_pt(nn)), grey(0.8), nrm=R @ core_nrm(nn))
     for f in faces:
         ctr = sum((verts[i] for i in f), Vector()) / 3
         g.face([base + i for i in f], 0, ref=R @ ctr, smooth=True, uv=[uv_of(u_core)] * 3)
     rf0 = fsize * length
     for k in range(n):
-        zc = lerp(0.96, -0.8, (k + 0.5) / n) + rnd.uniform(-0.025, 0.025)
+        zc = lerp(0.97, -0.94, (k + 0.5) / n) + rnd.uniform(-0.02, 0.02)
         ang = k * GOLDEN + rnd.uniform(-0.15, 0.15)
         rc = math.sqrt(max(0.0, 1 - zc * zc))
         c = Vector((rc * math.cos(ang), rc * math.sin(ang), zc))
@@ -1520,12 +1520,12 @@ def fruit_bunch(name, center, axis, length, rnd, mat_, parent=None, n=44, width=
         hf = rf * rnd.uniform(0.8, 0.95)  # low bead, not a spike
         U, V_ = _frame(D)
         # colour: orange at the stalk end -> maroon-red at the apex / outer side, random per fruitlet
-        t_ax = (zc + 0.8) / 1.76
-        kk = redness + 0.12 + 0.5 * t_ax + rnd.uniform(-0.2, 0.2)
+        t_ax = (zc + 0.94) / 1.91
+        kk = redness + 0.1 + 0.5 * t_ax + rnd.uniform(-0.2, 0.2)
         if outv is not None:
-            kk += 0.22 * max(0.0, (R @ nrm).dot(outv))
+            kk += 0.15 * max(0.0, (R @ nrm).dot(outv))
         kk = clamp01(kk)
-        u_base, u_top = fruit_u(kk + 0.14), fruit_u(kk - 0.16)
+        u_base, u_top = fruit_u(kk + 0.14), fruit_u(kk - 0.1)
         ph = rnd.uniform(0, 6.28)
         dirs = [U * math.cos(ph + 2 * math.pi * s_ / sides) + V_ * math.sin(ph + 2 * math.pi * s_ / sides)
                 for s_ in range(sides)]
@@ -1536,7 +1536,7 @@ def fruit_bunch(name, center, axis, length, rnd, mat_, parent=None, n=44, width=
         P0 = W(p)
         if rnd.random() < dark:
             # red body -> small near-black cap
-            mid = [g.vert(W(p + D * hf * 0.62 + d * rf * 0.42), grey(0.97), nrm=R @ (d * 0.5 + D))
+            mid = [g.vert(W(p + D * hf * 0.64 + d * rf * 0.38), grey(0.97), nrm=R @ (d * 0.5 + D))
                    for d in dirs]
             tip = g.vert(W(p + D * hf * 0.78), grey(1.0), nrm=Dw)
             u_mid = fruit_u(max(kk, 0.5))
@@ -1575,7 +1575,7 @@ def fruit_bunch(name, center, axis, length, rnd, mat_, parent=None, n=44, width=
         top = W(Vector((0, 0, -ca * 0.9)))
         tube(g, [top, (top + Vector(stalk_to)) * 0.5 + Vector((0, 0, 0.04)), Vector(stalk_to)],
              [length * 0.07, length * 0.06, length * 0.055], 4, 0, smooth=True,
-             col_fn=lambda j, i, q: grey(0.7), uv_fn=lambda q: uv_of(U_SPINE))
+             col_fn=lambda j, i, q: grey(0.75), uv_fn=lambda q: uv_of(fruit_u(0.97)))
     return g.obj(name, [mat_], parent)
 
 
@@ -1594,8 +1594,8 @@ PALMS = {
     # sawit_3 must show its ripe bunches from the 45 deg game camera at ANY yaw (the game rotates palms at random):
     # 4 bunches hang low on the trunk (fruit_z), well out from it (fruit_r past the trunk surface), each under a
     # gap of +-`gap` deg in the spreading tiers; the spreading fronds attach above them.
-    "sawit_3": dict(H=3.4, r=0.31, wr=0.62, boots=48, boot=(0.42, 0.3, 0.14), rings=7, spear=1.1, segs=7,
-                    fruits=4, epi=1, crown_r=0.24, ao=0.55, fruit=(0.66, 0.74), fruit_z=(2.4, 2.1), fruit_r=0.42,
+    "sawit_3": dict(H=3.4, r=0.31, wr=0.66, boots=48, boot=(0.42, 0.3, 0.14), rings=7, spear=1.1, segs=7,
+                    fruits=4, epi=1, crown_r=0.24, ao=0.55, fruit=(0.86, 0.94), fruit_z=(2.4, 2.1), fruit_r=0.36,
                     fruit_out=0.45, fruit_az=0.0, gap=30, pet=0.18,
                     tiers=[dict(n=6, el=(76, 62), droop=(45, 60), zr=(-0.12, 0.0), L=(2.1, 2.4), pw=1.5),
                            dict(n=8, el=(54, 44), droop=(74, 86), zr=(0.02, 0.1), L=(2.75, 3.0), pw=2.1, win=True),
@@ -1708,8 +1708,8 @@ def build_palm(name, P, seed=3):
             c = out * (trunk_radius(z, H, r) + P["fruit_r"]) + UP * z
             axis = out * P.get("fruit_out", 0.4) + side - UP * 0.9
             stalk_to = out * trunk_radius(z, H, r) * 0.7 + UP * (z + ln * 0.5)
-            fruit_bunch(f"Fruit_{k}", c, axis, ln, rnd, mfr, fr, n=P.get("fruit_n", 44), width=0.4, out=out,
-                        stalk_to=stalk_to, redness=rnd.uniform(-0.08, 0.08))
+            fruit_bunch(f"Fruit_{k}", c, axis, ln, rnd, mfr, fr, n=P.get("fruit_n", 50), width=0.35, out=out,
+                        stalk_to=stalk_to, redness=rnd.uniform(-0.05, 0.1), fsize=0.1)
     return root
 
 
@@ -1774,8 +1774,8 @@ def build_tbs():
     L = 0.5
     axis = Vector((1.0, 0.15, 0.25)).normalized()
     stalk_to = -axis * (L * 0.5 + 0.13) + Vector((0.0, 0.0, -0.02))
-    o = fruit_bunch("tbs_mesh", (0, 0, 0), axis, L, rnd, M_fruit(), None, n=32, width=0.42, spines=6,
-                    stalk_to=stalk_to, fsize=0.13)
+    o = fruit_bunch("tbs_mesh", (0, 0, 0), axis, L, rnd, M_fruit(), None, n=38, width=0.37, spines=6, sides=5,
+                    stalk_to=stalk_to, fsize=0.105, dark=0.15, redness=0.08)
     bpy.context.view_layer.update()
     zmin = min(v.co.z for v in o.data.vertices)
     for v in o.data.vertices:
@@ -2827,7 +2827,7 @@ def asset(name, builder, views=(), **kw):
 asset("sawit_0", build_sawit_0, icon="icon_bibit", icon_kw=dict(pitch_deg=25, margin=1.0))
 asset("sawit_1", lambda: build_palm("sawit_1", PALMS["sawit_1"], seed=5))
 asset("sawit_2", lambda: build_palm("sawit_2", PALMS["sawit_2"], seed=7))
-asset("sawit_3", lambda: build_palm("sawit_3", PALMS["sawit_3"], seed=3),
+asset("sawit_3", lambda: build_palm("sawit_3", PALMS["sawit_3"], seed=4),
       views=(("side", 8, 0, 1.0), ("close", 45, 0, 0.55), ("top", 88, 0, 1.0)))
 asset("tbs", build_tbs, icon="icon_tbs", icon_kw=dict(pitch_deg=48, yaw_deg=20, margin=0.95))
 # fern_a: tall pakis clump (~0.65 m tall, ~1.5 m wide), 16 fronds in 3 tiers

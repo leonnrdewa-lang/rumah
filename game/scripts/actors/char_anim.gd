@@ -404,7 +404,7 @@ func _init_v2() -> void:
 func _update_v2(delta: float, speed: float, t: float) -> void:
 	var moving := speed > 0.12
 	if moving:
-		_running = speed > (RUN_OFF if _running else RUN_ON)
+		_running = speed > (_run_off if _running else _run_on)
 	var want_kind := "idle"
 	if moving:
 		want_kind = "run" if _running else "walk"
@@ -588,7 +588,7 @@ func _build_gait() -> Dictionary:
 	var foot := skel.find_bone("foot_L")
 	if foot < 0:
 		foot = skel.find_bone("shin_L")
-	for clip in ["walk", "run"]:
+	for clip: String in ["walk", "run"]:
 		var nm := _resolve(clip)
 		if nm == "" or nm != clip and clip == "run":
 			continue
@@ -614,7 +614,7 @@ func _build_gait() -> Dictionary:
 		for s in spans:
 			g.append(s / spans[0] if spans[0] > 0.001 else 1.0)
 		gain[clip] = g
-		var key := clip + "_speed"
+		var key: String = clip + "_speed"
 		if ex.has(key) and float(ex[key]) > 0.05:
 			nat[clip] = float(ex[key])
 			src = "extras"

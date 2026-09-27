@@ -10,6 +10,8 @@ const WAVE_RANGE := 4.5
 const LOOK_RANGE := 6.0
 const ANIM_RANGE := 32.0   # beyond this from the player (off screen) the model is not animated
 const NO_WAVE := ["char_preman", "char_petugas"]
+const VISIT_RANGE := 16.0  # m: farthest neighbour a villager strolls over to
+const VISIT_LEASH := 8.0   # m: how far past its wander radius a villager goes visiting
 
 var vid := ""            # villager id in GS.villagers, or "" for extras
 var display_name := ""
@@ -151,6 +153,7 @@ func _process(delta: float) -> void:
 	_wave_cd -= delta
 	_social_cd -= delta
 	_work_cd -= delta
+	_expect_t -= delta
 	if talking and talk_target:
 		_end_chat()
 		_visit = null
@@ -193,7 +196,7 @@ func _process(delta: float) -> void:
 	var to := goal - position
 	to.y = 0.0
 	var want := 0.0
-	if to.length() > 0.25 and (_wait <= 0.0 or not awake):
+	if to.length() > 0.25 and ((_wait <= 0.0 and not is_expecting()) or not awake):
 		want = speed * (1.6 if not awake else (0.75 if sad else 1.0))
 		want = minf(want, 0.5 + to.length() * 1.6)   # ease into the stop
 	_cur_speed = move_toward(_cur_speed, want, delta * (3.5 if want > _cur_speed else 5.0))
@@ -208,9 +211,15 @@ func _process(delta: float) -> void:
 		_wait -= delta
 		if _visit != null:
 			_arrive_visit()
+		elif is_expecting():
+			# a neighbour is on the way over: stay put and watch them come
+			if _expect.global_position.distance_to(global_position) < 7.0:
+				_face(_expect.global_position, delta)
+				anim.look_at_point(_expect.global_position + Vector3(0, 0.85, 0))
 		else:
 			_idle_behaviour(pl, pdist)
-		if _wait <= 0.0 and to.length() <= 0.25 and not anim.is_busy() and _chat_with == null and _visit == null:
+		if _wait <= 0.0 and to.length() <= 0.25 and not anim.is_busy() and _chat_with == null and _visit == null \
+				and not is_expecting():
 			_pick_target()
 	elif not awake:
 		_visit = null
@@ -254,10 +263,10 @@ func _idle_behaviour(pl: Node3D, pdist: float) -> void:
 	if _social_cd <= 0.0 and world and _chat_with == null and _visit == null and not model_name in NO_WAVE:
 		_social_cd = randf_range(7.0, 15.0)
 		var best: Npc = null
-		var bd := 16.0
+		var bd := VISIT_RANGE
 		for other in _neighbours():
 			if other == self or not is_instance_valid(other) or not other.is_idle() or other.is_worker() \
-					or other._visit != null or other.model_name in NO_WAVE:
+					or other._visit != null or other.is_expecting() or other.model_name in NO_WAVE:
 				continue
 			var d: float = other.global_position.distance_to(global_position)
 			if d < bd:
@@ -267,16 +276,23 @@ func _idle_behaviour(pl: Node3D, pdist: float) -> void:
 			return
 		if bd < 2.6:
 			_chat(best)
-		elif randf() < 0.65:
+		elif radius >= 2.0 and randf() < 0.7:
+			# stroll over (people minding a post - the warung, the calo's corner -
+			# stay there and only chat with whoever comes by)
 			var away := global_position - best.global_position
 			away.y = 0.0
 			away = away.normalized() if away.length() > 0.01 else Vector3.RIGHT
 			var spot := best.position + away * 1.3
-			if _clear_path(position, spot):
+			var home_d := Vector2(spot.x - anchor.x, spot.z - anchor.z).length()
+			if home_d <= radius + VISIT_LEASH and _clear_path(position, spot):
 				_target = spot
 				_wait = 0.0
 				_visit = best
-				best._wait = maxf(best._wait, 9.0)
+				# the neighbour waits for as long as the walk takes (plus a margin)
+				var eta := position.distance_to(spot) / maxf(speed, 0.3) + 3.0
+				best._expect = self
+				best._expect_t = eta + 6.0
+				best._wait = maxf(best._wait, eta)
 
 
 func _clear_path(a: Vector3, b: Vector3) -> bool:
@@ -299,8 +315,22 @@ func _arrive_visit() -> void:
 		return
 	var v := _visit
 	_visit = null
-	if is_instance_valid(v) and v.is_idle() and v.global_position.distance_to(global_position) < 2.8:
+	if not is_instance_valid(v):
+		return
+	if v._expect == self:
+		v._expect = null
+	if v.is_idle() and v.global_position.distance_to(global_position) < 2.8:
 		_chat(v)
+
+
+func is_expecting() -> bool:
+	## A neighbour is walking over to chat: stay put until they arrive or give up.
+	if _expect == null:
+		return false
+	if not is_instance_valid(_expect) or _expect._visit != self or _expect_t <= 0.0 or not is_awake():
+		_expect = null
+		return false
+	return true
 
 
 func _neighbours() -> Array:

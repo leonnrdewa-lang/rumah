@@ -367,14 +367,13 @@ func _chimney_tops() -> Array[Vector3]:
 
 func _build_smoke() -> void:
 	var tops := _chimney_tops()
-	var tex := _soft_dot(64, 0.35)
+	var tex := _soft_dot(64, 0.45)
 	var mat := _particle_material(tex, Color(1, 1, 1, 1))
 	for top in tops:
 		var p := CPUParticles3D.new()
 		p.name = "ChimneySmoke"
-		p.amount = 14
+		p.amount = 18
 		p.lifetime = 5.0
-		p.preprocess = 5.0
 		p.mesh = _quad(1.0, mat)
 		p.direction = Vector3.UP
 		p.spread = 12.0
@@ -385,17 +384,20 @@ func _build_smoke() -> void:
 		p.damping_max = 0.3
 		p.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
 		p.emission_sphere_radius = 0.25
-		p.scale_amount_min = 0.7
-		p.scale_amount_max = 1.0
+		p.scale_amount_min = 1.0
+		p.scale_amount_max = 1.4
 		var curve := Curve.new()
 		curve.add_point(Vector2(0, 0.5))
 		curve.add_point(Vector2(1, 2.6))
 		p.scale_amount_curve = curve
-		p.color_ramp = _fade_ramp(Color(0.93, 0.91, 0.86, 0.7), 0.12)
+		p.color_ramp = _fade_ramp(Color(0.95, 0.94, 0.9, 0.9), 0.1)
 		p.local_coords = false
 		p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(p)
 		p.global_position = top + Vector3(0, 0.2, 0)
+		# simulate ahead only once it sits on the chimney, so no puffs start at the origin
+		p.preprocess = 5.0
+		p.restart()
 		_smoke.append(p)
 
 
