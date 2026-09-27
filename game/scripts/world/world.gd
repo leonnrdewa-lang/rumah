@@ -35,6 +35,7 @@ var extras := {}
 var worker_npcs: Array = []
 var temp_nodes: Array = []
 var boats: Array = []
+var player_light: OmniLight3D
 var tents: Array = []
 var lamps: Array[OmniLight3D] = []
 var player: Player
@@ -334,7 +335,7 @@ func _build_buildings() -> void:
 			var p0 := xf * Vector3(aabb.position.x, 0, aabb.position.z)
 			var p1 := xf * Vector3(aabb.end.x, 0, aabb.end.z)
 			walk_rects.append([minf(p0.x, p1.x) + 0.2, minf(p0.z, p1.z) + 0.2, maxf(p0.x, p1.x) - 0.2,
-				maxf(p0.z, p1.z) - 0.2, aabb.end.y - 0.05 + node.position.y])
+				maxf(p0.z, p1.z) - 0.2, node.position.y + 0.3])  # deck top is 0.3 m above the origin
 			continue
 		_add_box(xf, aabb, 0.92)
 		var door := xf * Vector3(0, 0, aabb.end.z + 1.1)
@@ -346,30 +347,31 @@ func _build_buildings() -> void:
 			interactables.append({"pos": door, "r": 2.4, "prompt": func(): return prompt_text,
 				"act": func(): deals.open_service(id)})
 		if id == "kantor":
-			_decorate_kantor(node)
+			_decorate_sign(node, "kantor", "KANTOR SAWIT\nThe Franchise™", Color("3b5d2a"))
+		elif id == "toko":
+			_decorate_sign(node, "toko", "KOPERASI DESA", Color("2f5a6a"))
 
 
-func _decorate_kantor(node: Node3D) -> void:
-	var src := ModelLib.instance("kantor", true)
+func _decorate_sign(node: Node3D, model: String, text: String, color: Color) -> void:
+	var src := ModelLib.instance(model, true)
 	var board: Node3D = src.find_child("SignBoard", true, false)
 	var label := Label3D.new()
-	label.text = "KANTOR SAWIT\nThe Franchise™"
+	label.text = text
 	label.font = ModelLib.label_font()
 	label.font_size = 64
 	label.outline_size = 0
-	label.modulate = Color("3b5d2a")
+	label.modulate = color
 	label.pixel_size = 0.006
 	label.line_spacing = -6
 	node.add_child(label)
 	if board:
-		var ab := AABB()
+		# the board's origin is the centre of its front face, which faces +Z
 		var meshes := ModelLib.find_meshes(board)
+		var width := 2.4
 		if not meshes.is_empty():
-			ab = meshes[0].mesh.get_aabb()
-			var xf := ModelLib._rel_xform(meshes[0], src)
-			ab = xf * ab
-		label.position = ab.get_center() + Vector3(0, 0, ab.size.z * 0.5 + 0.03)
-		label.pixel_size = clampf(ab.size.x / 520.0, 0.003, 0.01)
+			width = meshes[0].mesh.get_aabb().size.x
+		label.transform = ModelLib._rel_xform(board, src) * Transform3D(Basis(), Vector3(0, 0, 0.03))
+		label.pixel_size = clampf(width / 560.0, 0.003, 0.01)
 	else:
 		label.position = Vector3(0, 3.2, 2.6)
 	src.free()
@@ -475,6 +477,13 @@ func _build_player() -> void:
 	var sp: Array = layout.get("player_spawn", [0, 0])
 	add_child(player)
 	player.global_position = Vector3(sp[0], height_at(sp[0], sp[1]), sp[1])
+	# a warm little lantern glow around the player at night
+	player_light = OmniLight3D.new()
+	player_light.light_color = Color(1.0, 0.82, 0.55)
+	player_light.omni_range = 7.0
+	player_light.light_energy = 0.0
+	player_light.position = Vector3(0, 2.2, 0.4)
+	player.add_child(player_light)
 
 
 func _build_npcs() -> void:
@@ -807,6 +816,8 @@ func _update_daylight() -> void:
 	RenderingServer.global_shader_parameter_set("night", night)
 	for l in lamps:
 		l.light_energy = night * 1.6
+	if player_light:
+		player_light.light_energy = night * 0.9
 
 
 func _update_camera(delta: float) -> void:

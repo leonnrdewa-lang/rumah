@@ -303,7 +303,6 @@ func _build_hud() -> void:
 	minimap = preload("res://scripts/ui/minimap.gd").new()
 	minimap.world = world
 	minimap.font = _font_bold
-	minimap.custom_minimum_size = Vector2(204, 180)
 	hud.add_child(minimap)
 	# bottom-left: context prompt like "E  Take out the rod"
 	prompt_key = _label("E", 20, CREAM, true)
@@ -342,6 +341,8 @@ func _layout() -> void:
 		want = 1.25
 	if not is_equal_approx(get_tree().root.content_scale_factor, want):
 		get_tree().root.content_scale_factor = want
+		call_deferred("_layout")
+		return
 	var vp := root.get_viewport_rect().size
 	var tr: Control = hud.get_node("TopRight")
 	tr.position = Vector2(vp.x - tr.get_combined_minimum_size().x - 16, 14)
@@ -838,7 +839,7 @@ func toggle_pause() -> void:
 
 func show_help(on_close := Callable()) -> void:
 	var lines := [
-		"Tujuan: jadi Raja Sawit! Kuasai ke-7 lahan desa lalu beli Lisensi Sawit The Franchise (Rp 30 juta) di Kantor.",
+		"Tujuan: jadi Raja Sawit! Kuasai ke-7 lahan desa lalu beli Lisensi Sawit The Franchise (Rp 20 juta) di Kantor.",
 		"Gerak: WASD / panah (Shift untuk lari). Di HP: geser jempol kiri di layar.",
 		"Aksi: E / Spasi (atau tombol bulat kanan bawah di HP) — tebas semak, tanam, pupuk, panen, ngobrol.",
 		"Menu: Esc / P.  Status: Tab / I.  Pilihan dialog: tombol angka 1–6.",

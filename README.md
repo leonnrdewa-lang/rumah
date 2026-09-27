@@ -48,7 +48,7 @@ cd docs && python3 -m http.server 8060
    - Pak Kades bisa disogok amplop.
 4. Beli Mesin Olah Minyak, olah TBS jadi minyak goreng, jual ke warga (harga Normal / Mahal / Gila-gilaan). Warga tanpa lahan terpaksa beli, kalau perlu ngutang.
 5. Awasi **Kecurigaan**: kalau penuh, Satgas menyidak dan mendenda. Sidak ke-3 = tamat.
-6. Kuasai ke-7 lahan dan beli **Lisensi Sawit The Franchise™** (Rp 30 juta) → ending Raja Sawit.
+6. Kuasai ke-7 lahan dan beli **Lisensi Sawit The Franchise™** (Rp 20 juta) → ending Raja Sawit.
 
 ## Struktur repo
 

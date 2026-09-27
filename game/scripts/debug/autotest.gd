@@ -215,6 +215,77 @@ func _run() -> void:
 			await press(KEY_TAB)
 			await wait(0.3)
 			await shot("status", 5)
+		"econ":
+			# honest strategy: farm, buy land at fair price, hire workers; how long to win?
+			world.start_game(false)
+			world.ui.close()
+			var d: Node = world.deals
+			var order := ["nenek", "kakek", "pemuda", "ibu", "petani", "kades"]
+			for day in 60:
+				GS.energy = GS.max_energy
+				var meals := 2
+				for p in GS.parcels:
+					if p["owner"] != "player":
+						continue
+					for i in 12:
+						var info := GS.tile_action_info(p["id"], i)
+						if not info["ok"] and info["verb"].begins_with("Butuh bibit") and GS.money > 400000:
+							d._buy("bibit", 5, GS.PRICE["bibit"] * 5, func(): pass)
+							info = GS.tile_action_info(p["id"], i)
+						if info["ok"] and info["kind"] == "fert":
+							continue
+						if GS.energy < 12 and meals > 0 and GS.money > 20000:
+							GS.money -= 15000
+							GS.energy += 40
+							meals -= 1
+						if int(GS.inv["tbs"]) >= GS.capacity():
+							d._sell_tbs()
+						GS.do_tile_action(p["id"], i)
+				d._sell_tbs()
+				world.ui.close()
+				for vid in order:
+					if GS.villagers[vid]["status"] == "owner" and GS.money > GS.VILLAGERS[vid]["value"] + 600000:
+						d._buy_fair(vid)
+						world.ui.close()
+						break
+				if GS.palm_count() >= 30 and GS.workers.size() < 3 and GS.money > 3000000:
+					d._hire_generic()
+					world.ui.close()
+				if not GS.upgrades["gerobak"] and GS.money > 1500000:
+					d._buy_upgrade("gerobak")
+					world.ui.close()
+				if GS.controlled_parcels() >= 7 and GS.money >= GS.PRICE["lisensi"]:
+					print("WIN on day ", GS.day)
+					break
+				GS.sleep()
+				world.ui.close()
+				GS.pending_events.clear()
+				if day % 5 == 4:
+					print("day %d money=%s parcels=%d palms=%d workers=%d" % [GS.day, GS.fmt_short(GS.money), GS.controlled_parcels(), GS.palm_count(), GS.workers.size()])
+		"touch":
+			world.start_game(false)
+			world.ui.close()
+			await wait(0.2)
+			var x0: float = world.player.global_position.x
+			var t := InputEventScreenTouch.new()
+			t.index = 0
+			t.position = Vector2(250, 520)
+			t.pressed = true
+			Input.parse_input_event(t)
+			for k in 8:
+				var dr := InputEventScreenDrag.new()
+				dr.index = 0
+				dr.position = Vector2(250 - k * 10, 520)
+				dr.relative = Vector2(-10, 0)
+				Input.parse_input_event(dr)
+				await get_tree().process_frame
+			await wait(1.0)
+			print("touch joystick: touch_mode=%s moved dx=%.2f" % [world.ui._touch_mode, world.player.global_position.x - x0])
+			await shot("touch_joystick", 2)
+			t.pressed = false
+			Input.parse_input_event(t)
+			await wait(0.2)
+			print("released vec=", world.player.touch_vec)
 		"perf":
 			world.start_game(false)
 			world.ui.close()

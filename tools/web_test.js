@@ -52,7 +52,7 @@ async function run(name, contextOpts, steps) {
     await page.waitForTimeout(3000);
     await page.screenshot({ path: `${out}/web_phone_game.png` });
     // dismiss the intro dialog, then drag the virtual joystick to the left
-    for (let i = 0; i < 3; i++) { await page.touchscreen.tap(vp.width / 2, vp.height - 30); await page.waitForTimeout(700); }
+    for (let i = 0; i < 6; i++) { await page.touchscreen.tap(vp.width / 2, vp.height - 36); await page.waitForTimeout(900); }
     const cdp = await page.context().newCDPSession(page);
     const sx = vp.width * 0.2, sy = vp.height * 0.7;
     await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: sx, y: sy }] });

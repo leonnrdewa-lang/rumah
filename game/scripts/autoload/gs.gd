@@ -15,13 +15,13 @@ const SAVE_PATH := "user://sawit_save.json"
 const SAVE_VERSION := 1
 const DAY_START := 6.0
 const DAY_END := 24.0
-const HOURS_PER_SECOND := 1.0 / 15.0  # one in-game hour lasts 15 real seconds
+const HOURS_PER_SECOND := 1.0 / 12.0  # one in-game hour lasts 12 real seconds
 
 const PRICE := {
 	"bibit": 60000, "pupuk": 35000, "nasi": 15000, "kopi": 5000,
 	"surat": 400000, "preman": 1500000, "amplop": 2000000,
 	"gerobak": 750000, "truk": 4000000, "mesin": 4000000, "csr": 1500000,
-	"buruh_upah": 150000, "buruh_murah": 60000, "lisensi": 30000000,
+	"buruh_upah": 150000, "buruh_murah": 60000, "lisensi": 20000000,
 	"olah": 10000, "minyak_grosir": 30000, "franchise_fee": 2500000,
 }
 const OIL_PRICES := [25000, 55000, 95000]
