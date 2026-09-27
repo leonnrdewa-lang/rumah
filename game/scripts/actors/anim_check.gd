@@ -109,6 +109,15 @@ static func run(at: Node) -> void:
 			await at.wait(0.3)
 		pl.anim.play_action("cheer", 1.2)
 		await seq.call("cheer", 8, 0.15)
+		# the harvest basket on the back, full, walking away from the camera
+		GS.inv["tbs"] = 9
+		pl.update_carry(9)
+		cam_state["off"] = Vector3(-3.0, 1.6, 1.2)
+		await seq.call("carry", 2, 0.2)
+		pl.touch_vec = Vector2(0.5, 0)
+		await seq.call("carrywalk", 4, 0.15)
+		pl.touch_vec = Vector2.ZERO
+		cam_state["off"] = Vector3(2.4, 1.7, 3.4)
 
 	if _on(only, "talk"):
 		# talk to a villager

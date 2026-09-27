@@ -42,19 +42,25 @@ func _ready() -> void:
 
 
 func _build_carry() -> void:
-	# a little stack of fruit bunches on the back that grows with the load;
-	# rides on the chest bone of skinned models so it sways with the body
+	# a rattan basket on the back with fruit bunches peeking out, filling up
+	# with the load; rides on the chest bone of skinned models so it sways
 	_carry = Node3D.new()
 	_carry.name = "Carry"
+	var basket := MeshInstance3D.new()
+	basket.name = "Basket"
+	basket.mesh = CharAnim.tool_mesh("basket")
+	_carry.add_child(basket)
+	var spots := [Vector3(-0.04, -0.07, 0.01), Vector3(0.06, -0.03, -0.03), Vector3(-0.01, 0.02, -0.01)]
 	for i in 3:
 		var mi := MeshInstance3D.new()
+		mi.name = "Bunch%d" % i
 		mi.mesh = ModelLib.merged_mesh("tbs", false)
-		mi.scale = Vector3.ONE * 0.55
-		mi.position = Vector3((i - 1) * 0.12, i * 0.1, 0)
-		mi.rotation = Vector3(0.3 * i, i * 1.3, 0.2)
+		mi.scale = Vector3.ONE * 0.36
+		mi.position = spots[i]
+		mi.rotation = Vector3(0.25 * (i - 1), i * 2.1, 0.15 * (1 - i))
 		_carry.add_child(mi)
-	if not anim.attach_to_bone("chest", _carry, Vector3(0, -0.02, -0.21)):
-		_carry.position = Vector3(0, 0.55, -0.22)
+	if not anim.attach_to_bone("chest", _carry, Vector3(0, 0.02, -0.27)):
+		_carry.position = Vector3(0, 0.5, -0.27)
 		model.add_child(_carry)
 	_carry.visible = false
 
@@ -63,8 +69,10 @@ func update_carry(tbs: int) -> void:
 	if _carry == null:
 		return
 	_carry.visible = tbs > 0
-	for i in _carry.get_child_count():
-		_carry.get_child(i).visible = tbs > i * 3
+	for i in 3:
+		var b := _carry.get_node_or_null("Bunch%d" % i)
+		if b:
+			b.visible = tbs > i * 3
 
 
 func face_point(p: Vector3, seconds := 0.2) -> void:

@@ -670,6 +670,17 @@ static func tool_mesh(kind: String) -> ArrayMesh:
 				l.append(Vector3(-hw, y, z))
 				r.append(Vector3(hw, y, z))
 			mb.sheet(steel, l, r, 0.004)
+		"basket":
+			# rattan back basket (bakul) for carrying the harvested bunches
+			var rattan := mb.part("M_Tool_Rattan", Color("b88c52"))
+			var band := mb.part("M_Tool_RattanDark", Color("7d5a32"))
+			mb.tube(rattan, -0.2, 0.06, 0.12, 0.155, 12)
+			mb.cyl(band, Vector3(0, -0.13, 0), Vector3(0, -0.11, 0), 0.134, 12)
+			mb.cyl(band, Vector3(0, -0.03, 0), Vector3(0, -0.01, 0), 0.146, 12)
+			mb.cyl(band, Vector3(0, 0.045, 0), Vector3(0, 0.07, 0), 0.162, 12)
+			# shoulder straps running forward over the shoulders
+			for sx in [-1.0, 1.0]:
+				mb.cyl(band, Vector3(0.08 * sx, 0.07, 0.1), Vector3(0.1 * sx, 0.1, 0.24), 0.012, 4)
 		"sack":
 			# small fertiliser sack held in the left hand
 			var cloth := mb.part("M_Tool_Sack", Color("e9dcbc"))
@@ -727,6 +738,29 @@ class _MeshBuilder:
 			tri(st, a + n0 * r, b + n1 * r, a + n1 * r, n0, n1, n1)
 			tri(st, b, b + n0 * r, b + n1 * r, ax, ax, ax)
 			tri(st, a, a + n1 * r, a + n0 * r, -ax, -ax, -ax)
+
+	func tube(st: SurfaceTool, y0: float, y1: float, r0: float, r1: float, sides: int) -> void:
+		## open-topped tapered shell (outer + inner wall) with a bottom
+		var slope := (r1 - r0) / (y1 - y0)
+		for i in sides:
+			var a0 := TAU * i / sides
+			var a1 := TAU * (i + 1) / sides
+			var d0 := Vector3(cos(a0), 0, sin(a0))
+			var d1 := Vector3(cos(a1), 0, sin(a1))
+			var n0 := (d0 - Vector3.UP * slope).normalized()
+			var n1 := (d1 - Vector3.UP * slope).normalized()
+			var b0 := d0 * r0 + Vector3.UP * y0
+			var b1 := d1 * r0 + Vector3.UP * y0
+			var t0 := d0 * r1 + Vector3.UP * y1
+			var t1 := d1 * r1 + Vector3.UP * y1
+			tri(st, b0, t0, t1, n0, n0, n1)
+			tri(st, b0, t1, b1, n0, n1, n1)
+			var k := 0.93
+			tri(st, b0 * Vector3(k, 1, k), t1 * Vector3(k, 1, k), t0 * Vector3(k, 1, k), -n0, -n1, -n0)
+			tri(st, b0 * Vector3(k, 1, k), b1 * Vector3(k, 1, k), t1 * Vector3(k, 1, k), -n0, -n1, -n1)
+			tri(st, Vector3(0, y0, 0), b1, b0, Vector3.DOWN, Vector3.DOWN, Vector3.DOWN)
+			tri(st, Vector3(0, y0 + 0.01, 0), b0 * Vector3(k, 1, k) + Vector3.UP * 0.01,
+				b1 * Vector3(k, 1, k) + Vector3.UP * 0.01, Vector3.UP, Vector3.UP, Vector3.UP)
 
 	func blade(st: SurfaceTool, back: Array[Vector3], edge: Array[Vector3], thick: float) -> void:
 		## flat blade in the YZ plane (faces +-X) with a thick back rim
