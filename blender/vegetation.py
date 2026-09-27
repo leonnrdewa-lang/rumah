@@ -1517,7 +1517,7 @@ def fruit_bunch(name, center, axis, length, rnd, mat_, parent=None, n=44, width=
         apex = apex.normalized() if apex.length > 1e-3 else Vector((1, 0, 0))
         D = (nrm * math.cos(math.radians(rnd.uniform(8, 22))) + apex * math.sin(math.radians(15))).normalized()
         rf = rf0 * rnd.uniform(0.88, 1.12) * (0.78 + 0.22 * rc)
-        hf = rf * rnd.uniform(1.0, 1.25)
+        hf = rf * rnd.uniform(0.8, 0.95)  # low bead, not a spike
         U, V_ = _frame(D)
         # colour: orange at the stalk end -> maroon-red at the apex / outer side, random per fruitlet
         t_ax = (zc + 0.8) / 1.76
@@ -1529,16 +1529,17 @@ def fruit_bunch(name, center, axis, length, rnd, mat_, parent=None, n=44, width=
         ph = rnd.uniform(0, 6.28)
         dirs = [U * math.cos(ph + 2 * math.pi * s_ / sides) + V_ * math.sin(ph + 2 * math.pi * s_ / sides)
                 for s_ in range(sides)]
-        b0 = p - D * rf * 0.35
-        ring = [g.vert(W(b0 + d * rf), grey(0.8), nrm=R @ (d + D * 0.2)) for d in dirs]
+        b0 = p - D * rf * 0.22
+        # dome normals: sideways at the rim, along D at the top -> shades like a round bead
+        ring = [g.vert(W(b0 + d * rf), grey(0.78), nrm=R @ (d + D * 0.1)) for d in dirs]
         Dw = R @ D
         P0 = W(p)
         if rnd.random() < dark:
             # red body -> small near-black cap
-            mid = [g.vert(W(p + D * hf * 0.5 + d * rf * 0.62), grey(0.97), nrm=R @ (d * 0.8 + D * 0.7))
+            mid = [g.vert(W(p + D * hf * 0.62 + d * rf * 0.42), grey(0.97), nrm=R @ (d * 0.5 + D))
                    for d in dirs]
             tip = g.vert(W(p + D * hf * 0.78), grey(1.0), nrm=Dw)
-            u_mid = fruit_u(max(kk, 0.55))
+            u_mid = fruit_u(max(kk, 0.5))
             for s_ in range(sides):
                 s1 = (s_ + 1) % sides
                 q = (ring[s_], ring[s1], mid[s1], mid[s_])

@@ -42,6 +42,8 @@ var _chat_t := 0.0
 var _chat_turn := 0.0
 var _social_cd := 0.0
 var _visit: Npc          # neighbour this villager is walking over to chat with
+var _expect: Npc         # neighbour walking over to chat with this villager
+var _expect_t := 0.0     # how long to keep waiting for them
 
 
 func setup(p_world: Node, p_model: String, p_name: String, p_anchor: Vector3, p_radius: float) -> void:
@@ -221,6 +223,9 @@ func _process(delta: float) -> void:
 
 func _animate(delta: float, pdist: float) -> void:
 	if not visible or pdist > ANIM_RANGE:
+		# not drawn: skip the pose work but keep the clocks running, so a work
+		# clip started near the player still ends (is_busy() goes false)
+		anim.tick(delta)
 		return
 	anim.update(delta, _cur_speed, _t)
 
