@@ -297,6 +297,72 @@ func _run() -> void:
 					Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),
 					Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME),
 					Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)])
+		"perfsplit":
+			# where do the draw calls go? hide one group at a time at the busiest spot
+			world.start_game(false)
+			world.ui.close()
+			var groups := {
+				"undergrowth": [world.undergrowth],
+				"decor": world.get_children().filter(func(n): return n is MultiMeshInstance3D),
+				"tiles": world.tile_views.values(),
+				"parcel_batch": world.get_children().filter(func(n): return str(n.name).begins_with("ParcelDecor")),
+				"buildings": world.building_nodes.values(),
+				"npcs": world.get_children().filter(func(n): return n is Npc),
+				"player": [world.player],
+				"ambient": [world.ambient],
+				"props": world.get_children().filter(func(n): return n is MeshInstance3D and not n in world.building_nodes.values()),
+			}
+			for spot in [[-17, 30], [48, 0]]:
+				tp(spot[0], spot[1])
+				for i in 30:
+					await get_tree().process_frame
+				var base := [Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME), Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)]
+				print("perfsplit %s all: draw=%d prims=%d" % [spot, base[0], base[1]])
+				for g in groups:
+					for n in groups[g]:
+						n.visible = false
+					for i in 4:
+						await get_tree().process_frame
+					var dc: float = Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)
+					var pr: float = Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)
+					print("perfsplit   %-12s draw=%4d prims=%7d" % [g, base[0] - dc, base[1] - pr])
+					for n in groups[g]:
+						n.visible = true
+				world.sun.shadow_enabled = false
+				for i in 4:
+					await get_tree().process_frame
+				print("perfsplit   %-12s draw=%4d prims=%7d" % ["shadows", base[0] - Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME), base[1] - Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)])
+				world.sun.shadow_enabled = true
+		"look":
+			# quick two-shot look check for render tuning
+			world.start_game(false)
+			world.ui.close()
+			GS.hour = 8.5
+			for s in [[-17, 32.5, "parcel"], [-9, 10, "road"]]:
+				tp(s[0], s[1], Vector3(0, 0, -1))
+				await shot("look_" + s[2], 30)
+		"vis":
+			# curated views for comparing against art/reference/07_target_gameplay.png
+			world.start_game(false)
+			world.ui.close()
+			GS.hour = 8.5
+			for s in [[-17, 32.5, "parcel"], [-9, 10, "road"], [-44, 36, "garden"], [-3, 36, "kantor"], [49, 2, "pabrik"], [-30, -20, "field"]]:
+				tp(s[0], s[1], Vector3(0, 0, -1))
+				await shot("vis_" + s[2], 40)
+			# running along the road: dust puffs
+			tp(-20, 8.5, Vector3(1, 0, 0))
+			world.player.touch_vec = Vector2(1, 0)
+			await wait(0.8)
+			await shot("vis_run", 2)
+			world.player.touch_vec = Vector2.ZERO
+			GS.hour = 20.5
+			tp(-17, 32.5, Vector3(0, 0, -1))
+			await shot("vis_night", 60)
+			GS.hour = 8.5
+			world.set_quality(false)
+			tp(-17, 32.5, Vector3(0, 0, -1))
+			await shot("vis_parcel_low", 30)
+			world.set_quality(true)
 		"tour":
 			world.start_game(false)
 			world.ui.close()

@@ -8,9 +8,19 @@ const DATA_TEX := preload("res://assets/textures/world_data.png")
 const NOISE_TEX := preload("res://assets/textures/noise.png")
 const UI_SCRIPT := preload("res://scripts/ui/ui.gd")
 const DEALS_SCRIPT := preload("res://scripts/world/deals.gd")
+const AMBIENT_SCRIPT := preload("res://scripts/world/ambient_life.gd")
+const SHADE_TEX_PATH := "res://assets/textures/world_shade.png"
+const GROUND_DIR := "res://assets/textures/ground/"
+const GROUND_TEX := ["grass", "grass_dry", "dirt", "sand", "mulch"]
+## soft green-grey sky bounce; keeps shadows olive like the target instead of grey
+const AMBIENT_DAY := Color("c4d0c8")
 
 const DECOR_COLLIDE := {"tree_big": 0.55, "coconut": 0.35, "banana": 0.3, "rock_b": -1.0, "rock_c": -1.0,
-	"cliff_a": -1.0, "bush_a": 0.45, "bush_b": 0.45}
+	"cliff_a": -1.0, "bush_a": 0.45, "bush_b": 0.45, "sawit_wild": 0.45}
+## decor that has no model of its own: [model, only_under, exclude_under]
+const DECOR_ALIAS := {"sawit_wild": ["sawit_3", "", "Fruits"]}
+## small decor that should not cast shadows
+const DECOR_NO_SHADOW := ["grass_tuft", "flowers", "rock_a", "rock_b"]
 const PROP_COLLIDE := ["sumur", "truck", "crate", "gerobak", "tumpukan_tbs", "meja", "bangku", "lampu", "perahu", "pagar", "jerigen", "karung_pupuk"]
 const SERVICE := {"kantor": "Masuk Kantor Sawit", "toko": "Belanja di Koperasi Desa", "warung": "Mampir ke Warung Mak Inah",
 	"pabrik": "Ke Pabrik Kelapa Sawit (PKS)", "calo": "Bisik-bisik dengan Bang Jeki"}
@@ -50,8 +60,14 @@ var target: Dictionary = {}
 var _ring: MeshInstance3D
 var _title_t := 0.0
 var _t := 0.0
-var cam_distance := 22.0
+var cam_distance := 16.0
+var cam_pitch := 45.0
 var quality_high := true
+var undergrowth: Undergrowth
+var ambient: Node3D
+var _plant_mask := PackedByteArray()
+var _pm_n := 0
+const PM_RES := 0.5
 
 
 func _ready() -> void:
@@ -73,9 +89,14 @@ func _ready() -> void:
 	_build_buildings()
 	_build_props()
 	_build_parcels()
+	_build_undergrowth()
 	_build_player()
 	_build_npcs()
 	_build_ring()
+	ambient = AMBIENT_SCRIPT.new()
+	ambient.name = "AmbientLife"
+	ambient.set("world", self)
+	add_child(ambient)
 	deals = DEALS_SCRIPT.new()
 	deals.name = "Deals"
 	deals.world = self
@@ -152,26 +173,37 @@ func _build_environment() -> void:
 	env.background_mode = Environment.BG_COLOR
 	env.background_color = Color("3a8f94")
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color("a9c7d2")
-	env.ambient_light_energy = 0.5
+	env.ambient_light_color = AMBIENT_DAY
+	env.ambient_light_energy = 0.52
 	env.tonemap_mode = Environment.TONE_MAPPER_LINEAR
+	# soft painterly post: a subtle glow on highlights, a little more saturation/contrast
+	env.glow_enabled = true
+	env.glow_intensity = 0.22
+	env.glow_strength = 1.0
+	env.glow_bloom = 0.0
+	env.glow_hdr_threshold = 1.0
+	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_SCREEN
+	env.adjustment_enabled = true
+	env.adjustment_brightness = 1.0
+	env.adjustment_contrast = 1.05
+	env.adjustment_saturation = 1.12
 	we.environment = env
 	add_child(we)
 	sun = DirectionalLight3D.new()
 	sun.shadow_enabled = true
-	sun.shadow_opacity = 0.62
-	sun.shadow_blur = 1.6
+	sun.shadow_opacity = 0.58
+	sun.shadow_blur = 2.2
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
-	sun.directional_shadow_max_distance = 36.0
-	sun.shadow_bias = 0.06
-	sun.shadow_normal_bias = 1.2
+	sun.directional_shadow_max_distance = 32.0
+	sun.shadow_bias = 0.05
+	sun.shadow_normal_bias = 1.1
 	add_child(sun)
 	cam_rig = Node3D.new()
 	add_child(cam_rig)
 	camera = Camera3D.new()
-	camera.fov = 30.0
+	camera.fov = 35.0
 	camera.near = 0.5
-	camera.far = 260.0
+	camera.far = 200.0
 	cam_rig.add_child(camera)
 	camera.current = true
 
@@ -179,10 +211,17 @@ func _build_environment() -> void:
 func _apply_quality() -> void:
 	if OS.has_feature("web_android") or OS.has_feature("web_ios") or OS.has_feature("mobile"):
 		RenderingServer.directional_shadow_atlas_set_size(1024, true)
-		sun.directional_shadow_max_distance = 36.0
+		sun.directional_shadow_max_distance = 30.0
 	sun.shadow_enabled = quality_high
 	get_viewport().msaa_3d = Viewport.MSAA_2X if quality_high else Viewport.MSAA_DISABLED
 	get_viewport().scaling_3d_scale = 1.0 if quality_high else 0.75
+	env.glow_enabled = quality_high
+	# "Hemat baterai" halves the undergrowth and drops its shadows
+	if undergrowth:
+		undergrowth.set_density(1.0 if quality_high else 0.5)
+		undergrowth.set_shadows(quality_high)
+	if ambient and ambient.has_method("set_quality"):
+		ambient.call("set_quality", quality_high)
 
 
 func set_quality(high: bool) -> void:
@@ -197,6 +236,16 @@ func _build_terrain() -> void:
 	mat.set_shader_parameter("noise_tex", NOISE_TEX)
 	mat.set_shader_parameter("world_size", world_size)
 	mat.set_shader_parameter("water_level", water_level)
+	# v2 ground textures (tiled in world space) + baked shade masks; any that are
+	# missing fall back to the procedural v1 colours inside the shader
+	for n in GROUND_TEX:
+		var tex := GroundFx.load_tiling_texture(GROUND_DIR + n + ".png")
+		if tex:
+			mat.set_shader_parameter(n + "_tex", tex)
+			mat.set_shader_parameter("has_" + n, 1.0)
+	if ResourceLoader.exists(SHADE_TEX_PATH):
+		mat.set_shader_parameter("shade_tex", load(SHADE_TEX_PATH))
+		mat.set_shader_parameter("has_shade", 1.0)
 	var t := ModelLib.scene("terrain")
 	if t:
 		var n: Node3D = t.instantiate()
@@ -290,7 +339,12 @@ func _build_decor() -> void:
 	for key in groups:
 		var m: String = key.get_slice("|", 0)
 		var list: Array = groups[key]
-		var mesh := ModelLib.merged_mesh(m, true)
+		var mesh: ArrayMesh
+		if DECOR_ALIAS.has(m):
+			var al: Array = DECOR_ALIAS[m]
+			mesh = ModelLib.merged_mesh(al[0], true, al[1], al[2])
+		else:
+			mesh = ModelLib.merged_mesh(m, true)
 		if mesh.get_surface_count() == 0:
 			continue
 		var mm := MultiMesh.new()
@@ -314,9 +368,76 @@ func _build_decor() -> void:
 					_add_cylinder(p, r * s)
 		var mmi := MultiMeshInstance3D.new()
 		mmi.multimesh = mm
-		if m in ["grass_tuft", "flowers"]:
+		if m in DECOR_NO_SHADOW:
 			mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(mmi)
+
+
+func _build_plant_mask() -> void:
+	## 0.5 m bitmap of places where undergrowth must not grow: building and prop
+	## footprints, doors, parcel planting spots, signs and other interaction points.
+	_pm_n = int(ceil(world_size / PM_RES))
+	_plant_mask.resize(_pm_n * _pm_n)
+	_plant_mask.fill(0)
+	for r in rects:
+		_mask_rect(r[0] - 0.15, r[1] - 0.15, r[2] + 0.15, r[3] + 0.15)
+	for id in door_points:
+		var d: Vector3 = door_points[id]
+		_mask_circle(d.x, d.z, 1.9)
+	for key in tile_views:
+		var tp: Vector3 = tile_views[key].position
+		_mask_circle(tp.x, tp.z, 1.9)
+	for it in interactables:
+		if it.has("pos"):
+			var ip: Vector3 = it["pos"]
+			_mask_circle(ip.x, ip.z, 1.4)
+	for c in obstacles:
+		_mask_circle(c[0], c[1], float(c[2]) + 0.15)
+	for r in walk_rects:
+		_mask_rect(r[0] - 1.0, r[1] - 1.0, r[2] + 1.0, r[3] + 1.0)
+	var sp: Array = layout.get("player_spawn", [0, 0])
+	_mask_circle(sp[0], sp[1], 1.5)
+
+
+func _mask_rect(x0: float, z0: float, x1: float, z1: float) -> void:
+	var i0 := clampi(int((x0 + world_size * 0.5) / PM_RES), 0, _pm_n - 1)
+	var i1 := clampi(int((x1 + world_size * 0.5) / PM_RES), 0, _pm_n - 1)
+	var j0 := clampi(int((z0 + world_size * 0.5) / PM_RES), 0, _pm_n - 1)
+	var j1 := clampi(int((z1 + world_size * 0.5) / PM_RES), 0, _pm_n - 1)
+	for j in range(j0, j1 + 1):
+		for i in range(i0, i1 + 1):
+			_plant_mask[j * _pm_n + i] = 1
+
+
+func _mask_circle(x: float, z: float, r: float) -> void:
+	var i0 := clampi(int((x - r + world_size * 0.5) / PM_RES), 0, _pm_n - 1)
+	var i1 := clampi(int((x + r + world_size * 0.5) / PM_RES), 0, _pm_n - 1)
+	var j0 := clampi(int((z - r + world_size * 0.5) / PM_RES), 0, _pm_n - 1)
+	var j1 := clampi(int((z + r + world_size * 0.5) / PM_RES), 0, _pm_n - 1)
+	for j in range(j0, j1 + 1):
+		var cz := (j + 0.5) * PM_RES - world_size * 0.5
+		for i in range(i0, i1 + 1):
+			var cx := (i + 0.5) * PM_RES - world_size * 0.5
+			if (cx - x) * (cx - x) + (cz - z) * (cz - z) < r * r:
+				_plant_mask[j * _pm_n + i] = 1
+
+
+func plant_blocked(x: float, z: float) -> bool:
+	if _pm_n == 0:
+		return false
+	var i := int((x + world_size * 0.5) / PM_RES)
+	var j := int((z + world_size * 0.5) / PM_RES)
+	if i < 0 or j < 0 or i >= _pm_n or j >= _pm_n:
+		return true
+	return _plant_mask[j * _pm_n + i] != 0
+
+
+func _build_undergrowth() -> void:
+	_build_plant_mask()
+	undergrowth = Undergrowth.new()
+	undergrowth.name = "Undergrowth"
+	add_child(undergrowth)
+	undergrowth.build(layout.get("undergrowth", {}), plant_blocked)
 
 
 func _build_buildings() -> void:
@@ -330,6 +451,8 @@ func _build_buildings() -> void:
 		building_nodes[b["id"]] = node
 		var aabb := ModelLib.mesh_aabb(b["model"])
 		var xf := node.transform
+		if b["model"] != "dermaga":
+			node.add_child(GroundFx.rect_blob(aabb, 1.3, 0.55))
 		if b["model"] == "dermaga":
 			# the jetty is walkable over the water
 			var p0 := xf * Vector3(aabb.position.x, 0, aabb.position.z)
@@ -387,6 +510,12 @@ func _build_props() -> void:
 		mi.position = v3(p["pos"])
 		mi.rotation.y = deg_to_rad(p["rot"])
 		add_child(mi)
+		if m != "perahu":
+			var pa := mi.mesh.get_aabb()
+			if pa.size.x > 1.2 or pa.size.z > 1.2:
+				mi.add_child(GroundFx.rect_blob(pa, 0.55, 0.42))
+			else:
+				mi.add_child(GroundFx.blob(maxf(pa.size.x, pa.size.z) * 0.75 + 0.15, 0.38))
 		if m == "perahu":
 			mi.position.y = maxf(mi.position.y, water_level - 0.08)
 			boats.append(mi)
@@ -476,6 +605,7 @@ func _build_player() -> void:
 	player.world = self
 	var sp: Array = layout.get("player_spawn", [0, 0])
 	add_child(player)
+	player.add_child(GroundFx.blob(0.5, 0.45))
 	player.global_position = Vector3(sp[0], height_at(sp[0], sp[1]), sp[1])
 	# a warm little lantern glow around the player at night
 	player_light = OmniLight3D.new()
@@ -494,6 +624,7 @@ func _build_npcs() -> void:
 		var home: Vector3 = door_points.get(d["home"], Vector3.ZERO)
 		npc.setup(self, d["model"], d["name"], home, 5.0)
 		add_child(npc)
+		npc.add_child(GroundFx.blob(0.5, 0.42))
 		npcs[vid] = npc
 		var nvid: String = vid
 		interactables.append({"node": npc, "r": 1.8, "npc": true,
@@ -515,6 +646,7 @@ func _extra(model: String, n: String, pos: Vector3, radius: float, sleeps: bool)
 	npc.setup(self, model, n, pos, radius)
 	npc.sleeps_at_night = sleeps
 	add_child(npc)
+	npc.add_child(GroundFx.blob(0.6 if model == "char_preman" else 0.5, 0.42))
 	return npc
 
 
@@ -802,16 +934,17 @@ func _update_daylight() -> void:
 	var night := smoothstep(17.8, 19.6, h) + (1.0 - smoothstep(5.0, 6.6, h))
 	night = clampf(night, 0.0, 1.0)
 	var dusk := clampf(1.0 - absf(h - 18.0) / 1.6, 0.0, 1.0) + clampf(1.0 - absf(h - 6.5) / 1.2, 0.0, 1.0) * 0.6
-	var elev := lerpf(28.0, 62.0, day_k)
-	sun.rotation = Vector3(deg_to_rad(-elev), deg_to_rad(-38.0 + (h - 12.0) * 2.0), 0)
-	var day_col := Color(1.0, 0.96, 0.88)
+	var elev := lerpf(30.0, 60.0, day_k)
+	# warm sun from the upper left of the screen: shadows fall down-right
+	sun.rotation = Vector3(deg_to_rad(-elev), deg_to_rad(-122.0 + (h - 12.0) * 2.5), 0)
+	var day_col := Color(1.0, 0.97, 0.91)
 	var dusk_col := Color(1.0, 0.68, 0.42)
 	var night_col := Color(0.55, 0.62, 1.0)
 	var col := day_col.lerp(dusk_col, clampf(dusk, 0.0, 1.0)).lerp(night_col, night)
 	sun.light_color = col
-	sun.light_energy = lerpf(1.05, 0.32, night) * lerpf(0.85, 1.0, day_k)
-	env.ambient_light_color = Color("a9c7d2").lerp(Color("5b6fa8"), night).lerp(Color("e0b090"), clampf(dusk, 0.0, 1.0) * 0.4)
-	env.ambient_light_energy = lerpf(0.5, 0.46, night)
+	sun.light_energy = lerpf(0.98, 0.32, night) * lerpf(0.88, 1.0, day_k)
+	env.ambient_light_color = AMBIENT_DAY.lerp(Color("5b6fa8"), night).lerp(Color("e0b090"), clampf(dusk, 0.0, 1.0) * 0.4)
+	env.ambient_light_energy = lerpf(0.52, 0.46, night)
 	env.background_color = Color("3a8f94").lerp(Color("14304a"), night)
 	RenderingServer.global_shader_parameter_set("night", night)
 	for l in lamps:
@@ -828,14 +961,17 @@ func _update_camera(delta: float) -> void:
 		var a := _title_t * 0.05
 		var center := Vector3(sin(a) * 18.0, 0, 6.0 + cos(a) * 10.0)
 		cam_rig.global_position = cam_rig.global_position.lerp(center, clampf(delta * 0.8, 0.0, 1.0))
-		_place_camera(46.0, 50.0)
+		_place_camera(34.0, 48.0)
 		return
-	var target_pos := player.global_position
-	cam_rig.global_position = cam_rig.global_position.lerp(target_pos, clampf(delta * 5.0, 0.0, 1.0))
+	# smooth, frame-rate independent follow (a touch of lag reads as "floaty" camera)
+	var target_pos := player.global_position + Vector3(0, 0.5, 0)
+	var k := 1.0 - exp(-delta * 4.0)
+	cam_rig.global_position = cam_rig.global_position.lerp(target_pos, k)
 	var dist := cam_distance
 	if aspect < 1.0:
-		dist *= lerpf(1.6, 1.0, aspect)
-	_place_camera(dist, 52.0)
+		# portrait phones: pull back so the narrow screen still shows the surroundings
+		dist *= lerpf(1.75, 1.0, clampf(aspect, 0.0, 1.0))
+	_place_camera(dist, cam_pitch)
 	# see-through hole around the player
 	var pp := player.global_position + Vector3(0, 0.7, 0)
 	var sp := camera.unproject_position(pp)

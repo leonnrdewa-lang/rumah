@@ -7,7 +7,11 @@ Flags: --no-render  skip previews/icons (fast tri check)
 
 Every asset: root Empty named after the asset, merged static mesh(es) parented to
 it, front (doors) facing -Y, origin at the ground centre of the footprint.
-Special child nodes: kantor/SignBoard, truck/Cargo.  Night-lit material: M_Glass.
+Special child nodes: kantor/SignBoard, toko/SignBoard, gudang/SignBoard, truck/Cargo.
+Night-lit material: M_Glass.
+Every mesh gets baked vertex AO + weathering (props.weather_bake) in the active colour
+attribute `Col` before export: plank grooves, per-plank / per-tile variation, rust and moss
+streaks on corrugated zinc, a dirt band at the base.
 """
 import math
 import os
@@ -26,7 +30,8 @@ from common import (reset_scene, mat, add_box, add_cyl, add_sphere, add_ico, mes
                     set_mat, shade_smooth, count_tris, all_descendants)
 import props as PR  # noqa: E402  (shared helpers + prop part makers)
 from props import (Z, glass_mat, bx, rod, fix_normals, weld, smooth_angle, mk_multi, beam, fpt,  # noqa: E402
-                   facing_rot, center_root, finish, dims, board_with_uv, debug_view, DEBUG)
+                   facing_rot, center_root, finish, dims, board_with_uv, debug_view, DEBUG,
+                   wattr, weather_bake, preview_vcol, _seed)
 
 # ------------------------------------------------------------ wall pieces
 def siding_ring(name, poly, z0, z1, n, groove, m):
@@ -50,11 +55,18 @@ def siding_ring(name, poly, z0, z1, n, groove, m):
         for i in range(N):
             p = Vector(poly[i]) + offs[i] * o
             verts.append((p.x, p.y, z))
+    rnd = random.Random(_seed(name, z0, z1, n, *[c for p_ in poly for c in p_]))
+    pshade = [[rnd.uniform(-0.16, 0.08) for _ in range(N)] for _ in range(n)]
+    shade = []
     for r in range(len(prof) - 1):
+        plank = prof[r][1] > 1e-6 and prof[r + 1][1] > 1e-6
         for i in range(N):
             j = (i + 1) % N
             faces.append((r * N + i, r * N + j, (r + 1) * N + j, (r + 1) * N + i))
-    return mesh_from_data(name, verts, faces, m)
+            shade.append(pshade[min(n - 1, r // 3)][i] if plank else -0.45)
+    o = mesh_from_data(name, verts, faces, m)
+    wattr(o, "w_shade", shade)
+    return o
 
 
 def vplank_panel(name, origin, rotz, x0, x1, zb_fn, zt_fn, pw, g, m, breaks=()):
@@ -78,9 +90,19 @@ def vplank_panel(name, origin, rotz, x0, x1, zb_fn, zt_fn, pw, g, m, breaks=()):
     for x, off in cols:
         verts.append(fpt(origin, rotz, (x, -off, zb_fn(x))))
         verts.append(fpt(origin, rotz, (x, -off, zt_fn(x))))
+    rnd = random.Random(_seed(name, origin[0], origin[1], rotz, x0, x1, pw))
+    pshade = [rnd.uniform(-0.16, 0.08) for _ in range(n)]
+    shade = []
     for i in range(len(cols) - 1):
         faces.append((2 * i, 2 * i + 2, 2 * i + 3, 2 * i + 1))
-    return mesh_from_data(name, verts, faces, m)
+        (xa, oa), (xb_, ob) = cols[i], cols[i + 1]
+        if oa > 1e-6 and ob > 1e-6:
+            shade.append(pshade[min(n - 1, max(0, int(((xa + xb_) / 2 - x0) / pw)))])
+        else:
+            shade.append(-0.45)
+    o = mesh_from_data(name, verts, faces, m)
+    wattr(o, "w_shade", shade)
+    return o
 
 
 def rect_ring(name, origin, rotz, zc, w_in, h_in, border, depth, m, y0=0.0, bevel=0.015):
@@ -162,14 +184,53 @@ def tri_wave(x, period, amp):
     return amp * (1.0 - abs(2.0 * t - 1.0))
 
 
+def new_wear(style, rust=1.0, moss=1.0, seed=0):
+    """Per-face / per-vertex weathering lists filled by tile_slope (see props.weather_bake)."""
+    return dict(style=style, rust_k=rust, moss_k=moss, seed=seed, shade=[], rust=[], moss=[], down=[])
+
+
+def _streaks(rnd, x0, x1, per_m, wmin, wmax, smin, smax):
+    n = max(1, int((x1 - x0) * per_m))
+    return [(rnd.uniform(x0, x1), rnd.uniform(wmin, wmax), rnd.uniform(smin, smax)) for _ in range(n)]
+
+
+def _streak_val(st, x):
+    return max([s_ * max(0.0, 1.0 - abs(x - c) / w) for c, w, s_ in st] + [0.0])
+
+
 def tile_slope(verts, faces, origin, ex, ev, en, v_len, ext_fn, rows, period=0.42, amp=0.06,
-               step=0.08, cham=0.14, thick=0.08, underside=True, kinds=None):
+               step=0.08, cham=0.14, thick=0.08, underside=True, kinds=None, wear=None):
     """Append one clay-tile roof slope (rows of wavy tiles with a chunky lip) to verts/faces.
 
     Slope frame: origin on the ridge line, ex along the ridge, ev down the slope,
     en = outward normal. ext_fn(v) -> (xmin, xmax) of the slope at distance v.
+    wear: optional dict from new_wear(): 'zinc' = rust / moss streaks running down the slope,
+    'clay' = per-tile colour variation and a little moss near the eave.
     """
     O, ex, ev, en = Vector(origin), Vector(ex), Vector(ev), Vector(en)
+    if wear is not None:
+        wear['seed'] += 1
+        wrnd = random.Random(_seed(wear['seed'], *origin, *ex, *ev))
+        lo_, hi_ = ext_fn(v_len)
+        lo_, hi_ = min(lo_, ext_fn(0)[0]), max(hi_, ext_fn(0)[1])
+        rust_st = _streaks(wrnd, lo_, hi_, 2.2, 0.05, 0.3, 0.35, 1.0)
+        moss_st = _streaks(wrnd, lo_, hi_, 0.7, 0.15, 0.5, 0.4, 0.9)
+
+    def wear_face(kind, i, xc):
+        if wear is None:
+            return
+        if kind == 2:
+            wear['shade'].append(0.0); wear['rust'].append(0.0); wear['moss'].append(0.0)
+            return
+        if wear['style'] == 'zinc':
+            wear['shade'].append(0.04 * math.sin(xc * 7.1 + i) - (0.08 if kind == 1 else 0.0))
+            wear['rust'].append(wear['rust_k'] * (0.18 + 0.95 * _streak_val(rust_st, xc)))
+            wear['moss'].append(wear['moss_k'] * 0.8 * _streak_val(moss_st, xc))
+        else:
+            tr = random.Random(_seed(wear['seed'], i, round(xc / period)))
+            wear['shade'].append(tr.uniform(-0.14, 0.1) - (0.1 if kind == 1 else 0.0))
+            wear['rust'].append(0.0)
+            wear['moss'].append(wear['moss_k'] * (tr.uniform(0.3, 0.7) if tr.random() < 0.14 else 0.0))
     flip = ex.cross(ev).dot(en) < 0
     P3 = lambda x, v, n: O + ex * x + ev * v + en * n
     rl = v_len / rows
@@ -187,13 +248,17 @@ def tile_slope(verts, faces, origin, ex, ev, en, v_len, ext_fn, rows, period=0.4
             verts.append(P3(xt, v0, tri_wave(xt, period, amp)))
             verts.append(P3(xm, v1, step + tri_wave(xm, period, amp)))
             verts.append(P3(xb, v2, tri_wave(xb, period, amp)))
+            if wear is not None:
+                wear['down'] += [v0 / v_len, v1 / v_len, v2 / v_len]
         for c in range(len(cols) - 1):
             t0, m0, b0_ = base + 3 * c, base + 3 * c + 1, base + 3 * c + 2
             t1, m1, b1_ = t0 + 3, m0 + 3, b0_ + 3
+            xc = (cols[c][0] + cols[c + 1][0]) / 2
             for kind, f in ((0, (t0, t1, m1, m0)), (1, (m0, m1, b1_, b0_))):
                 faces.append(tuple(reversed(f)) if flip else f)
                 if kinds is not None:
                     kinds.append(kind)
+                wear_face(kind, i, xc)
     if underside:
         a0, b0 = ext_fn(0.0)
         a2, b2 = ext_fn(v_len)
@@ -204,15 +269,23 @@ def tile_slope(verts, faces, origin, ex, ev, en, v_len, ext_fn, rows, period=0.4
         faces.append(f if flip else tuple(reversed(f)))
         if kinds is not None:
             kinds.append(2)
+        if wear is not None:
+            wear['down'] += [0.0, 0.0, 1.0, 1.0]
+            wear_face(2, 0, 0.0)
 
 
-def roof_mesh(name, verts, faces, kinds, m_tile, m_lip=None, smooth_deg=None):
+def roof_mesh(name, verts, faces, kinds, m_tile, m_lip=None, smooth_deg=None, wear=None):
     """Tile roof object: lips (row shadow lines) optionally in a darker material."""
     mats = [m_tile] if m_lip is None else [m_tile, m_lip]
     fm = [(1 if (k == 1 and m_lip is not None) else 0) for k in kinds]
     o = mk_multi(name, verts, faces, mats, fm)
     if smooth_deg:
         smooth_angle(o, smooth_deg)
+    if wear is not None:
+        wattr(o, "w_shade", wear['shade'])
+        wattr(o, "w_rust", wear['rust'])
+        wattr(o, "w_moss", wear['moss'])
+        wattr(o, "w_down", wear['down'], "POINT")
     return o
 
 
@@ -227,9 +300,10 @@ def slope_frame(ridge_pt, down_dir, along, pitch):
 
 def gable_roof(P, M, a, b, half_w, pitch, rows, tile='roof', lip='trim', trim='trim', ridge_r=0.14,
                balls=True, horns=(), fascia=True, barge=True, barge_h=0.26, horn_len=0.55, tile_kw=None,
-               ridge_verts=8, ridge_mat=None):
+               ridge_verts=8, ridge_mat=None, wear=None):
     """Clay-tile gable roof; ridge from a to b (points on the ridge plane), slopes half_w wide in plan.
-    horns: subset of ('a', 'b') ends whose barge boards cross above the ridge."""
+    horns: subset of ('a', 'b') ends whose barge boards cross above the ridge.
+    wear: new_wear(...) dict, default clay variation (or zinc streaks when tile_kw is given)."""
     a, b = Vector(a), Vector(b)
     ex = b - a
     L = ex.length
@@ -238,11 +312,13 @@ def gable_roof(P, M, a, b, half_w, pitch, rows, tile='roof', lip='trim', trim='t
     v, f, k = [], [], []
     frames = []
     vl = half_w / math.cos(pitch)
+    if wear is None:
+        wear = new_wear('zinc' if tile_kw else 'clay', seed=_seed(*a, *b))
     for d in (side, -side):
         O, ex_, ev, en = slope_frame(a, d, ex, pitch)
-        tile_slope(v, f, O, ex_, ev, en, vl, lambda s: (0.0, L), rows, kinds=k, **(tile_kw or {}))
+        tile_slope(v, f, O, ex_, ev, en, vl, lambda s: (0.0, L), rows, kinds=k, wear=wear, **(tile_kw or {}))
         frames.append((O, ev, en))
-    P.append(roof_mesh("roof_tiles", v, f, k, M[tile], M[lip] if lip else None))
+    P.append(roof_mesh("roof_tiles", v, f, k, M[tile], M[lip] if lip else None, wear=wear))
     rg = rod("ridge", a - ex * 0.1 + Z * 0.08, b + ex * 0.1 + Z * 0.08, ridge_r, M[ridge_mat or tile], ridge_verts,
              smooth=ridge_verts > 4)
     if ridge_verts == 4:   # folded zinc ridge cap: diamond section
@@ -277,11 +353,12 @@ def hip_roof(P, M, cx, cy, HX, HY, z_eave, pitch, rows, tile='roof', lip='trim',
     specs = [((cx, cy, zr), (0, -1, 0), (1, 0, 0), rx), ((cx, cy, zr), (0, 1, 0), (1, 0, 0), rx),
              ((cx - rx, cy, zr), (-1, 0, 0), (0, 1, 0), 0.0), ((cx + rx, cy, zr), (1, 0, 0), (0, 1, 0), 0.0)]
     frames = []
+    wear = new_wear('clay', seed=_seed(cx, cy, HX, HY))
     for O_, d, along, r in specs:
         O, ex, ev, en = slope_frame(O_, d, along, pitch)
-        tile_slope(v, f, O, ex, ev, en, vl, lambda s, r=r: (-(r + s * c), r + s * c), rows, kinds=k)
+        tile_slope(v, f, O, ex, ev, en, vl, lambda s, r=r: (-(r + s * c), r + s * c), rows, kinds=k, wear=wear)
         frames.append((O, ex, ev, en, r))
-    P.append(roof_mesh("roof_tiles", v, f, k, M[tile], M[lip] if lip else None))
+    P.append(roof_mesh("roof_tiles", v, f, k, M[tile], M[lip] if lip else None, wear=wear))
     lift = Z * 0.09
     if rx > 0:
         P.append(rod("ridge", (cx - rx - 0.05, cy, zr + 0.09), (cx + rx + 0.05, cy, zr + 0.09), ridge_r, M[tile], 8,
@@ -507,7 +584,7 @@ def build_kantor():
     yc = (y0 + y1) / 2
     zr = WZ + 1.05 * t + 0.1
     gable_roof(P, M, (-2.45, yc, zr), (2.45, yc, zr), 1.6, pitch, 2, lip=None, trim='wall', tile_kw=ZINC,
-               ridge_r=0.13, ridge_verts=4, balls=False, barge_h=0.2)
+               ridge_r=0.13, ridge_verts=4, balls=False, barge_h=0.2, wear=new_wear('zinc', rust=0.55, moss=0.6, seed=3))
     for sx in (-1, 1):
         top = lambda xx: max(WZ, zr - 0.1 - abs(xx) * t)
         P.append(vplank_panel("gable", (sx * x1, yc, 0), facing_rot((sx, 0)), -1.05, 1.05, lambda xx: WZ - 0.05,
@@ -534,6 +611,103 @@ def build_kantor():
     finish(root, P, name)
     sign = board_with_uv("SignBoard", bw, bh, 0.05, M['wall'], (sx_, sy_ + 0.02, bz))
     sign.parent = root          # root sits at the origin with identity transform
+    center_root(root)
+    return root
+
+
+def build_gudang():
+    """Open wooden farm shed (gudang kebun) like the target's top-left corner: six posts, a rusty
+    corrugated zinc lean-to roof that is high at the open front (so the game camera sees the stock
+    inside), plank back + left walls, low rails on the open right side, concrete floor with crates,
+    sacks, a pallet of fertiliser, harvesting poles and a drum; a signboard on two posts in
+    front-left whose face is the separate child `SignBoard` (like kantor's)."""
+    name = "gudang"
+    root = empty(name)
+    M = dict(roof=mat("M_Roof", "#a8a296"), trim=mat("M_Wood", "#6f5236"), plank=mat("M_Plank", "#a27b52"),
+             board=mat("M_Board", "#efe3c4"), green=mat("M_Print", "#5d8a45"))
+    P = []
+    x0, x1, y0, y1 = -2.5, 2.5, -1.15, 1.15
+    ZF, ZB = 2.75, 2.15                          # beam tops at the front / back
+    ya = -2.15                                   # front edge of the concrete apron
+    t = (ZF - ZB) / (y1 - y0)
+    pitch = math.atan(t)
+    zbeam = lambda y: ZF - (y - y0) * t          # top of the rafters at y
+    # --- floor slab (concrete: roof grey, a bit darker)
+    slab = bx("slab", (x1 - x0 + 0.5, y1 + 0.25 - ya, 0.1), (0, (y1 + 0.25 + ya) / 2, 0.05), M['roof'], 0.03, 1)
+    wattr(slab, "w_shade", -0.12)
+    P.append(slab)
+    # --- frame: posts, front/back beams, sloped rafters, knee braces at the front
+    for x in (x0, 0.0, x1):
+        for y in (y0, y1):
+            h = zbeam(y)
+            P.append(bx("post", (0.17, 0.17, h), (x, y, h / 2), M['trim'], 0.03, 1))
+        P.append(beam("rafter", (x, y0 - 0.3, zbeam(y0 - 0.3) - 0.09), (x, y1 + 0.3, zbeam(y1 + 0.3) - 0.09), 0.13,
+                      0.18, Z, M['trim'], 0.025))
+    for y in (y0, y1):
+        P.append(beam("beam", (x0 - 0.12, y, zbeam(y) - 0.2), (x1 + 0.12, y, zbeam(y) - 0.2), 0.15, 0.2, Z, M['trim'],
+                      0.025))
+    for x, sg in ((x0, 1), (0.0, -1), (0.0, 1), (x1, -1)):
+        P.append(beam("brace", (x + sg * 0.06, y0, ZF - 1.0), (x + sg * 0.62, y0, ZF - 0.28), 0.1, 0.1, (0, -1, 0),
+                      M['trim'], 0.0))
+    # --- roof: corrugated zinc lean-to falling toward the back, heavy rust + moss streaks
+    yf, yb = y0 - 0.4, y1 + 0.35
+    shed_roof(P, M, (0, yf, zbeam(yf) + 0.04), (0, 1, 0), (1, 0, 0), x0 - 0.4, x1 + 0.4, yb - yf, pitch, 3,
+              tile='roof', trim='trim', tile_kw=ZINC, wear=new_wear('zinc', rust=1.35, moss=1.0, seed=7))
+    # --- walls: back (vertical planks, both faces), left side following the slope, rails on the right
+    P.append(vplank_panel("wall_b", (0, y1 + 0.09, 0), facing_rot((0, 1)), x0, x1, lambda q: 0.1,
+                          lambda q: zbeam(y1) - 0.2, 0.3, 0.028, M['plank']))
+    P.append(vplank_panel("wall_bi", (0, y1 + 0.03, 0), facing_rot((0, -1)), x0, x1, lambda q: 0.1,
+                          lambda q: zbeam(y1) - 0.2, 0.3, 0.022, M['plank']))
+    P.append(vplank_panel("wall_l", (x0 - 0.09, 0, 0), facing_rot((-1, 0)), y0, y1, lambda q: 0.1,
+                          lambda q: zbeam(-q) - 0.2, 0.3, 0.028, M['plank']))
+    P.append(vplank_panel("wall_li", (x0 - 0.03, 0, 0), facing_rot((1, 0)), y0, y1, lambda q: 0.1,
+                          lambda q: zbeam(q) - 0.2, 0.3, 0.022, M['plank']))
+    for z in (0.45, 0.95):
+        P.append(beam("rail", (x1 + 0.1, y0 + 0.1, z), (x1 + 0.1, y1 - 0.1, z), 0.07, 0.14, Z, M['plank'], 0.02))
+    P.append(beam("rail_x", (x1 + 0.1, y0 + 0.12, 0.3), (x1 + 0.1, y1 - 0.12, 1.1), 0.06, 0.1, (1, 0, 0), M['plank'], 0))
+    # --- contents: stock at the back under the roof, a loading area on the apron in front
+    rnd = random.Random(12)
+    FZ = 0.1
+    for (cx, cy, cz, rz) in ((-1.95, 0.75, FZ, 0.04), (-1.3, 0.8, FZ, -0.06), (-1.9, 0.73, FZ + 0.44, 0.12),
+                             (-1.35, 0.8, FZ + 0.44, -0.1), (-1.95, 0.75, FZ + 0.88, -0.05), (-0.35, -1.6, FZ, 0.25),
+                             (0.3, -1.72, FZ, -0.1)):
+        PR.crate_parts(P, M['plank'], M['plank'], loc=(cx, cy, cz), size=(0.62, 0.46, 0.44), rotz=rz, lo=True)
+    # pallet with cream fertiliser sacks (green band) on the apron, front right
+    px_, py_ = 1.45, -1.45
+    for i in range(3):
+        P.append(bx("pallet", (1.15, 0.2, 0.04), (px_, py_ - 0.26 + i * 0.26, FZ + 0.1), M['plank'], 0))
+    for x in (px_ - 0.5, px_ + 0.5):
+        P.append(bx("pallet_run", (0.12, 0.78, 0.08), (x, py_, FZ + 0.04), M['trim'], 0))
+    k = 0
+    for layer, (n, zz) in enumerate(((2, FZ + 0.12), (2, FZ + 0.12 + 0.2), (1, FZ + 0.12 + 0.4))):
+        for i in range(n):
+            xx = px_ + (i - (n - 1) / 2) * 0.5
+            P.append(PR.sack("sack", M['board'], M['green'], loc=(xx, py_, zz),
+                             rotz=math.pi / 2 + rnd.uniform(-0.08, 0.08), L=0.68, W=0.46, T=0.23, lo=True, seed=k))
+            k += 1
+    # green sacks slumped at the back, one leaning
+    for (sx_, sy_, rz, tl) in ((0.45, 0.8, 0.2, (0.0, 0.0)), (1.05, 0.75, -0.25, (0.0, 0.0)),
+                               (0.75, 0.85, 0.05, (0.25, 0.1))):
+        P.append(PR.sack("sack_g", M['green'], M['board'], loc=(sx_, sy_, FZ + (0.18 if tl[0] else 0.0)), rotz=rz,
+                         L=0.66, W=0.44, T=0.24, lo=True, seed=20 + k, tilt=tl))
+        k += 1
+    # harvesting poles (egrek) leaning on the back wall, and a green drum by the right front post
+    for x in (-0.55, -0.42):
+        P.append(rod("egrek", (x, y1 - 0.6, FZ), (x + 0.1, y1 - 0.05, FZ + 1.95), 0.03, M['plank'], 5))
+    P.append(add_cyl("drum", 0.28, 0.86, loc=(2.05, -0.6, FZ + 0.43), material=M['green'], verts=10))
+    # --- signboard in front-left: two posts, backing frame, little zinc cap
+    sx_, sy_ = -1.55, -2.5
+    bw, bh, bz = 1.7, 0.95, 1.3
+    for sg in (-1, 1):
+        P.append(bx("sign_post", (0.13, 0.13, 1.95), (sx_ + sg * (bw / 2 + 0.1), sy_ + 0.08, 0.975), M['trim'], 0.03, 1))
+    P.append(bx("sign_back", (bw + 0.16, 0.09, bh + 0.16), (sx_, sy_ + 0.09, bz), M['trim'], 0.035, 2))
+    cap = beam("sign_cap", (sx_ - bw / 2 - 0.25, sy_ + 0.08, bz + bh / 2 + 0.17),
+               (sx_ + bw / 2 + 0.25, sy_ + 0.08, bz + bh / 2 + 0.17), 0.36, 0.07, Z, M['roof'], 0.025)
+    wattr(cap, "w_rust", 0.55)
+    P.append(cap)
+    finish(root, P, name)
+    sign = board_with_uv("SignBoard", bw, bh, 0.05, M['board'], (sx_, sy_ + 0.03, bz))
+    sign.parent = root
     center_root(root)
     return root
 
@@ -713,13 +887,15 @@ def build_toko():
 
 
 def shed_roof(P, M, O, down, along, x0, x1, plan, pitch, rows, tile='roof', lip=None, trim='trim', tile_kw=None,
-              barge=True, fascia=True, back=True):
+              barge=True, fascia=True, back=True, wear=None):
     """Mono-pitch (lean-to) roof starting at high edge point O, falling along `down`."""
     Ov, ex, ev, en = slope_frame(O, down, along, pitch)
     vl = plan / math.cos(pitch)
     v, f, k = [], [], []
-    tile_slope(v, f, Ov, ex, ev, en, vl, lambda s_: (x0, x1), rows, kinds=k, **(tile_kw or {}))
-    P.append(roof_mesh("roof_tiles", v, f, k, M[tile], M[lip] if lip else None))
+    if wear is None:
+        wear = new_wear('zinc' if tile_kw else 'clay', seed=_seed(*O))
+    tile_slope(v, f, Ov, ex, ev, en, vl, lambda s_: (x0, x1), rows, kinds=k, wear=wear, **(tile_kw or {}))
+    P.append(roof_mesh("roof_tiles", v, f, k, M[tile], M[lip] if lip else None, wear=wear))
     if barge:
         for x in (x0 - 0.04, x1 + 0.04):
             P.append(beam("barge", Ov + ex * x + ev * -0.06 + en * 0.02, Ov + ex * x + ev * (vl + 0.03) + en * 0.02,
@@ -1093,68 +1269,81 @@ def build_perahu():
 
 
 def build_truck():
-    """Chunky toy-like yellow pickup facing -Y. Child `Cargo` = heap of palm fruit bunches in the bed."""
+    """Small cab-over plantation truck (like the target's): cream-white cab with a flat face facing -Y,
+    grey chassis, weathered wooden slatted cargo bed. Child `Cargo` = heap of palm fruit bunches in
+    the bed (the game toggles it)."""
     name = "truck"
     root = empty(name)
-    M = dict(paint=mat("M_Paint", "#f2c14e"), dark=mat("M_Dark", "#2f2724"), win=mat("M_Window", "#bfd9e0", 0.4),
-             fruit=mat("M_Fruit", "#dc5a2c"))
+    M = dict(paint=mat("M_Paint", "#efeadf"), dark=mat("M_Dark", "#3a3431"), win=mat("M_Window", "#a9c9d2", 0.4),
+             wood=mat("M_Wood", "#8f6b45"), fruit=mat("M_Fruit", "#dc5a2c"))
     P = []
     W = 1.78
-    # chassis + bumpers
-    P.append(bx("chassis", (1.3, 3.9, 0.22), (0, 0.0, 0.5), M['dark'], 0.04, 1))
-    P.append(bx("bumper_f", (W + 0.04, 0.2, 0.22), (0, -2.02, 0.52), M['dark'], 0.07, 2))
-    P.append(bx("bumper_r", (W, 0.16, 0.18), (0, 2.02, 0.52), M['dark'], 0.05, 2))
-    # hood / front block
-    P.append(bx("hood", (W, 0.95, 0.62), (0, -1.5, 0.92), M['paint'], 0.14, 3))
-    P.append(bx("grille", (1.0, 0.06, 0.3), (0, -1.98, 0.88), M['dark'], 0.03, 1))
+    # chassis rails, bumpers, fuel tank, mud flaps
     for sx in (-1, 1):
-        P.append(add_cyl("headlight", 0.13, 0.08, loc=(sx * 0.68, -1.97, 0.95), material=M['win'], verts=10,
+        P.append(bx("rail", (0.16, 4.0, 0.2), (sx * 0.45, 0.05, 0.52), M['dark'], 0.03, 1))
+    P.append(bx("bumper_f", (W + 0.06, 0.18, 0.24), (0, -2.1, 0.55), M['dark'], 0.06, 2))
+    P.append(bx("bumper_r", (W - 0.1, 0.12, 0.14), (0, 2.1, 0.52), M['dark'], 0.03, 1))
+    P.append(add_cyl("tank", 0.2, 0.7, loc=(-0.72, 0.1, 0.5), material=M['paint'], verts=10, rot=(math.pi / 2, 0, 0)))
+    wattr(P[-1], "w_shade", -0.25)
+    # cab-over cab
+    cy0, cy1 = -2.05, -0.82
+    P.append(bx("cab", (W, cy1 - cy0, 1.36), (0, (cy0 + cy1) / 2, 1.3), M['paint'], 0.15, 3))
+    P.append(bx("cab_roof", (W - 0.18, cy1 - cy0 - 0.2, 0.08), (0, (cy0 + cy1) / 2 + 0.03, 2.0), M['paint'], 0.035, 2))
+    P.append(bx("windshield", (W - 0.26, 0.06, 0.55), (0, cy0 - 0.005, 1.6), M['win'], 0.03, 1,
+                rot=(math.radians(-6), 0, 0)))
+    P.append(bx("grille", (1.0, 0.06, 0.26), (0, cy0 - 0.01, 0.92), M['dark'], 0.03, 1))
+    P.append(bx("face_band", (W - 0.2, 0.04, 0.06), (0, cy0 - 0.01, 1.22), M['dark'], 0.0))
+    for sx in (-1, 1):
+        P.append(add_cyl("headlight", 0.11, 0.06, loc=(sx * 0.66, cy0 - 0.01, 0.92), material=M['win'], verts=10,
                          rot=(math.pi / 2, 0, 0)))
-        P.append(add_cyl("headlight_rim", 0.16, 0.06, loc=(sx * 0.68, -1.945, 0.95), material=M['dark'], verts=10,
-                         rot=(math.pi / 2, 0, 0)))
-    # cab
-    P.append(bx("cab", (W, 1.25, 1.3), (0, -0.45, 1.2), M['paint'], 0.16, 3))
-    P.append(bx("cab_roof", (W - 0.12, 1.05, 0.08), (0, -0.42, 1.88), M['paint'], 0.04, 2))
-    P.append(bx("windshield", (W - 0.28, 0.06, 0.52), (0, -1.075, 1.48), M['win'], 0.03, 1, rot=(math.radians(-14), 0, 0)))
+        P.append(bx("indicator", (0.14, 0.05, 0.07), (sx * 0.66, cy0 - 0.01, 1.08), M['fruit'], 0))
+        P.append(bx("side_win", (0.06, 0.62, 0.48), (sx * (W / 2 + 0.005), -1.6, 1.58), M['win'], 0.03, 1))
+        P.append(bx("door_line", (0.04, 0.03, 0.9), (sx * (W / 2 + 0.005), -1.18, 1.25), M['dark'], 0.0))
+        P.append(bx("handle", (0.04, 0.12, 0.035), (sx * (W / 2 + 0.02), -1.32, 1.28), M['dark'], 0))
+        P.append(beam("mirror_arm", (sx * (W / 2), -1.95, 1.62), (sx * (W / 2 + 0.2), -2.02, 1.66), 0.04, 0.04, Z,
+                      M['dark'], 0))
+        P.append(bx("mirror", (0.08, 0.05, 0.26), (sx * (W / 2 + 0.22), -2.02, 1.55), M['dark'], 0))
+        P.append(bx("step", (0.14, 0.36, 0.05), (sx * (W / 2 - 0.02), -1.3, 0.5), M['dark'], 0))
+    P.append(bx("cab_back", (W - 0.3, 0.08, 1.1), (0, cy1 + 0.02, 1.25), M['dark'], 0.02, 1))
+    # wooden cargo bed: floor, slatted sides + stakes, tall headboard, tailgate
+    by0, by1, bz = -0.68, 2.05, 0.78
+    P.append(bx("bed_floor", (W, by1 - by0, 0.12), (0, (by0 + by1) / 2, bz - 0.06), M['wood'], 0.02, 1))
     for sx in (-1, 1):
-        P.append(bx("side_win", (0.06, 0.78, 0.46), (sx * (W / 2 + 0.005), -0.48, 1.5), M['win'], 0.03, 1))
-        P.append(bx("mirror", (0.2, 0.08, 0.14), (sx * (W / 2 + 0.12), -1.0, 1.35), M['dark'], 0.03, 1))
-        P.append(bx("handle", (0.04, 0.14, 0.04), (sx * (W / 2 + 0.02), -0.2, 1.2), M['dark'], 0))
-    P.append(bx("back_win", (W - 0.5, 0.06, 0.34), (0, 0.18, 1.55), M['win'], 0.03, 1))
-    # bed
-    by0, by1, bz = 0.25, 2.08, 0.78
-    P.append(bx("bed_floor", (W - 0.1, by1 - by0, 0.14), (0, (by0 + by1) / 2, bz - 0.07), M['dark'], 0.03, 1))
+        for zz in (0.1, 0.3, 0.5):
+            P.append(bx("side_plank", (0.05, by1 - by0, 0.15), (sx * (W / 2 - 0.025), (by0 + by1) / 2, bz + zz + 0.02),
+                        M['wood'], 0))
+        for y in (by0 + 0.05, (by0 + by1) / 2, by1 - 0.05):
+            P.append(bx("stake", (0.09, 0.09, 0.72), (sx * (W / 2 + 0.01), y, bz + 0.3), M['wood'], 0))
+    for zz in (0.1, 0.3, 0.5, 0.7, 0.9):
+        P.append(bx("head_plank", (W - 0.02, 0.05, 0.15), (0, by0 + 0.02, bz + zz + 0.02), M['wood'], 0))
+    for zz in (0.1, 0.3, 0.5):
+        P.append(bx("tail_plank", (W - 0.1, 0.05, 0.15), (0, by1 - 0.02, bz + zz + 0.02), M['wood'], 0))
     for sx in (-1, 1):
-        P.append(bx("bed_side", (0.1, by1 - by0, 0.55), (sx * (W / 2 - 0.05), (by0 + by1) / 2, bz + 0.2), M['paint'],
-                    0.045, 1))
-    P.append(bx("bed_front", (W, 0.1, 0.55), (0, by0 + 0.05, bz + 0.2), M['paint'], 0.045, 1))
-    P.append(bx("tailgate", (W, 0.1, 0.55), (0, by1 - 0.05, bz + 0.2), M['paint'], 0.045, 1))
-    P.append(bx("rack", (W - 0.1, 0.08, 0.08), (0, by0 + 0.05, 1.6), M['dark'], 0.02, 1))
-    for sx in (-1, 1):
-        P.append(bx("rack_post", (0.07, 0.07, 0.62), (sx * (W / 2 - 0.1), by0 + 0.05, 1.28), M['dark'], 0))
-        P.append(bx("taillight", (0.14, 0.05, 0.18), (sx * 0.7, by1 + 0.01, 0.98), M['fruit'], 0.02, 1))
-    # wheels (chunky tyres + pale hubcaps) under yellow fender flares
-    for wy in (-1.35, 1.35):
+        P.append(bx("taillight", (0.18, 0.05, 0.1), (sx * 0.66, by1 + 0.07, 0.62), M['fruit'], 0))
+        P.append(bx("mudflap", (0.34, 0.03, 0.3), (sx * 0.62, 1.78, 0.32), M['dark'], 0))
+    # wheels: chunky tyres, pale hubs
+    for wy in (-1.45, 1.2):
         for sx in (-1, 1):
-            x = sx * (W / 2 - 0.12)
-            ty_ = add_cyl("tyre", 0.4, 0.34, loc=(x, wy, 0.4), material=M['dark'], verts=14, rot=(0, math.pi / 2, 0))
+            x = sx * (W / 2 - 0.16)
+            ty_ = add_cyl("tyre", 0.39, 0.32, loc=(x, wy, 0.39), material=M['dark'], verts=12, rot=(0, math.pi / 2, 0))
             bevel_obj(ty_, 0.07, 1)
             P.append(ty_)
-            P.append(add_cyl("hub", 0.2, 0.08, loc=(x + sx * 0.15, wy, 0.4), material=M['win'], verts=10,
+            P.append(add_cyl("hub", 0.19, 0.08, loc=(x + sx * 0.14, wy, 0.39), material=M['paint'], verts=10,
                              rot=(0, math.pi / 2, 0)))
-            P.append(bx("fender", (0.42, 1.0, 0.16), (sx * (W / 2 - 0.1), wy, 0.86 if wy < 0 else 0.84), M['paint'],
-                        0.07, 1))
+            wattr(P[-1], "w_shade", -0.3)
     finish(root, P, name)
     # --- cargo: heap of palm fruit bunches in the bed (separate child, game toggles it)
     rnd = random.Random(11)
     CP = []
-    spots = [(-0.45, 0.66), (0.02, 0.62), (0.45, 0.68), (-0.44, 1.22), (0.46, 1.2), (-0.45, 1.74),
-             (0.0, 1.72), (0.45, 1.72), (-0.22, 0.98, 1), (0.24, 0.95, 1), (-0.2, 1.48, 1), (0.23, 1.47, 1),
-             (0.0, 1.22, 1.6)]
-    for i, sp in enumerate(spots):
-        layer = sp[2] if len(sp) > 2 else 0
+    spots = []
+    for j, y in enumerate((-0.35, 0.3, 0.95, 1.6)):
+        for x in (-0.5, 0.0, 0.5):
+            spots.append((x + rnd.uniform(-0.06, 0.06), y + rnd.uniform(-0.06, 0.06), 0))
+    spots += [(-0.25, -0.05, 1), (0.25, 0.1, 1), (-0.25, 0.75, 1), (0.25, 0.65, 1), (-0.1, 1.3, 1), (0.3, 1.35, 1),
+              (0.0, 0.4, 1.7)]
+    for i, (x, y, layer) in enumerate(spots):
         z = bz + layer * 0.3
-        CP.append(PR.bunch("tbs", (M['fruit'], M['fruit'], M['dark']), loc=(sp[0], sp[1], z - 0.03),
+        CP.append(PR.bunch("tbs", (M['fruit'], M['fruit'], M['dark']), loc=(x, y, z - 0.03),
                            size=1.0 + rnd.uniform(-0.08, 0.08), seed=i,
                            rot=(rnd.uniform(-0.5, 0.5), rnd.uniform(-0.5, 0.5), rnd.uniform(0, 6.28))))
     cargo = join(CP, "Cargo")
@@ -1178,6 +1367,15 @@ BUILDERS = {
     "dermaga": build_dermaga,
     "perahu": build_perahu,
     "truck": build_truck,
+    "gudang": build_gudang,
+}
+# weather_bake kwargs per building (default: AO 1 m + a brown dirt band up to 0.45 m)
+WEATHER = {
+    "dermaga": dict(ground=False, dirt=0.0),
+    "perahu": dict(ground=False, dirt=0.0, distance=0.6),
+    "truck": dict(dirt=0.6, dirt_h=0.75, distance=0.8),
+    "pos_calo": dict(dirt=0.45, dirt_h=0.3, distance=0.8),
+    "warung": dict(dirt=0.5, dirt_h=0.4),
 }
 ICONS = {
     "truck": lambda root: render_icon(root, "icon_truk", pitch_deg=30, yaw_deg=42, margin=0.86),
@@ -1195,11 +1393,13 @@ def main():
         d = dims(root)
         print(f"[dims] {n}: {d[0]:.2f} x {d[1]:.2f} x {d[2]:.2f} m  tris={count_tris(root)}  "
               f"mats={sorted({s.material.name for o in all_descendants(root) if o.type == 'MESH' for s in o.material_slots})}")
+        weather_bake(root, **WEATHER.get(n, {}))
+        export_glb(root, n)
+        preview_vcol(root)          # materials now multiply by Col (previews / icons only)
         if not no_render:
             render_preview(root, n)
             if DEBUG:
                 debug_view(root, n + "_game", 55, 0)
-        export_glb(root, n)
         if not no_render and n in ICONS:
             ICONS[n](root)
 

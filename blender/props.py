@@ -16,6 +16,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+import numpy as np  # noqa: E402
 import bpy  # noqa: E402
 import bmesh  # noqa: E402
 from mathutils import Matrix, Vector  # noqa: E402
@@ -175,8 +176,11 @@ def part_tris(o):
     return n
 
 
-def finish(root, parts, name):
-    """Join parts into '<name>_mesh' under root (prints a tri breakdown with --debug)."""
+def finish(root, parts, name, var=0.09):
+    """Join parts into '<name>_mesh' under root (prints a tri breakdown with --debug).
+    Every part without its own weathering tag gets a small random brightness offset (`var`), so
+    planks, posts and boxes of one material read as separate hand-made pieces once baked."""
+    part_variation(parts, name, var)
     if DEBUG:
         agg = {}
         for p in parts:
@@ -225,6 +229,234 @@ def board_with_uv(name, w, h, d, m, origin, bevel=0.012):
     if bevel:
         bevel_obj(o, bevel, 1)
     return o
+
+
+# ============================================================ weathering + baked vertex AO
+# Everything static is exported with an active colour attribute `Col` that the game multiplies
+# into the albedo: Cycles-baked ambient occlusion (soft, floor ~0.45) times cheap weathering:
+#   w_shade (FACE)  brightness offset: per plank / tile / part variation, dark plank grooves
+#   w_rust  (FACE)  rust streak amount on corrugated zinc (stronger toward the eave via w_down)
+#   w_moss  (FACE)  moss / algae amount (roofs, damp bases)
+#   w_down  (POINT) 0 at a roof ridge .. 1 at the eave
+# plus a brownish dirt band near the ground. The helper attributes are removed after baking.
+# the game multiplies these in linear space, so they are much stronger than they look as hex
+RUST = np.array((0.55, 0.24, 0.09))
+MOSS = np.array((0.45, 0.62, 0.16))
+DIRT = np.array((0.52, 0.38, 0.24))
+NO_VAR = ("Glass", "Lamp", "Window", "Fruit")
+W_ATTRS = ("w_shade", "w_rust", "w_moss", "w_down")
+
+
+def _seed(*vals):
+    """Deterministic integer seed from numbers/strings (Python's hash() is salted per run)."""
+    s = 0
+    for v in vals:
+        if isinstance(v, str):
+            for ch in v:
+                s = (s * 131 + ord(ch)) % 2147483647
+        else:
+            s = (s * 131 + int(round(float(v) * 1000))) % 2147483647
+    return s
+
+
+def wattr(o, name, values, domain="FACE"):
+    """Set a float weathering attribute on mesh object o. `values`: constant, per-element list,
+    or fn(element centre / vertex co in object space)."""
+    me = o.data
+    a = me.attributes.get(name)
+    if a is None:
+        a = me.attributes.new(name, "FLOAT", domain)
+    n = len(a.data)
+    if callable(values):
+        elems = me.polygons if domain == "FACE" else me.vertices
+        vals = [float(values(e.center if domain == "FACE" else e.co)) for e in elems]
+    elif isinstance(values, (list, tuple, np.ndarray)):
+        vals = [float(v) for v in values]
+        assert len(vals) == n, (name, len(vals), n)
+    else:
+        vals = [float(values)] * n
+    a.data.foreach_set("value", vals)
+    return o
+
+
+def part_variation(parts, name, var=0.09):
+    rnd = random.Random(_seed(name, len(parts)))
+    for p in parts:
+        if p.type != "MESH" or var <= 0 or "w_shade" in p.data.attributes:
+            continue
+        mname = p.data.materials[0].name if len(p.data.materials) and p.data.materials[0] else ""
+        if any(w in mname for w in NO_VAR):
+            continue
+        wattr(p, "w_shade", rnd.uniform(-var * 1.3, var * 0.7))
+
+
+def _fattr(me, name, n):
+    a = me.attributes.get(name)
+    if a is None:
+        return np.zeros(n, np.float32)
+    arr = np.empty(len(a.data), np.float32)
+    a.data.foreach_get("value", arr)
+    return arr
+
+
+def _hemi_dirs(k, seed=3):
+    """Stratified cosine-weighted hemisphere directions around +Z (k rounded to a square)."""
+    rnd = random.Random(seed)
+    n = max(2, int(round(math.sqrt(k))))
+    out = []
+    for i in range(n):
+        for j in range(n):
+            u, v = (i + rnd.random()) / n, (j + rnd.random()) / n
+            r, ph = math.sqrt(u), 2 * math.pi * v
+            out.append((r * math.cos(ph), r * math.sin(ph), math.sqrt(max(0.0, 1 - u))))
+    return out
+
+
+def vertex_ao(meshes, distance=1.0, samples=36, floor=0.45, gamma=0.8, ground=True, inset=0.05):
+    """Ray-traced ambient occlusion into a CORNER colour attribute `Col` (same output as
+    common.bake_vertex_ao, but every corner is sampled a few cm inside its own face, so corners
+    that are buried in a neighbouring part (kit-bashed boxes, posts through slats) do not darken
+    the whole face, while real contacts still get a soft shadow). The ground plane z = 0 occludes
+    too when `ground`. Values are remapped to [floor, 1] with `gamma`."""
+    from mathutils.bvhtree import BVHTree
+    for o in meshes:
+        C.apply_modifiers(o)
+    allv, allf = [], []
+    for o in meshes:
+        M = o.matrix_world
+        b = len(allv)
+        allv += [tuple(M @ v.co) for v in o.data.vertices]
+        allf += [tuple(b + i for i in p.vertices) for p in o.data.polygons]
+    bvh = BVHTree.FromPolygons(allv, allf)
+    H = _hemi_dirs(samples)
+    for o in meshes:
+        me = o.data
+        M = o.matrix_world
+        N3 = M.to_3x3().inverted().transposed()
+        wco = [M @ v.co for v in me.vertices]
+        vals = np.ones(len(me.loops))
+        for p in me.polygons:
+            n = (N3 @ p.normal).normalized()
+            if n.length < 0.5:
+                continue
+            c = M @ p.center
+            t1 = n.orthogonal().normalized()
+            t2 = n.cross(t1)
+            dirs = [t1 * h[0] + t2 * h[1] + n * h[2] for h in H]
+            for li in p.loop_indices:
+                v = wco[me.loops[li].vertex_index]
+                to_c = c - v
+                L = to_c.length
+                pos = v + (to_c * (min(inset, 0.35 * L) / L) if L > 1e-6 else Vector()) + n * 0.003
+                occ = 0.0
+                for d in dirs:
+                    t = distance
+                    hit = bvh.ray_cast(pos, d, distance)
+                    if hit[0] is not None:
+                        t = hit[3]
+                    if ground and d.z < -1e-4 and pos.z > -1e-3:
+                        tg = -pos.z / d.z
+                        if tg < t:
+                            t = tg
+                    if t < distance:
+                        occ += 1.0 - (t / distance) ** 2
+                ao = 1.0 - occ / len(dirs)
+                vals[li] = floor + (1.0 - floor) * max(0.0, ao) ** gamma
+        # smooth-shaded faces: average per vertex so the AO is not faceted
+        sm = np.zeros(len(me.vertices))
+        cnt = np.zeros(len(me.vertices))
+        for p in me.polygons:
+            if p.use_smooth:
+                for li in p.loop_indices:
+                    vi = me.loops[li].vertex_index
+                    sm[vi] += vals[li]
+                    cnt[vi] += 1
+        for p in me.polygons:
+            if p.use_smooth:
+                for li in p.loop_indices:
+                    vi = me.loops[li].vertex_index
+                    vals[li] = sm[vi] / cnt[vi]
+        if "Col" in me.color_attributes:
+            me.color_attributes.remove(me.color_attributes["Col"])
+        attr = me.color_attributes.new("Col", "BYTE_COLOR", "CORNER")
+        me.color_attributes.active_color = attr
+        me.color_attributes.render_color_index = me.color_attributes.active_color_index
+        buf = np.ones((len(me.loops), 4), np.float32)
+        buf[:, :3] = vals[:, None]
+        attr.data.foreach_set("color", buf.ravel())
+
+
+def weather_bake(root, dirt=0.5, dirt_h=0.45, ground=True, distance=1.0, floor=0.45, samples=36):
+    """Bake AO into `Col` on every mesh under root, then multiply the weathering tints in."""
+    bpy.context.view_layer.update()
+    meshes = [o for o in all_descendants(root) if o.type == "MESH" and len(o.data.polygons)]
+    vertex_ao(meshes, distance=distance, samples=samples, floor=floor, ground=ground)
+    for o in meshes:
+        me = o.data
+        nl, nf, nv = len(me.loops), len(me.polygons), len(me.vertices)
+        col = me.color_attributes["Col"]
+        buf = np.empty(nl * 4, np.float32)
+        col.data.foreach_get("color", buf)
+        ao = buf.reshape(-1, 4)[:, 0].astype(np.float64)
+        vi = np.empty(nl, np.int64)
+        me.loops.foreach_get("vertex_index", vi)
+        lt = np.empty(nf, np.int64)
+        me.polygons.foreach_get("loop_total", lt)
+        fi = np.repeat(np.arange(nf), lt)
+        shade = _fattr(me, "w_shade", nf)[fi]
+        rust = _fattr(me, "w_rust", nf)[fi]
+        moss = _fattr(me, "w_moss", nf)[fi]
+        down = _fattr(me, "w_down", nv)[vi]
+        co = np.empty(nv * 3, np.float32)
+        me.vertices.foreach_get("co", co)
+        M = np.array(o.matrix_world)
+        wz = (co.reshape(-1, 3) @ M[:3, :3].T + M[:3, 3])[:, 2][vi]
+        rgb = np.repeat((ao * (1.0 + shade))[:, None], 3, 1)
+        ra = np.clip(rust * (0.3 + 0.7 * down), 0, 1)[:, None]
+        rgb *= 1.0 - ra * (1.0 - RUST)
+        ma = np.clip(moss * (0.25 + 0.75 * down), 0, 1)[:, None]
+        rgb *= 1.0 - ma * (1.0 - MOSS)
+        if dirt > 0:
+            t = np.clip(wz / dirt_h, 0, 1)
+            t = t * t * (3 - 2 * t)
+            rgb *= 1.0 - (dirt * (1 - t))[:, None] * (1.0 - DIRT)
+        # keep the tint's hue but never let the brightest channel drop below ~0.4 (soft, never black)
+        rgb *= np.maximum(1.0, 0.32 / np.maximum(rgb.max(1), 1e-3))[:, None]
+        out = np.ones((nl, 4), np.float32)
+        out[:, :3] = np.clip(rgb, 0.0, 1.0)
+        col.data.foreach_set("color", out.ravel())
+        for a in W_ATTRS:
+            if a in me.attributes:
+                me.attributes.remove(me.attributes[a])
+        me.color_attributes.active_color = me.color_attributes["Col"]
+
+
+def preview_vcol(root):
+    """After export: make the materials multiply their colour by `Col` so previews / icons show the
+    baked AO + weathering the way the game will (never call this before export_glb)."""
+    done = set()
+    for o in all_descendants(root):
+        if o.type != "MESH" or "Col" not in o.data.color_attributes:
+            continue
+        for slot in o.material_slots:
+            m = slot.material
+            if m is None or m.name in done or not m.use_nodes:
+                continue
+            done.add(m.name)
+            nt = m.node_tree
+            bsdf = nt.nodes.get("Principled BSDF")
+            if bsdf is None or bsdf.inputs["Base Color"].is_linked:
+                continue
+            ca = nt.nodes.new("ShaderNodeVertexColor")
+            ca.layer_name = "Col"
+            mx = nt.nodes.new("ShaderNodeMix")
+            mx.data_type = "RGBA"
+            mx.blend_type = "MULTIPLY"
+            sock = lambda coll, nm: [s for s in coll if s.name == nm and s.type == "RGBA"][0]
+            mx.inputs[0].default_value = 1.0
+            sock(mx.inputs, "A").default_value = bsdf.inputs["Base Color"].default_value
+            nt.links.new(ca.outputs["Color"], sock(mx.inputs, "B"))
+            nt.links.new(sock(mx.outputs, "Result"), bsdf.inputs["Base Color"])
 
 
 # ============================================================ debug rendering
@@ -316,7 +548,7 @@ def bunch(name, mats, loc=(0, 0, 0), size=1.0, seed=0, rot=(0, 0, 0), nspk=10):
         me.materials.append(m)
     for p in me.polygons:
         cz = p.center.z / rz
-        p.material_index = 2 if cz > 0.8 else (0 if cz > -0.35 else 1)
+        p.material_index = 0 if cz > -0.3 else 1
     shade_smooth(o)
     verts, faces = [], []
     for k in range(nspk):
@@ -372,19 +604,25 @@ def plastic_chair(P, m, x, y, rotz=0.0):
         P.append(bx("chair_arm", (0.05, 0.42, 0.05), fr(sx * 0.23, 0.0, 0.62), m, 0.015, 1, rotz))
 
 
-def crate_parts(P, m_wood, m_dark, loc=(0, 0, 0), size=(0.6, 0.45, 0.4), rotz=0.0):
-    """Slatted wooden crate: dark core + light slats + corner posts."""
+def crate_parts(P, m_wood, m_dark, loc=(0, 0, 0), size=(0.6, 0.45, 0.4), rotz=0.0, lo=False):
+    """Slatted wooden crate: dark core + light slats + corner posts (lo=True: no bevels, ~84 tris;
+    the core is tagged darker so one wood material is enough)."""
     x, y, z = loc
     sx, sy, sz = size
+    b1, b2 = (0.0, 0.0) if lo else (0.015, 0.015)
     fr = lambda lx, ly, lz: fpt((x, y, z), rotz, (lx, ly, lz))
-    P.append(bx("crate_core", (sx - 0.04, sy - 0.04, sz - 0.02), fr(0, 0, sz / 2), m_dark, 0, rotz=rotz))
+    core = bx("crate_core", (sx - 0.04, sy - 0.04, sz - 0.02), fr(0, 0, sz / 2), m_dark, 0, rotz=rotz)
+    if lo or m_dark is m_wood:
+        wattr(core, "w_shade", -0.45)
+    P.append(core)
     for k, zz in enumerate((0.25, 0.75)):
-        P.append(bx("crate_slat", (sx - 0.02, sy - 0.02, sz * 0.3), fr(0, 0, sz * zz), m_wood, 0.015, 1, rotz))
+        P.append(bx("crate_slat", (sx - 0.02, sy - 0.02, sz * 0.3), fr(0, 0, sz * zz), m_wood, b1, 1, rotz))
     for ax in (-1, 1):
         for ay in (-1, 1):
             P.append(bx("crate_post", (0.07, 0.07, sz), fr(ax * (sx / 2 - 0.035), ay * (sy / 2 - 0.035), sz / 2),
-                        m_wood, 0.015, 1, rotz))
-    P.append(bx("crate_top", (sx - 0.1, sy - 0.1, 0.03), fr(0, 0, sz - 0.02), m_wood, 0, rotz=rotz))
+                        m_wood, b2, 1, rotz))
+    if not lo:
+        P.append(bx("crate_top", (sx - 0.1, sy - 0.1, 0.03), fr(0, 0, sz - 0.02), m_wood, 0, rotz=rotz))
 
 
 def prop_root(name):
@@ -785,6 +1023,106 @@ def build_spanduk():
     return root
 
 
+def build_karung_tumpuk():
+    """Stack of fertiliser sacks on a wooden pallet: 3 + 2 layers, one jute sack for variety
+    (~1.25 x 0.85 x 0.5 m)."""
+    name = "karung_tumpuk"
+    root = prop_root(name)
+    M = dict(sack=mat("M_Sack", "#ece6d6"), band=mat("M_Print", "#4a8a4c"), jute=mat("M_Jute", "#b48d5c"),
+             wood=mat("M_Wood", "#9a7a52"))
+    P = []
+    # pallet: 4 deck boards on 3 runners
+    for i in range(4):
+        P.append(bx("deck", (1.25, 0.18, 0.035), (0, -0.33 + i * 0.22, 0.1175), M['wood'], 0))
+    for x in (-0.54, 0.0, 0.54):
+        P.append(bx("runner", (0.12, 0.84, 0.1), (x, 0, 0.05), M['wood'], 0))
+    z = 0.135
+    L, W, T = 0.62, 0.4, 0.22
+    for i, x in enumerate((-0.41, 0.0, 0.41)):                       # layer 1: long axis Y
+        body = M['jute'] if i == 2 else M['sack']
+        P.append(sack("sack", body, M['band'] if i != 2 else M['jute'], loc=(x, 0.0, z), rotz=math.pi / 2 + 0.05 * (i - 1),
+                      L=L, W=W, T=T, lo=True, seed=i))
+    z2 = z + T * 0.82
+    for i, y in enumerate((-0.2, 0.2)):                               # layer 2: long axis X
+        P.append(sack("sack", M['sack'], M['band'], loc=(-0.12 + 0.1 * i, y, z2), rotz=0.06 * (1 - 2 * i), L=L, W=W, T=T,
+                      lo=True, seed=5 + i, tilt=(0.04 * (1 - 2 * i), 0.0)))
+    finish(root, P, name)
+    center_root(root)
+    return root
+
+
+def build_drum():
+    """Red steel oil drum (~0.6 m wide, 0.88 m tall) with rolling hoops, rim, two bung caps and
+    rust at the base / in streaks (baked into the vertex colours)."""
+    name = "drum"
+    root = prop_root(name)
+    M = dict(steel=mat("M_Drum", "#c0503a", roughness=0.6), cap=mat("M_DrumCap", "#c9c3b4", roughness=0.5))
+    P = []
+    R, H = 0.29, 0.88
+    prof = [(0.0, 0.004), (R - 0.03, 0.0), (R - 0.004, 0.012), (R, 0.03), (R, 0.27), (R + 0.012, 0.285), (R + 0.012, 0.305),
+            (R, 0.32), (R, 0.56), (R + 0.012, 0.575), (R + 0.012, 0.595), (R, 0.61), (R, H - 0.03), (R + 0.006, H - 0.01),
+            (R - 0.006, H), (R - 0.02, H - 0.012), (R - 0.03, H - 0.016), (0.0, H - 0.016)]
+    o = lathe("drum", prof, 16, M['steel'])
+    weld(o, 1e-5)
+    fix_normals(o)
+    smooth_angle(o, 50)
+    rnd = random.Random(8)
+    streaks = [(rnd.uniform(0, 2 * math.pi), rnd.uniform(0.2, 0.5), rnd.uniform(0.4, 1.0)) for _ in range(5)]
+
+    def rust(c):
+        a = math.atan2(c.y, c.x)
+        s = max((st * max(0.0, 1 - abs(math.atan2(math.sin(a - a0), math.cos(a - a0))) / w) for a0, w, st in streaks))
+        base = max(0.0, 1 - c.z / 0.22) * 1.2 + max(0.0, (c.z - (H - 0.08)) / 0.08) * 0.6
+        return min(1.5, base + s * 1.3 * (1 - 0.6 * c.z / H))
+    wattr(o, "w_rust", rust)
+    wattr(o, "w_down", lambda co: 1.0 - co.z / H, "POINT")
+    wattr(o, "w_shade", 0.0)
+    P.append(o)
+    for x, y, r in ((0.15, 0.08, 0.045), (-0.17, -0.02, 0.03)):
+        P.append(add_cyl("bung", r, 0.03, loc=(x, y, H - 0.005), material=M['cap'], verts=8))
+    finish(root, P, name)
+    center_root(root)
+    return root
+
+
+def bamboo(P, p1, p2, r, m, verts=6, slant=0.0, name="bamboo"):
+    """Bamboo pole from p1 to p2 (open-ended cylinder, top cut slanted by `slant` metres)."""
+    o = rod(name, p1, p2, r, m, verts)
+    if slant:
+        top = max(v.co.z for v in o.data.vertices)
+        for v in o.data.vertices:
+            if v.co.z > top - 1e-4:
+                v.co.z += slant * (v.co.x / r)
+    P.append(o)
+    return o
+
+
+def build_pagar_bambu():
+    """Bamboo fence segment, 2 m along X (posts exactly on the segment ends so segments tile):
+    three thick posts, two rails behind, a row of slim vertical poles with slanted cuts, rope ties."""
+    name = "pagar_bambu"
+    root = prop_root(name)
+    M = dict(b=mat("M_Bamboo", "#c9a462"), d=mat("M_BambooDark", "#a3864f"), rope=mat("M_Rope", "#7a6446"))
+    P = []
+    rnd = random.Random(4)
+    for x in (-1.0, 0.0, 1.0):
+        bamboo(P, (x, 0.03, 0.0), (x, 0.03, 1.12), 0.05, M['d'], 8, slant=0.05, name="post")
+    for z in (0.34, 0.8):
+        P.append(rod("rail", (-1.0, 0.05, z), (1.0, 0.05, z), 0.03, M['d'], 6))
+        for x in (-1.0, 0.0, 1.0):
+            P.append(bx("tie", (0.12, 0.13, 0.07), (x, 0.035, z), M['rope'], 0))
+    xs = [-0.88 + i * 0.136 for i in range(14)]
+    for x in xs:
+        if min(abs(x - px) for px in (-1.0, 0.0, 1.0)) < 0.07:
+            continue
+        h = rnd.uniform(0.88, 1.02)
+        xx = x + rnd.uniform(-0.015, 0.015)
+        bamboo(P, (xx, -0.005, 0.0), (xx + rnd.uniform(-0.02, 0.02), -0.005, h), rnd.uniform(0.021, 0.026), M['b'], 6,
+               slant=rnd.choice((-1, 1)) * 0.03, name="pole")
+    finish(root, P, name, var=0.08)
+    return root
+
+
 def build_meja():
     """Small wooden table (~0.9 x 0.6 x 0.72 m)."""
     name = "meja"
@@ -1071,6 +1409,20 @@ BUILDERS = {
     "tenda": build_tenda,
     "spanduk": build_spanduk,
     "meja": build_meja,
+    "karung_tumpuk": build_karung_tumpuk,
+    "drum": build_drum,
+    "pagar_bambu": build_pagar_bambu,
+}
+# baked AO + weathering per prop (weather_bake kwargs); small props: short AO rays, low dirt band
+PROP_WEATHER = dict(dirt=0.4, dirt_h=0.25, distance=0.6)
+WEATHER = {
+    "lampu": dict(dirt=0.4, dirt_h=0.3, distance=0.8),
+    "sumur": dict(dirt=0.45, dirt_h=0.35, distance=0.8),
+    "tenda": dict(dirt=0.4, dirt_h=0.3, distance=0.8),
+    "spanduk": dict(dirt=0.4, dirt_h=0.3, distance=0.8),
+    "drum": dict(dirt=0.3, dirt_h=0.2, distance=0.6),
+    "pagar_bambu": dict(dirt=0.45, dirt_h=0.3, distance=0.6),
+    "pagar": dict(dirt=0.45, dirt_h=0.3, distance=0.6),
 }
 # icons rendered from the finished prop
 PROP_ICONS = {
@@ -1111,11 +1463,13 @@ def main():
         d = dims(root)
         print(f"[dims] {n}: {d[0]:.2f} x {d[1]:.2f} x {d[2]:.2f} m  tris={count_tris(root)}  "
               f"mats={sorted({s.material.name for o in all_descendants(root) if o.type == 'MESH' for s in o.material_slots})}")
+        weather_bake(root, **WEATHER.get(n, PROP_WEATHER))
+        export_glb(root, n)
+        preview_vcol(root)
         if not no_render:
             render_preview(root, n)
             if DEBUG:
                 debug_view(root, n + "_game", 55, 0)
-        export_glb(root, n)
         if not no_render and n in PROP_ICONS:
             kw = dict(PROP_ICONS[n])
             render_icon(root, kw.pop("name"), **kw)

@@ -2,6 +2,14 @@ class_name Npc
 extends Node3D
 ## A villager (or any other character) that idles and wanders around an anchor
 ## point, goes home at night and turns to face the player while talking.
+## Small touches keep the village alive: villagers glance at and wave to the
+## player, neighbours stop for a chat, hired hands work the palms, and people
+## who lost their land shuffle around slumped.
+
+const WAVE_RANGE := 4.5
+const LOOK_RANGE := 6.0
+const ANIM_RANGE := 45.0   # beyond this from the player the model is not animated
+const NO_WAVE := ["char_preman", "char_petugas"]
 
 var vid := ""            # villager id in GS.villagers, or "" for extras
 var display_name := ""
@@ -13,16 +21,27 @@ var anchor := Vector3.ZERO
 var radius := 6.0
 var home := Vector3.ZERO
 var sleeps_at_night := true
-var speed := 1.5
+var speed := 1.25         # stroll; they hurry home at night (x1.6)
 var talking := false
 var talk_target: Node3D
 var _target := Vector3.ZERO
 var _wait := 0.0
 var _t := 0.0
 var _moving := false
+var _cur_speed := 0.0
 var _emote: Label3D
 var _emote_t := 0.0
 var _name_label: Label3D
+var _greeted := false
+var _wave_cd := 0.0
+var _face_player_t := 0.0
+var _work_left := 0
+var _work_cd := 0.0
+var _chat_with: Npc
+var _chat_t := 0.0
+var _chat_turn := 0.0
+var _social_cd := 0.0
+var _visit: Npc          # neighbour this villager is walking over to chat with
 
 
 func setup(p_world: Node, p_model: String, p_name: String, p_anchor: Vector3, p_radius: float) -> void:
@@ -41,6 +60,8 @@ func _ready() -> void:
 	position = anchor
 	_target = anchor
 	_wait = randf_range(0.5, 3.0)
+	_wave_cd = randf_range(0.0, 6.0)
+	_social_cd = randf_range(3.0, 10.0)
 	_emote = Label3D.new()
 	_emote.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	_emote.font = ModelLib.label_font()
@@ -73,18 +94,36 @@ func set_anchor(p: Vector3, r: float, teleport := false) -> void:
 	_target = p
 	if teleport:
 		position = p
+		_cur_speed = 0.0
 
 
 func emote(text: String, seconds := 2.5) -> void:
 	_emote.text = text
 	_emote.visible = true
 	_emote_t = seconds
+	if anim:
+		anim.bump(1.2)
 
 
 func is_awake() -> bool:
 	if not sleeps_at_night:
 		return true
 	return GS.hour >= 6.5 and GS.hour < 19.5
+
+
+func is_sad() -> bool:
+	return vid != "" and GS.villagers.has(vid) and GS.villagers[vid].get("status", "") == "landless"
+
+
+func is_worker() -> bool:
+	if model_name == "char_buruh":
+		return true
+	return vid != "" and GS.villagers.has(vid) and bool(GS.villagers[vid].get("worker", false))
+
+
+func is_idle() -> bool:
+	## Standing around with nothing to do (other villagers may start a chat).
+	return not talking and not _moving and _chat_with == null and not anim.is_busy() and visible and is_awake()
 
 
 func _process(delta: float) -> void:
@@ -96,36 +135,214 @@ func _process(delta: float) -> void:
 			_emote.visible = false
 	if talking and world and world.ui and world.ui.modal == null:
 		talking = false
-	if world and world.player and _name_label:
-		var near: bool = world.state == "play" and world.player.global_position.distance_to(global_position) < 5.5
+	var pl: Node3D = world.player if world else null
+	var pdist := INF
+	if pl:
+		pdist = pl.global_position.distance_to(global_position)
+	if pl and _name_label:
+		var near: bool = world.state == "play" and pdist < 5.5
 		_name_label.visible = near and not talking and not _emote.visible
 	var awake := is_awake()
 	visible = awake or talking or position.distance_to(home) > 1.0
+	var sad := is_sad()
+	anim.idle_clip = "sad" if sad else "idle"
+	_wave_cd -= delta
+	_social_cd -= delta
+	_work_cd -= delta
 	if talking and talk_target:
+		_end_chat()
+		_visit = null
 		var d := talk_target.global_position - global_position
-		model.rotation.y = lerp_angle(model.rotation.y, atan2(d.x, d.z), clampf(delta * 8.0, 0.0, 1.0))
+		anim.turn_towards(atan2(d.x, d.z), delta, 7.0)
 		anim.talk_t = 0.2
+		anim.look_at_point(talk_target.global_position + Vector3(0, 0.9, 0))
+		if talk_target.has_method("face_point"):
+			talk_target.face_point(global_position)
+		_cur_speed = 0.0
+		_moving = false
 		anim.update(delta, 0.0, _t)
+		return
+	if pdist > 8.0:
+		_greeted = false
+	if anim.is_busy():
+		# waving or working: stand still and finish the clip
+		_cur_speed = 0.0
+		_moving = false
+		if _face_player_t > 0.0 and pl:
+			_face_player_t -= delta
+			_face(pl.global_position, delta)
+			anim.look_at_point(pl.global_position + Vector3(0, 0.9, 0))
+		_animate(delta, pdist)
+		return
+	# a player walking up gets a wave (the dispossessed just stare)
+	if awake and pl and world.state == "play" and pdist < WAVE_RANGE and not _greeted:
+		_greeted = true
+		if not sad and _wave_cd <= 0.0 and randf() < 0.85 and not model_name in NO_WAVE:
+			_end_chat()
+			_wave_cd = randf_range(35.0, 70.0)
+			_face_player_t = 1.4
+			anim.play_action("wave")
+			_animate(delta, pdist)
+			return
+	if _chat_with != null:
+		_update_chat(delta, pdist)
 		return
 	var goal := _target if awake else home
 	var to := goal - position
 	to.y = 0.0
+	var want := 0.0
 	if to.length() > 0.25 and (_wait <= 0.0 or not awake):
-		var step := to.normalized() * speed * (1.6 if not awake else 1.0) * delta
+		want = speed * (1.6 if not awake else (0.75 if sad else 1.0))
+		want = minf(want, 0.5 + to.length() * 1.6)   # ease into the stop
+	_cur_speed = move_toward(_cur_speed, want, delta * (3.5 if want > _cur_speed else 5.0))
+	if _cur_speed > 0.01 and to.length() > 0.02:
+		var step := to.normalized() * _cur_speed * delta
 		if step.length() > to.length():
 			step = to
 		position += step
-		model.rotation.y = lerp_angle(model.rotation.y, atan2(to.x, to.z), clampf(delta * 8.0, 0.0, 1.0))
-		_moving = true
-	else:
-		_moving = false
-		if awake:
-			_wait -= delta
-			if _wait <= 0.0 and to.length() <= 0.25:
-				_pick_target()
+		anim.turn_towards(atan2(to.x, to.z), delta, 6.0)
+	_moving = _cur_speed > 0.05
+	if want == 0.0 and awake:
+		_wait -= delta
+		if _visit != null:
+			_arrive_visit()
+		else:
+			_idle_behaviour(pl, pdist)
+		if _wait <= 0.0 and to.length() <= 0.25 and not anim.is_busy() and _chat_with == null and _visit == null:
+			_pick_target()
+	elif not awake:
+		_visit = null
 	if world:
 		position.y = world.height_at(position.x, position.z)
-	anim.update(delta, speed if _moving else 0.0, _t)
+	if pl and awake and pdist < LOOK_RANGE and world.state == "play":
+		anim.look_at_point(pl.global_position + Vector3(0, 0.9, 0))
+	_animate(delta, pdist)
+
+
+func _animate(delta: float, pdist: float) -> void:
+	if not visible or pdist > ANIM_RANGE:
+		return
+	anim.update(delta, _cur_speed, _t)
+
+
+func _face(p: Vector3, delta: float) -> void:
+	var d := p - global_position
+	if Vector2(d.x, d.z).length() > 0.1:
+		anim.turn_towards(atan2(d.x, d.z), delta, 7.0)
+
+
+func _idle_behaviour(pl: Node3D, pdist: float) -> void:
+	if _moving or anim.is_busy() or pdist > ANIM_RANGE:
+		return
+	# hired hands work the palms while they wait
+	if is_worker() and _work_cd <= 0.0:
+		if _work_left <= 0 and randf() < 0.5:
+			_work_left = randi_range(1, 3)
+		if _work_left > 0:
+			_work_left -= 1
+			_work_cd = randf_range(0.2, 0.8)
+			anim.play_action(["harvest", "chop", "plant", "harvest"][randi() % 4])
+			_wait = maxf(_wait, 1.5)
+			return
+		_work_cd = randf_range(3.0, 8.0)
+	# neighbours stop for a chat, or stroll over to someone standing nearby
+	if _social_cd <= 0.0 and world and _chat_with == null and _visit == null and not model_name in NO_WAVE:
+		_social_cd = randf_range(7.0, 15.0)
+		var best: Npc = null
+		var bd := 16.0
+		for other in _neighbours():
+			if other == self or not is_instance_valid(other) or not other.is_idle() or other.is_worker() \
+					or other._visit != null or other.model_name in NO_WAVE:
+				continue
+			var d: float = other.global_position.distance_to(global_position)
+			if d < bd:
+				best = other
+				bd = d
+		if best == null:
+			return
+		if bd < 2.6:
+			_chat(best)
+		elif randf() < 0.65:
+			var away := global_position - best.global_position
+			away.y = 0.0
+			away = away.normalized() if away.length() > 0.01 else Vector3.RIGHT
+			var spot := best.position + away * 1.3
+			if _clear_path(position, spot):
+				_target = spot
+				_wait = 0.0
+				_visit = best
+				best._wait = maxf(best._wait, 9.0)
+
+
+func _clear_path(a: Vector3, b: Vector3) -> bool:
+	## No pathfinding: only stroll where the straight line misses buildings.
+	for k in 6:
+		var p := a.lerp(b, (k + 1) / 6.0)
+		if not world.is_walkable(p.x, p.z) or not world.is_free(p.x, p.z, 0.4):
+			return false
+	return true
+
+
+func _chat(other: Npc) -> void:
+	var secs := randf_range(5.0, 9.0)
+	_start_chat(other, secs, true)
+	other._start_chat(self, secs, false)
+
+
+func _arrive_visit() -> void:
+	if _cur_speed > 0.3:
+		return
+	var v := _visit
+	_visit = null
+	if is_instance_valid(v) and v.is_idle() and v.global_position.distance_to(global_position) < 2.8:
+		_chat(v)
+
+
+func _neighbours() -> Array:
+	var out: Array = []
+	if world == null:
+		return out
+	var n = world.get("npcs")
+	if n is Dictionary:
+		out.append_array(n.values())
+	var e = world.get("extras")
+	if e is Dictionary:
+		out.append_array(e.values())
+	return out
+
+
+func _start_chat(other: Npc, secs: float, first: bool) -> void:
+	_chat_with = other
+	_chat_t = secs
+	_chat_turn = 0.0 if first else 1.6
+
+
+func _end_chat() -> void:
+	if _chat_with != null and is_instance_valid(_chat_with) and _chat_with._chat_with == self:
+		_chat_with._chat_with = null
+		_chat_with._social_cd = randf_range(18.0, 35.0)
+	if _chat_with != null:
+		_social_cd = randf_range(18.0, 35.0)
+	_chat_with = null
+
+
+func _update_chat(delta: float, pdist: float) -> void:
+	_chat_t -= delta
+	if _chat_t <= 0.0 or not is_instance_valid(_chat_with) or not is_awake() or _chat_with.talking:
+		_end_chat()
+		_animate(delta, pdist)
+		return
+	_cur_speed = 0.0
+	_moving = false
+	_face(_chat_with.global_position, delta)
+	anim.look_at_point(_chat_with.global_position + Vector3(0, 0.85, 0))
+	# take turns: talk ~1.6 s, listen ~1.6 s
+	_chat_turn += delta
+	if fmod(_chat_turn, 3.2) < 1.6:
+		anim.talk_t = 0.15
+	if world:
+		position.y = world.height_at(position.x, position.z)
+	_animate(delta, pdist)
 
 
 func _pick_target() -> void:

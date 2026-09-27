@@ -7,7 +7,11 @@ Outputs
   game/assets/textures/world_data.png  RGBA masks, 512 px over 200 m:
                                        R height ((h+5)/7), G sand, B road, A grass tone
   game/assets/textures/noise.png       tileable detail noise for the shaders
-  game/data/layout.json                buildings, parcels, props and scattered decor
+  game/assets/textures/world_shade.png v2 RGBA 512 px: R contact shade (fake AO under
+                                       trees/plants), G dryness, B forest-floor litter,
+                                       A road direction (1 = along x)
+  game/data/layout.json                buildings, parcels, props, scattered decor and the
+                                       v2 dense "undergrowth" {model: [x,y,z,rot,scale,...]}
   blender/previews/map.png             debug top-down map
 """
 import json
@@ -227,8 +231,12 @@ try_place("bush_b", 34, 1.2, 9, 999, pad=0.4)
 try_place("rock_b", 14, 1.0, 6, 999, pad=0.3)
 try_place("rock_a", 26, 0.5, 2, 999, pad=0.2)
 try_place("rock_c", 4, 1.8, 3, 12, pad=0.5)
-try_place("flowers", 90, 0.5, 9, 999, scale=(0.8, 1.3), pad=0.2)
-try_place("grass_tuft", 420, 0.25, 7.5, 999, scale=(0.8, 1.4), min_gap=0.3)
+# v2: more big trees so forest patches have edges, and old wild oil palms
+# ("sawit_wild" = sawit_3 without its fruit bunches) in groves between the roads
+try_place("tree_big", 12, 3.2, 14, 999, pad=1.5)
+try_place("sawit_wild", 26, 2.6, 11, 999, scale=(0.9, 1.15), pad=1.2)
+try_place("banana", 10, 1.4, 10, 999, pad=0.8)
+# (v1 grass_tuft / flowers decor is replaced by the dense undergrowth below)
 
 for m, pos, rot in CLIFFS:
     y = sample(enc_h, *pos) * 7.0 - 5.0
@@ -238,6 +246,271 @@ for m, pos, rot in CLIFFS:
 def height_at(x, z):
     return round(sample(enc_h, x, z) * 7.0 - 5.0, 3)
 
+
+# ------------------------------------------------------------------ dense undergrowth (v2)
+# Thousands of small plants scattered like the target screenshot: dense along road
+# verges, around buildings, at forest edges and between parcels; sparse in open
+# fields; never on roads, doors, parcel planting spots or interaction points.
+# Stored compactly per model as flat [x, y, z, rot_deg, scale, ...] arrays.
+# (world.gd filters again against the exact building boxes at load time.)
+urng = np.random.default_rng(99)
+upy = random.Random(99)
+
+# approximate building footprints (half extents, local x/z) - measured from the GLBs
+BUILDING_HALF = {"kantor": (2.7, 2.4), "toko": (3.0, 2.1), "warung": (2.1, 1.8), "pabrik": (7.1, 5.1),
+                 "pos_calo": (1.7, 1.7), "rumah_a": (2.9, 2.5), "rumah_b": (2.5, 2.7), "rumah_c": (2.9, 2.2)}
+
+
+def to_local(b, x, z):
+    th = math.radians(b["rot"])
+    dx, dz = x - b["pos"][0], z - b["pos"][1]
+    # inverse of Godot's rotation about +Y
+    return dx * math.cos(th) - dz * math.sin(th), dx * math.sin(th) + dz * math.cos(th)
+
+
+# rasterised zones over the 512 grid (godot x = columns, z = rows)
+bld_dist = np.full_like(X, 1e9)      # distance to the nearest building footprint
+door_block = np.zeros_like(X, bool)
+for b in L.BUILDINGS:
+    if b["model"] not in BUILDING_HALF:
+        continue
+    hx, hz = BUILDING_HALF[b["model"]]
+    th = math.radians(b["rot"])
+    dx, dz = X - b["pos"][0], Z - b["pos"][1]
+    lx = dx * math.cos(th) - dz * math.sin(th)
+    lz = dx * math.sin(th) + dz * math.cos(th)
+    qx = np.maximum(np.abs(lx) - hx, 0)
+    qz = np.maximum(np.abs(lz) - hz, 0)
+    inside = (np.abs(lx) < hx) & (np.abs(lz) < hz)
+    d = np.sqrt(qx ** 2 + qz ** 2)
+    d[inside] = -1
+    bld_dist = np.minimum(bld_dist, d)
+    # keep the doorway and the approach in front of it clear (+z local is the front)
+    door_block |= (np.abs(lx) < 1.9) & (lz > hz - 0.5) & (lz < hz + 4.8)
+
+tile_pts = []
+sign_pts = []
+parcel_in = np.zeros_like(X, bool)    # planting grid of a parcel (+ margin)
+parcel_ring = np.full_like(X, 1e9)    # distance outside the parcel rectangle
+for p in L.PARCELS:
+    cx, cz = p["center"]
+    for idx in range(L.PARCEL_COLS * L.PARCEL_ROWS):
+        col, row = idx % L.PARCEL_COLS, idx // L.PARCEL_COLS
+        tile_pts.append((cx + (col - (L.PARCEL_COLS - 1) * 0.5) * L.TILE, cz + (row - (L.PARCEL_ROWS - 1) * 0.5) * L.TILE))
+    sign_pts.append((cx - (L.PARCEL_COLS * L.TILE) * 0.5 - 0.6, cz + (L.PARCEL_ROWS * L.TILE) * 0.5 + 0.8))
+    hx = L.PARCEL_COLS * L.TILE / 2 + 0.4
+    hz = L.PARCEL_ROWS * L.TILE / 2 + 0.4
+    qx = np.maximum(np.abs(X - cx) - hx, 0)
+    qz = np.maximum(np.abs(Z - cz) - hz, 0)
+    parcel_in |= (np.abs(X - cx) < hx) & (np.abs(Z - cz) < hz)
+    parcel_ring = np.minimum(parcel_ring, np.sqrt(qx ** 2 + qz ** 2))
+
+tree_d = np.full_like(X, 1e9)          # distance to the nearest big tree / wild palm
+for d in decor:
+    if d["model"] in ("tree_big", "sawit_wild"):
+        tree_d = np.minimum(tree_d, np.hypot(X - d["pos"][0], Z - d["pos"][2]))
+
+keep_out = [(x, z, r) for (x, z, r) in circles if r < 3.4] + [(x, z, 1.95) for x, z in tile_pts] + \
+           [(x, z, 1.7) for x, z in sign_pts]
+for b in L.BUILDINGS:          # jetty and its road end
+    if b["model"] == "dermaga":
+        keep_out.append((b["pos"][0], b["pos"][1], 4.0))
+for m, pos, _ in L.PROPS:
+    keep_out.append((pos[0], pos[1], 3.2 if m == "truck" else (0.6 if m == "lampu" else 1.1)))
+for d in decor:
+    r = {"tree_big": 0.9, "sawit_wild": 0.8, "coconut": 0.5, "banana": 0.6, "bush_a": 0.7, "bush_b": 0.7,
+         "rock_b": 0.8, "rock_c": 1.6, "rock_a": 0.35, "cliff_a": 4.5}.get(d["model"], 0.5)
+    keep_out.append((d["pos"][0], d["pos"][2], r))
+for pos in L.TENT_SPOTS:
+    keep_out.append((pos[0], pos[1], 2.4))
+keep_out.append((L.PLAYER_SPAWN[0], L.PLAYER_SPAWN[1], 1.8))
+ko_grid = {}
+for (x, z, r) in keep_out:
+    for gx in range(int(math.floor((x - r) / 4)), int(math.floor((x + r) / 4)) + 1):
+        for gz in range(int(math.floor((z - r) / 4)), int(math.floor((z + r) / 4)) + 1):
+            ko_grid.setdefault((gx, gz), []).append((x, z, r))
+
+
+def kept_out(x, z, pad=0.0):
+    for (cx, cz, r) in ko_grid.get((int(math.floor(x / 4)), int(math.floor(z / 4))), ()):
+        if (x - cx) ** 2 + (z - cz) ** 2 < (r + pad) ** 2:
+            return True
+    return False
+
+
+land_ok = (sd > 3.0) & (sand < 0.5)
+road_edge = road_d - L.ROAD_WIDTH / 2
+zone_verge = land_ok & (road_edge > 0.25) & (road_edge < 3.2)
+zone_bld = land_ok & (bld_dist > 0.15) & (bld_dist < 3.8) & ~door_block
+zone_parcel = land_ok & (parcel_ring > 0.2) & (parcel_ring < 4.2)
+zone_forest = land_ok & (tree_d > 1.0) & (tree_d < 7.0)
+zone_inner = land_ok & parcel_in
+zone_beach = (sd > 2.0) & (sand > 0.35) & (sand < 0.9)
+blocked_px = (road_edge < 0.25) | door_block | (bld_dist <= 0.15) | (sd < 2.0)
+
+# plants per m^2 in each zone (the densest zone wins) and species weights
+ZONES = [
+    ("verge", zone_verge, 0.95, {"grass_a": 3, "grass_b": 3, "flowers_white": 1.6, "flowers_yellow": 1.3, "fern_a": 1.0,
+                                 "rock_a": 0.35, "keladi": 0.4, "shrub_a": 0.5, "frond_fallen": 0.25}),
+    ("bld", zone_bld, 0.9, {"shrub_a": 2, "shrub_b": 2, "keladi": 1.6, "flowers_white": 1.1, "flowers_yellow": 1.0,
+                            "fern_b": 1.0, "grass_a": 1.2, "pile_fronds": 0.25}),
+    ("parcel", zone_parcel, 0.8, {"fern_a": 2, "fern_b": 2, "frond_fallen": 1.2, "grass_b": 2, "keladi": 0.8,
+                                  "shrub_b": 0.8, "pile_fronds": 0.3, "flowers_white": 0.6}),
+    ("forest", zone_forest, 0.7, {"fern_a": 2, "fern_b": 2, "shrub_a": 1.2, "shrub_b": 1.2, "vine_log": 0.22,
+                                  "frond_fallen": 0.6, "keladi": 1.0, "rock_a": 0.3, "grass_b": 0.6}),
+    ("inner", zone_inner, 0.28, {"fern_a": 1.0, "grass_b": 1.5, "frond_fallen": 1.4, "grass_a": 1.0}),
+    ("open", land_ok, 0.2, {"grass_a": 2, "grass_b": 2, "flowers_white": 1.0, "flowers_yellow": 0.8, "fern_a": 0.6,
+                            "shrub_b": 0.3, "rock_a": 0.2}),
+    ("beach", zone_beach, 0.1, {"grass_b": 1.0, "grass_a": 0.5}),
+]
+UG_SCALE = {"grass_a": (0.8, 1.3), "grass_b": (0.8, 1.3), "fern_a": (0.8, 1.25), "fern_b": (0.8, 1.25),
+            "keladi": (0.8, 1.2), "shrub_a": (0.8, 1.25), "shrub_b": (0.8, 1.25), "flowers_white": (0.8, 1.2),
+            "flowers_yellow": (0.8, 1.2), "frond_fallen": (0.85, 1.1), "vine_log": (0.8, 1.05),
+            "pile_fronds": (0.9, 1.1), "rock_a": (0.45, 0.9)}
+UG_GAP = {"grass_a": 0.35, "grass_b": 0.35, "flowers_white": 0.35, "flowers_yellow": 0.35, "fern_a": 0.6, "fern_b": 0.6,
+          "keladi": 0.55, "shrub_a": 0.85, "shrub_b": 0.85, "frond_fallen": 0.9, "vine_log": 1.3, "pile_fronds": 1.1,
+          "rock_a": 0.4}
+UG_PAD = {"shrub_a": 0.5, "shrub_b": 0.5, "vine_log": 0.8, "pile_fronds": 0.6, "frond_fallen": 0.5}
+DENSITY = float(os.environ.get("UG_DENSITY", "1.0"))
+
+density = np.zeros_like(X)
+zone_id = np.full(X.shape, -1)
+for zi in range(len(ZONES) - 1, -1, -1):   # earlier (denser) zones override later ones
+    name, mask, dens, _ = ZONES[zi]
+    dn = dens * (0.75 + 0.5 * n_mid)          # patchy
+    upd = mask & (dn >= density * 0.999)
+    density[upd] = dn[upd]
+    zone_id[upd] = zi
+density[blocked_px] = 0
+density *= DENSITY
+
+undergrowth = {}
+ug_pts = {}
+ug_list = []
+
+
+def ug_free(x, z, gap):
+    cx, cz = int(math.floor(x)), int(math.floor(z))
+    for gx in (cx - 1, cx, cx + 1):
+        for gz in (cz - 1, cz, cz + 1):
+            for (px, pz, pg) in ug_pts.get((gx, gz), ()):
+                if (x - px) ** 2 + (z - pz) ** 2 < (0.55 * (gap + pg)) ** 2:
+                    return False
+    return True
+
+
+cell_area = PX * PX
+expected = density * cell_area
+counts = urng.poisson(expected)
+for i, j in zip(*np.nonzero(counts)):
+    zi = zone_id[i, j]
+    if zi < 0:
+        continue
+    weights = ZONES[zi][3]
+    names = list(weights.keys())
+    wsum = sum(weights.values())
+    for _ in range(counts[i, j]):
+        x = float(X[i, j] + urng.uniform(-PX / 2, PX / 2))
+        z = float(Z[i, j] + urng.uniform(-PX / 2, PX / 2))
+        r = upy.uniform(0, wsum)
+        m = names[-1]
+        for nm in names:
+            r -= weights[nm]
+            if r <= 0:
+                m = nm
+                break
+        gap = UG_GAP[m]
+        if kept_out(x, z, UG_PAD.get(m, 0.0)):
+            continue
+        # big pieces must not poke onto the road
+        if m in UG_PAD and sample(road_edge, x, z) < UG_PAD[m] + 0.3:
+            continue
+        if not ug_free(x, z, gap):
+            continue
+        sc = upy.uniform(*UG_SCALE[m])
+        y = height_at(x, z)
+        undergrowth.setdefault(m, []).extend([round(x, 2), y, round(z, 2), round(upy.uniform(0, 360), 0), round(sc, 2)])
+        ug_pts.setdefault((int(math.floor(x)), int(math.floor(z))), []).append((x, z, gap))
+        ug_list.append((m, x, z, sc))
+print("undergrowth:", {m: len(v) // 5 for m, v in sorted(undergrowth.items())}, "total", len(ug_list))
+
+# ------------------------------------------------------------------ world_shade.png (v2)
+# R contact shade (fake AO under canopies and plants), G dryness, B forest-floor
+# litter, A road direction (1 = road runs along x). Baked from the layout so the
+# terrain shader can darken the ground under trees without real-time AO.
+shade_acc = np.zeros_like(X)
+litter = np.zeros_like(X)
+
+
+def splat(acc, x, z, sigma, amount):
+    r = sigma * 3.0
+    j0 = max(int((x - r + W / 2) / PX), 0)
+    j1 = min(int((x + r + W / 2) / PX) + 1, N)
+    i0 = max(int((z - r + W / 2) / PX), 0)
+    i1 = min(int((z + r + W / 2) / PX) + 1, N)
+    if j0 >= j1 or i0 >= i1:
+        return
+    gx = X[i0:i1, j0:j1] - x
+    gz = Z[i0:i1, j0:j1] - z
+    acc[i0:i1, j0:j1] += amount * np.exp(-(gx * gx + gz * gz) / (2 * sigma * sigma))
+
+
+DECOR_SHADE = {"tree_big": (2.3, 1.1), "sawit_wild": (1.6, 0.8), "coconut": (0.9, 0.45), "banana": (0.9, 0.6),
+               "bush_a": (0.8, 0.7), "bush_b": (0.8, 0.7), "rock_b": (0.55, 0.5), "rock_c": (1.2, 0.5),
+               "rock_a": (0.35, 0.3), "cliff_a": (3.0, 0.5)}
+for d in decor:
+    if d["model"] in DECOR_SHADE:
+        sg, am = DECOR_SHADE[d["model"]]
+        s = d.get("scale", 1.0)
+        splat(shade_acc, d["pos"][0], d["pos"][2], sg * s, am)
+    if d["model"] == "tree_big":
+        splat(litter, d["pos"][0], d["pos"][2], 1.8 * d.get("scale", 1.0), 0.9)
+    elif d["model"] == "sawit_wild":
+        splat(litter, d["pos"][0], d["pos"][2], 1.2 * d.get("scale", 1.0), 0.7)
+UG_SHADE = {"shrub_a": (0.55, 0.45), "shrub_b": (0.55, 0.45), "keladi": (0.4, 0.35), "fern_a": (0.4, 0.3),
+            "fern_b": (0.4, 0.3), "vine_log": (0.6, 0.35), "pile_fronds": (0.6, 0.35), "grass_a": (0.25, 0.12),
+            "grass_b": (0.25, 0.12), "frond_fallen": (0.5, 0.15), "rock_a": (0.3, 0.25),
+            "flowers_white": (0.2, 0.08), "flowers_yellow": (0.2, 0.08)}
+for (m, x, z, sc) in ug_list:
+    sg, am = UG_SHADE.get(m, (0.3, 0.1))
+    splat(shade_acc, x, z, sg * sc, am)
+# parcels: a little shade and litter where the palms will be
+for (x, z) in tile_pts:
+    splat(shade_acc, x, z, 1.4, 0.15)
+    splat(litter, x, z, 1.1, 0.12)
+shade_r = 1.0 - np.exp(-shade_acc * 0.9)
+shade_r = ndimage.gaussian_filter(shade_r, 0.7)
+
+dry = 0.2 + (fractal_noise(N, (4, 40), 2.0, seed=41) - 0.5) * 0.45
+dry += 0.4 * np.exp(-((road_edge - 0.6) / 0.9) ** 2)                  # road verges
+dry -= 0.45 * np.exp(-np.maximum(tree_d - 2.0, 0) / 5.0)               # lush near forest
+dry -= 0.3 * np.exp(-np.maximum(parcel_ring, 0) / 3.0)                 # lush plantation
+dry += 0.25 * (1 - smoothstep(4.0, 10.0, sd))                          # salty beach grass
+dry -= 0.35 * shade_r
+dry = np.clip(ndimage.gaussian_filter(dry, 1.0), 0, 1)
+
+# road direction: which way the nearest road segment runs
+best_d = np.full_like(X, 1e9)
+horiz = np.zeros_like(X)
+for line in L.ROADS:
+    for a, b in zip(line[:-1], line[1:]):
+        dseg = seg_dist(X, Z, a, b)
+        upd = dseg < best_d
+        best_d[upd] = dseg[upd]
+        ln = math.hypot(b[0] - a[0], b[1] - a[1])
+        horiz[upd] = abs(b[0] - a[0]) / ln
+horiz = ndimage.gaussian_filter(horiz, 3.0)
+
+litter = np.clip(ndimage.gaussian_filter(litter, 0.8), 0, 1)
+shade_img = np.stack([shade_r, dry, litter, horiz], axis=-1)
+Image.fromarray((np.clip(shade_img, 0, 1) * 255 + 0.5).astype(np.uint8), "RGBA").save(
+    os.path.join(TEX_DIR, "world_shade.png"))
+_imp = os.path.join(TEX_DIR, "world_shade.png.import")
+if not os.path.exists(_imp):
+    # data texture: lossless, no mipmaps (same settings as world_data.png)
+    with open(_imp, "w") as f:
+        f.write('[remap]\n\nimporter="texture"\ntype="CompressedTexture2D"\n\n[params]\n\ncompress/mode=0\n'
+                'mipmaps/generate=false\nprocess/fix_alpha_border=false\ndetect_3d/compress_to=0\n')
 
 out = {
     "world_size": W,
@@ -254,9 +527,15 @@ out = {
     "roads": [[list(pt) for pt in line] for line in L.ROADS],
     "player_spawn": list(L.PLAYER_SPAWN),
     "decor": decor,
+    # v2: {model: [x, y, z, rot_deg, scale, x, y, z, ...]} small plants without collision
+    "undergrowth": undergrowth,
 }
+ug_json = json.dumps(out.pop("undergrowth"), separators=(",", ":"))
+txt = json.dumps(out, indent=1)
+# keep the small keys readable, the big undergrowth arrays compact
+txt = txt[:txt.rindex("}")].rstrip() + ',\n "undergrowth": ' + ug_json + "\n}\n"
 with open(os.path.join(DATA_DIR, "layout.json"), "w") as f:
-    json.dump(out, f, indent=1)
+    f.write(txt)
 print("decor placed:", {m: sum(1 for d in decor if d["model"] == m) for m in sorted({d["model"] for d in decor})})
 
 # ------------------------------------------------------------------ debug map
@@ -287,6 +566,14 @@ for b in L.BUILDINGS:
     dr.text((x + 10, y - 6), b["id"], fill=(0, 0, 0))
 dcol = {"tree_big": (30, 80, 30), "coconut": (120, 160, 40), "banana": (90, 170, 60), "rock_a": (150, 150, 150),
         "rock_b": (130, 130, 130), "rock_c": (100, 100, 100), "cliff_a": (70, 70, 70)}
+ucol = {"shrub_a": (60, 110, 40), "shrub_b": (60, 110, 40), "fern_a": (80, 140, 50), "fern_b": (80, 140, 50),
+        "keladi": (70, 150, 70), "flowers_white": (250, 250, 240), "flowers_yellow": (250, 210, 60)}
+for m, arr in undergrowth.items():
+    if m in ucol:
+        for k in range(0, len(arr), 5):
+            x, y = to_px(arr[k], arr[k + 2])
+            dr.point((x, y), fill=ucol[m])
+dcol["sawit_wild"] = (160, 120, 40)
 for d in decor:
     if d["model"] in dcol:
         x, y = to_px(d["pos"][0], d["pos"][2])

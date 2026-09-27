@@ -1,20 +1,27 @@
 class_name TileView
 extends Node3D
-## Visual for one planting spot of a parcel: garden scrub, tilled soil, or an
-## oil palm at growth stage 0–3 (with fruit bunches when ready to harvest).
+## Visual for one planting spot of a parcel: a lush villager garden (until it is
+## cleared), cleared ground with the piringan mulch circle, or an oil palm at
+## growth stage 0–3 (with fruit bunches when ready to harvest).
+##
+## The garden plants and piringan decals of a whole parcel are batched into a few
+## MultiMeshes (one per model) that are rebuilt whenever a tile changes, so a
+## parcel costs a handful of draw calls instead of dozens.
 
-const GARDEN := ["banana", "bush_a", "bush_b", "bush_a", "flowers", "bush_b"]
-const SOIL_COLOR := Color("745d48")
+## garden cluster = one main plant + small plants around it
+const GARDEN_MAIN := ["shrub_a", "banana", "shrub_b", "keladi", "shrub_a", "banana", "keladi", "shrub_b"]
+const GARDEN_SMALL := ["fern_a", "fern_b", "grass_a", "grass_b", "flowers_white", "flowers_yellow", "keladi", "fern_a"]
+const SHADOW_MODELS := ["shrub_a", "shrub_b", "banana", "keladi", "bush_a", "bush_b"]
 
-static var _soil_mesh: Mesh
-static var _soil_mat: Material
+static var _tiles := {}     # pid -> {idx: TileView}
+static var _batches := {}   # pid -> Node3D holding the parcel's MultiMeshes
+static var _dirty := {}     # pid -> true while a rebuild is queued
 
 var pid := 0
 var idx := 0
 var _shown := ""
 var _plant: Node3D
 var _fruit: MeshInstance3D
-var _soil: MeshInstance3D
 var _yaw := 0.0
 var _scale := 1.0
 
@@ -23,28 +30,15 @@ func _ready() -> void:
 	var h := hash(pid * 131 + idx * 7)
 	_yaw = float(h % 360) * PI / 180.0
 	_scale = 0.9 + float((h / 7) % 100) / 500.0
-	if _soil_mesh == null:
-		var c := CylinderMesh.new()
-		c.top_radius = 0.82
-		c.bottom_radius = 1.0
-		c.height = 0.1
-		c.radial_segments = 14
-		c.rings = 1
-		_soil_mesh = c
-		var m := ShaderMaterial.new()
-		m.shader = ModelLib.WORLD_SHADER
-		m.set_shader_parameter("albedo", SOIL_COLOR)
-		m.set_shader_parameter("noise_tex", ModelLib.NOISE_TEX)
-		m.set_shader_parameter("tint_strength", 0.35)
-		m.set_shader_parameter("fade_enabled", 0.0)
-		_soil_mat = m
-	_soil = MeshInstance3D.new()
-	_soil.mesh = _soil_mesh
-	_soil.material_override = _soil_mat
-	_soil.position.y = 0.0
-	_soil.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(_soil)
+	if not _tiles.has(pid):
+		_tiles[pid] = {}
+	_tiles[pid][idx] = self
 	refresh()
+
+
+func _exit_tree() -> void:
+	if _tiles.has(pid) and _tiles[pid].get(idx) == self:
+		_tiles[pid].erase(idx)
 
 
 func refresh() -> void:
@@ -57,11 +51,9 @@ func refresh() -> void:
 			_plant.queue_free()
 			_plant = null
 			_fruit = null
-		_soil.visible = t["s"] != "bush"
 		match t["s"]:
 			"bush":
-				var model: String = GARDEN[(pid * 5 + idx * 3) % GARDEN.size()]
-				_plant = _mesh_node(model, "", "")
+				pass  # drawn by the parcel batch
 			"empty":
 				_plant = _mesh_node("stump", "", "") if (idx + pid) % 3 == 0 else null
 			"palm":
@@ -75,6 +67,7 @@ func refresh() -> void:
 			_plant.rotation.y = _yaw
 			_plant.scale = Vector3.ONE * _scale
 			add_child(_plant)
+		_queue_batch()
 	if _fruit:
 		_fruit.visible = bool(t["fr"])
 
@@ -92,3 +85,100 @@ func pop() -> void:
 	var tw := create_tween()
 	scale = Vector3(1.15, 0.8, 1.15)
 	tw.tween_property(self, "scale", Vector3.ONE, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+# ------------------------------------------------------------------ parcel batch
+func _queue_batch() -> void:
+	if _dirty.get(pid, false):
+		return
+	_dirty[pid] = true
+	call_deferred("_flush_batch")
+
+
+func _flush_batch() -> void:
+	if not _dirty.get(pid, false):
+		return
+	_dirty[pid] = false
+	var batch: Node3D = _batches.get(pid)
+	if batch == null or not is_instance_valid(batch):
+		batch = Node3D.new()
+		batch.name = "ParcelDecor%d" % pid
+		get_parent().add_child(batch)
+		_batches[pid] = batch
+	for c in batch.get_children():
+		c.queue_free()
+	var lists := {}   # model -> [[Transform3D, Color]]
+	var tiles: Array = GS.parcels[pid]["tiles"]
+	for i in _tiles.get(pid, {}):
+		var tv: TileView = _tiles[pid][i]
+		if not is_instance_valid(tv):
+			continue
+		var t: Dictionary = tiles[i]
+		if t["s"] == "bush":
+			_garden(tv, lists)
+		else:
+			var s := 0.85 if t["s"] == "empty" or int(t["st"]) == 0 else 1.0
+			_add(lists, "piringan", Transform3D(Basis(Vector3.UP, tv._yaw).scaled(Vector3(s, 1.0, s)), tv.position + Vector3(0, 0.015, 0)), Color.WHITE)
+	for model in lists:
+		var list: Array = lists[model]
+		var mesh: Mesh
+		var sfac := 1.0
+		if model == "piringan" and not ModelLib.has_model("piringan"):
+			mesh = GroundFx.soil_mesh()
+		else:
+			var mname: String = model
+			if not ModelLib.has_model(mname):
+				var fb: Array = Undergrowth.FALLBACK.get(mname, ["", 0.0])
+				mname = fb[0]
+				sfac = fb[1]
+				if mname == "" or not ModelLib.has_model(mname):
+					continue
+			mesh = ModelLib.merged_mesh(mname, true)
+		if mesh == null or mesh.get_surface_count() == 0:
+			continue
+		var mm := MultiMesh.new()
+		mm.transform_format = MultiMesh.TRANSFORM_3D
+		mm.use_colors = true
+		mm.mesh = mesh
+		mm.instance_count = list.size()
+		for k in list.size():
+			var xf: Transform3D = list[k][0]
+			if sfac != 1.0:
+				xf.basis = xf.basis.scaled(Vector3.ONE * sfac)
+			mm.set_instance_transform(k, xf)
+			mm.set_instance_color(k, list[k][1])
+		var mmi := MultiMeshInstance3D.new()
+		mmi.multimesh = mm
+		if not model in SHADOW_MODELS:
+			mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		batch.add_child(mmi)
+
+
+static func _add(lists: Dictionary, model: String, xf: Transform3D, col: Color) -> void:
+	if not lists.has(model):
+		lists[model] = []
+	lists[model].append([xf, col])
+
+
+static func _garden(tv: TileView, lists: Dictionary) -> void:
+	## A villager's garden patch: one main plant with ferns, grass and flowers around it.
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash(tv.pid * 131 + tv.idx * 7 + 3)
+	var main: String = GARDEN_MAIN[(tv.pid * 5 + tv.idx * 3) % GARDEN_MAIN.size()]
+	var p := tv.position
+	var off := Vector3(rng.randf_range(-0.25, 0.25), 0, rng.randf_range(-0.25, 0.25))
+	var s := rng.randf_range(0.95, 1.2)
+	_add(lists, main, Transform3D(Basis(Vector3.UP, tv._yaw).scaled(Vector3.ONE * s), p + off), _tint(rng))
+	var n := rng.randi_range(4, 6)
+	for k in n:
+		var a := TAU * (float(k) + rng.randf_range(-0.3, 0.3)) / float(n)
+		var r := rng.randf_range(0.7, 1.35)
+		var m: String = GARDEN_SMALL[rng.randi_range(0, GARDEN_SMALL.size() - 1)]
+		var sc := rng.randf_range(0.8, 1.2)
+		var pos := p + Vector3(cos(a) * r, 0, sin(a) * r)
+		_add(lists, m, Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3.ONE * sc), pos), _tint(rng))
+
+
+static func _tint(rng: RandomNumberGenerator) -> Color:
+	var b := rng.randf_range(0.86, 1.0)
+	return Color(b * rng.randf_range(0.94, 1.0), b, b * rng.randf_range(0.88, 1.0))

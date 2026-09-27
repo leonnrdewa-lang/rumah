@@ -1,43 +1,785 @@
 class_name CharAnim
 extends RefCounted
-## Procedural chibi animation: swings the ArmL/ArmR/LegL/LegR/Head nodes that
-## the Blender character scripts create, plus a little body bob.
+## Character animation.
+##
+## v2 models (one skinned mesh + an AnimationPlayer holding the clips named in
+## ART_DIRECTION_V2.md: idle walk run harvest chop plant talk cheer sad wave)
+## are cross-faded here. The AnimationPlayer is advanced manually from update()
+## so procedural secondary motion can be layered on top of the clips: turn lean,
+## start/stop squash, head look-at, idle variety, and hand tools that ride on
+## BoneAttachment3Ds.
+##
+## v1 models (rigid ArmL/LegL/Head nodes, no AnimationPlayer) fall back to the
+## old procedural limb swinging, so nothing breaks while assets are replaced.
 
+const LOOP_CLIPS := ["idle", "walk", "run", "talk", "sad"]
+## action kind -> [clip, playback rate, tool]
+const ACTIONS := {
+	"harvest": ["harvest", 1.0, "egrek"],
+	"chop": ["chop", 1.0, "parang"],
+	"clear": ["chop", 1.0, "parang"],
+	"plant": ["plant", 1.0, "trowel"],
+	"fert": ["plant", 1.45, "sack"],
+	"cheer": ["cheer", 1.0, ""],
+	"wave": ["wave", 1.0, ""],
+}
+## what to play when a model lacks a clip
+const CLIP_FALLBACK := {
+	"run": "walk", "talk": "idle", "sad": "idle", "plant": "harvest", "chop": "harvest",
+	"harvest": "chop", "cheer": "wave", "wave": "cheer",
+}
+const BLEND_LOCO := 0.2
+const BLEND_ACTION_IN := 0.12
+const BLEND_ACTION_OUT := 0.25
+const RUN_ON := 2.9     # m/s: switch walk -> run
+const RUN_OFF := 2.4    # m/s: switch run -> walk (hysteresis)
+const STANCE := {"walk": 0.55, "run": 0.4}   # share of the cycle a foot is on the ground
+## Chibi legs are short for the game's speeds: beyond these playback rates the
+## cadence looks frantic, so the feet are allowed to slide a little instead.
+const MAX_RATE := {"walk": 2.6, "run": 2.3}
+
+static var _stride_cache := {}
+static var _tool_meshes := {}
+static var _tool_mats := {}
+
+# ---------------------------------------------------------------- public
 var root: Node3D
+var hand_r: Node3D          # BoneAttachment3D on hand_R (v2) or the HandR node (v1)
+var talk_t := 0.0           # >0: play the talk loop instead of idle (callers refresh it each frame)
+var idle_clip := "idle"     # "sad" for villagers who lost their land
+var skinned := false        # true when driving a v2 AnimationPlayer
+var idle_seed := randf() * 10.0
+
+# ---------------------------------------------------------------- v2 state
+var ap: AnimationPlayer
+var skel: Skeleton3D
+var _cur := ""              # animation name currently playing (resolved)
+var _cur_kind := ""         # "idle" / "walk" / "run" / "talk" / "sad" / "action"
+var _rate := 1.0
+var _act_left := 0.0
+var _act_rate := 1.0
+var _act_alt := false
+var _act_kind := ""
+var _nat := {"walk": 1.1, "run": 2.6}
+var _running := false
+var _idle_rate := 1.0
+var _head := -1
+var _neck := -1
+var _override_bones: Array[int] = []
+var _rest_rot := {}
+var _sk_xf := Transform3D.IDENTITY   # skeleton -> model space
+var _sk_up := Vector3.UP
+var _sk_fwd := Vector3.BACK
+var _grip_root: Node3D
+var _grip_l_root: Node3D
+var _hand_idx := -1
+var _tools := {}
+var _tool_kind := ""
+var _tool_s := 0.0
+var _tool_timer := 0.0
+
+# ---------------------------------------------------------------- secondary motion
+var _yaw := 0.0
+var _yaw_applied := 0.0
+var _yaw_vel := 0.0
+var _yaw_prev := 0.0
+var _turn_rate := 0.0
+var _turned := false
+var _lean := 0.0
+var _pitch := 0.0
+var _prev_speed := 0.0
+var _accel := 0.0
+var _was_moving := false
+var _sq := 0.0
+var _sq_vel := 0.0
+var _base_scale := Vector3.ONE
+var _look_pos := Vector3.ZERO
+var _look_on := false
+var _look_yaw := 0.0
+var _look_pitch := 0.0
+var _idle_look := 0.0
+var _idle_look_t := 0.0
+
+# ---------------------------------------------------------------- v1 state
 var hips: Node3D
 var arm_l: Node3D
 var arm_r: Node3D
 var leg_l: Node3D
 var leg_r: Node3D
 var head: Node3D
-var hand_r: Node3D
 var hips_y := 0.3
 var phase := 0.0
 var action_t := 0.0   # >0 while doing an action (tool swing)
 var action_kind := ""
-var talk_t := 0.0
-var idle_seed := randf() * 10.0
 
 
 func _init(model: Node3D) -> void:
 	root = model
-	hips = model.find_child("Hips", true, false)
-	arm_l = model.find_child("ArmL", true, false)
-	arm_r = model.find_child("ArmR", true, false)
-	leg_l = model.find_child("LegL", true, false)
-	leg_r = model.find_child("LegR", true, false)
-	head = model.find_child("Head", true, false)
-	hand_r = model.find_child("HandR", true, false)
+	_base_scale = model.scale
+	_yaw = model.rotation.y
+	_yaw_applied = _yaw
+	_yaw_prev = _yaw
+	_idle_look_t = randf_range(1.0, 4.0)
+	ap = _find_type(model, "AnimationPlayer") as AnimationPlayer
+	skel = _find_type(model, "Skeleton3D") as Skeleton3D
+	if ap and skel and not ap.get_animation_list().is_empty():
+		_init_v2()
+	else:
+		_init_v1()
+
+
+# ======================================================================= API
+func play_action(kind: String, duration := -1.0) -> void:
+	var spec: Array = ACTIONS.get(kind, [kind, 1.0, ""])
+	if not skinned:
+		action_kind = "chop" if kind == "clear" else kind
+		action_t = duration if duration > 0.0 else 0.45
+		_show_tool(spec[2], action_t + 0.15)
+		return
+	var clip := _resolve(spec[0])
+	if clip == "":
+		_show_tool(spec[2], 0.6)
+		return
+	var a := ap.get_animation(clip)
+	var rate: float = spec[1]
+	if duration > 0.0 and a.length > 0.0:
+		rate = clampf(a.length / duration, 0.5, 2.5)
+	# alternate between two names for the same clip so a repeated action
+	# still cross-fades from its own pose instead of snapping to frame 0
+	_act_alt = not _act_alt
+	var nm := ("alt/" + clip) if _act_alt and ap.has_animation("alt/" + clip) else clip
+	if nm == _cur:
+		nm = clip if nm != clip else "alt/" + clip
+	_rate = rate
+	_act_rate = rate
+	ap.play(nm, BLEND_ACTION_IN * rate)
+	_cur = nm
+	_cur_kind = "action"
+	_act_kind = kind
+	_act_left = a.length / rate
+	_show_tool(spec[2], _act_left - BLEND_ACTION_OUT * 0.6)
+	bump(0.5)
+
+
+func is_busy() -> bool:
+	## True while an action clip plays and the character should stand still.
+	return skinned and _act_left > BLEND_ACTION_OUT * 0.6
+
+
+func action_kind_playing() -> String:
+	return _act_kind if is_busy() else ""
+
+
+func turn_towards(target_yaw: float, delta: float, max_rate := 10.0) -> void:
+	## Smooth, speed-limited turn of the model (call every frame instead of
+	## setting model.rotation.y); the turn rate also drives the lean.
+	_sync_external_yaw()
+	var diff := wrapf(target_yaw - _yaw, -PI, PI)
+	var want := clampf(diff * 12.0, -max_rate, max_rate)
+	_yaw_vel = lerpf(_yaw_vel, want, clampf(delta * 16.0, 0.0, 1.0))
+	var step := _yaw_vel * delta
+	if absf(diff) < 0.002:
+		step = diff
+		_yaw_vel = 0.0
+	elif signf(step) == signf(diff) and absf(step) > absf(diff):
+		step = diff
+	_yaw = wrapf(_yaw + step, -PI, PI)
+	_turned = true
+
+
+func look_at_point(p: Vector3) -> void:
+	## Turn the head toward a world position this frame (call every frame).
+	_look_pos = p
+	_look_on = true
+
+
+func bump(amount := 1.0) -> void:
+	## Kick the squash-and-stretch spring (start/stop, surprise, hops).
+	_sq_vel += amount
+
+
+func attach_to_bone(bone: String, node: Node3D, offset := Vector3.ZERO) -> bool:
+	## Parent `node` to a BoneAttachment3D on `bone`, placed at the bone's rest
+	## head + `offset` (model axes) and kept upright relative to the model at
+	## rest. Returns false when the model has no such bone (caller falls back).
+	if not skinned:
+		return false
+	var bi := skel.find_bone(bone)
+	if bi < 0:
+		return false
+	var ba := _attachment(bone)
+	var rest := skel.get_bone_global_rest(bi)
+	var head_model := _sk_xf * rest.origin
+	var target_skel := _sk_xf.affine_inverse() * Transform3D(Basis.IDENTITY, head_model + offset)
+	ba.add_child(node)
+	node.transform = rest.affine_inverse() * target_skel
+	return true
+
+
+# ======================================================================= update
+func update(delta: float, speed: float, t: float) -> void:
+	_sync_external_yaw()
+	if not _turned:
+		_yaw_vel = lerpf(_yaw_vel, 0.0, clampf(delta * 10.0, 0.0, 1.0))
+	_turned = false
+	if skinned:
+		_update_v2(delta, speed, t)
+	else:
+		_update_v1(delta, speed, t)
+	_update_secondary(delta, speed)
+	_update_tool(delta)
+	_look_on = false
+
+
+func _update_secondary(delta: float, speed: float) -> void:
+	# lean into turns (centripetal), pitch with acceleration, squash on start/stop
+	var yr := wrapf(_yaw - _yaw_prev, -PI, PI) / maxf(delta, 0.001)
+	_yaw_prev = _yaw
+	if absf(yr) > 30.0:
+		yr = 0.0   # teleport / snap, not a turn
+	_turn_rate = lerpf(_turn_rate, yr, clampf(delta * 10.0, 0.0, 1.0))
+	var lean_target := clampf(-_turn_rate * speed * 0.022, -0.16, 0.16)
+	_lean = lerpf(_lean, lean_target, clampf(delta * 8.0, 0.0, 1.0))
+	var acc := (speed - _prev_speed) / maxf(delta, 0.001)
+	_prev_speed = speed
+	_accel = lerpf(_accel, acc, clampf(delta * 12.0, 0.0, 1.0))
+	var pitch_target := clampf(_accel * 0.01, -0.09, 0.11)
+	_pitch = lerpf(_pitch, pitch_target, clampf(delta * 8.0, 0.0, 1.0))
+	var moving := speed > 0.35
+	if moving != _was_moving:
+		bump(0.75 if moving else 0.6)
+		_was_moving = moving
+	var f := -170.0 * _sq - 11.0 * _sq_vel
+	_sq_vel += f * minf(delta, 0.05)
+	_sq = clampf(_sq + _sq_vel * minf(delta, 0.05), -0.1, 0.1)
+	root.rotation = Vector3(_pitch, _yaw, _lean)
+	_yaw_applied = _yaw
+	root.scale = _base_scale * Vector3(1.0 + _sq * 0.5, 1.0 - _sq, 1.0 + _sq * 0.5)
+
+
+func _sync_external_yaw() -> void:
+	# someone else rotated the model directly (old code, cutscene): adopt it
+	if absf(wrapf(root.rotation.y - _yaw_applied, -PI, PI)) > 0.0001:
+		_yaw = root.rotation.y
+		_yaw_applied = _yaw
+
+
+# ======================================================================= v2
+func _init_v2() -> void:
+	skinned = true
+	ap.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
+	ap.deterministic = true
+	for n in LOOP_CLIPS:
+		if ap.has_animation(n):
+			ap.get_animation(n).loop_mode = Animation.LOOP_LINEAR
+	# a second library pointing at the same clips (see play_action)
+	var alt := AnimationLibrary.new()
+	for n in ap.get_animation_list():
+		if not "/" in n:
+			alt.add_animation(n, ap.get_animation(n))
+	if not ap.has_animation_library("alt"):
+		ap.add_animation_library("alt", alt)
+	_sk_xf = _rel_xform(skel, root)
+	_sk_up = (_sk_xf.basis.inverse() * Vector3.UP).normalized()
+	_sk_fwd = (_sk_xf.basis.inverse() * Vector3.BACK).normalized()
+	_head = skel.find_bone("head")
+	_neck = skel.find_bone("neck")
+	for bi in [_neck, _head]:
+		if bi >= 0:
+			_override_bones.append(bi)
+			_rest_rot[bi] = skel.get_bone_rest(bi).basis.get_rotation_quaternion()
+	_hand_idx = skel.find_bone("hand_R")
+	if _hand_idx >= 0:
+		hand_r = _attachment("hand_R")
+		_grip_root = Node3D.new()
+		_grip_root.name = "Grip"
+		hand_r.add_child(_grip_root)
+		_grip_root.transform = _grip_xform(_hand_idx)
+	var hl := skel.find_bone("hand_L")
+	if hl >= 0:
+		_grip_l_root = Node3D.new()
+		_grip_l_root.name = "GripL"
+		_attachment("hand_L").add_child(_grip_l_root)
+		_grip_l_root.transform = _grip_xform(hl)
+	_measure_strides()
+	_idle_rate = randf_range(0.88, 1.12)
+	var idle := _resolve("idle")
+	if idle != "":
+		ap.play(idle)
+		ap.seek(randf() * ap.get_animation(idle).length, true)
+		_cur = idle
+		_cur_kind = "idle"
+		_rate = _idle_rate
+
+
+func _update_v2(delta: float, speed: float, t: float) -> void:
+	var moving := speed > 0.12
+	if moving:
+		_running = speed > (RUN_OFF if _running else RUN_ON)
+	var want_kind := "idle"
+	if moving:
+		want_kind = "run" if _running else "walk"
+	elif talk_t > 0.0:
+		want_kind = "talk"
+	elif idle_clip != "idle":
+		want_kind = idle_clip
+	talk_t = maxf(0.0, talk_t - delta)
+	var want_rate := _idle_rate
+	if want_kind == "walk" or want_kind == "run":
+		want_rate = clampf(speed / float(_nat[want_kind]), 0.6, float(MAX_RATE[want_kind]))
+	if _act_left > 0.0:
+		_act_left -= delta
+		if _act_left <= BLEND_ACTION_OUT:
+			_act_left = 0.0
+			_act_kind = ""
+			_switch(want_kind, want_rate, BLEND_ACTION_OUT)
+	elif want_kind != _cur_kind:
+		_switch(want_kind, want_rate, BLEND_LOCO)
+	if _cur_kind != "action":
+		_rate = lerpf(_rate, want_rate, clampf(delta * 8.0, 0.0, 1.0))
+	# the mixer rewrites only bones that have tracks: put the look bones back
+	# to rest first so the additive look below never accumulates
+	for bi in _override_bones:
+		skel.set_bone_pose_rotation(bi, _rest_rot[bi])
+	ap.advance(delta * _rate)
+	_apply_look(delta, moving)
+
+
+func _switch(kind: String, rate: float, blend: float) -> void:
+	var nm := _resolve(kind)
+	if nm == "":
+		_cur_kind = kind
+		return
+	var phase := -1.0
+	var from_loco := _cur_kind == "walk" or _cur_kind == "run"
+	if from_loco and (kind == "walk" or kind == "run") and ap.current_animation_length > 0.0:
+		phase = fposmod(ap.current_animation_position / ap.current_animation_length, 1.0)
+	_rate = rate
+	if nm == _cur and ap.is_playing():
+		_cur_kind = kind
+		return
+	ap.play(nm, blend * maxf(rate, 0.3))
+	var len := ap.get_animation(nm).length
+	if phase >= 0.0:
+		ap.seek(phase * len, false)
+	elif kind == "talk" or kind == "idle" or kind == "sad":
+		# start loops somewhere random so a crowd never moves in sync
+		ap.seek(randf() * len, false)
+	_cur = nm
+	_cur_kind = kind
+
+
+func _resolve(clip: String) -> String:
+	var c := clip
+	for i in 4:
+		if ap.has_animation(c):
+			return c
+		c = CLIP_FALLBACK.get(c, "")
+		if c == "":
+			break
+	if clip == "idle" or clip == "walk":
+		var names := ap.get_animation_list()
+		for n in names:
+			if not "/" in n:
+				return n
+	return ""
+
+
+func _measure_strides() -> void:
+	## Ground speed each locomotion clip was authored for, from how far the foot
+	## travels while planted: playback rate = velocity / this, so feet don't skate.
+	var key := root.scene_file_path
+	if key != "" and _stride_cache.has(key):
+		_nat = (_stride_cache[key] as Dictionary).duplicate()
+		return
+	var foot := skel.find_bone("foot_L")
+	if foot < 0:
+		foot = skel.find_bone("shin_L")
+	if foot >= 0:
+		for clip in ["walk", "run"]:
+			var nm := _resolve(clip)
+			if nm == "" or nm != clip and clip == "run":
+				continue
+			var a := ap.get_animation(nm)
+			if a.length <= 0.0:
+				continue
+			ap.play(nm)
+			var zmin := INF
+			var zmax := -INF
+			for i in 24:
+				ap.seek(a.length * i / 24.0, true)
+				var p := _sk_xf * skel.get_bone_global_pose(foot).origin
+				zmin = minf(zmin, p.z)
+				zmax = maxf(zmax, p.z)
+			var span := (zmax - zmin) * root.scale.z
+			if span > 0.02:
+				_nat[clip] = clampf(span / (a.length * float(STANCE[clip])), 0.3, 8.0)
+		ap.stop()
+	if _resolve("run") != "run":
+		_nat["run"] = maxf(_nat["walk"] * 2.0, 2.0)
+	if key != "":
+		_stride_cache[key] = _nat.duplicate()
+
+
+func _apply_look(delta: float, moving: bool) -> void:
+	var want_yaw := 0.0
+	var want_pitch := -0.32 if idle_clip == "sad" and moving else 0.0
+	if _look_on and _head >= 0:
+		var hp := skel.global_transform * skel.get_bone_global_pose(_head).origin
+		var d := root.global_transform.basis.inverse() * (_look_pos - hp)
+		var yaw := atan2(d.x, d.z)
+		if absf(yaw) < 2.3:
+			want_yaw = clampf(yaw, -1.05, 1.05)
+			want_pitch = clampf(atan2(d.y, Vector2(d.x, d.z).length()), -0.45, 0.35)
+	elif not moving and _cur_kind != "action":
+		_idle_look_t -= delta
+		if _idle_look_t <= 0.0:
+			_idle_look = randf_range(-0.7, 0.7) if randf() < 0.65 else 0.0
+			_idle_look_t = randf_range(1.2, 4.0)
+		want_yaw = _idle_look
+	var k := clampf(delta * 5.0, 0.0, 1.0)
+	_look_yaw = lerpf(_look_yaw, want_yaw, k)
+	_look_pitch = lerpf(_look_pitch, want_pitch, k)
+	if absf(_look_yaw) < 0.001 and absf(_look_pitch) < 0.001:
+		return
+	var right := _sk_fwd.cross(_sk_up).normalized()
+	var shares := [[_neck, 0.35], [_head, 0.65]] if _neck >= 0 else [[_head, 1.0]]
+	for s in shares:
+		var bi: int = s[0]
+		if bi < 0:
+			continue
+		var w: float = s[1]
+		var par := skel.get_bone_parent(bi)
+		var pb := skel.get_bone_global_pose(par).basis.orthonormalized() if par >= 0 else Basis.IDENTITY
+		var inv := pb.inverse()
+		var q := Quaternion((inv * _sk_up).normalized(), _look_yaw * w) * Quaternion((inv * right).normalized(), _look_pitch * w)
+		skel.set_bone_pose_rotation(bi, q * skel.get_bone_pose_rotation(bi))
+
+
+func _attachment(bone: String) -> BoneAttachment3D:
+	var nm := "Attach_" + bone
+	var ex := skel.get_node_or_null(NodePath(nm))
+	if ex:
+		return ex as BoneAttachment3D
+	var ba := BoneAttachment3D.new()
+	ba.name = nm
+	skel.add_child(ba)
+	ba.bone_name = bone
+	return ba
+
+
+func _grip_xform(bi: int) -> Transform3D:
+	## Where a fist holds a tool, in bone space: tool +Y runs along the thumb
+	## side of the fist (model-forward at rest for a hanging or T-posed arm, i.e.
+	## the bone's local +Z in the v2 rigs), tool +Z points where the fingers
+	## point (the edge of a blade), origin in the fist.
+	var rest := skel.get_bone_global_rest(bi)
+	var by := rest.basis.y.normalized()
+	var g := _sk_fwd - by * _sk_fwd.dot(by)
+	if g.length() < 0.2:
+		g = rest.basis.z
+	g = g.normalized()
+	var z := (by - g * by.dot(g)).normalized()
+	var x := g.cross(z).normalized()
+	var local := rest.basis.orthonormalized().inverse() * Basis(x, g, z)
+	# the fist sits ~37% of a forearm past the wrist (0.036 m on the default
+	# villager, same as the proxy tools in blender/characters.py)
+	var sc: float = _sk_xf.basis.get_scale().x
+	var grip := 0.036 / maxf(sc, 0.0001)
+	var par := skel.get_bone_parent(bi)
+	if par >= 0:
+		grip = rest.origin.distance_to(skel.get_bone_global_rest(par).origin) * 0.37
+	# tools are modelled in metres: undo any armature scale
+	return Transform3D(local.scaled(Vector3.ONE / maxf(sc, 0.0001)), Vector3(0, grip, 0))
+
+
+# ======================================================================= tools
+func _show_tool(kind: String, seconds: float) -> void:
+	_tool_kind = kind
+	_tool_timer = maxf(seconds, 0.2)
+	for k in _tools:
+		if k != kind:
+			(_tools[k] as Node3D).visible = false
+	if kind == "":
+		return
+	if not _tools.has(kind):
+		var parent: Node3D = null
+		if skinned:
+			parent = _grip_l_root if kind == "sack" else _grip_root
+		elif kind != "sack":
+			parent = hand_r if hand_r else root
+		if parent == null:
+			return
+		var mi := MeshInstance3D.new()
+		mi.name = "Tool_" + kind
+		mi.mesh = tool_mesh(kind)
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+		mi.visible = false
+		parent.add_child(mi)
+		_tools[kind] = mi
+	_tool_s = 0.0 if not (_tools[kind] as Node3D).visible else _tool_s
+
+
+func _update_tool(delta: float) -> void:
+	if _tool_kind == "" or not _tools.has(_tool_kind):
+		return
+	_tool_timer -= delta
+	var tool: MeshInstance3D = _tools[_tool_kind]
+	var on := _tool_timer > 0.0
+	_tool_s = move_toward(_tool_s, 1.0 if on else 0.0, delta / 0.12)
+	var s := ease(_tool_s, 0.4) if _tool_s > 0.0 else 0.0
+	tool.visible = _tool_s > 0.01
+	if not tool.visible:
+		if not on:
+			_tool_kind = ""
+		return
+	var b := Basis.IDENTITY
+	if not skinned:
+		b = Basis(Vector3.RIGHT, PI * 0.5) if tool.get_parent() == hand_r else Basis.IDENTITY
+	elif _tool_kind == "egrek":
+		b = _egrek_basis()
+	tool.transform = Transform3D(b.scaled(Vector3.ONE * maxf(s, 0.001)), Vector3.ZERO)
+
+
+func _egrek_basis() -> Basis:
+	## The pole runs along the grip axis (hand_R local +Z in the v2 rigs, whose
+	## harvest clip steers both hands along the pole). If a rig's hand points
+	## the pole backwards or down, lean it toward the crown in front instead.
+	## The sickle hook always faces back toward the harvester.
+	var grip_w := skel.global_transform * skel.get_bone_global_pose(_hand_idx) * _grip_root.transform
+	var fwd := (root.global_transform.basis * Vector3.BACK)
+	fwd.y = 0.0
+	fwd = fwd.normalized() if fwd.length() > 0.01 else Vector3.BACK
+	var hand_dir := grip_w.basis.y.normalized()
+	var aim := (root.global_position + fwd * 1.0 + Vector3.UP * 3.0 - grip_w.origin).normalized()
+	var q := smoothstep(0.2, 0.45, hand_dir.y) * smoothstep(-0.2, 0.1, hand_dir.dot(fwd))
+	var y := aim.slerp(hand_dir, q).normalized()
+	var z := -fwd - y * (-fwd).dot(y)
+	z = z.normalized() if z.length() > 0.01 else Vector3.BACK
+	var x := y.cross(z).normalized()
+	return grip_w.basis.orthonormalized().inverse() * Basis(x, y, z)
+
+
+static func _tool_mat(nm: String, col: Color) -> Material:
+	if not _tool_mats.has(nm):
+		var m := StandardMaterial3D.new()
+		m.resource_name = nm
+		m.albedo_color = col
+		_tool_mats[nm] = ModelLib.convert_material(m, false)
+	return _tool_mats[nm]
+
+
+static func tool_mesh(kind: String) -> ArrayMesh:
+	## Small hand tools built in code. Local space: the fist grips the origin,
+	## the handle runs along +Y, blade edges / hooks face +Z.
+	if _tool_meshes.has(kind):
+		return _tool_meshes[kind]
+	var mb := _MeshBuilder.new()
+	match kind:
+		"egrek":
+			# long bamboo pole with node rings and a curved sickle on top
+			var bamboo := mb.part("M_Tool_Bamboo", Color("c9a95e"))
+			var node := mb.part("M_Tool_BambooNode", Color("97793a"))
+			var steel := mb.part("M_Tool_Steel", Color("cfd6d8"))
+			var dark := mb.part("M_Tool_SteelDark", Color("6f7474"))
+			mb.cyl(bamboo, Vector3(0, -0.5, 0), Vector3(0, 2.2, 0), 0.019, 7)
+			for i in 6:
+				var y := -0.3 + i * 0.44
+				mb.cyl(node, Vector3(0, y, 0), Vector3(0, y + 0.025, 0), 0.023, 7)
+			mb.cyl(dark, Vector3(0, 2.18, 0), Vector3(0, 2.3, 0), 0.022, 7)
+			# sickle: rises from the ferrule, arcs over and hooks down toward +Z
+			var c := Vector3(0, 2.3, 0.1)
+			var inner: Array[Vector3] = []
+			var outer: Array[Vector3] = []
+			var n := 12
+			for i in n + 1:
+				var u := float(i) / n
+				var ang := lerpf(PI, -0.35, u)
+				var w := lerpf(0.035, 0.004, pow(u, 1.3))
+				var r := 0.1
+				var dirv := Vector3(0, sin(ang), cos(ang))
+				inner.append(c + dirv * (r - w * 0.5))
+				outer.append(c + dirv * (r + w * 0.5))
+			mb.blade(steel, inner, outer, 0.004)
+		"parang":
+			# machete: dark wooden grip, short guard, wide slightly curved blade
+			var wood := mb.part("M_Tool_WoodDark", Color("5b3b24"))
+			var steel := mb.part("M_Tool_Steel", Color("d3dadc"))
+			var dark := mb.part("M_Tool_SteelDark", Color("6f7474"))
+			mb.cyl(wood, Vector3(0, -0.07, 0), Vector3(0, 0.08, 0), 0.02, 7)
+			mb.cyl(dark, Vector3(0, 0.08, 0), Vector3(0, 0.1, 0), 0.026, 7)
+			var back: Array[Vector3] = []
+			var edge: Array[Vector3] = []
+			var n := 10
+			for i in n + 1:
+				var u := float(i) / n
+				var y := 0.1 + u * 0.36
+				var zb := -0.012 - 0.015 * u * u
+				var ze := lerpf(0.022, 0.05, smoothstep(0.0, 0.75, u))
+				if u > 0.8:
+					ze = lerpf(0.05, zb + 0.004, smoothstep(0.8, 1.0, u))
+				back.append(Vector3(0, y, zb))
+				edge.append(Vector3(0, y, ze))
+			mb.blade(steel, back, edge, 0.005)
+		"trowel":
+			# cetok: wooden handle, thin shank, pointed leaf-shaped blade
+			var wood := mb.part("M_Tool_Wood", Color("9a6437"))
+			var steel := mb.part("M_Tool_Steel", Color("c7cfd2"))
+			mb.cyl(wood, Vector3(0, -0.06, 0), Vector3(0, 0.07, 0), 0.017, 7)
+			mb.cyl(steel, Vector3(0, 0.07, 0), Vector3(0, 0.12, 0.012), 0.006, 5)
+			var l: Array[Vector3] = []
+			var r: Array[Vector3] = []
+			var n := 8
+			for i in n + 1:
+				var u := float(i) / n
+				var y := 0.12 + u * 0.15
+				var hw := 0.042 * pow(sin(PI * lerpf(0.12, 1.0, u)), 0.7)
+				var z := 0.012 + 0.012 * sin(PI * u)
+				l.append(Vector3(-hw, y, z))
+				r.append(Vector3(hw, y, z))
+			mb.sheet(steel, l, r, 0.004)
+		"sack":
+			# small fertiliser sack held in the left hand
+			var cloth := mb.part("M_Tool_Sack", Color("e9dcbc"))
+			var tie := mb.part("M_Tool_Rope", Color("8a6a3a"))
+			mb.blob(cloth, Vector3(0, 0.0, 0.07), Vector3(0.06, 0.075, 0.055), 8, 6)
+			mb.cyl(tie, Vector3(0, 0.0, 0.0), Vector3(0, 0.0, 0.03), 0.018, 6)
+	var mesh := mb.commit()
+	_tool_meshes[kind] = mesh
+	return mesh
+
+
+class _MeshBuilder:
+	var tools := {}
+	var mats := {}
+
+	func part(nm: String, col: Color) -> SurfaceTool:
+		if not tools.has(nm):
+			var st := SurfaceTool.new()
+			st.begin(Mesh.PRIMITIVE_TRIANGLES)
+			tools[nm] = st
+			mats[nm] = CharAnim._tool_mat(nm, col)
+		return tools[nm]
+
+	func tri(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, na: Vector3, nb: Vector3, nc: Vector3) -> void:
+		# Godot front faces wind clockwise: flip when the winding disagrees with the normals
+		var fn := (na + nb + nc)
+		if (b - a).cross(c - a).dot(fn) > 0.0:
+			var tv := b
+			b = c
+			c = tv
+			var tn := nb
+			nb = nc
+			nc = tn
+		st.set_normal(na)
+		st.add_vertex(a)
+		st.set_normal(nb)
+		st.add_vertex(b)
+		st.set_normal(nc)
+		st.add_vertex(c)
+
+	func quad(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3, n: Vector3) -> void:
+		tri(st, a, b, c, n, n, n)
+		tri(st, a, c, d, n, n, n)
+
+	func cyl(st: SurfaceTool, a: Vector3, b: Vector3, r: float, sides: int) -> void:
+		var ax := (b - a).normalized()
+		var u := ax.cross(Vector3.RIGHT if absf(ax.x) < 0.9 else Vector3.UP).normalized()
+		var v := ax.cross(u).normalized()
+		for i in sides:
+			var a0 := TAU * i / sides
+			var a1 := TAU * (i + 1) / sides
+			var n0 := u * cos(a0) + v * sin(a0)
+			var n1 := u * cos(a1) + v * sin(a1)
+			tri(st, a + n0 * r, b + n0 * r, b + n1 * r, n0, n0, n1)
+			tri(st, a + n0 * r, b + n1 * r, a + n1 * r, n0, n1, n1)
+			tri(st, b, b + n0 * r, b + n1 * r, ax, ax, ax)
+			tri(st, a, a + n1 * r, a + n0 * r, -ax, -ax, -ax)
+
+	func blade(st: SurfaceTool, back: Array[Vector3], edge: Array[Vector3], thick: float) -> void:
+		## flat blade in the YZ plane (faces +-X) with a thick back rim
+		var off := Vector3(thick * 0.5, 0, 0)
+		for i in back.size() - 1:
+			quad(st, back[i] + off, back[i + 1] + off, edge[i + 1] + off * 0.3, edge[i] + off * 0.3, Vector3.RIGHT)
+			quad(st, back[i] - off, edge[i] - off * 0.3, edge[i + 1] - off * 0.3, back[i + 1] - off, Vector3.LEFT)
+			var rim := (back[i] - edge[i]).normalized()
+			quad(st, back[i] + off, back[i] - off, back[i + 1] - off, back[i + 1] + off, rim)
+
+	func sheet(st: SurfaceTool, left: Array[Vector3], right: Array[Vector3], thick: float) -> void:
+		## flat sheet facing +-Z
+		var off := Vector3(0, 0, thick * 0.5)
+		for i in left.size() - 1:
+			quad(st, left[i] + off, right[i] + off, right[i + 1] + off, left[i + 1] + off, Vector3.BACK)
+			quad(st, left[i] - off, left[i + 1] - off, right[i + 1] - off, right[i] - off, Vector3.FORWARD)
+
+	func blob(st: SurfaceTool, c: Vector3, radii: Vector3, seg: int, rings: int) -> void:
+		for j in rings:
+			var t0 := PI * j / rings
+			var t1 := PI * (j + 1) / rings
+			for i in seg:
+				var p0 := TAU * i / seg
+				var p1 := TAU * (i + 1) / seg
+				var d := [
+					Vector3(sin(t0) * cos(p0), cos(t0), sin(t0) * sin(p0)),
+					Vector3(sin(t1) * cos(p0), cos(t1), sin(t1) * sin(p0)),
+					Vector3(sin(t1) * cos(p1), cos(t1), sin(t1) * sin(p1)),
+					Vector3(sin(t0) * cos(p1), cos(t0), sin(t0) * sin(p1)),
+				]
+				var p: Array[Vector3] = []
+				var n: Array[Vector3] = []
+				for q in d:
+					p.append(c + Vector3(q.x * radii.x, q.y * radii.y, q.z * radii.z))
+					n.append(Vector3(q.x / radii.x, q.y / radii.y, q.z / radii.z).normalized())
+				if j > 0:
+					tri(st, p[0], p[1], p[2], n[0], n[1], n[2])
+				if j < rings - 1:
+					tri(st, p[0], p[2], p[3], n[0], n[2], n[3])
+
+	func commit() -> ArrayMesh:
+		var mesh := ArrayMesh.new()
+		for nm in tools:
+			var st: SurfaceTool = tools[nm]
+			st.set_material(mats[nm])
+			st.commit(mesh)
+		return mesh
+
+
+# ======================================================================= helpers
+static func _find_type(n: Node, cls: String) -> Node:
+	if n.is_class(cls):
+		return n
+	for c in n.get_children():
+		var r := _find_type(c, cls)
+		if r:
+			return r
+	return null
+
+
+static func _rel_xform(node: Node, top: Node) -> Transform3D:
+	var t := Transform3D.IDENTITY
+	var n := node
+	while n != null and n != top:
+		if n is Node3D:
+			t = (n as Node3D).transform * t
+		n = n.get_parent()
+	return t
+
+
+# ======================================================================= v1
+func _init_v1() -> void:
+	hips = root.find_child("Hips", true, false)
+	arm_l = root.find_child("ArmL", true, false)
+	arm_r = root.find_child("ArmR", true, false)
+	leg_l = root.find_child("LegL", true, false)
+	leg_r = root.find_child("LegR", true, false)
+	head = root.find_child("Head", true, false)
+	hand_r = root.find_child("HandR", true, false)
 	if hips:
 		hips_y = hips.position.y
 
 
-func play_action(kind: String, duration := 0.45) -> void:
-	action_kind = kind
-	action_t = duration
-
-
-func update(delta: float, speed: float, t: float) -> void:
+func _update_v1(delta: float, speed: float, t: float) -> void:
+	## The original procedural animation for rigid v1 models.
 	var moving := speed > 0.15
 	if moving:
 		phase += delta * (5.0 + speed * 1.6)
@@ -68,7 +810,7 @@ func update(delta: float, speed: float, t: float) -> void:
 				arm_l_x = -1.2 * sin(k * PI)
 				if hips:
 					hips.rotation.x = 0.35 * sin(k * PI)
-			"cheer":
+			"cheer", "wave":
 				arm_r_z = 2.6 * sin(k * PI)
 				arm_r_x = -0.3
 				arm_l_x = -0.3
@@ -86,4 +828,10 @@ func update(delta: float, speed: float, t: float) -> void:
 			head.rotation.x = sin(t * 9.0) * 0.08
 		else:
 			head.rotation.x = lerpf(head.rotation.x, 0.0, delta * 6.0)
-		head.rotation.y = sin(t * 0.7 + idle_seed) * (0.05 if moving else 0.18)
+		var want := 0.0
+		if _look_on:
+			var d := root.global_transform.basis.inverse() * (_look_pos - head.global_position)
+			if absf(atan2(d.x, d.z)) < 2.3:
+				want = clampf(atan2(d.x, d.z), -0.9, 0.9)
+		_look_yaw = lerpf(_look_yaw, want, clampf(delta * 5.0, 0.0, 1.0))
+		head.rotation.y = sin(t * 0.7 + idle_seed) * (0.05 if moving else 0.18) + _look_yaw

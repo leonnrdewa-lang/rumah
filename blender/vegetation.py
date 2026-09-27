@@ -1,21 +1,43 @@
 #!/usr/bin/env python3
-"""Vegetation, rocks and nature props for Sawit The Franchise.
+"""Vegetation, rocks and nature props for Sawit The Franchise (art direction v2).
 
-Run:  python3 blender/vegetation.py            # build everything
-      python3 blender/vegetation.py sawit_3    # build only the named assets
+Run:  python3 blender/vegetation.py                 # textures (if missing) + every asset
+      python3 blender/vegetation.py sawit_3 fern_a  # only the named assets
+      python3 blender/vegetation.py textures        # re-render every foliage texture
+      python3 blender/vegetation.py tex:frond       # re-render one texture
+      python3 blender/vegetation.py scene           # composite test render (reads the exported GLBs)
 
-Every asset is built from scratch after reset_scene(), previewed to
-blender/previews/<name>.png and exported to game/assets/models/<name>.glb.
+Look (see ART_DIRECTION_V2.md and art/reference/07_target_gameplay.png): lush, layered,
+broad-leaved.  Leaves are alpha-textured cards.  Every texture is made here: a high
+detail model (hundreds of folded leaflets, veins, blades, petals...) is rendered
+top-down / side-on with an orthographic Cycles camera and transparent film into
+game/assets/textures/foliage/<name>.png (<= 512 px, colour dilated into the
+transparent area so mipmaps do not get dark fringes).  The game assets then use
+those textures on cheap curved / V-folded card strips:
 
-Node / material names the game relies on:
-  * sawit_3 root Empty -> child Empty `Fruits` -> separate meshes `Fruit_0..n`
-    (toggle `Fruits` visibility for harvest state).
-  * `M_Frond` is the single leaf material of every palm (sawit_*, coconut,
-    banana); it has backface culling OFF so Godot imports it double-sided.
-    Other thin materials (grass, petals, bush leaves, dry leaves) are double-sided
-    too; every closed/solid material is exported with backface culling ON.
+  frond.png      oil-palm frond (sawit_*, spear leaves, trunk epiphytes, pile_fronds)
+  frond_dry.png  dead frond (frond_fallen, pile_fronds)
+  frond_coco.png coconut frond (narrow drooping leaflets)
+  fern.png       pakis frond (fern_a, fern_b)
+  leaves.png     2x2 atlas: canopy cluster | leafy sprig / broad leaf | keladi leaf
+  grass.png      2 side-view clumps: lush | tall wild with dry blades
+  flowers.png    2 side-view clumps: white daisies | yellow wedelia
+  piringan.png   top-down weeded circle: red-brown mulch + dry frond bits, ragged edge
+
+Material contract (the game relies on it):
+  * textured materials export as glTF alphaMode MASK (texture alpha -> Math ROUND ->
+    BSDF alpha) with baseColorFactor white, doubleSided for leaf cards;
+  * every mesh carries an active colour attribute `Col` (COLOR_0): baked Cycles AO on
+    solid parts (trunks, rocks, logs) and procedural darkening towards the plant centre
+    / ground on cards.  It is a plain multiply (0.45..1), with a few mild tints (moss on
+    trunks / logs, yellowing on old fronds);
+  * one material name <-> one texture:  M_Frond=frond, M_FrondDry=frond_dry,
+    M_CocoFrond=frond_coco, M_Fern=fern, M_Leaf / M_Bush / M_Canopy=leaves,
+    M_Grass=grass, M_Flower=flowers, M_Piringan=piringan (single-sided ground decal).
+  * sawit_3: root Empty -> `sawit_3_body` + child Empty `Fruits` -> `Fruit_0..n`.
 
 Set VEG_SCRATCH=<dir> to also write extra close-up debug renders there.
+Set VEG_ICONS=1 to also re-render the item icons icon_bibit / icon_tbs.
 """
 import math
 import os
@@ -25,20 +47,59 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import bpy  # noqa: E402
+import bmesh  # noqa: E402
+import numpy as np  # noqa: E402
 from mathutils import Vector, Matrix, noise  # noqa: E402
 
 import common  # noqa: E402
 from common import (  # noqa: E402
-    reset_scene, mat, add_box, add_cyl, add_ico, join, shade_smooth, set_mat,
-    empty, export_glb, render_preview, render_icon, count_tris, all_descendants,
+    reset_scene, mat, add_box, add_ico, join, shade_smooth, set_mat, empty, export_glb,
+    count_tris, all_descendants, hex_rgba,
 )
 
 UP = Vector((0.0, 0.0, 1.0))
 GOLDEN = math.radians(137.508)
-SCRATCH = os.environ.get("VEG_SCRATCH")  # optional extra debug views
+SCRATCH = os.environ.get("VEG_SCRATCH")
+TEX_DIR = os.path.join(common.ROOT, "game", "assets", "textures", "foliage")
+os.makedirs(TEX_DIR, exist_ok=True)
 
 
-# ============================================================ geometry helpers
+# ============================================================ small math / colour helpers
+def lerp(a, b, t):
+    return a + (b - a) * t
+
+
+def clamp01(x):
+    return 0.0 if x < 0.0 else (1.0 if x > 1.0 else x)
+
+
+def smoothstep(e0, e1, x):
+    t = clamp01((x - e0) / (e1 - e0))
+    return t * t * (3.0 - 2.0 * t)
+
+
+def lin(h):
+    """hex -> linear rgb tuple"""
+    return tuple(hex_rgba(h)[:3])
+
+
+def cmix(a, b, t):
+    t = clamp01(t)
+    return tuple(x + (y - x) * t for x, y in zip(a, b))
+
+
+def cscale(a, s):
+    return tuple(min(1.0, x * s) for x in a)
+
+
+def cmul(a, b):
+    return tuple(min(1.0, x * y) for x, y in zip(a, b))
+
+
+def grey(v):
+    return (v, v, v)
+
+
 def newell(pts):
     n = Vector((0.0, 0.0, 0.0))
     for i, a in enumerate(pts):
@@ -49,34 +110,55 @@ def newell(pts):
     return n
 
 
+# ============================================================ mesh builder
 class Geo:
-    """Tiny mesh builder: verts + faces with per-face material index / smooth flag."""
+    """Mesh builder: verts with a colour (-> `Col` attribute), faces with material index,
+    smooth flag and optional per-corner UVs."""
 
     def __init__(self):
-        self.v, self.f, self.fm, self.fs = [], [], [], []
+        self.v, self.c, self.f, self.fm, self.fs, self.fuv = [], [], [], [], [], []
 
-    def vert(self, co):
+    def vert(self, co, col=(1.0, 1.0, 1.0)):
         self.v.append(Vector(co))
+        self.c.append(tuple(col)[:3])
         return len(self.v) - 1
 
-    def face(self, idx, mi=0, ref=None, smooth=False):
+    def face(self, idx, mi=0, ref=None, smooth=False, uv=None):
         idx = list(idx)
-        if ref is not None:
-            if newell([self.v[i] for i in idx]).dot(ref) < 0:
-                idx.reverse()
+        uv = list(uv) if uv is not None else None
+        if ref is not None and newell([self.v[i] for i in idx]).dot(Vector(ref)) < 0:
+            idx.reverse()
+            if uv:
+                uv.reverse()
         self.f.append(idx)
         self.fm.append(mi)
         self.fs.append(smooth)
+        self.fuv.append(uv)
 
     def obj(self, name, mats, parent=None):
         me = bpy.data.meshes.new(name)
         me.from_pydata([tuple(p) for p in self.v], [], self.f)
-        me.update()
         for m in mats:
             me.materials.append(m)
-        for p, mi, s in zip(me.polygons, self.fm, self.fs):
-            p.material_index = mi
-            p.use_smooth = s
+        me.polygons.foreach_set("material_index", self.fm)
+        me.polygons.foreach_set("use_smooth", self.fs)
+        if any(u is not None for u in self.fuv):
+            flat = []
+            for f, uv in zip(self.f, self.fuv):
+                for p in (uv if uv is not None else [(0.0, 0.0)] * len(f)):
+                    flat.extend(p)
+            layer = me.uv_layers.new(name="UVMap")
+            layer.data.foreach_set("uv", flat)
+        cols = []
+        for f in self.f:
+            for i in f:
+                c = self.c[i]
+                cols.extend((c[0], c[1], c[2], 1.0))
+        attr = me.color_attributes.new("Col", "BYTE_COLOR", "CORNER")
+        attr.data.foreach_set("color", cols)
+        me.color_attributes.active_color = attr
+        me.color_attributes.render_color_index = me.color_attributes.active_color_index
+        me.update()
         o = bpy.data.objects.new(name, me)
         bpy.context.scene.collection.objects.link(o)
         if parent is not None:
@@ -84,69 +166,2165 @@ class Geo:
         return o
 
 
-def lerp(a, b, t):
-    return a + (b - a) * t
+_ICO = {}
 
 
-def ground(o):
-    """Move object so its lowest vertex sits at z=0 (in object space, identity transforms)."""
-    zmin = min(v.co.z for v in o.data.vertices)
-    for v in o.data.vertices:
-        v.co.z -= zmin
-    o.data.update()
+def ico_data(subdiv):
+    if subdiv not in _ICO:
+        bm = bmesh.new()
+        bmesh.ops.create_icosphere(bm, subdivisions=subdiv, radius=1.0)
+        verts = [v.co.copy() for v in bm.verts]
+        faces = [[v.index for v in f.verts] for f in bm.faces]
+        bm.free()
+        _ICO[subdiv] = (verts, faces)
+    return _ICO[subdiv]
+
+
+def geo_blob(g, mi, center, radius, scale=(1, 1, 1), seed=0, subdiv=1, amp=0.2, freq=1.4, col_fn=None,
+             uv_fn=None, floor=None, smooth=True, face_uv=None):
+    """Lumpy ellipsoid added to Geo `g`. col_fn(p, n) -> rgb, uv_fn(p) -> (u, v);
+    face_uv(points) -> [uv...] gives every face its own texture patch instead."""
+    verts, faces = ico_data(subdiv)
+    off = Vector((seed * 1.71, seed * 2.93, seed * 0.77))
+    C = Vector(center)
+    base = len(g.v)
+    pts = []
+    for co in verts:
+        n = co.normalized()
+        d = 1.0 + amp * noise.noise(n * freq + off)
+        p = C + Vector((n.x * scale[0], n.y * scale[1], n.z * scale[2])) * radius * d
+        if floor is not None and p.z < floor:
+            p.z = floor
+        pts.append(p)
+        g.vert(p, col_fn(p, n) if col_fn else (1.0, 1.0, 1.0))
+    for f in faces:
+        idx = [base + i for i in f]
+        ctr = sum((pts[i] for i in f), Vector()) / len(f)
+        if face_uv:
+            uv = face_uv([pts[i] for i in f])
+        elif uv_fn:
+            uv = [uv_fn(pts[i], verts[i].normalized()) for i in f]
+        else:
+            uv = None
+        g.face(idx, mi, ref=ctr - C, smooth=smooth, uv=uv)
+    return pts
+
+
+def tube(g, path, radii, sides, mi, rnd=None, jitter=0.0, cap_top=False, smooth=True, twist=0.0, col_fn=None,
+         uv_fn=None):
+    """Generalised cylinder along a list of points. col_fn(j, i, p) -> rgb."""
+    rows = []
+    n = len(path)
+    for j, (p, r) in enumerate(zip(path, radii)):
+        p = Vector(p)
+        T = (Vector(path[min(j + 1, n - 1)]) - Vector(path[max(j - 1, 0)])).normalized()
+        S = T.cross(Vector((0.0, 1.0, 0.0)) if abs(T.y) < 0.9 else Vector((1.0, 0.0, 0.0))).normalized()
+        B = T.cross(S)
+        row = []
+        for i in range(sides):
+            a = 2 * math.pi * i / sides + twist * j
+            rr = r * (1.0 + (rnd.uniform(-jitter, jitter) if rnd else 0.0))
+            q = p + (S * math.cos(a) + B * math.sin(a)) * rr
+            row.append(g.vert(q, col_fn(j, i, q) if col_fn else (1.0, 1.0, 1.0)))
+        rows.append((row, p))
+    for j in range(n - 1):
+        (ra, pa), (rb, pb) = rows[j], rows[j + 1]
+        for i in range(sides):
+            q = (ra[i], ra[(i + 1) % sides], rb[(i + 1) % sides], rb[i])
+            fc = sum((g.v[x] for x in q), Vector()) / 4
+            m = mi if not callable(mi) else mi(j)
+            g.face(q, m, ref=fc - (pa + pb) * 0.5, smooth=smooth,
+                   uv=[uv_fn(g.v[x]) for x in q] if uv_fn else None)
+    if cap_top:
+        row, p = rows[-1]
+        tp = p + (Vector(path[-1]) - Vector(path[-2])).normalized() * radii[-1] * 0.8
+        tip = g.vert(tp, col_fn(n - 1, 0, tp) if col_fn else (1.0, 1.0, 1.0))
+        for i in range(sides):
+            q = (row[i], row[(i + 1) % sides], tip)
+            g.face(q, mi if not callable(mi) else mi(n - 1), ref=g.v[row[i]] - p, smooth=smooth,
+                   uv=[uv_fn(g.v[x]) for x in q] if uv_fn else None)
+    return rows
+
+
+# ============================================================ materials
+def _col_node(nt):
+    ca = nt.nodes.new("ShaderNodeVertexColor")
+    ca.layer_name = "Col"
+    return ca
+
+
+def _multiply_col(nt, color_socket_or_value, bsdf):
+    mix = nt.nodes.new("ShaderNodeMix")
+    mix.data_type = "RGBA"
+    mix.blend_type = "MULTIPLY"
+    mix.inputs[0].default_value = 1.0
+    if isinstance(color_socket_or_value, tuple):
+        mix.inputs[6].default_value = color_socket_or_value
+    else:
+        nt.links.new(color_socket_or_value, mix.inputs[6])
+    nt.links.new(_col_node(nt).outputs[0], mix.inputs[7])
+    nt.links.new(mix.outputs[2], bsdf.inputs["Base Color"])
+
+
+def vmat(name, color, rough=0.9, spec=0.25):
+    """Flat colour multiplied by the `Col` colour attribute (exported as baseColorFactor + COLOR_0)."""
+    if name in bpy.data.materials:
+        return bpy.data.materials[name]
+    m = bpy.data.materials.new(name)
+    m.use_nodes = True
+    nt = m.node_tree
+    b = nt.nodes["Principled BSDF"]
+    _multiply_col(nt, hex_rgba(common.PALETTE.get(color, color)), b)
+    b.inputs["Roughness"].default_value = rough
+    b.inputs["Metallic"].default_value = 0.0
+    b.inputs["Specular IOR Level"].default_value = spec
+    m.diffuse_color = hex_rgba(common.PALETTE.get(color, color))
+    return m
+
+
+def tex_image(tex):
+    path = tex_path(tex)
+    if not os.path.exists(path):
+        raise SystemExit(f"texture {tex}.png missing - run: python3 blender/vegetation.py tex:{tex}")
+    img = bpy.data.images.load(path, check_existing=True)
+    img.alpha_mode = "STRAIGHT"
+    return img
+
+
+def tmat(name, tex, rough=0.75, spec=0.3, double=True):
+    """Alpha-tested textured card material (glTF alphaMode MASK)."""
+    if name in bpy.data.materials:
+        return bpy.data.materials[name]
+    m = bpy.data.materials.new(name)
+    m.use_nodes = True
+    nt = m.node_tree
+    b = nt.nodes["Principled BSDF"]
+    t = nt.nodes.new("ShaderNodeTexImage")
+    t.image = tex_image(tex)
+    t.extension = "EXTEND"
+    _multiply_col(nt, t.outputs["Color"], b)
+    r = nt.nodes.new("ShaderNodeMath")
+    r.operation = "ROUND"
+    nt.links.new(t.outputs["Alpha"], r.inputs[0])
+    nt.links.new(r.outputs[0], b.inputs["Alpha"])
+    b.inputs["Roughness"].default_value = rough
+    b.inputs["Metallic"].default_value = 0.0
+    b.inputs["Specular IOR Level"].default_value = spec
+    m.use_backface_culling = not double
+    if double:
+        m["double_sided"] = True
+    m["texture"] = tex
+    return m
+
+
+def M_frond():
+    return tmat("M_Frond", "frond", rough=0.55, spec=0.35)
+
+
+def M_frond_dry():
+    return tmat("M_FrondDry", "frond_dry", rough=0.85, spec=0.2)
+
+
+def M_leaf(name="M_Leaf"):
+    return tmat(name, "leaves", rough=0.6, spec=0.35)
+
+
+def M_grass():
+    return tmat("M_Grass", "grass", rough=0.85, spec=0.2)
+
+
+def M_flower():
+    return tmat("M_Flower", "flowers", rough=0.8, spec=0.2)
+
+
+def M_fern():
+    return tmat("M_Fern", "fern", rough=0.7, spec=0.25)
+
+
+def set_cols(o, fn):
+    """(Re)write the `Col` attribute of a bpy mesh object from fn(world_pos, normal) -> rgb."""
+    me = o.data
+    if "Col" in me.color_attributes:
+        me.color_attributes.remove(me.color_attributes["Col"])
+    attr = me.color_attributes.new("Col", "BYTE_COLOR", "CORNER")
+    mw = o.matrix_world
+    cols = []
+    for p in me.polygons:
+        for li in p.loop_indices:
+            vi = me.loops[li].vertex_index
+            c = fn(mw @ me.vertices[vi].co, (mw.to_3x3() @ me.vertices[vi].normal).normalized())
+            cols.extend((c[0], c[1], c[2], 1.0))
+    attr.data.foreach_set("color", cols)
+    me.color_attributes.active_color = attr
+    me.color_attributes.render_color_index = me.color_attributes.active_color_index
+
+
+def get_cols(o):
+    me = o.data
+    if "Col" not in me.color_attributes:
+        return None
+    attr = me.color_attributes["Col"]
+    arr = [0.0] * (len(attr.data) * 4)
+    attr.data.foreach_get("color", arr)
+    return arr, attr.domain
+
+
+def bake_ao(objs, samples=40, distance=1.0, floor=0.45, gamma=0.8, ground=True):
+    """Cycles AO bake into `Col`, multiplied onto the colours the objects already had."""
+    objs = [o for o in objs if o.type == "MESH"]
+    keep = {o.name: get_cols(o) for o in objs}
+    common.bake_vertex_ao(objs, samples=samples, distance=distance, floor=floor, gamma=gamma, ground=ground)
+    for o in objs:
+        old = keep[o.name]
+        if old is None or old[1] != "CORNER":
+            continue
+        attr = o.data.color_attributes["Col"]
+        cur = [0.0] * (len(attr.data) * 4)
+        attr.data.foreach_get("color", cur)
+        if len(cur) != len(old[0]):
+            continue
+        out = [a * b for a, b in zip(cur, old[0])]
+        attr.data.foreach_set("color", out)
+
+
+# ============================================================ texture generation (Cycles)
+def tex_path(name):
+    return os.path.join(TEX_DIR, name + ".png")
+
+
+TEXTURES = {}
+
+
+def texture(name, size):
+    def deco(fn):
+        TEXTURES[name] = (fn, size)
+        return fn
+    return deco
+
+
+def _tex_setup(w, h, samples=24, world=0.8):
+    s = bpy.context.scene
+    s.render.engine = "CYCLES"
+    s.cycles.device = "CPU"
+    s.cycles.samples = samples
+    s.cycles.use_denoising = True
+    s.cycles.max_bounces = 4
+    s.render.resolution_x = w
+    s.render.resolution_y = h
+    s.render.resolution_percentage = 100
+    s.render.film_transparent = True
+    s.render.filter_size = 1.2
+    s.view_settings.view_transform = "Standard"
+    s.view_settings.look = "None"
+    s.render.image_settings.file_format = "PNG"
+    s.render.image_settings.color_mode = "RGBA"
+    s.render.image_settings.color_depth = "8"
+    if s.world is None:
+        s.world = bpy.data.worlds.new("World")
+    s.world.use_nodes = True
+    bg = s.world.node_tree.nodes["Background"]
+    bg.inputs[0].default_value = (1.0, 1.0, 1.0, 1.0)
+    bg.inputs[1].default_value = world
+
+
+def _tex_sun(direction, strength=1.4, angle=8.0):
+    """direction: vector pointing from the scene TOWARD the sun."""
+    sun = bpy.data.objects.new("_TexSun", bpy.data.lights.new("_TexSun", "SUN"))
+    sun.data.energy = strength
+    sun.data.angle = math.radians(angle)
+    sun.rotation_euler = (-Vector(direction)).normalized().to_track_quat("-Z", "Y").to_euler()
+    common.link(sun)
+    return sun
+
+
+def _tex_camera(target, span, elev=90.0):
+    """Orthographic camera looking at `target`; elev=90 top-down (image up=+Y), elev=0 front (image up=+Z)."""
+    cam = bpy.data.objects.new("_TexCam", bpy.data.cameras.new("_TexCam"))
+    common.link(cam)
+    e = math.radians(elev)
+    d = Vector((0.0, math.cos(e), -math.sin(e)))  # view direction
+    cam.location = Vector(target) - d * 20.0
+    cam.rotation_euler = (math.radians(90.0 - elev), 0.0, 0.0)
+    cam.data.type = "ORTHO"
+    cam.data.ortho_scale = span
+    cam.data.clip_end = 60.0
+    bpy.context.scene.camera = cam
+    return cam
+
+
+def _tex_render(w, h, target, span, elev=90.0, samples=24, world=0.8, sun=((-0.25, 0.35, 1.0), 1.4)):
+    _tex_setup(w, h, samples, world)
+    _tex_camera(target, span, elev)
+    if sun:
+        _tex_sun(sun[0], sun[1])
+    tmp = os.path.join(bpy.app.tempdir or "/tmp", f"_vegtex_{os.getpid()}.png")
+    bpy.context.scene.render.filepath = tmp
+    bpy.ops.render.render(write_still=True)
+    from PIL import Image
+    arr = np.asarray(Image.open(tmp).convert("RGBA")).astype(np.float32) / 255.0
+    os.remove(tmp)
+    return arr
+
+
+def _tex_save(arr, name):
+    """Dilate colour into transparent texels (no dark mip fringes) and save the PNG."""
+    from PIL import Image
+    from scipy import ndimage
+    a = arr.copy()
+    solid = a[..., 3] >= 0.5
+    if solid.any() and not solid.all():
+        idx = ndimage.distance_transform_edt(~solid, return_distances=False, return_indices=True)
+        rgb = a[..., :3][idx[0], idx[1]]
+        rgb = ndimage.uniform_filter(rgb, size=(3, 3, 1))
+        a[..., :3] = np.where(solid[..., None], a[..., :3], rgb)
+    img = Image.fromarray(np.clip(a * 255.0 + 0.5, 0, 255).astype(np.uint8), "RGBA")
+    img.save(tex_path(name), optimize=True)
+    print(f"[texture] {name}.png {img.size}")
+
+
+def _tex_mat(name="_TexMat", rough=0.55, spec=0.3):
+    return vmat(name, "#ffffff", rough=rough, spec=spec)
+
+
+def shape_lance(s):
+    """Linear-lanceolate leaflet: broad base, long pointed tip."""
+    return math.sin(math.pi * (0.1 + 0.9 * s ** 0.8)) ** 0.7
+
+
+def shape_oval(s):
+    return math.sin(math.pi * s ** 0.85) ** 0.65
+
+
+def shape_acuminate(s):
+    return (math.sin(math.pi * s ** 0.8) ** 0.7) * (1.0 - 0.25 * s ** 3)
+
+
+def flat_leaf(g, base, direction, length, width, col_fn, st=5, fold=0.22, bend=0.0, z0=0.0, zdrop=0.0,
+              shape=shape_lance, lobes=0, lobe_depth=0.35, mi=0, zbend=None):
+    """A leaf in (roughly) the XY plane seen from above: midrib + two edges, V-folded (midrib up).
+    col_fn(s, side) -> rgb, s: 0 base..1 tip, side -1 / 0 (midrib) / 1."""
+    D = Vector((direction[0], direction[1], 0.0)).normalized()
+    Sv = Vector((-D.y, D.x, 0.0))
+    b = Vector(base)
+    rows = []
+    for i in range(st + 1):
+        s = i / st
+        c = b + D * length * s + Sv * bend * length * s * s
+        # tangent follows the bend so the width stays perpendicular to the midrib
+        Tn = (D + Sv * 2.0 * bend * s).normalized()
+        Sn = Vector((-Tn.y, Tn.x, 0.0))
+        hw = 0.5 * width * max(0.04, shape(s))
+        if lobes:
+            hw *= 1.0 - lobe_depth * (0.5 + 0.5 * math.cos(2.0 * math.pi * lobes * s))
+        z = z0 - zdrop * s * s
+        rows.append((g.vert(c + Sn * hw + UP * (z - fold * hw), col_fn(s, 1)),
+                     g.vert(c + UP * z, col_fn(s, 0)),
+                     g.vert(c - Sn * hw + UP * (z - fold * hw), col_fn(s, -1))))
+    for i in range(st):
+        a, c = rows[i], rows[i + 1]
+        g.face((a[0], a[1], c[1], c[0]), mi, ref=UP)
+        g.face((a[1], a[2], c[2], c[1]), mi, ref=UP)
+    return rows
+
+
+def strip_xy(g, pts, widths, col_fn, z=0.0, mi=0):
+    """Flat ribbon along a 2D polyline (veins, rachis, stems seen from above)."""
+    n = len(pts)
+    rows = []
+    for i, p in enumerate(pts):
+        p = Vector((p[0], p[1], 0.0))
+        a = Vector((pts[min(i + 1, n - 1)][0], pts[min(i + 1, n - 1)][1], 0.0))
+        b = Vector((pts[max(i - 1, 0)][0], pts[max(i - 1, 0)][1], 0.0))
+        T = (a - b).normalized()
+        S = Vector((-T.y, T.x, 0.0))
+        w = widths[i] * 0.5
+        zz = z[i] if isinstance(z, (list, tuple)) else z
+        c = col_fn(i / max(1, n - 1))
+        rows.append((g.vert(p + S * w + UP * (zz - w * 0.3), cscale(c, 0.9)), g.vert(p + UP * zz, c),
+                     g.vert(p - S * w + UP * (zz - w * 0.3), cscale(c, 0.9))))
+    for i in range(n - 1):
+        a, c = rows[i], rows[i + 1]
+        g.face((a[0], a[1], c[1], c[0]), mi, ref=UP)
+        g.face((a[1], a[2], c[2], c[1]), mi, ref=UP)
+
+
+# ---------------------------------------------------------------- palm fronds (top-down, base at bottom)
+FROND_KINDS = {
+    #          leaflets/side, max len, max width, angle base/tip (deg from rachis)
+    "frond": dict(N=19, lmax=0.57, wmax=0.15, th0=58, th1=34, seed=1, skip=0.0,
+                  base="#284f18", mid="#4f862a", tip="#8fb23e", rach0="#6b7a34", rach1="#b3b552", jit=0.1),
+    "frond_dry": dict(N=24, lmax=0.5, wmax=0.1, th0=66, th1=40, seed=2, skip=0.14,
+                      base="#6b4f2c", mid="#a07e45", tip="#c9a86a", rach0="#8a6a3e", rach1="#c7a468", jit=0.14),
+    "frond_coco": dict(N=38, lmax=0.62, wmax=0.058, th0=74, th1=52, seed=3, skip=0.0,
+                       base="#3f6e28", mid="#6f9d3a", tip="#a7bf55", rach0="#9a9350", rach1="#d8cc80", jit=0.06),
+}
+
+
+def _frond_model(kind):
+    P = FROND_KINDS[kind]
+    rnd = random.Random(P["seed"])
+    m = _tex_mat(rough=0.6 if kind != "frond_dry" else 0.85, spec=0.18 if kind != "frond_dry" else 0.1)
+    g = Geo()
+    y0, y1, ytip = 0.24, 1.93, 1.985
+    cb, cm, ct = lin(P["base"]), lin(P["mid"]), lin(P["tip"])
+    r0, r1 = lin(P["rach0"]), lin(P["rach1"])
+    olive = (lin("#5d5b2f"), lin("#87873f"), lin("#a8a25a"))
+    # rachis: raised ribbon, thick at the petiole
+    n = 28
+    pts = [(0.0, ytip * i / n) for i in range(n + 1)]
+    widths = [lerp(0.045, 0.008, (i / n) ** 0.6) for i in range(n + 1)]
+    strip_xy(g, pts, widths, lambda t: cmix(r0, r1, min(1.0, t * 2.2)), z=[0.09 - 0.03 * i / n for i in range(n + 1)])
+    # petiole spines
+    for k in range(9):
+        y = 0.03 + 0.2 * k / 8
+        for side in (-1, 1):
+            b = Vector((side * 0.03, y, 0.07))
+            flat_leaf(g, b, (side * 1.0, 0.5), 0.06 + 0.02 * rnd.random(), 0.018, lambda s, sd: cscale(r0, 0.8),
+                      st=1, fold=0.0, shape=lambda s: 1.0 - s)
+    for side in (-1, 1):
+        for k in range(P["N"]):
+            u = clamp01((k + 0.5 + 0.28 * side) / P["N"])
+            if rnd.random() < P["skip"]:
+                continue
+            y = y0 + (y1 - y0) * u
+            prof = math.sin(math.pi * (0.07 + 0.91 * u)) ** 0.6 * (1.0 - 0.22 * u)
+            ln = P["lmax"] * prof * rnd.uniform(0.93, 1.05)
+            th = math.radians(lerp(P["th0"], P["th1"], u) + rnd.uniform(-4, 4) * (2 if kind == "frond_dry" else 1))
+            w = P["wmax"] * (0.62 + 0.38 * prof) * rnd.uniform(0.9, 1.08)
+            D = (side * math.sin(th), math.cos(th))
+            rw = lerp(0.035, 0.008, u)
+            b = (side * rw, y)
+            br = rnd.uniform(0.8, 1.12)
+            tint = olive if (kind == "frond_dry" and rnd.random() < 0.35) else (cb, cm, ct)
+            hue = rnd.uniform(-P["jit"], P["jit"])
+
+            def col(s, sd, tint=tint, br=br, hue=hue):
+                c = cmix(tint[0], tint[1], s * 2.0) if s < 0.5 else cmix(tint[1], tint[2], (s - 0.5) * 2.0)
+                c = (c[0] * (1 + hue), c[1], c[2] * (1 - hue))
+                if sd == 0:
+                    c = cmul(cscale(c, 1.12), (1.05, 1.03, 0.85))
+                elif sd == side:  # outer half catches more light
+                    c = cscale(c, 1.04)
+                else:
+                    c = cscale(c, 0.84)
+                return cscale(c, br)
+
+            flat_leaf(g, (b[0], b[1], 0.0), D, ln, w, col, st=6, fold=0.3, bend=-side * 0.06 * rnd.uniform(0.5, 1.5),
+                      z0=0.02 + 0.08 * u, zdrop=0.06 * ln, shape=shape_lance)
+    # frond tip: a last pair of small leaflets fused into a point
+    for side in (-1, 1):
+        flat_leaf(g, (0.0, y1 - 0.02, 0.06), (side * 0.25, 1.0), 0.09, 0.035, lambda s, sd: cm, st=2, fold=0.2)
+    o = g.obj("_frond_tex", [m])
     return o
 
 
+def _render_frond(kind, w, h):
+    _frond_model(kind)
+    arr = _tex_render(w, h, (0.0, 1.0, 0.0), 2.0, samples=24, world=0.62, sun=((-0.3, 0.8, 1.0), 2.4))
+    _tex_save(arr, kind)
+
+
+@texture("frond", (256, 512))
+def _t_frond(w, h):
+    _render_frond("frond", w, h)
+
+
+@texture("frond_dry", (256, 512))
+def _t_frond_dry(w, h):
+    _render_frond("frond_dry", w, h)
+
+
+@texture("frond_coco", (256, 512))
+def _t_frond_coco(w, h):
+    _render_frond("frond_coco", w, h)
+
+
+# ---------------------------------------------------------------- fern (pakis)
+@texture("fern", (256, 512))
+def _t_fern(w, h):
+    rnd = random.Random(5)
+    m = _tex_mat(rough=0.7, spec=0.2)
+    g = Geo()
+    ytip = 1.97
+    y0 = 0.3
+    n = 24
+    pts = [(0.03 * math.sin(i / n * 2.5), ytip * i / n) for i in range(n + 1)]
+    strip_xy(g, pts, [lerp(0.04, 0.008, i / n) for i in range(n + 1)],
+             lambda t: cmix(lin("#5d7d30"), lin("#7c9c3e"), t), z=0.06)
+    cb, cm, ct = lin("#335a24"), lin("#548434"), lin("#86ab4a")
+    N = 21
+    for side in (-1, 1):
+        for k in range(N):
+            u = clamp01((k + 0.5 + 0.3 * side) / N)
+            y = y0 + (ytip - 0.05 - y0) * u
+            x = 0.03 * math.sin(y / ytip * 2.5)
+            prof = math.sin(math.pi * (0.12 + 0.86 * u)) ** 0.5 * (1.0 - 0.3 * u)
+            ln = 0.46 * prof * rnd.uniform(0.92, 1.05)
+            th = math.radians(lerp(78, 52, u) + rnd.uniform(-3, 3))
+            br = rnd.uniform(0.84, 1.1)
+
+            def col(s, sd, br=br):
+                c = cmix(cb, cm, s * 1.6) if s < 0.6 else cmix(cm, ct, (s - 0.6) * 2.5)
+                return cscale(c, br * (1.1 if sd == 0 else (0.94 if sd == -side else 1.0)))
+
+            flat_leaf(g, (x + side * 0.012, y, 0.02 + 0.02 * u), (side * math.sin(th), math.cos(th)), ln,
+                      0.105 * (0.7 + 0.3 * prof), col, st=24, fold=0.18, bend=-side * 0.1,
+                      shape=lambda s: math.sin(math.pi * (0.15 + 0.85 * s ** 0.9)) ** 0.6, lobes=7, lobe_depth=0.42,
+                      zdrop=0.03)
+    g.obj("_fern_tex", [m])
+    arr = _tex_render(w, h, (0.0, 1.0, 0.0), 2.0, samples=24, world=0.78, sun=((-0.2, 0.45, 1.0), 1.5))
+    _tex_save(arr, "fern")
+
+
+# ---------------------------------------------------------------- leaves atlas (2x2)
+def _leaf_col(base, mid, tip, br=1.0, midrib=1.12):
+    def col(s, sd):
+        c = cmix(base, mid, s * 1.8) if s < 0.55 else cmix(mid, tip, (s - 0.55) / 0.45)
+        return cscale(c, br * (midrib if sd == 0 else (0.93 if sd < 0 else 1.0)))
+    return col
+
+
+def _leaves_cluster():
+    """Q0: round clump of small glossy leaves (canopy / bush), opaque dense core."""
+    rnd = random.Random(7)
+    g = Geo()
+    # dense dark core disc so the centre of the tile is fully opaque
+    geo_blob(g, 0, (0, 0, -0.1), 0.34, (1, 1, 0.25), seed=3, subdiv=3, amp=0.12, freq=3.0,
+             col_fn=lambda p, n: lin("#4a7434"))
+    greens = [("#3f6a2f", "#5c8a3a", "#7aa447"), ("#4a7632", "#6a9840", "#8db34f"),
+              ("#365d2b", "#557f36", "#6f9a42"), ("#52803a", "#79a547", "#9dbd58")]
+    for k in range(130):
+        r = 0.43 * math.sqrt(rnd.random()) ** 0.8
+        a = rnd.uniform(0, 2 * math.pi)
+        p = Vector((r * math.cos(a), r * math.sin(a), 0.0))
+        dome = 0.2 * (1.0 - (r / 0.45) ** 2)
+        out = Vector((math.cos(a), math.sin(a), 0.0))
+        d = (out * 0.8 + Vector((rnd.uniform(-1, 1), rnd.uniform(-1, 1), 0)) * 0.5).normalized()
+        ln = rnd.uniform(0.13, 0.19)
+        gset = greens[rnd.randrange(len(greens))]
+        lit = 0.85 + 0.3 * (dome / 0.2)
+        flat_leaf(g, p - d * ln * 0.3, d, ln, ln * rnd.uniform(0.45, 0.55),
+                  _leaf_col(lin(gset[0]), lin(gset[1]), lin(gset[2]), br=lit * rnd.uniform(0.92, 1.05)),
+                  st=4, fold=0.3, z0=dome + rnd.uniform(0, 0.02), zdrop=0.02, shape=shape_oval)
+    return g
+
+
+def _leaves_sprig():
+    """Q1: twig with alternate glossy oval leaves, base at the bottom centre."""
+    rnd = random.Random(8)
+    g = Geo()
+    stem = [(0.0 + 0.04 * math.sin(t * 2.2), -0.48 + 0.9 * t) for t in [i / 10 for i in range(11)]]
+    strip_xy(g, stem, [lerp(0.03, 0.01, i / 10) for i in range(11)], lambda t: lin("#6b6a3a"), z=0.03)
+    n = 9
+    for k in range(n):
+        t = 0.12 + 0.8 * k / (n - 1)
+        side = -1 if k % 2 else 1
+        x, y = 0.04 * math.sin(t * 2.2), -0.48 + 0.9 * t
+        th = math.radians(lerp(58, 25, t) + rnd.uniform(-6, 6))
+        ln = lerp(0.36, 0.22, t) * rnd.uniform(0.92, 1.05)
+        br = rnd.uniform(0.92, 1.06)
+        flat_leaf(g, (x, y, 0.05 - 0.02 * t), (side * math.sin(th), math.cos(th)), ln, ln * 0.5,
+                  _leaf_col(lin("#3f6b2f"), lin("#679640"), lin("#8ab04e"), br=br), st=5, fold=0.28,
+                  bend=-side * 0.1, zdrop=0.04, shape=shape_acuminate)
+    flat_leaf(g, (0.04 * math.sin(2.2), 0.4, 0.06), (0.05, 1.0), 0.1, 0.06,
+              _leaf_col(lin("#5c8c3a"), lin("#7fa84a"), lin("#a2c25c")), st=3, fold=0.25, shape=shape_acuminate)
+    return g
+
+
+def _leaves_broad():
+    """Q2: single broad elliptic leaf with veins, base at the bottom."""
+    g = Geo()
+    L, W = 0.9, 0.46
+    b0 = -0.46
+    strip_xy(g, [(0, b0), (0, b0 + 0.06)], [0.035, 0.03], lambda t: lin("#6f8c3b"), z=0.05)
+    cb, cm, ct = lin("#3a6628"), lin("#5a8c38"), lin("#7ea648")
+
+    def col(s, sd):
+        c = cmix(cb, cm, s * 2.0) if s < 0.5 else cmix(cm, ct, (s - 0.5) * 2.0)
+        return cscale(c, 1.08 if sd == 0 else (0.9 if sd < 0 else 1.0))
+
+    rows = flat_leaf(g, (0, b0 + 0.05, 0.0), (0, 1), L - 0.06, W, col, st=10, fold=0.22, shape=shape_acuminate,
+                     zdrop=0.03)
+    # veins: midrib + 6 lateral pairs, a bit lighter
+    vc = lin("#a9c865")
+    strip_xy(g, [(0, b0 + 0.05 + (L - 0.08) * t) for t in [i / 8 for i in range(9)]],
+             [lerp(0.022, 0.004, i / 8) for i in range(9)], lambda t: vc,
+             z=[0.012 - 0.03 * (i / 8) ** 2 for i in range(9)])
+    for k in range(6):
+        t = 0.14 + 0.13 * k
+        y = b0 + 0.05 + (L - 0.06) * t
+        hw = 0.5 * W * shape_acuminate(t + 0.08) * 0.85
+        for side in (-1, 1):
+            pts = [(0, y), (side * hw * 0.5, y + hw * 0.35), (side * hw, y + hw * 0.85)]
+            strip_xy(g, pts, [0.01, 0.007, 0.003], lambda t, vc=vc: cscale(vc, 0.95), z=0.0 - 0.02 * t - 0.01)
+    return g
+
+
+def _leaves_keladi():
+    """Q3: peltate heart-shaped taro leaf, tip up, basal lobes down, radiating light veins."""
+    g = Geo()
+    A = Vector((0.0, -0.1, 0.0))  # petiole attachment
+    ctrl = [(0.0, 0.47), (0.2, 0.36), (0.37, 0.12), (0.36, -0.14), (0.27, -0.36), (0.2, -0.46),
+            (0.1, -0.36), (0.0, -0.22)]
+
+    def catmull(pts, n):
+        out = []
+        P = [pts[0]] + pts + [pts[-1]]
+        for i in range(1, len(P) - 2):
+            p0, p1, p2, p3 = (Vector(P[i - 1]), Vector(P[i]), Vector(P[i + 1]), Vector(P[i + 2]))
+            for k in range(n):
+                t = k / n
+                out.append(0.5 * ((2 * p1) + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t +
+                                  (-p0 + 3 * p1 - 3 * p2 + p3) * t ** 3))
+        out.append(Vector(pts[-1]))
+        return out
+
+    right = catmull([Vector(p) for p in ctrl], 5)
+    left = [Vector((-p.x, p.y)) for p in reversed(right[1:-1])]
+    outline = right + left  # tip -> right side -> notch -> left side (closed)
+    cb, cm, ce = lin("#3c6f2b"), lin("#578f39"), lin("#4a7d31")
+    ci = g.vert(A + UP * 0.04, cb)
+    inner, outer = [], []
+    for p in outline:
+        d = (Vector((p.x, p.y, 0)) - A)
+        q_in = A + d * 0.5 + UP * 0.03
+        q_out = Vector((p.x, p.y, -0.02 - 0.05 * max(0.0, (p.y - 0.1))))
+        inner.append(g.vert(q_in, cm))
+        outer.append(g.vert(q_out, ce))
+    n = len(outline)
+    for i in range(n):
+        j = (i + 1) % n
+        g.face((ci, inner[i], inner[j]), 0, ref=UP)
+        g.face((inner[i], outer[i], outer[j], inner[j]), 0, ref=UP)
+    vc = lin("#9fc063")
+    # main veins from the attachment: to tip, to each basal lobe, and laterals
+    targets = [(0.0, 0.45), (0.25, -0.43), (-0.25, -0.43), (0.33, 0.2), (-0.33, 0.2), (0.35, -0.05),
+               (-0.35, -0.05), (0.2, 0.36), (-0.2, 0.36)]
+    for tx, ty in targets:
+        pts = [(A.x + (tx - A.x) * t, A.y + (ty - A.y) * t) for t in [i / 6 for i in range(7)]]
+        strip_xy(g, pts, [lerp(0.022, 0.004, i / 6) for i in range(7)], lambda t: vc, z=0.045)
+    return g
+
+
+@texture("leaves", (512, 512))
+def _t_leaves(w, h):
+    tiles = []
+    for fn, rough in ((_leaves_cluster, 0.55), (_leaves_sprig, 0.45), (_leaves_broad, 0.45), (_leaves_keladi, 0.4)):
+        reset_scene()
+        fn().obj("_leaves", [_tex_mat(rough=rough, spec=0.35)])
+        tiles.append(_tex_render(w // 2, h // 2, (0.0, 0.0, 0.0), 1.0, samples=24, world=0.66,
+                                 sun=((-0.3, 0.7, 1.0), 2.2)))
+    top = np.concatenate([tiles[0], tiles[1]], axis=1)
+    bot = np.concatenate([tiles[2], tiles[3]], axis=1)
+    _tex_save(np.concatenate([top, bot], axis=0), "leaves")
+
+
+# ---------------------------------------------------------------- grass (side view)
+def _blade_xz(g, base, tip_dir, height, width, cols, segs=5, curve=0.35, yoff=0.0, twist=0.0):
+    """Grass blade in the XZ plane (facing -Y), bending outward. cols=(base, mid, tip)."""
+    b = Vector(base)
+    d = Vector((tip_dir, 0.0, 1.0)).normalized()
+    rows = []
+    for i in range(segs + 1):
+        t = i / segs
+        p = b + Vector((d.x * height * t + curve * tip_dir * height * t * t, yoff, d.z * height * t * (1 - 0.25 * curve * t)))
+        wv = width * 0.5 * (1.0 - t ** 1.4) + 0.001
+        Sd = Vector((math.cos(twist * t), math.sin(twist * t), 0.0))
+        c = cmix(cols[0], cols[1], t * 2) if t < 0.5 else cmix(cols[1], cols[2], (t - 0.5) * 2)
+        rows.append((g.vert(p - Sd * wv, cscale(c, 0.92)), g.vert(p + Sd * wv, c)))
+    for i in range(segs):
+        a, c = rows[i], rows[i + 1]
+        g.face((a[0], a[1], c[1], c[0]), 0, ref=Vector((0, -1, 0)))
+
+
+def _grass_clump(seed, n, hmin, hmax, dry, heads, spread=0.55):
+    rnd = random.Random(seed)
+    g = Geo()
+    greens = [("#355d27", "#5d8c38", "#98b955"), ("#3c6a2c", "#6d9a40", "#aac65c"),
+              ("#2f5324", "#557f33", "#86ab4b"), ("#446f2e", "#7aa645", "#b7cc66")]
+    drys = [("#7d7443", "#b7a96e", "#dbcb94"), ("#6e6a3c", "#a89c62", "#d2c38a")]
+    for k in range(n):
+        x = rnd.gauss(0, 0.07)
+        lean = rnd.uniform(-spread, spread) + x * 1.5
+        h = rnd.uniform(hmin, hmax) * (1.0 - 0.35 * abs(lean))
+        isdry = rnd.random() < dry
+        cols = [lin(c) for c in (drys if isdry else greens)[rnd.randrange(2 if isdry else 4)]]
+        _blade_xz(g, (x, rnd.uniform(-0.15, 0.15), 0.0), lean, h, rnd.uniform(0.028, 0.05), cols,
+                  curve=rnd.uniform(0.2, 0.6), yoff=0.0, twist=rnd.uniform(-1.0, 1.0))
+    for k in range(heads):  # seed heads on thin stems
+        x = rnd.gauss(0, 0.05)
+        lean = rnd.uniform(-0.35, 0.35)
+        h = rnd.uniform(hmax * 0.85, hmax * 1.05)
+        cols = [lin("#8a8a4a"), lin("#a9a462"), lin("#c9bb78")]
+        _blade_xz(g, (x, 0.1, 0.0), lean, h, 0.012, cols, segs=4, curve=0.2)
+        top = Vector((x + lean * h * 1.15, 0.09, h * 0.97))
+        for j in range(5):
+            t = j / 5
+            flat = Vector((lean * 0.12 * t, 0, -0.03 * j))
+            p = top + flat
+            _blade_xz(g, (p.x, p.y - 0.01, p.z), lean + rnd.uniform(-0.6, 0.6), 0.06, 0.03,
+                      [lin("#b8a867"), lin("#d4c488"), lin("#e3d7a4")], segs=2, curve=0.1)
+    return g
+
+
+@texture("grass", (512, 256))
+def _t_grass(w, h):
+    tiles = []
+    for args in ((11, 70, 0.45, 0.92, 0.06, 0, 0.55), (12, 46, 0.6, 0.95, 0.28, 5, 0.45)):
+        reset_scene()
+        m = _tex_mat(rough=0.8, spec=0.15)
+        _grass_clump(*args).obj("_grass", [m])
+        tiles.append(_tex_render(w // 2, h, (0.0, 0.0, 0.5), 1.0, elev=0.0, samples=24, world=0.8,
+                                 sun=((-0.3, -0.6, 1.0), 1.4)))
+    _tex_save(np.concatenate(tiles, axis=1), "grass")
+
+
+# ---------------------------------------------------------------- flowers (side-ish view)
+def _flower_head(g, center, normal, radius, petals, pcol, ccol, rnd, cup=0.15):
+    N = Vector(normal).normalized()
+    a = N.cross(Vector((0.0, 0.0, 1.0)) if abs(N.z) < 0.95 else Vector((1.0, 0.0, 0.0))).normalized()
+    b = N.cross(a)
+    C = Vector(center)
+    ph = rnd.uniform(0, 6.28)
+    for i in range(petals):
+        ang = ph + 2 * math.pi * i / petals
+        d = a * math.cos(ang) + b * math.sin(ang)
+        s_ = d.cross(N)
+        L = radius * rnd.uniform(0.9, 1.08)
+        w = radius * (2.4 / petals) * 1.2
+        p0 = C + d * radius * 0.18
+        p1 = C + d * L * 0.6 + s_ * w * 0.5 + N * L * cup * 0.5
+        p2 = C + d * L * 1.0 + N * L * cup
+        p3 = C + d * L * 0.6 - s_ * w * 0.5 + N * L * cup * 0.5
+        ids = [g.vert(p0, cscale(pcol, 0.85)), g.vert(p1, pcol), g.vert(p2, pcol), g.vert(p3, pcol)]
+        g.face(ids, 0, ref=N)
+    ring = [g.vert(C + (a * math.cos(t) + b * math.sin(t)) * radius * 0.28 + N * radius * 0.05, ccol)
+            for t in [2 * math.pi * k / 6 for k in range(6)]]
+    top = g.vert(C + N * radius * 0.16, cscale(ccol, 1.1))
+    for k in range(6):
+        g.face((ring[k], ring[(k + 1) % 6], top), 0, ref=N)
+
+
+def _flower_clump(seed, pcol, ccol, petals, radius, leafcols, n=8):
+    rnd = random.Random(seed)
+    g = Geo()
+    # leafy base rosette
+    for k in range(16):
+        a = rnd.uniform(0, 2 * math.pi)
+        d = Vector((math.cos(a), math.sin(a) * 0.6, rnd.uniform(0.3, 0.9))).normalized()
+        base = Vector((rnd.gauss(0, 0.05), rnd.gauss(0, 0.05), 0.0))
+        ln = rnd.uniform(0.16, 0.26)
+        tip = base + d * ln
+        s_ = d.cross(UP).normalized() if abs(d.z) < 0.99 else Vector((1, 0, 0))
+        wv = ln * 0.22
+        c0, c1 = lin(leafcols[0]), lin(leafcols[1])
+        ids = [g.vert(base, cscale(c0, 0.8)), g.vert(base + d * ln * 0.45 + s_ * wv, c1), g.vert(tip, c1),
+               g.vert(base + d * ln * 0.45 - s_ * wv, cscale(c1, 0.9))]
+        g.face(ids, 0, ref=Vector((0, -1, 0.3)))
+    for k in range(n):
+        x = rnd.uniform(-0.3, 0.3)
+        y = rnd.uniform(-0.15, 0.15)
+        hgt = rnd.uniform(0.4, 0.78) * (1.0 - 0.5 * abs(x))
+        top = Vector((x + rnd.uniform(-0.05, 0.05), y, hgt))
+        pts = [Vector((x * 0.6, y, 0.0)), (Vector((x * 0.6, y, 0.0)) + top) * 0.5 + Vector((rnd.uniform(-.03, .03), 0, 0)), top]
+        rows = []
+        for p in pts:
+            rows.append((g.vert(p + Vector((-0.006, 0, 0)), lin(leafcols[0])), g.vert(p + Vector((0.006, 0, 0)), lin(leafcols[1]))))
+        for i in range(2):
+            g.face((rows[i][0], rows[i][1], rows[i + 1][1], rows[i + 1][0]), 0, ref=Vector((0, -1, 0)))
+        # a stem leaf
+        mid = pts[1]
+        side = 1 if rnd.random() < 0.5 else -1
+        d = Vector((side * 0.8, 0.0, 0.6)).normalized()
+        ids = [g.vert(mid, lin(leafcols[0])), g.vert(mid + d * 0.05 + Vector((0, 0, 0.02)), lin(leafcols[1])),
+               g.vert(mid + d * 0.11, lin(leafcols[1])), g.vert(mid + d * 0.05 - Vector((0, 0, 0.02)), lin(leafcols[0]))]
+        g.face(ids, 0, ref=Vector((0, -1, 0)))
+        nrm = Vector((rnd.uniform(-0.3, 0.3), -0.75, 0.75))
+        _flower_head(g, top, nrm, radius * rnd.uniform(0.85, 1.15), petals, pcol, ccol, rnd)
+    return g
+
+
+@texture("flowers", (512, 256))
+def _t_flowers(w, h):
+    tiles = []
+    specs = ((21, lin("#f7f3ea"), lin("#f0b73c"), 9, 0.075, ("#3f6a2e", "#6d9a42")),
+             (22, lin("#f6c43d"), lin("#d68a22"), 8, 0.082, ("#3a672c", "#5f9039")))
+    for spec in specs:
+        reset_scene()
+        m = _tex_mat(rough=0.7, spec=0.15)
+        _flower_clump(*spec).obj("_flowers", [m])
+        tiles.append(_tex_render(w // 2, h, (0.0, 0.0, 0.42), 0.92, elev=28.0, samples=24, world=0.8,
+                                 sun=((-0.3, -0.6, 1.0), 1.4)))
+    _tex_save(np.concatenate(tiles, axis=1), "flowers")
+
+
+# ---------------------------------------------------------------- piringan (weeded mulch circle, top-down)
+@texture("piringan", (512, 512))
+def _t_piringan(w, h):
+    rnd = random.Random(31)
+    # base disc: procedural red-brown mulch with a ragged alpha edge
+    bpy.ops.mesh.primitive_plane_add(size=2.6, location=(0, 0, 0))
+    plane = bpy.context.view_layer.objects.active
+    m = bpy.data.materials.new("_Mulch")
+    m.use_nodes = True
+    nt = m.node_tree
+    b = nt.nodes["Principled BSDF"]
+    b.inputs["Roughness"].default_value = 0.95
+    tc = nt.nodes.new("ShaderNodeTexCoord")
+    n1 = nt.nodes.new("ShaderNodeTexNoise")
+    n1.inputs["Scale"].default_value = 9.0
+    n1.inputs["Detail"].default_value = 8.0
+    n1.inputs["Roughness"].default_value = 0.65
+    nt.links.new(tc.outputs["Object"], n1.inputs["Vector"])
+    ramp = nt.nodes.new("ShaderNodeValToRGB")
+    cr = ramp.color_ramp
+    cr.elements[0].position = 0.3
+    cr.elements[0].color = hex_rgba("#4e3222")
+    cr.elements[1].position = 0.7
+    cr.elements[1].color = hex_rgba("#8c6244")
+    e = cr.elements.new(0.5)
+    e.color = hex_rgba("#6c4631")
+    nt.links.new(n1.outputs["Fac"], ramp.inputs["Fac"])
+    # fine speckle (fibres / chips) on top
+    vor = nt.nodes.new("ShaderNodeTexVoronoi")
+    vor.inputs["Scale"].default_value = 60.0
+    nt.links.new(tc.outputs["Object"], vor.inputs["Vector"])
+    mix = nt.nodes.new("ShaderNodeMix")
+    mix.data_type = "RGBA"
+    mix.blend_type = "MULTIPLY"
+    sp = nt.nodes.new("ShaderNodeMapRange")
+    sp.inputs["From Min"].default_value = 0.0
+    sp.inputs["From Max"].default_value = 0.35
+    sp.inputs["To Min"].default_value = 0.75
+    sp.inputs["To Max"].default_value = 1.08
+    nt.links.new(vor.outputs["Distance"], sp.inputs["Value"])
+    mix.inputs[0].default_value = 1.0
+    nt.links.new(ramp.outputs["Color"], mix.inputs[6])
+    nt.links.new(sp.outputs["Result"], mix.inputs[7])
+    nt.links.new(mix.outputs[2], b.inputs["Base Color"])
+    # alpha: radius 1.0 +- noise, ragged
+    sep = nt.nodes.new("ShaderNodeVectorMath")
+    sep.operation = "LENGTH"
+    nt.links.new(tc.outputs["Object"], sep.inputs[0])
+    n2 = nt.nodes.new("ShaderNodeTexNoise")
+    n2.inputs["Scale"].default_value = 3.2
+    n2.inputs["Detail"].default_value = 10.0
+    n2.inputs["Roughness"].default_value = 0.75
+    nt.links.new(tc.outputs["Object"], n2.inputs["Vector"])
+    add = nt.nodes.new("ShaderNodeMath")
+    add.operation = "MULTIPLY_ADD"
+    add.inputs[1].default_value = 0.42
+    add.inputs[2].default_value = 0.8
+    nt.links.new(n2.outputs["Fac"], add.inputs[0])
+    lt = nt.nodes.new("ShaderNodeMath")
+    lt.operation = "LESS_THAN"
+    nt.links.new(sep.outputs["Value"], lt.inputs[0])
+    nt.links.new(add.outputs[0], lt.inputs[1])
+    nt.links.new(lt.outputs[0], b.inputs["Alpha"])
+    plane.data.materials.append(m)
+    # debris: dry frond leaflets, rachis pieces, chips, a few old fruitlets, weeds at the rim
+    g = Geo()
+    dry = [("#7a5a32", "#a8854a", "#c8a86a"), ("#6d6034", "#9c8e52", "#bfae70"), ("#5e4526", "#8a6a3c", "#a98a58")]
+    for k in range(46):
+        r = 0.95 * math.sqrt(rnd.random())
+        a = rnd.uniform(0, 2 * math.pi)
+        d = (rnd.uniform(-1, 1), rnd.uniform(-1, 1))
+        c = [lin(x) for x in dry[rnd.randrange(3)]]
+        br = rnd.uniform(0.85, 1.1)
+        flat_leaf(g, (r * math.cos(a), r * math.sin(a), 0.01 + 0.01 * k / 46), d, rnd.uniform(0.18, 0.42),
+                  rnd.uniform(0.03, 0.05), _leaf_col(c[0], c[1], c[2], br=br), st=3, fold=0.2,
+                  bend=rnd.uniform(-0.15, 0.15), shape=shape_lance)
+    for k in range(7):
+        r = 0.8 * math.sqrt(rnd.random())
+        a = rnd.uniform(0, 2 * math.pi)
+        p0 = (r * math.cos(a), r * math.sin(a))
+        ang = rnd.uniform(0, 6.28)
+        ln = rnd.uniform(0.25, 0.5)
+        pts = [(p0[0] + math.cos(ang) * ln * t, p0[1] + math.sin(ang) * ln * t) for t in (0, 0.5, 1)]
+        strip_xy(g, pts, [0.05, 0.04, 0.03], lambda t: lin("#9c7c4c"), z=0.035)
+    for k in range(10):  # a few old dark fruitlets (brondolan) near the trunk
+        r = rnd.uniform(0.22, 0.6)
+        a = rnd.uniform(0, 2 * math.pi)
+        c = lin("#7a2a18") if k % 3 else lin("#3a1f18")
+        flat_leaf(g, (r * math.cos(a), r * math.sin(a), 0.05), (rnd.uniform(-1, 1), rnd.uniform(-1, 1)), 0.05, 0.035,
+                  lambda s, sd, c=c: cscale(c, 1.2 if sd == 0 else 0.9), st=2, fold=0.6, shape=shape_oval)
+    for k in range(26):  # small weeds creeping in at the rim
+        a = rnd.uniform(0, 2 * math.pi)
+        r = rnd.uniform(0.92, 1.18)
+        base = Vector((r * math.cos(a), r * math.sin(a), 0.03))
+        for j in range(3):
+            d = (math.cos(a + rnd.uniform(-1.5, 1.5)), math.sin(a + rnd.uniform(-1.5, 1.5)))
+            ln = rnd.uniform(0.07, 0.13)
+            flat_leaf(g, base, d, ln, ln * 0.5, _leaf_col(lin("#3f6c2c"), lin("#5f9038"), lin("#86ad4b")), st=3,
+                      fold=0.3, shape=shape_oval)
+    g.obj("_debris", [_tex_mat(rough=0.9, spec=0.1)])
+    arr = _tex_render(w, h, (0.0, 0.0, 0.0), 2.4, samples=24, world=0.85, sun=((-0.3, 0.4, 1.0), 1.2))
+    _tex_save(arr, "piringan")
+
+
+def ensure_texture(name, force=False):
+    if force or not os.path.exists(tex_path(name)):
+        fn, (w, h) = TEXTURES[name]
+        reset_scene()
+        fn(w, h)
+        reset_scene()
+
+
+_PROFILES = {}
+
+
+def alpha_profile(tex, region=(0.0, 0.0, 1.0, 1.0), thr=0.35):
+    """Half-width (fraction of the region half-width) covered by opaque texels, per row, as t->frac.
+    Used to trim card strips to the actual leaf outline."""
+    key = (tex, region)
+    if key not in _PROFILES:
+        from PIL import Image
+        from scipy import ndimage
+        a = np.asarray(Image.open(tex_path(tex)).convert("RGBA"))[..., 3].astype(np.float32) / 255.0
+        H, W = a.shape
+        u0, v0, u1, v1 = region
+        x0, x1 = int(u0 * W), int(u1 * W)
+        y0, y1 = int((1 - v1) * H), int((1 - v0) * H)
+        sub = a[y0:y1, x0:x1][::-1]  # row 0 = bottom (v0)
+        hh, ww = sub.shape
+        xs = np.abs(np.arange(ww) + 0.5 - ww / 2.0) / (ww / 2.0)
+        prof = np.array([xs[row > thr].max() if (row > thr).any() else 0.0 for row in sub])
+        prof = ndimage.maximum_filter1d(prof, size=max(3, hh // 40))
+        _PROFILES[key] = prof
+
+    prof = _PROFILES[key]
+
+    def f(t):
+        x = clamp01(t) * (len(prof) - 1)
+        i = int(x)
+        j = min(i + 1, len(prof) - 1)
+        return float(lerp(prof[i], prof[j], x - i))
+    return f
+
+
+
+def alpha_bbox(tex, region=(0.0, 0.0, 1.0, 1.0), thr=0.3):
+    """Tight uv rect (u0, v0, u1, v1) around the opaque texels of `region`, plus its pixel aspect w/h."""
+    from PIL import Image
+    a = np.asarray(Image.open(tex_path(tex)).convert("RGBA"))[..., 3].astype(np.float32) / 255.0
+    H, W = a.shape
+    u0, v0, u1, v1 = region
+    x0, x1 = int(u0 * W), int(u1 * W)
+    y0, y1 = int((1 - v1) * H), int((1 - v0) * H)
+    sub = a[y0:y1, x0:x1] > thr
+    cols = np.where(sub.any(axis=0))[0]
+    rows = np.where(sub.any(axis=1))[0]
+    cx0, cx1 = x0 + cols[0], x0 + cols[-1] + 1
+    ry0, ry1 = y0 + rows[0], y0 + rows[-1] + 1
+    rect = (cx0 / W, 1 - ry1 / H, cx1 / W, 1 - ry0 / H)
+    return rect, (cx1 - cx0) / float(ry1 - ry0)
+
+
+# ============================================================ card geometry
+ATLAS = {"cluster": (0.0, 0.5, 0.5, 1.0), "sprig": (0.5, 0.5, 1.0, 1.0),
+         "broad": (0.0, 0.0, 0.5, 0.5), "keladi": (0.5, 0.0, 1.0, 0.5)}
+HALVES = {"left": (0.0, 0.0, 0.5, 1.0), "right": (0.5, 0.0, 1.0, 1.0)}
+
+
+def arc_points(base, phi, elev, droop, L, segs, yaw_drift=0.0):
+    """Centre line of an arching leaf: starts at `elev` degrees, bends down by `droop` degrees."""
+    pts = [Vector(base)]
+    ds = L / segs
+    for i in range(segs):
+        t = (i + 0.5) / segs
+        a = math.radians(elev - droop * t ** 1.4)
+        ph = phi + yaw_drift * t
+        pts.append(pts[-1] + Vector((math.cos(ph) * math.cos(a), math.sin(ph) * math.cos(a), math.sin(a))) * ds)
+    return pts
+
+
+def card_path(g, mi, pts, W, uv=(0.0, 0.0, 1.0, 1.0), prof=None, fold=(0.2, 0.3), across=5, twist=0.0,
+              col_fn=None, side_hint=None, margin=1.06, smooth=True):
+    """Textured card strip along `pts` (texture v0 at pts[0]), Λ-folded: the edges hang below the
+    midrib by hw*(fold0*|s| + fold1*s^2).  prof(t) trims the width to the texture's opaque extent."""
+    n = len(pts) - 1
+    offs = (-1.0, -0.5, 0.0, 0.5, 1.0) if across == 5 else (-1.0, 0.0, 1.0)
+    u0, v0, u1, v1 = uv
+    prevS = None
+    rows = []
+    for i, p in enumerate(pts):
+        t = i / n
+        T = (pts[min(i + 1, n)] - pts[max(i - 1, 0)]).normalized()
+        S = T.cross(UP)
+        if S.length < 0.25:
+            S = prevS if prevS is not None else (Vector(side_hint) if side_hint is not None else Vector((1, 0, 0)))
+        S = (S - T * S.dot(T)).normalized()
+        prevS = S.copy()
+        N = S.cross(T).normalized()
+        if twist:
+            R = Matrix.Rotation(math.radians(twist) * t, 3, T)
+            S, N = R @ S, R @ N
+        rt = max(0.03, min(1.0, (prof(t) if prof else 1.0) * margin))
+        hw = 0.5 * W * rt
+        row = []
+        for s in offs:
+            a = abs(s)
+            q = p + S * s * hw - N * hw * (fold[0] * a + fold[1] * a * a)
+            c = col_fn(t, s) if col_fn else (1.0, 1.0, 1.0)
+            row.append((g.vert(q, c), (lerp(u0, u1, 0.5 + 0.5 * s * rt), lerp(v0, v1, t)), N))
+        rows.append(row)
+    for i in range(n):
+        for j in range(len(offs) - 1):
+            a0, a1, b0, b1 = rows[i][j], rows[i][j + 1], rows[i + 1][j], rows[i + 1][j + 1]
+            g.face((a0[0], a1[0], b1[0], b0[0]), mi, ref=a0[2] + b0[2], smooth=smooth,
+                   uv=(a0[1], a1[1], b1[1], b0[1]))
+
+
+def leaf_card(g, mi, base, direction, length, W, uv, droop=0.25, segs=3, **kw):
+    """Card rooted at `base` pointing along `direction`, sagging by `droop`*length at the tip."""
+    D = Vector(direction).normalized()
+    pts = [Vector(base) + D * length * (i / segs) - UP * length * droop * (i / segs) ** 2 for i in range(segs + 1)]
+    side = D.cross(UP)
+    kw.setdefault("side_hint", side.normalized() if side.length > 1e-3 else Vector((1, 0, 0)))
+    card_path(g, mi, pts, W, uv=uv, **kw)
+
+
+def cross_card(g, mi, center, yaw, w, h, uv, lean=(0.0, 0.0), segs=2, col_fn=None):
+    """Vertical card (grass / flowers) standing on the ground; top leans by `lean` (m)."""
+    d = Vector((math.cos(yaw), math.sin(yaw), 0.0))
+    nrm = Vector((-d.y, d.x, 0.0))
+    if nrm.y > 0:
+        nrm = -nrm
+    C = Vector(center)
+    u0, v0, u1, v1 = uv
+    Lv = Vector((lean[0], lean[1], 0.0))
+    rows = []
+    for i in range(segs + 1):
+        t = i / segs
+        c = col_fn(t) if col_fn else (1.0, 1.0, 1.0)
+        off = Lv * t * t + UP * h * t
+        rows.append((g.vert(C + off - d * w * 0.5, c), g.vert(C + off + d * w * 0.5, c)))
+    for i in range(segs):
+        a, b = rows[i], rows[i + 1]
+        va, vb = lerp(v0, v1, i / segs), lerp(v0, v1, (i + 1) / segs)
+        g.face((a[0], a[1], b[1], b[0]), mi, uv=((u0, va), (u1, va), (u1, vb), (u0, vb)), ref=nrm)
+
+
+def quad_card(g, mi, center, normal, size, uv, spin=0.0, col=(1.0, 1.0, 1.0), cup=0.12, col_rim=None, flat=False):
+    """Square card facing `normal` (leaf clusters on canopies / bushes), centre pushed out a little."""
+    N = Vector(normal).normalized()
+    a = N.cross(UP) if abs(N.z) < 0.95 else Vector((1.0, 0.0, 0.0))
+    a = (a - N * a.dot(N)).normalized()
+    b = N.cross(a)
+    R = Matrix.Rotation(spin, 3, N)
+    a, b = R @ a, R @ b
+    C = Vector(center)
+    u0, v0, u1, v1 = uv
+    h = size * 0.5
+    cr = col_rim or col
+    ids = [g.vert(C + (-a - b) * h - N * cup * size, cr), g.vert(C + (a - b) * h - N * cup * size, cr),
+           g.vert(C + (a + b) * h - N * cup * size, cr), g.vert(C + (-a + b) * h - N * cup * size, cr)]
+    uvs = [(u0, v0), (u1, v0), (u1, v1), (u0, v1)]
+    if flat:
+        g.face(ids, mi, ref=N, uv=uvs)
+        return
+    ci = g.vert(C, col)
+    cuv = ((u0 + u1) * 0.5, (v0 + v1) * 0.5)
+    for k in range(4):
+        g.face((ids[k], ids[(k + 1) % 4], ci), mi, ref=N, uv=(uvs[k], uvs[(k + 1) % 4], cuv))
+
+
+def plant_ao(t, s=0.0, lo=0.52, reach=0.45, edge=0.08):
+    """Card darkening: dark where the card starts (plant centre), full at `reach` along it."""
+    return lo + (1.0 - lo) * smoothstep(0.0, reach, t) - edge * abs(s)
+
+
+# ============================================================ oil palm (sawit)
+def trunk_radius(z, H, r):
+    flare = max(0.0, 1.0 - z / 0.5) ** 2 * 0.5 * r
+    return r * (1.0 + 0.05 * math.sin(z * 2.1)) + flare
+
+
+def palm_trunk(g, mi, H, r, rnd, boots, boot, rings, sides=12, z0=0.3, z1=None, moss=0.3, crown_dark=True):
+    """Tapered trunk core + phyllotactic spiral of cut frond bases ("boots").  Colours: dark core,
+    mid boot sides, light fresh cut faces, some moss; darker under the crown."""
+    def shade(z):
+        return lerp(1.0, 0.72, smoothstep(H - 1.1, H, z)) if crown_dark else 1.0
+
+    rows = []
+    for j in range(rings + 1):
+        z = H * (j / rings) ** 1.1
+        rr = trunk_radius(z, H, r) * (0.9 if j == rings else 1.0)
+        row = []
+        for i in range(sides):
+            a = 2 * math.pi * i / sides + j * 0.3
+            jr = rr * rnd.uniform(0.95, 1.05)
+            row.append(g.vert((jr * math.cos(a), jr * math.sin(a), z), grey((0.36 + 0.08 * rnd.random()) * shade(z))))
+        rows.append(row)
+    for j in range(rings):
+        for i in range(sides):
+            a, b = rows[j][i], rows[j][(i + 1) % sides]
+            c, d = rows[j + 1][(i + 1) % sides], rows[j + 1][i]
+            mid = (g.v[a] + g.v[c]) * 0.5
+            g.face((a, b, c, d), mi, ref=Vector((mid.x, mid.y, 0)), smooth=True)
+    top = g.vert((0, 0, H + r * 0.7), grey(0.3))
+    for i in range(sides):
+        g.face((rows[-1][i], rows[-1][(i + 1) % sides], top), mi, ref=UP, smooth=True)
+    L0, Wb, Tb = boot
+    z1 = z1 if z1 is not None else H - 0.12
+    for k in range(boots):
+        f = k / max(1, boots - 1)
+        z = lerp(z0, z1, f ** 0.9)
+        a = k * GOLDEN + rnd.uniform(-0.15, 0.15)
+        O = Vector((math.cos(a), math.sin(a), 0.0))
+        Tg = Vector((-math.sin(a), math.cos(a), 0.0))
+        rr = trunk_radius(z, H, r)
+        C = O * (rr - 0.06) + UP * z
+        el = math.radians(rnd.uniform(36, 62))
+        D = (O * math.cos(el) + UP * math.sin(el)).normalized()
+        Rn = D.cross(Tg).normalized()
+        ln = L0 * rnd.uniform(0.8, 1.15) * (0.75 + 0.25 * f)
+        wb = Wb * rnd.uniform(0.85, 1.1)
+        we = wb * 0.62
+        tb, te = Tb, Tb * 0.75
+        E = C + D * ln
+        cut = ln * 0.32
+        sh = shade(z)
+        mossy = rnd.random() < moss
+        tint = (0.7, 0.86, 0.48) if mossy else (1.0, 1.0, 1.0)
+        c_base = cscale(cmul(tint, grey(0.5)), sh)
+        c_top = cscale(cmul(tint, grey(0.82)), sh)
+        c_keel = cscale(grey(0.62), sh)
+        base = [C + Tg * wb * 0.5 + Rn * tb * 0.4, C - Tg * wb * 0.5 + Rn * tb * 0.4, C - Rn * tb]
+        end = [E - D * cut + Tg * we * 0.5 + Rn * te * 0.4, E - D * cut - Tg * we * 0.5 + Rn * te * 0.4, E - Rn * te]
+        bi = [g.vert(base[0], c_base), g.vert(base[1], c_base), g.vert(base[2], c_base)]
+        ei = [g.vert(end[0], c_top), g.vert(end[1], c_top), g.vert(end[2], c_keel)]
+        ctr = (C + E) * 0.5 - Rn * tb * 0.2
+        for i in range(3):
+            q = (bi[i], bi[(i + 1) % 3], ei[(i + 1) % 3], ei[i])
+            fc = sum((g.v[x] for x in q), Vector()) / 4
+            g.face(q, mi, ref=fc - ctr)
+        cut_c = cscale(grey(1.0) if not mossy else (0.85, 0.9, 0.65), sh)
+        ci = [g.vert(p, cut_c) for p in end]
+        g.face(ci, mi, ref=D + Rn)
+
+
+def fruit_bunch(name, center, axis, length, rnd, mats, parent=None, n=24, sides=5, core_sub=1, dark=0.6):
+    """Oil-palm fresh fruit bunch (TBS): ovoid dark core packed with pointed fruitlets (orange
+    bodies, near-black tips), apex along +axis.  mats = (M_Fruit, M_FruitDark)."""
+    g = Geo()
+    ax = Vector(axis).normalized()
+    R = ax.to_track_quat("Z", "Y").to_matrix()
+    C = Vector(center)
+    a_, b_ = length * 0.5, length * 0.4
+
+    def surf(c):
+        egg = 1.0 - 0.12 * c.z
+        return Vector((c.x * b_ * egg, c.y * b_ * egg, c.z * a_))
+
+    verts, faces = ico_data(core_sub)
+    base = len(g.v)
+    for co in verts:
+        nn = co.normalized()
+        g.vert(C + R @ (surf(nn) * 0.8), grey(0.32 + 0.12 * max(0.0, nn.z)))
+    for f in faces:
+        ctr = sum((verts[i] for i in f), Vector()) / 3
+        g.face([base + i for i in f], 0, ref=R @ ctr, smooth=True)
+    for k in range(n):
+        zc = lerp(0.93, -0.72, (k + 0.5) / n) + rnd.uniform(-0.03, 0.03)
+        ang = k * GOLDEN + rnd.uniform(-0.2, 0.2)
+        rc = math.sqrt(max(0.0, 1 - zc * zc))
+        c = Vector((rc * math.cos(ang), rc * math.sin(ang), zc))
+        p = surf(c) * 0.84
+        egg = 1.0 - 0.12 * c.z
+        nrm = Vector((c.x / (b_ * egg), c.y / (b_ * egg), c.z / a_)).normalized()
+        apex = Vector((0, 0, 1)) - nrm * nrm.z
+        apex = apex.normalized() if apex.length > 1e-3 else Vector((1, 0, 0))
+        tilt = math.radians(rnd.uniform(28, 48) * (0.4 + 0.6 * rc))
+        D = (nrm * math.cos(tilt) + apex * math.sin(tilt)).normalized()
+        sz = length * 0.27 * rnd.uniform(0.9, 1.1) * (0.72 + 0.28 * rc)
+        rw = sz * 0.42
+        U = D.cross(Vector((0.31, 0.83, 0.47))).normalized()
+        V = D.cross(U)
+        br = (rnd.uniform(0.55, 0.75) if rnd.random() < 0.25 else rnd.uniform(0.86, 1.0)) * lerp(0.88, 1.0, (zc + 0.8) / 1.75)
+        ph = rnd.uniform(0, 6.28)
+        r0 = [p - D * sz * 0.2 + (U * math.cos(q) + V * math.sin(q)) * rw * 0.85
+              for q in (ph + 2 * math.pi * s / sides for s in range(sides))]
+        capf = rnd.uniform(0.46, 0.54) if rnd.random() < dark else 0.62
+        r1 = [p + D * sz * capf + (U * math.cos(q) + V * math.sin(q)) * rw * 0.72
+              for q in (ph + 2 * math.pi * s / sides for s in range(sides))]
+        tip = p + D * sz * (capf + 0.2)
+        i0 = [g.vert(C + R @ q, grey(0.58 * br)) for q in r0]
+        i1 = [g.vert(C + R @ q, grey(1.0 * br)) for q in r1]
+        i1d = [g.vert(C + R @ q, grey(0.9)) for q in r1]
+        it = g.vert(C + R @ tip, grey(1.0))
+        Dw = R @ D
+        for s in range(sides):
+            q = (i0[s], i0[(s + 1) % sides], i1[(s + 1) % sides], i1[s])
+            mid = sum((g.v[x] for x in q), Vector()) / 4
+            g.face(q, 0, ref=mid - (C + R @ p), smooth=True)
+            tri = (i1d[s], i1d[(s + 1) % sides], it)
+            mid = (g.v[i1d[s]] + g.v[i1d[(s + 1) % sides]]) * 0.5
+            g.face(tri, 1, ref=mid - (C + R @ p) + Dw * 0.3, smooth=True)
+    return g.obj(name, list(mats), parent)
+
+
+PALMS = {
+    # tiers: fronds from the youngest (top) down; el / droop in degrees, zr = attach depth below the crown top.
+    # sawit_3 matches the target: ~2.6 m trunk, crown ~5.2 m across, ~4.6 m tall.
+    "sawit_1": dict(H=0.25, r=0.11, wr=0.56, boots=5, boot=(0.14, 0.12, 0.06), rings=2, spear=0.5, segs=6, fruits=0,
+                    epi=0, crown_r=0.05, ao=0.6,
+                    tiers=[dict(n=11, el=(80, 22), droop=(10, 50), zr=(-0.1, 0.25), L=(0.8, 1.3))]),
+    "sawit_2": dict(H=0.9, r=0.2, wr=0.58, boots=20, boot=(0.26, 0.2, 0.09), rings=3, spear=0.8, segs=7, fruits=0,
+                    epi=1, crown_r=0.12, ao=0.55,
+                    tiers=[dict(n=7, el=(76, 56), droop=(16, 28), zr=(-0.1, 0.08), L=(1.3, 1.75)),
+                           dict(n=9, el=(32, 2), droop=(30, 48), zr=(0.2, 0.36), L=(1.85, 2.1))]),
+    "sawit_3": dict(H=2.6, r=0.29, wr=0.6, boots=52, boot=(0.38, 0.28, 0.13), rings=6, spear=1.05, segs=8,
+                    fruits=5, epi=3, crown_r=0.22, ao=0.5, fruit=0.7,
+                    tiers=[dict(n=9, el=(76, 54), droop=(16, 30), zr=(-0.12, 0.1), L=(1.9, 2.5)),
+                           dict(n=11, el=(30, 2), droop=(30, 46), zr=(0.32, 0.55), L=(2.55, 2.8))]),
+}
+
+
+def build_palm(name, P, seed=3):
+    rnd = random.Random(seed)
+    root = empty(name)
+    mf = M_frond()
+    mt = vmat("M_Trunk", "#9d7c52")
+    prof = alpha_profile("frond")
+    H, r = P["H"], P["r"]
+    tg = Geo()
+    palm_trunk(tg, 0, H, r, rnd, P["boots"], P["boot"], P["rings"], z0=min(0.3, H * 0.3), crown_dark=H > 0.8)
+    trunk = tg.obj(name + "_trunk", [mt])
+    bake_ao([trunk], distance=0.7)
+    g = Geo()
+    top = H + 0.05
+    N = sum(T["n"] for T in P["tiers"])
+    i = 0
+    for T in P["tiers"]:
+        for k in range(T["n"]):
+            f = k / max(1, T["n"] - 1)
+            age = i / max(1, N - 1)  # 0 youngest (upright, top) -> 1 oldest (spreading, drooping)
+            phi = i * GOLDEN + rnd.uniform(-0.12, 0.12)
+            i += 1
+            el = lerp(T["el"][0], T["el"][1], f) + rnd.uniform(-5, 5)
+            dr = lerp(T["droop"][0], T["droop"][1], f) + rnd.uniform(-5, 5)
+            L = lerp(T["L"][0], T["L"][1], f) * rnd.uniform(0.95, 1.04)
+            zb = top - lerp(T["zr"][0], T["zr"][1], f)
+            rb = P["crown_r"] * (0.35 + 0.65 * age)
+            base = Vector((rb * math.cos(phi), rb * math.sin(phi), zb))
+            pts = arc_points(base, phi, el, dr, L, P["segs"], yaw_drift=rnd.uniform(-0.15, 0.15))
+            tint = (1.0, 1.0, 0.88) if age < 0.18 else ((0.97, 0.92, 0.7) if age > 0.88 else (1.0, 1.0, 1.0))
+            card_path(g, 0, pts, L * P["wr"], prof=prof, fold=(lerp(0.5, 0.22, age), lerp(0.3, 0.5, age)),
+                      across=5, twist=rnd.uniform(-14, 14),
+                      col_fn=lambda t, s, tint=tint: cscale(tint, plant_ao(t, s, lo=P["ao"], reach=0.42)),
+                      side_hint=Vector((math.sin(phi), -math.cos(phi), 0.0)))
+    for k, (sp, el) in enumerate(((P["spear"], 87), (P["spear"] * 0.72, 74))):
+        phi = rnd.uniform(0, 6.28)
+        pts = arc_points(Vector((0, 0, top - 0.12)), phi, el, 6, sp, 4)
+        card_path(g, 0, pts, sp * 0.16, uv=(0.4, 0.15, 0.6, 1.0), across=3, fold=(0.6, 0.2),
+                  col_fn=lambda t, s: cscale((1.0, 1.0, 0.85), plant_ao(t, s, lo=0.6, reach=0.5)),
+                  side_hint=Vector((math.sin(phi), -math.cos(phi), 0.0)))
+    for k in range(P["epi"]):  # small ferny epiphytes on the trunk
+        z = lerp(0.9, H - 0.7, (k + 0.5) / max(1, P["epi"])) + rnd.uniform(-0.2, 0.2)
+        a = rnd.uniform(0, 6.28)
+        for j in range(3):
+            aa = a + (j - 1) * 0.6
+            b = Vector((math.cos(aa), math.sin(aa), 0)) * (trunk_radius(z, H, r) + 0.12) + UP * z
+            pts = arc_points(b, aa, rnd.uniform(25, 50), 70, rnd.uniform(0.4, 0.55), 4)
+            card_path(g, 0, pts, 0.24, prof=prof, across=3, fold=(0.2, 0.3),
+                      col_fn=lambda t, s: cscale((0.92, 1.0, 0.82), plant_ao(t, s, lo=0.55)))
+    crown = g.obj(name + "_crown", [mf, mt])
+    body = join([trunk, crown], name + "_body")
+    body.parent = root
+    if P["fruits"]:
+        fr = empty("Fruits", parent=root)
+        m_fruit = vmat("M_Fruit", "#f0762e", rough=0.45, spec=0.5)
+        m_dark = vmat("M_FruitDark", "#3a1f18", rough=0.4, spec=0.5)
+        k0 = rnd.uniform(0, 6.28)
+        for k in range(P["fruits"]):
+            a = k0 + (k + 0.5) * (2 * math.pi / P["fruits"]) + rnd.uniform(-0.25, 0.25)
+            z = H - 0.18 + rnd.uniform(-0.06, 0.05)
+            rr = trunk_radius(z, H, r) + 0.27
+            c = (rr * math.cos(a), rr * math.sin(a), z)
+            axis = Vector((math.cos(a) * 0.9, math.sin(a) * 0.9, 0.45))
+            fruit_bunch(f"Fruit_{k}", c, axis, P["fruit"] * rnd.uniform(0.93, 1.06), rnd, (m_fruit, m_dark), fr)
+    return root
+
+
+def build_sawit_0():
+    """Seedling in a black polybag (bibit)."""
+    rnd = random.Random(11)
+    root = empty("sawit_0")
+    m_bag = vmat("M_Polybag", "#35302c", rough=0.55, spec=0.4)
+    m_soil = vmat("M_Soil", "#5a4030")
+    g = Geo()
+    sides, rings, Hb, R = 14, 5, 0.35, 0.17
+    rows = []
+    for j in range(rings + 1):
+        t = j / rings
+        z = Hb * t
+        rr = R * (0.92 + 0.14 * math.sin(math.pi * min(1.0, t * 1.2)))
+        if j == rings:
+            rr = R * 0.98
+        row = []
+        for i in range(sides):
+            a = 2 * math.pi * i / sides
+            wr = rr * (1.0 + 0.05 * math.sin(a * 5 + j * 1.7) + rnd.uniform(-0.02, 0.02))
+            row.append(g.vert((wr * math.cos(a), wr * math.sin(a), z + (rnd.uniform(-0.012, 0.012) if j else 0))))
+        rows.append(row)
+    for j in range(rings):
+        for i in range(sides):
+            a, b = rows[j][i], rows[j][(i + 1) % sides]
+            c, d = rows[j + 1][(i + 1) % sides], rows[j + 1][i]
+            mid = (g.v[a] + g.v[c]) * 0.5
+            g.face((a, b, c, d), 0, ref=Vector((mid.x, mid.y, 0)), smooth=True)
+    soil_ring = [g.vert((R * 0.9 * math.cos(2 * math.pi * i / sides), R * 0.9 * math.sin(2 * math.pi * i / sides),
+                         Hb - 0.035)) for i in range(sides)]
+    for i in range(sides):
+        g.face((rows[-1][i], rows[-1][(i + 1) % sides], soil_ring[(i + 1) % sides], soil_ring[i]), 0, ref=UP,
+               smooth=True)
+    sc = g.vert((0, 0, Hb - 0.015))
+    for i in range(sides):
+        g.face((soil_ring[i], soil_ring[(i + 1) % sides], sc), 1, ref=UP, smooth=True)
+    bag = g.obj("sawit_0_bag", [m_bag, m_soil])
+    bake_ao([bag], distance=0.3)
+    fg = Geo()
+    prof = alpha_profile("frond")
+    for i in range(6):
+        phi = i * 2 * math.pi / 6 + 0.5 + rnd.uniform(-0.2, 0.2)
+        el = lerp(82, 45, (i % 3) / 2) + rnd.uniform(-4, 4)
+        L = rnd.uniform(0.36, 0.46)
+        pts = arc_points((0.015 * math.cos(phi), 0.015 * math.sin(phi), Hb - 0.02), phi, el, rnd.uniform(25, 45), L, 4)
+        card_path(fg, 0, pts, L * 0.52, prof=prof, across=3, fold=(0.35, 0.25),
+                  col_fn=lambda t, s: cscale((1.0, 1.0, 0.9), plant_ao(t, s, lo=0.6)),
+                  side_hint=Vector((math.sin(phi), -math.cos(phi), 0.0)))
+    leaves = fg.obj("sawit_0_leaves", [M_frond()])
+    o = join([bag, leaves], "sawit_0_body")
+    o.parent = root
+    return root
+
+
+def build_tbs():
+    """A harvested bunch lying on the ground, stalk stub, a few loose fruitlets (brondolan)."""
+    rnd = random.Random(21)
+    root = empty("tbs")
+    m_fruit = vmat("M_Fruit", "#f0762e", rough=0.45, spec=0.5)
+    m_dark = vmat("M_FruitDark", "#3a1f18", rough=0.4, spec=0.5)
+    m_stalk = vmat("M_Stalk", "#a88a55")
+    L = 0.5
+    axis = Vector((1.0, 0.15, 0.25))
+    body = fruit_bunch("tbs_bunch", (0, 0, 0), axis, L, rnd, (m_fruit, m_dark), None, n=34, sides=5)
+    g = Geo()
+    ax = axis.normalized()
+    p0 = -ax * (L * 0.36)
+    tube(g, [p0, p0 - ax * 0.14, p0 - ax * 0.2 + Vector((0, 0, -0.02))], [0.05, 0.042, 0.035], 6, 0, cap_top=True,
+         col_fn=lambda j, i, q: grey(0.75 + 0.1 * j))
+    for k, (x, y) in enumerate(((0.08, -0.3), (-0.16, -0.26), (0.25, 0.22))):
+        c = (0.07, 0.1, 0.035)
+        verts, faces = ico_data(1)
+        base = len(g.v)
+        for co in verts:
+            g.vert(Vector((x, y, 0.03)) + Vector((co.x * 0.04, co.y * 0.033, co.z * 0.03)), grey(0.85))
+        for f in faces:
+            g.face([base + i for i in f], 1 + (k == 1), ref=sum((verts[i] for i in f), Vector()), smooth=True)
+    extra = g.obj("tbs_extra", [m_stalk, m_fruit, m_dark])
+    o = join([body, extra], "tbs_mesh")
+    bpy.context.view_layer.update()
+    zmin = min(v.co.z for v in o.data.vertices)
+    for v in o.data.vertices:
+        v.co.z -= zmin
+    o.parent = root
+    return root
+
+
+# ============================================================ undergrowth
+def build_fern(name, seed, n, L, elev, droop, tint=(1.0, 1.0, 1.0), spread=0.05, curl=0.0):
+    rnd = random.Random(seed)
+    root = empty(name)
+    g = Geo()
+    prof = alpha_profile("fern")
+    for i in range(n):
+        f = i / max(1, n - 1)
+        phi = i * GOLDEN + rnd.uniform(-0.2, 0.2)
+        el = lerp(elev[0], elev[1], f) + rnd.uniform(-6, 6)
+        dr = lerp(droop[0], droop[1], f) + rnd.uniform(-8, 8)
+        Li = L * rnd.uniform(0.82, 1.08) * lerp(0.8, 1.0, f)
+        base = Vector((spread * math.cos(phi), spread * math.sin(phi), 0.0))
+        pts = arc_points(base, phi, el, dr, Li, 5, yaw_drift=rnd.uniform(-0.3, 0.3))
+        br = rnd.uniform(0.9, 1.08)
+        card_path(g, 0, pts, Li * 0.5, prof=prof, across=3, fold=(0.25, 0.25), twist=rnd.uniform(-20, 20) + curl,
+                  col_fn=lambda t, s, br=br: cscale(tint, br * plant_ao(t, s, lo=0.5, reach=0.5)),
+                  side_hint=Vector((math.sin(phi), -math.cos(phi), 0.0)))
+    g.obj(name + "_mesh", [M_fern()], root)
+    return root
+
+
+def build_keladi():
+    """Taro: big heart-shaped leaves on long petioles, tips drooping outward."""
+    rnd = random.Random(14)
+    root = empty("keladi")
+    g = Geo()
+    u0, v0, u1, v1 = ATLAS["keladi"]
+    ax, ay = 0.0, -0.1  # petiole attachment in tile coords (-0.5..0.5)
+    stem_uv = (lerp(u0, u1, 0.5), lerp(v0, v1, 0.5 + ay - 0.03))
+    leaves = [(0.0, 0.78, 0.6, 58), (1.25, 0.62, 0.52, 42), (2.5, 0.7, 0.56, 50), (3.7, 0.5, 0.46, 35),
+              (4.9, 0.66, 0.54, 46), (5.8, 0.42, 0.4, 30), (0.7, 0.36, 0.34, 25)]
+    for k, (phi, h, S, tilt) in enumerate(leaves):
+        phi += rnd.uniform(-0.2, 0.2)
+        O = Vector((math.cos(phi), math.sin(phi), 0.0))
+        P = O * h * 0.38 + UP * h
+        b0 = O * 0.04
+        mid = (b0 + P) * 0.5 + O * 0.02 + UP * 0.05
+        tube(g, [b0, mid, P], [0.028, 0.022, 0.016], 3, 0, smooth=True,
+             col_fn=lambda j, i, q: grey(lerp(0.55, 0.95, j / 2)), uv_fn=lambda q: stem_uv)
+        tl = math.radians(tilt + rnd.uniform(-8, 8))
+        Tv = (O * math.cos(tl) - UP * math.sin(tl)).normalized()  # tip direction (outward, drooping)
+        Rv = Tv.cross(UP).normalized()
+        N = Rv.cross(Tv).normalized()
+        grid = []
+        for iy in range(4):
+            y = -0.5 + iy / 3
+            row = []
+            for ix in range(4):
+                x = -0.5 + ix / 3
+                q = P + Rv * (x - ax) * S + Tv * (y - ay) * S - N * S * (0.1 * (2 * x) ** 2 + 0.05 * max(0, y) ** 2)
+                d = math.hypot(x - ax, y - ay)
+                row.append((g.vert(q, grey(lerp(0.85, 1.0, min(1.0, d * 2)))), (lerp(u0, u1, x + 0.5), lerp(v0, v1, y + 0.5))))
+            grid.append(row)
+        for iy in range(3):
+            for ix in range(3):
+                a, b, c, d = grid[iy][ix], grid[iy][ix + 1], grid[iy + 1][ix + 1], grid[iy + 1][ix]
+                g.face((a[0], b[0], c[0], d[0]), 0, ref=N, uv=(a[1], b[1], c[1], d[1]), smooth=True)
+    g.obj("keladi_mesh", [M_leaf()], root)
+    return root
+
+
+def build_shrub_a():
+    """Dense broad-leaf shrub (~0.75 m): a dome of big glossy leaves, leaf clusters on top."""
+    rnd = random.Random(33)
+    root = empty("shrub_a")
+    g = Geo()
+    cc = ((ATLAS["cluster"][0] + ATLAS["cluster"][2]) / 2, (ATLAS["cluster"][1] + ATLAS["cluster"][3]) / 2)
+    geo_blob(g, 0, (0, 0, 0.26), 0.26, (1.2, 1.1, 0.95), seed=4, subdiv=2, amp=0.12,
+             col_fn=lambda p, n: grey(lerp(0.45, 0.8, smoothstep(0.0, 0.5, p.z))), uv_fn=sphere_uv(cc, 0.06),
+             floor=0.0)
+    for k in range(7):
+        a = k * GOLDEN + 0.4
+        e = rnd.uniform(0.3, 1.3)
+        n = Vector((math.cos(a) * math.cos(e), math.sin(a) * math.cos(e), math.sin(e)))
+        p = Vector((0, 0, 0.3)) + Vector((n.x * 0.3, n.y * 0.28, n.z * 0.26))
+        quad_card(g, 0, p, n + UP * 0.4, rnd.uniform(0.42, 0.52), ATLAS["cluster"], spin=rnd.uniform(0, 6.28),
+                  col=grey(lerp(0.75, 1.0, n.z)), col_rim=grey(0.7))
+    bprof = alpha_profile("leaves", ATLAS["broad"])
+    for k in range(22):
+        a = k * GOLDEN + rnd.uniform(-0.2, 0.2)
+        e = math.radians(lerp(-5, 62, (k % 4) / 3) + rnd.uniform(-8, 8))
+        D = Vector((math.cos(a) * math.cos(e), math.sin(a) * math.cos(e), math.sin(e)))
+        base = Vector((0.12 * math.cos(a), 0.12 * math.sin(a), 0.12 + 0.2 * rnd.random()))
+        L = rnd.uniform(0.36, 0.48)
+        br = rnd.uniform(0.88, 1.05)
+        leaf_card(g, 0, base, D, L, L * 0.55, ATLAS["broad"], droop=0.3, segs=2, prof=bprof, across=3,
+                  fold=(0.3, 0.2), twist=rnd.uniform(-20, 20),
+                  col_fn=lambda t, s, br=br: grey(br * plant_ao(t, s, lo=0.55, reach=0.5)))
+    g.obj("shrub_a_mesh", [M_leaf("M_Bush")], root)
+    return root
+
+
+def build_shrub_b():
+    """Low rosette of big pointed broad leaves (like the target's undergrowth seedlings)."""
+    rnd = random.Random(35)
+    root = empty("shrub_b")
+    g = Geo()
+    prof = alpha_profile("leaves", ATLAS["broad"])
+    tiers = [(8, (8, 24), (0.42, 0.52), 0.35, 0.0), (6, (40, 58), (0.36, 0.44), 0.3, 0.08),
+             (3, (68, 80), (0.26, 0.32), 0.15, 0.14)]
+    k = 0
+    for cnt, els, lens, droop, z in tiers:
+        for i in range(cnt):
+            a = k * GOLDEN + rnd.uniform(-0.25, 0.25)
+            k += 1
+            e = math.radians(rnd.uniform(*els))
+            D = Vector((math.cos(a) * math.cos(e), math.sin(a) * math.cos(e), math.sin(e)))
+            L = rnd.uniform(*lens)
+            br = rnd.uniform(0.9, 1.06)
+            leaf_card(g, 0, Vector((0.03 * math.cos(a), 0.03 * math.sin(a), z)), D, L, L * 0.52, ATLAS["broad"],
+                      droop=droop, segs=3, prof=prof, across=3, fold=(0.3, 0.25), twist=rnd.uniform(-15, 15),
+                      col_fn=lambda t, s, br=br: grey(br * plant_ao(t, s, lo=0.55, reach=0.45)))
+    g.obj("shrub_b_mesh", [M_leaf("M_Leaf")], root)
+    return root
+
+
+def build_bush(name, seed, blobs, sprigs, clusters, broad=0):
+    """Wild thicket: dark leafy core blobs covered by many leaf-cluster cards, a few sprigs sticking out."""
+    rnd = random.Random(seed)
+    root = empty(name)
+    g = Geo()
+    cu0, cv0, cu1, cv1 = ATLAS["cluster"]
+    cc = ((cu0 + cu1) / 2, (cv0 + cv1) / 2)
+    top = max(z + r * sz for (x, y, z, r, sx, sy, sz) in blobs)
+    for i, (x, y, z, r, sx, sy, sz) in enumerate(blobs):
+        geo_blob(g, 0, (x, y, z), r * 0.85, (sx, sy, sz), seed=seed + i, subdiv=1, amp=0.12,
+                 col_fn=lambda p, n: grey(lerp(0.38, 0.62, smoothstep(0.0, top, p.z))),
+                 uv_fn=sphere_uv(cc, 0.05), floor=0.0)
+    for k in range(clusters):
+        x, y, z, r, sx, sy, sz = blobs[k % len(blobs)]
+        a = k * GOLDEN + rnd.uniform(-0.3, 0.3)
+        e = math.asin(clamp01(rnd.uniform(-0.25, 1.0)) if k % 5 else rnd.uniform(0.6, 1.0))
+        n = Vector((math.cos(a) * math.cos(e), math.sin(a) * math.cos(e), math.sin(e)))
+        p = Vector((x, y, z)) + Vector((n.x * r * sx, n.y * r * sy, n.z * r * sz)) * rnd.uniform(0.8, 1.0)
+        if p.z < 0.15:
+            p.z = 0.15
+        v = lerp(0.62, 1.0, smoothstep(0.0, top, p.z)) * (0.85 + 0.15 * n.z)
+        quad_card(g, 0, p, n + UP * 0.35, rnd.uniform(0.42, 0.58), ATLAS["cluster"], spin=rnd.uniform(0, 6.28),
+                  col=grey(v), flat=True)
+    prof = alpha_profile("leaves", ATLAS["sprig"])
+    for k in range(sprigs):
+        x, y, z, r, sx, sy, sz = blobs[k % len(blobs)]
+        a = rnd.uniform(0, 2 * math.pi)
+        e = math.radians(rnd.uniform(-10, 55))
+        D = Vector((math.cos(a) * math.cos(e), math.sin(a) * math.cos(e), math.sin(e)))
+        base = Vector((x + math.cos(a) * r * sx * 0.6, y + math.sin(a) * r * sy * 0.6, max(0.1, z)))
+        L = rnd.uniform(0.45, 0.62)
+        leaf_card(g, 0, base, D, L, L, ATLAS["sprig"], droop=0.3, segs=2, prof=prof, across=3,
+                  col_fn=lambda t, s: grey(plant_ao(t, s, lo=0.5, reach=0.6)))
+    bprof = alpha_profile("leaves", ATLAS["broad"])
+    for k in range(broad):
+        a = rnd.uniform(0, 2 * math.pi)
+        e = math.radians(rnd.uniform(5, 30))
+        D = Vector((math.cos(a) * math.cos(e), math.sin(a) * math.cos(e), math.sin(e)))
+        x, y, z, r, sx, sy, sz = blobs[k % len(blobs)]
+        base = Vector((x + math.cos(a) * r * 0.5, y + math.sin(a) * r * 0.5, 0.05))
+        L = rnd.uniform(0.4, 0.5)
+        leaf_card(g, 0, base, D, L, L * 0.52, ATLAS["broad"], droop=0.35, segs=2, prof=bprof, across=3,
+                  col_fn=lambda t, s: grey(plant_ao(t, s, lo=0.5, reach=0.5)))
+    g.obj(name + "_mesh", [M_leaf("M_Bush")], root)
+    return root
+
+
+def build_bush_a():
+    blobs = [(0.0, 0.0, 0.55, 0.5, 1.0, 0.95, 1.0), (0.42, 0.2, 0.35, 0.38, 1.0, 1.0, 0.9),
+             (-0.4, -0.12, 0.32, 0.36, 1.1, 0.9, 0.85)]
+    return build_bush("bush_a", 31, blobs, sprigs=6, clusters=100, broad=2)
+
+
+def build_bush_b():
+    blobs = [(-0.3, 0.0, 0.3, 0.45, 1.2, 1.0, 0.85), (0.4, 0.12, 0.26, 0.42, 1.15, 1.0, 0.8),
+             (0.0, -0.3, 0.2, 0.34, 1.2, 1.0, 0.75)]
+    return build_bush("bush_b", 47, blobs, sprigs=6, clusters=100, broad=3)
+
+
+def grass_cards(g, mi, rnd, n, w, h, rects, center=(0.0, 0.0), spread=0.06, lean=0.08, lo=0.55):
+    for k in range(n):
+        rect, asp = rects[k % len(rects)]
+        yaw = k * math.pi / n + rnd.uniform(-0.25, 0.25)
+        hh = h * rnd.uniform(0.85, 1.12)
+        ww = hh * asp * (w / h) if w else hh * asp
+        c = Vector((center[0] + rnd.uniform(-spread, spread), center[1] + rnd.uniform(-spread, spread), 0.0))
+        cross_card(g, mi, c, yaw, ww, hh, rect, lean=(rnd.uniform(-lean, lean), rnd.uniform(-lean, lean)),
+                   col_fn=lambda t: grey(lerp(lo, 1.0, smoothstep(0.0, 0.7, t))))
+
+
+def build_grass(name, seed, n, h, half, wmul=1.0, spread=0.06, lo=0.55):
+    rnd = random.Random(seed)
+    root = empty(name)
+    g = Geo()
+    rect = alpha_bbox("grass", HALVES[half])
+    grass_cards(g, 0, rnd, n, 0, h, [(rect[0], rect[1] * wmul)], spread=spread, lo=lo)
+    g.obj(name + "_mesh", [M_grass()], root)
+    return root
+
+
+def build_flowers(name, seed, halves, n=3, h=0.42):
+    rnd = random.Random(seed)
+    root = empty(name)
+    g = Geo()
+    rects = [alpha_bbox("flowers", HALVES[x]) for x in halves]
+    grass_cards(g, 0, rnd, n, 0, h, rects, spread=0.1, lean=0.04, lo=0.6)
+    g.obj(name + "_mesh", [M_flower()], root)
+    return root
+
+
+# ============================================================ ground litter
+def build_frond_fallen():
+    """A dead frond lying on the ground (petiole butt + leaflets)."""
+    rnd = random.Random(51)
+    root = empty("frond_fallen")
+    g = Geo()
+    prof = alpha_profile("frond_dry")
+    L = 2.4
+    pts = []
+    for i in range(8):
+        t = i / 7
+        pts.append(Vector((-L * 0.5 + L * t, 0.12 * math.sin(t * 2.5) * (1 - t), 0.03 + 0.13 * (1 - t) ** 2 + 0.03 * math.sin(math.pi * t))))
+    card_path(g, 0, pts, L * 0.52, prof=prof, across=3, fold=(-0.05, 0.15), twist=8,
+              col_fn=lambda t, s: grey(lerp(0.78, 1.0, t) - 0.05 * abs(s)), side_hint=Vector((0, -1, 0)))
+    wood = vmat("M_FrondButt", "#b08e5c")
+    wg = Geo()
+    tube(wg, [pts[0] - Vector((0.18, 0.0, -0.02)), pts[0] + Vector((0.05, 0, 0))], [0.075, 0.05], 5, 0, cap_top=True,
+         smooth=False, col_fn=lambda j, i, q: grey(0.7 + 0.25 * j))
+    card = g.obj("frond_fallen_leaf", [M_frond_dry()])
+    butt = wg.obj("frond_fallen_butt", [wood])
+    o = join([card, butt], "frond_fallen_mesh")
+    o.parent = root
+    return root
+
+
+def build_pile_fronds():
+    """Stack of cut fronds between palm rows (gawangan): dry at the bottom, fresher on top."""
+    rnd = random.Random(53)
+    root = empty("pile_fronds")
+    g = Geo()
+    pd, pg = alpha_profile("frond_dry"), alpha_profile("frond")
+    butts = Geo()
+    specs = [(0, -0.25, 0.0, 0.12, 0), (1, 0.28, 0.1, -0.1, 0), (0, 0.02, 0.2, 0.05, 1), (1, -0.1, 0.3, -0.18, 1),
+             (0, 0.15, 0.38, 0.2, 2)]
+    for k, (mi, dy, z, yaw, lvl) in enumerate(specs):
+        L = rnd.uniform(2.2, 2.6)
+        d = Vector((math.cos(yaw), math.sin(yaw), 0.0))
+        side = Vector((-d.y, d.x, 0.0))
+        pts = []
+        for i in range(7):
+            t = i / 6
+            pts.append(d * (-L * 0.5 + L * t) + side * dy + UP * (0.04 + z * (1 - 0.6 * abs(t - 0.45)) +
+                                                                 0.08 * math.sin(math.pi * t)))
+        prof = pd if mi == 0 else pg
+        tint = (1.0, 1.0, 1.0) if mi == 0 else (0.92, 0.9, 0.62)
+        card_path(g, mi, pts, L * 0.5, prof=prof, across=3, fold=(0.0, 0.2), twist=rnd.uniform(-10, 10),
+                  col_fn=lambda t, s, tint=tint, lvl=lvl: cscale(tint, lerp(0.62, 0.8, lvl / 2) + 0.2 * t - 0.05 * abs(s)),
+                  side_hint=-side)
+        tube(butts, [pts[0] - d * 0.2 + UP * 0.02, pts[0] + d * 0.04], [0.07, 0.05], 5, 0, cap_top=True, smooth=False,
+             col_fn=lambda j, i, q: grey(0.7 + 0.25 * j))
+    leaves = g.obj("pile_leaves", [M_frond_dry(), M_frond()])
+    b = butts.obj("pile_butts", [vmat("M_FrondButt", "#b08e5c")])
+    o = join([leaves, b], "pile_fronds_mesh")
+    o.parent = root
+    return root
+
+
+def build_piringan():
+    """Weeded mulch circle around a palm: flat 2.4 m alpha decal, raised 2-3 cm."""
+    root = empty("piringan")
+    m = tmat("M_Piringan", "piringan", rough=0.95, spec=0.1, double=False)
+    g = Geo()
+    S = 2.4
+    n = 8
+    ring = []
+    for i in range(n):
+        a = 2 * math.pi * i / n + math.pi / n
+        rr = S * 0.5 / math.cos(math.pi / n)
+        p = Vector((rr * math.cos(a), rr * math.sin(a), 0.02))
+        ring.append((g.vert(p, grey(1.0)), (0.5 + p.x / S, 0.5 + p.y / S)))
+    c = g.vert((0, 0, 0.035), grey(0.8))
+    for i in range(n):
+        a, b = ring[i], ring[(i + 1) % n]
+        g.face((a[0], b[0], c), 0, ref=UP, uv=(a[1], b[1], (0.5, 0.5)))
+    g.obj("piringan_mesh", [m], root)
+    return root
+
+
+def build_vine_log():
+    """Mossy fallen log with ivy sprigs and a fern growing over it."""
+    rnd = random.Random(57)
+    root = empty("vine_log")
+    m_bark = vmat("M_LogBark", "#9a8468")
+    m_wood = vmat("M_Wood", "#c9a06a")
+    g = Geo()
+    L = 2.2
+    path = [Vector((-L / 2 + L * t, 0.06 * math.sin(t * 5), 0.2 + 0.03 * math.sin(t * 3))) for t in [i / 5 for i in range(6)]]
+    radii = [0.21, 0.2, 0.19, 0.2, 0.18, 0.17]
+    path = [path[0]] + [(a + b) * 0.5 for a, b in zip(path[:-1], path[1:])] + [path[-1]]
+    path = sorted(path, key=lambda v: v.x)
+    radii = [lerp(0.21, 0.17, i / (len(path) - 1)) * (1.0 + 0.06 * math.sin(i * 1.7)) for i in range(len(path))]
+    rows = tube(g, path, radii, 10, 0, rnd=rnd, jitter=0.07, smooth=True)
+    for end, sgn in ((rows[0], -1), (rows[-1], 1)):  # sawn ends
+        row, p = end
+        cidx = g.vert(p + Vector((sgn * 0.02, 0, 0)), grey(0.9))
+        for i in range(10):
+            g.face((row[i], row[(i + 1) % 10], cidx), 1, ref=Vector((sgn, 0, 0)))
+    tube(g, [path[2] + Vector((0, 0.1, 0.1)), path[2] + Vector((0.1, 0.35, 0.3))], [0.06, 0.03], 4, 0, cap_top=True)
+    log = g.obj("vine_log_wood", [m_bark, m_wood])
+    bake_ao([log], distance=0.5)
+    moss_tint(log, thr=0.2, amp=0.55, freq=2.5, tint=(0.42, 0.85, 0.3))
+    lg = Geo()
+    prof = alpha_profile("leaves", ATLAS["sprig"])
+    for k in range(12):
+        t = rnd.uniform(0.05, 0.95)
+        p = Vector((-L / 2 + L * t, 0.0, 0.3))
+        a = rnd.uniform(0, 6.28)
+        D = Vector((math.cos(a) * 0.5, math.sin(a), rnd.uniform(-0.6, 0.1)))
+        leaf_card(lg, 0, p + Vector((0, 0, 0.08)), D, rnd.uniform(0.35, 0.5), 0.4, ATLAS["sprig"], droop=0.5, segs=2,
+                  prof=prof, across=3, col_fn=lambda t, s: grey(plant_ao(t, s, lo=0.6)))
+    bprof = alpha_profile("leaves", ATLAS["broad"])
+    for k in range(4):
+        a = rnd.uniform(0, 6.28)
+        e = math.radians(rnd.uniform(15, 45))
+        D = Vector((math.cos(a) * math.cos(e), math.sin(a) * math.cos(e), math.sin(e)))
+        base = Vector((rnd.uniform(-0.8, 0.8), rnd.choice((-0.28, 0.28)), 0.02))
+        leaf_card(lg, 0, base, D, 0.38, 0.2, ATLAS["broad"], droop=0.3, segs=2, prof=bprof, across=3,
+                  col_fn=lambda t, s: grey(plant_ao(t, s, lo=0.55)))
+    leaves = lg.obj("vine_log_leaves", [M_leaf()])
+    o = join([log, leaves], "vine_log_mesh")
+    o.parent = root
+    return root
+
+
+def sphere_uv(center_uv, spread=0.06):
+    """uv_fn for blobs: normal-direction mapping around an opaque texture spot (seamless, no holes)."""
+    def fn(p, n):
+        return (center_uv[0] + spread * n.x, center_uv[1] + spread * n.y)
+    return fn
+
+
+def moss_tint(o, thr=0.55, amp=0.35, freq=2.0, tint=(0.72, 0.86, 0.5), soft=0.18):
+    """Multiply a soft moss tint into `Col` on upward-facing, noisy patches (after the AO bake)."""
+    me = o.data
+    attr = me.color_attributes["Col"]
+    cols = [0.0] * (len(attr.data) * 4)
+    attr.data.foreach_get("color", cols)
+    for p in me.polygons:
+        for li in p.loop_indices:
+            v = me.vertices[me.loops[li].vertex_index]
+            k = v.normal.z + amp * noise.noise(v.co * freq + Vector((3.1, 1.7, 0.4)))
+            m = smoothstep(thr - soft, thr + soft, k)
+            for c in range(3):
+                cols[li * 4 + c] *= lerp(1.0, tint[c], m)
+    attr.data.foreach_set("color", cols)
+
+
+def patch_uv(center_uv, scale, jitter, rnd):
+    """face_uv callback: each face samples a random patch of an opaque texture region."""
+    def fn(points):
+        c = sum(points, Vector()) / len(points)
+        n = newell(points).normalized() if newell(points).length > 1e-9 else UP
+        a = n.cross(UP) if abs(n.z) < 0.9 else Vector((1.0, 0.0, 0.0))
+        a.normalize()
+        b = n.cross(a)
+        ou = center_uv[0] + rnd.uniform(-jitter, jitter)
+        ov = center_uv[1] + rnd.uniform(-jitter, jitter)
+        return [(ou + (p - c).dot(a) * scale, ov + (p - c).dot(b) * scale) for p in points]
+    return fn
+
+
+# ============================================================ big broadleaf shade tree
+def build_tree_big():
+    rnd = random.Random(9)
+    root = empty("tree_big")
+    m_bark = vmat("M_Bark", "#76593c")
+    tg = Geo()
+    trunk = [(0, 0, 0), (0.05, 0.0, 0.6), (0.0, 0.05, 1.4), (-0.1, 0.05, 2.2), (-0.05, 0.0, 2.7)]
+    tube(tg, trunk, [0.44, 0.33, 0.28, 0.26, 0.24], 9, 0, rnd=rnd, jitter=0.05)
+    limbs = [((-0.05, 0, 2.4), (0.8, 0.2, 3.3), (1.5, 0.3, 3.9)), ((-0.05, 0, 2.4), (-0.8, 0.4, 3.4), (-1.4, 0.6, 3.9)),
+             ((-0.05, 0, 2.4), (0.1, -0.6, 3.5), (0.2, -1.1, 4.0)), ((-0.05, 0, 2.5), (-0.2, 0.3, 3.6), (-0.3, 0.9, 4.4))]
+    for lp in limbs:
+        tube(tg, lp, [0.19, 0.13, 0.07], 6, 0, rnd=rnd, jitter=0.05)
+    for k in range(5):
+        a = k * 2 * math.pi / 5 + rnd.uniform(-0.3, 0.3)
+        d = Vector((math.cos(a), math.sin(a), 0))
+        tube(tg, [d * 0.25 + UP * 0.4, d * 0.6 + UP * 0.1, d * 0.9 + UP * 0.0], [0.14, 0.09, 0.03], 5, 0)
+    wood = tg.obj("tree_wood", [m_bark])
+    bake_ao([wood], distance=0.8)
+    g = Geo()
+    cu0, cv0, cu1, cv1 = ATLAS["cluster"]
+    cc = ((cu0 + cu1) / 2, (cv0 + cv1) / 2)
+    canopy = [(0.1, 0.0, 4.55, 1.55, 1.15, 1.1, 0.78), (1.65, 0.35, 4.0, 1.18, 1.0, 1.0, 0.82),
+              (-1.55, 0.7, 4.05, 1.15, 1.0, 1.0, 0.82), (0.3, -1.45, 3.95, 1.1, 1.0, 1.0, 0.8),
+              (-0.45, 1.55, 4.5, 1.0, 1.0, 1.0, 0.84), (0.4, 0.15, 5.35, 1.0, 1.0, 1.0, 0.8),
+              (-1.0, -0.9, 4.6, 0.9, 1.0, 1.0, 0.85)]
+    ztop = 6.2
+    for i, (x, y, z, r, sx, sy, sz) in enumerate(canopy):
+        geo_blob(g, 0, (x, y, z), r * 0.84, (sx, sy, sz), seed=90 + i, subdiv=2, amp=0.12, freq=1.6,
+                 col_fn=lambda p, n: grey(lerp(0.32, 0.62, 0.5 + 0.5 * n.z) * lerp(0.8, 1.0, smoothstep(3.0, ztop, p.z))),
+                 uv_fn=sphere_uv(cc, 0.05))
+    for i, (x, y, z, r, sx, sy, sz) in enumerate(canopy):
+        cnt = int(70 + 55 * r)
+        for k in range(cnt):
+            a = k * GOLDEN + rnd.uniform(-0.3, 0.3)
+            e = math.asin(lerp(1.0, -0.4, (k + 0.5) / cnt))  # Fibonacci sphere with the golden-angle azimuth
+            n = Vector((math.cos(a) * math.cos(e), math.sin(a) * math.cos(e), math.sin(e)))
+            p = Vector((x, y, z)) + Vector((n.x * r * sx, n.y * r * sy, n.z * r * sz)) * rnd.uniform(0.9, 1.0)
+            p += n * 0.22
+            v = lerp(0.55, 1.0, 0.5 + 0.5 * n.z) * lerp(0.8, 1.0, smoothstep(3.0, ztop, p.z))
+            quad_card(g, 0, p, n + UP * 0.25, rnd.uniform(0.9, 1.25), ATLAS["cluster"], spin=rnd.uniform(0, 6.28),
+                      col=grey(v), flat=True)
+    leaves = g.obj("tree_canopy", [M_leaf("M_Canopy")])
+    o = join([wood, leaves], "tree_big_mesh")
+    o.parent = root
+    return root
+
+
+# ============================================================ coconut palm (kelapa)
+def build_coconut():
+    rnd = random.Random(17)
+    root = empty("coconut")
+    m_trunk = vmat("M_CocoTrunk", "#a39275")
+    m_nut = vmat("M_Coconut", "#8fa232", rough=0.5, spec=0.4)
+    tg = Geo()
+    H, lean = 5.7, 1.35
+    bands = 22
+    path, radii = [], []
+    for j in range(bands):
+        for k in range(2):
+            t = (j + (0.3 if k else 0.0)) / bands
+            path.append((lean * (1 - (1 - t) ** 2), 0.1 * math.sin(t * 3), H * t))
+            r = lerp(0.2, 0.13, t) + 0.1 * max(0.0, 1 - t * 8) ** 2
+            radii.append(r * (1.07 if k == 0 else 1.0))
+    path.append((lean, 0.1 * math.sin(3), H))
+    radii.append(0.12)
+    tube(tg, path, radii, 8, 0, smooth=True, col_fn=lambda j, i, q: grey(0.62 if j % 2 == 0 else 0.95))
+    top = Vector(path[-1])
+    for k in range(6):
+        a = k * 1.1 + rnd.uniform(-0.2, 0.2)
+        rr = 0.24 + 0.06 * (k % 2)
+        c = top + Vector((rr * math.cos(a), rr * math.sin(a), -0.32 - 0.1 * (k % 3)))
+        geo_blob(tg, 1, c, 0.16, (1.0, 1.0, 1.12), seed=k, subdiv=1, amp=0.05)
+    wood = tg.obj("coconut_trunk", [m_trunk, m_nut])
+    bake_ao([wood], distance=0.6)
+    g = Geo()
+    prof = alpha_profile("frond_coco")
+    n = 16
+    for i in range(n):
+        f = i / (n - 1)
+        phi = i * GOLDEN + rnd.uniform(-0.1, 0.1)
+        el = lerp(66, -8, f) + rnd.uniform(-5, 5)
+        dr = lerp(50, 100, f) + rnd.uniform(-8, 8)
+        L = 3.0 * lerp(0.8, 1.0, min(1.0, f * 2)) * rnd.uniform(0.93, 1.05)
+        base = top + Vector((0.06 * math.cos(phi), 0.06 * math.sin(phi), 0.05 - 0.15 * f))
+        pts = arc_points(base, phi, el, dr, L, 8)
+        card_path(g, 0, pts, L * 0.5, prof=prof, fold=(0.7, 0.5), across=5, twist=rnd.uniform(-10, 10),
+                  col_fn=lambda t, s: grey(plant_ao(t, s, lo=0.55, reach=0.35)),
+                  side_hint=Vector((math.sin(phi), -math.cos(phi), 0.0)))
+    fr = g.obj("coconut_fronds", [tmat("M_CocoFrond", "frond_coco", rough=0.6, spec=0.3)])
+    o = join([wood, fr], "coconut_mesh")
+    o.parent = root
+    return root
+
+
+# ============================================================ banana plant (pisang)
+def banana_leaf(g, base, az, el, L, W, rnd, mi, torn=False, segs=6, droop=70):
+    """Big paddle leaf: petiole + oblong blade with raised midrib, edges curling down; torn leaves
+    are split into ragged strips along the veins.  Colours: pale midrib, darker edges."""
+    base = Vector(base)
+    pts = [base]
+    for i in range(segs + 1):
+        t = i / segs
+        a = math.radians(el - droop * t ** 1.3)
+        d = Vector((math.cos(az) * math.cos(a), math.sin(az) * math.cos(a), math.sin(a)))
+        pts.append(pts[-1] + d * (0.25 if i == 0 else L / segs))
+    tube(g, [pts[0], pts[1]], [0.03, 0.022], 4, mi, smooth=True)
+    st = pts[1:]
+    mids, lefts, rights, frames = [], [], [], []
+    for i, p in enumerate(st):
+        t = i / segs
+        T = (st[min(i + 1, segs)] - st[max(i - 1, 0)]).normalized()
+        S = T.cross(UP)
+        if S.length < 1e-3:
+            S = Vector((-math.sin(az), math.cos(az), 0))
+        S.normalize()
+        N = S.cross(T).normalized()
+        w = W * 0.5 * (min(1.0, t * 4.0 + 0.12) ** 0.6) * (max(0.0, 1.0 - t ** 5)) ** 0.5
+        mids.append(g.vert(p + N * 0.02, grey(1.0)))
+        lefts.append(p + S * w - N * w * 0.4)
+        rights.append(p - S * w - N * w * 0.4)
+        frames.append((S, N))
+    li = [g.vert(x, grey(0.78)) for x in lefts]
+    ri = [g.vert(x, grey(0.78)) for x in rights]
+    for i in range(segs):
+        S, N = frames[i]
+        for edge, idx in ((lefts, li), (rights, ri)):
+            if torn and 0 < i < segs - 1 and rnd.random() < 0.8:
+                ea, eb = edge[i], edge[i + 1]
+                sag = -N * rnd.uniform(0.06, 0.16) - UP * rnd.uniform(0.02, 0.08)
+                ia = g.vert(ea + sag * 0.6 + (eb - ea) * 0.1, grey(0.72))
+                ib = g.vert(eb + sag - (eb - ea) * 0.14, grey(0.72))
+            else:
+                ia, ib = idx[i], idx[i + 1]
+            g.face((mids[i], ia, ib, mids[i + 1]), mi, ref=N, smooth=True)
+
+
 def leafy(m):
-    """Mark a material double-sided (thin leaves / blades). Every other material is exported
-    with backface culling ON (see finish()), so Godot only disables culling for leaves."""
     m.use_backface_culling = False
     m["double_sided"] = True
     return m
 
 
-def frond_mat():
-    return leafy(mat("M_Frond", "#528a33"))
+def build_banana():
+    rnd = random.Random(23)
+    root = empty("banana")
+    m_leaf = leafy(vmat("M_BananaLeaf", "#5f9a3a", rough=0.55, spec=0.35))
+    m_stem = vmat("M_Stem", "#8e9a4c")
+    m_dry = leafy(vmat("M_DryLeaf", "#a3814a"))
+    m_fruit = vmat("M_Banana", "#a6bb3c", rough=0.5)
+    g = Geo()
+    main_top = Vector((0.06, 0.02, 1.4))
+    tube(g, [(0, 0, 0), (0.02, 0.0, 0.5), (0.05, 0.02, 1.0), tuple(main_top)], [0.15, 0.12, 0.1, 0.085], 8, 1,
+         rnd=rnd, jitter=0.04, cap_top=True)
+    suck_top = Vector((0.42, -0.25, 0.55))
+    tube(g, [(0.4, -0.25, 0), (0.41, -0.25, 0.3), tuple(suck_top)], [0.07, 0.055, 0.045], 6, 1, cap_top=True)
+    for i in range(8):
+        f = i / 7
+        az = i * GOLDEN + 0.3
+        banana_leaf(g, main_top - UP * 0.1 * f, az, lerp(78, 28, f) + rnd.uniform(-4, 4),
+                    lerp(1.3, 1.6, min(1.0, f * 2)) * rnd.uniform(0.92, 1.05), lerp(0.44, 0.52, f), rnd, 0,
+                    torn=(i in (2, 4, 6)), droop=lerp(35, 80, f))
+    for i in range(3):
+        banana_leaf(g, suck_top, i * 2.2 - 0.4, lerp(75, 45, i / 2), 0.62, 0.26, rnd, 0, droop=40, segs=4)
+    for k, az in enumerate((2.5, 4.5)):
+        banana_leaf(g, main_top - UP * (0.12 + 0.15 * k), az, -62, 0.8 - 0.15 * k, 0.34, rnd, 2, torn=True, droop=18,
+                    segs=4)
+    stalk = [main_top - UP * 0.05, main_top + Vector((0.05, -0.28, 0.08)), main_top + Vector((0.06, -0.45, -0.25)),
+             main_top + Vector((0.06, -0.47, -0.72))]
+    tube(g, stalk, [0.035, 0.032, 0.028, 0.02], 5, 1)
+    for h in range(3):
+        cc = Vector((stalk[2].x, stalk[2].y, stalk[2].z - 0.06 - h * 0.14))
+        for k in range(6):
+            a = k * 1.047 + h * 0.5
+            d = Vector((math.cos(a), math.sin(a), 0))
+            p0 = cc + d * 0.035
+            p1 = p0 + d * 0.08 + UP * 0.03
+            tube(g, [p0, p1, p1 + d * 0.035 + UP * 0.1], [0.024, 0.027, 0.01], 4, 3, smooth=True)
+    o = g.obj("banana_mesh", [m_leaf, m_stem, m_dry, m_fruit])
+    bake_ao([o], distance=0.6, floor=0.5)
+    o.parent = root
+    # a few grass clumps around the foot
+    gg = Geo()
+    rect = alpha_bbox("grass", HALVES["left"])
+    grass_cards(gg, 0, rnd, 3, 0, 0.35, [rect], spread=0.2)
+    gm = gg.obj("banana_grass", [M_grass()])
+    o2 = join([o, gm], "banana_mesh")
+    o2.parent = root
+    return root
 
 
-def _debug_camera(center, scale, pitch_deg, yaw_deg):
-    cam = bpy.data.objects.new("_Cam", bpy.data.cameras.new("_Cam"))
-    common.link(cam)
-    pitch, yaw = math.radians(pitch_deg), math.radians(yaw_deg)
-    dirv = Vector((math.sin(yaw) * math.cos(pitch), -math.cos(yaw) * math.cos(pitch), math.sin(pitch)))
-    cam.location = Vector(center) + dirv * 40
-    cam.rotation_euler = (-dirv).to_track_quat("-Z", "Y").to_euler()
-    cam.data.type = "ORTHO"
-    cam.data.ortho_scale = scale
-    cam.data.clip_end = 200
-    bpy.context.scene.camera = cam
-    return cam
+# ============================================================ rocks
+def blob(name, radius, loc, scale, material, seed, subdiv=2, amp=0.2, freq=1.4, amp2=0.0, freq2=3.0):
+    o = add_ico(name, 1.0, subdiv=subdiv, material=material)
+    off = Vector((seed * 1.71, seed * 2.93, seed * 0.77))
+    off2 = Vector((seed * 0.37, seed * 1.13, seed * 2.21))
+    for v in o.data.vertices:
+        n = v.co.normalized()
+        d = 1.0 + amp * noise.noise(n * freq + off) + amp2 * noise.noise(n * freq2 + off2)
+        v.co = Vector((n.x * scale[0], n.y * scale[1], n.z * scale[2])) * radius * d + Vector(loc)
+    o.data.update()
+    shade_smooth(o)
+    return o
 
 
-def extra_views(root, name, views):
-    """Debug renders into $VEG_SCRATCH (not part of the deliverables).
+def clamp_floor(o, z0=0.0):
+    for v in o.data.vertices:
+        if v.co.z < z0:
+            v.co.z = z0
+    o.data.update()
+    return o
 
-    views: (tag, pitch, yaw) or (tag, pitch, yaw, center, ortho_scale)."""
-    if not SCRATCH:
-        return
-    for view in views:
-        tag, pitch, yaw = view[:3]
-        common._setup_render(420, 420, transparent=False, samples=12)
-        tmp = common._temp_lights()
-        bpy.ops.mesh.primitive_plane_add(size=80, location=(0, 0, -0.001))
-        g = bpy.context.view_layer.objects.active
-        set_mat(g, mat("_M_PreviewGround", "#8fb35c"))
-        tmp.append(g)
-        if len(view) > 3:
-            tmp.append(_debug_camera(view[3], view[4], pitch, yaw))
+
+def moss_faces(o, m_moss, thr=0.5, amp=0.3, freq=1.6, mi=None):
+    """Assign the moss material to upward-facing faces with a noisy border."""
+    me = o.data
+    if m_moss.name not in [m.name for m in me.materials]:
+        me.materials.append(m_moss)
+    idx = [m.name for m in me.materials].index(m_moss.name)
+    for p in me.polygons:
+        c = p.center
+        if p.normal.z > thr + amp * noise.noise(c * freq + Vector((3.1, 1.7, 0.4))):
+            p.material_index = idx
+
+
+def boulder(name, size, seed, material, flat=0.7, stretch=(1.0, 0.82), subdiv=2, sink=0.1, loc=(0, 0, 0)):
+    h = size * flat
+    o = blob(name, 0.5, (0, 0, 0), (size * stretch[0], size * stretch[1], h), material, seed, subdiv=subdiv,
+             amp=0.3, freq=0.85, amp2=0.07, freq2=2.2)
+    rnd = random.Random(seed)
+    pn = Vector((rnd.uniform(-1, 1), rnd.uniform(-1, 1), 1.6)).normalized()
+    top = max(v.co.z for v in o.data.vertices)
+    for v in o.data.vertices:
+        if v.co.z < 0:
+            v.co.x *= 1.08
+            v.co.y *= 1.08
+        d = v.co.dot(pn) - top * 0.72
+        if d > 0:
+            v.co -= pn * d * 0.75
+        if v.co.z > top * 0.45:
+            v.co.z = top * 0.45 + (v.co.z - top * 0.45) * 0.6
+    zmin = min(v.co.z for v in o.data.vertices)
+    for v in o.data.vertices:
+        v.co.z -= zmin + h * sink
+        v.co += Vector(loc)
+    o.data.update()
+    clamp_floor(o, loc[2] if loc else 0.0)
+    return o
+
+
+def build_rock(name, size, seed, extras=(), subdiv=2, grass=0):
+    rnd = random.Random(seed)
+    root = empty(name)
+    m_rock = vmat("M_Rock", "#a8a69b")
+    parts = [boulder(name + "_main", size, seed, m_rock, subdiv=subdiv)]
+    for i, (dx, dy, s) in enumerate(extras):
+        parts.append(boulder(f"{name}_x{i}", size * s, seed + 11 * (i + 1), m_rock, subdiv=2 if s < 0.3 else 3,
+                             flat=0.55, loc=(size * dx, size * dy, 0)))
+    o = join(parts, name + "_mesh") if len(parts) > 1 else parts[0]
+    o.name = name + "_mesh"
+    bpy.context.view_layer.update()
+    o.data.transform(o.matrix_world)
+    o.matrix_world = Matrix.Identity(4)
+    clamp_floor(o, 0.0)
+    set_cols(o, lambda p, n: grey(1.0))
+    bake_ao([o], distance=size * 0.6)
+    moss_tint(o, thr=0.7, amp=0.5, freq=3.0 / size, tint=(0.6, 0.78, 0.42))
+    o.parent = root
+    if grass:
+        g = Geo()
+        rect = alpha_bbox("grass", HALVES["left"])
+        for k in range(grass):
+            a = k * 2 * math.pi / grass + rnd.uniform(-0.3, 0.3)
+            c = (math.cos(a) * size * 0.55, math.sin(a) * size * 0.45)
+            grass_cards(g, 0, rnd, 2, 0, rnd.uniform(0.25, 0.35), [rect], center=c, spread=0.03)
+        gm = g.obj(name + "_grass", [M_grass()])
+        o = join([o, gm], name + "_mesh")
+        o.parent = root
+    return root
+
+
+# ============================================================ cliff / rocky outcrop
+def two_tone(o, m_top, m_under, thr=-0.3, m_lit=None, lit_thr=0.75):
+    me = o.data
+    me.materials.clear()
+    me.materials.append(m_top)
+    me.materials.append(m_under)
+    if m_lit is not None:
+        me.materials.append(m_lit)
+    for pg in me.polygons:
+        if pg.normal.z < thr:
+            pg.material_index = 1
+        elif m_lit is not None and pg.normal.z > lit_thr:
+            pg.material_index = 2
         else:
-            tmp.append(common._temp_camera(root, pitch, yaw, margin=0.8))
-        bpy.context.scene.render.filepath = os.path.join(SCRATCH, f"{name}_{tag}.png")
-        bpy.ops.render.render(write_still=True)
-        for o in tmp:
-            bpy.data.objects.remove(o, do_unlink=True)
+            pg.material_index = 0
+    return o
 
 
+def slab(name, size, loc, rot, seed, material, bevel=0.2, amp=0.14):
+    o = add_box(name, size, loc=(0, 0, 0), material=material)
+    bm = bmesh.new()
+    bm.from_mesh(o.data)
+    bmesh.ops.subdivide_edges(bm, edges=bm.edges[:], cuts=2 if max(size) > 2.5 else 1, use_grid_fill=True)
+    bm.to_mesh(o.data)
+    bm.free()
+    mod = o.modifiers.new("Bevel", "BEVEL")
+    mod.width = min(bevel, min(size) * 0.3)
+    mod.segments = 2
+    mod.limit_method = "ANGLE"
+    common.apply_modifiers(o)
+    off = Vector((seed * 1.3, seed * 0.7, seed * 2.1))
+    for v in o.data.vertices:
+        c = v.co
+        v.co = c + Vector((noise.noise(c * 0.7 + off), noise.noise(c * 0.7 + off + Vector((5, 0, 0))),
+                           noise.noise(c * 0.7 + off + Vector((0, 9, 0))) * 0.5)) * amp
+    o.rotation_euler = rot
+    o.location = loc
+    bpy.context.view_layer.update()
+    o.data.transform(o.matrix_world)
+    o.matrix_world = Matrix.Identity(4)
+    shade_smooth(o)
+    return o
+
+
+def build_cliff_a():
+    """Stepped outcrop (7 x 3 x 2.5 m): rounded slabs, mossy ledges, grass and ferns at the foot."""
+    rnd = random.Random(41)
+    root = empty("cliff_a")
+    m_c = vmat("M_Cliff", "#8a8a80")
+    parts = []
+    strata = [
+        [(-2.2, -0.3, 0.0, 3.1, 2.4, 0.9, 0.07), (1.15, -0.4, 0.0, 3.5, 2.2, 0.8, -0.05),
+         (3.15, -0.05, 0.0, 1.2, 1.9, 0.62, 0.25)],
+        [(-1.55, 0.3, 0.72, 3.3, 1.9, 0.95, 0.1), (1.65, 0.4, 0.66, 2.6, 1.8, 0.88, -0.14)],
+        [(-0.35, 0.85, 1.52, 2.9, 1.3, 0.98, -0.06), (2.05, 0.95, 1.4, 1.3, 1.1, 0.7, 0.3)],
+    ]
+    k = 0
+    for layer in strata:
+        for (x, y, z0, w, d, h, rz) in layer:
+            rot = (rnd.uniform(-0.05, 0.05), rnd.uniform(-0.06, 0.06), rz)
+            o = slab(f"cliff_s{k}", (w, d, h), (x, y, z0 + h * 0.5), rot, 70 + k, m_c, amp=0.22)
+            parts.append(o)
+            k += 1
+    o = slab("cliff_lean", (1.3, 0.35, 1.0), (-3.45, -1.2, 0.42), (0.35, 0.0, 0.5), 99, m_c, bevel=0.1, amp=0.1)
+    parts.append(o)
+    for i, (x, y, s) in enumerate(((-2.6, -1.55, 0.6), (0.6, -1.6, 0.5), (2.75, -1.45, 0.6), (-1.3, -1.65, 0.35))):
+        o = boulder(f"cliff_foot{i}", s, 60 + i, m_c, subdiv=2, loc=(x, y, 0))
+        parts.append(o)
+    o = join(parts, "cliff_rock")
+    clamp_floor(o, 0.0)
+    set_cols(o, lambda p, n: grey(1.0))
+    bake_ao([o], distance=1.2)
+    moss_tint(o, thr=0.62, amp=0.45, freq=0.9, tint=(0.66, 0.8, 0.46))
+    g = Geo()
+    rect = alpha_bbox("grass", HALVES["left"])
+    rect2 = alpha_bbox("grass", HALVES["right"])
+    tufts = [(-2.9, -0.9, 0.95), (-0.8, -0.75, 0.85), (1.3, -0.5, 1.58), (-2.9, 0.1, 1.72), (0.3, 0.4, 2.45),
+             (2.6, -0.2, 0.9), (-1.0, -1.7, 0.0), (1.9, -1.7, 0.0), (3.4, -1.1, 0.0), (-3.0, -1.9, 0.0),
+             (0.2, -1.9, 0.0)]
+    for (x, y, z) in tufts:
+        for j in range(3):
+            yaw = j * math.pi / 3 + rnd.uniform(-0.2, 0.2)
+            rc, asp = (rect if (j + int(x * 3)) % 3 else rect2)
+            h = rnd.uniform(0.35, 0.5)
+            cross_card(g, 0, (x + rnd.uniform(-0.1, 0.1), y + rnd.uniform(-0.1, 0.1), z - 0.03), yaw, h * asp, h, rc,
+                       col_fn=lambda t: grey(lerp(0.55, 1.0, t)))
+    gm = g.obj("cliff_grass", [M_grass()])
+    o = join([o, gm], "cliff_a_mesh")
+    o.parent = root
+    return root
+
+
+# ============================================================ stump
+def build_stump():
+    rnd = random.Random(5)
+    root = empty("stump")
+    m_bark = vmat("M_Bark", "#76593c")
+    m_wood = vmat("M_Wood", "#d9b27a")
+    m_ring = vmat("M_WoodDark", "#b8864f")
+    g = Geo()
+    sides = 11
+    R = 0.16
+    rows = []
+    for z, k in [(0.0, 1.35), (0.06, 1.12), (0.15, 1.0), (0.25, 0.97)]:
+        rows.append([g.vert((R * k * rnd.uniform(0.94, 1.06) * math.cos(2 * math.pi * i / sides),
+                             R * k * rnd.uniform(0.94, 1.06) * math.sin(2 * math.pi * i / sides), z)) for i in range(sides)])
+    top = []
+    for i in range(sides):
+        v0 = g.v[rows[-1][i]]
+        top.append(g.vert((v0.x, v0.y, 0.29 + 0.05 * v0.x / R + rnd.uniform(-0.004, 0.004))))
+    rows.append(top)
+    for j in range(len(rows) - 1):
+        for i in range(sides):
+            q = (rows[j][i], rows[j][(i + 1) % sides], rows[j + 1][(i + 1) % sides], rows[j + 1][i])
+            fc = sum((g.v[x] for x in q), Vector()) / 4
+            g.face(q, 0, ref=Vector((fc.x, fc.y, 0)), smooth=True)
+
+    def ring_at(scale, dz=0.0):
+        return [g.vert((g.v[top[i]].x * scale, g.v[top[i]].y * scale, g.v[top[i]].z + dz)) for i in range(sides)]
+    r1, r2, r3 = ring_at(0.84, 0.004), ring_at(0.55, 0.006), ring_at(0.45, 0.006)
+    for ra, rb, mi in ((top, r1, 0), (r1, r2, 1), (r2, r3, 2)):
+        for i in range(sides):
+            g.face((ra[i], ra[(i + 1) % sides], rb[(i + 1) % sides], rb[i]), mi, ref=UP)
+    c = g.vert((0, 0, 0.301))
+    for i in range(sides):
+        g.face((r3[i], r3[(i + 1) % sides], c), 1, ref=UP)
+    for k in range(4):
+        a = k * 1.57 + rnd.uniform(-0.3, 0.3)
+        d = Vector((math.cos(a), math.sin(a), 0))
+        tube(g, [d * R * 0.55 + UP * 0.15, d * R * 1.3 + UP * 0.05, d * R * 1.85 + UP * 0.008],
+             [0.075, 0.055, 0.036], 6, 0, smooth=True, cap_top=True)
+    o = g.obj("stump_wood", [m_bark, m_wood, m_ring])
+    clamp_floor(o, 0.0)
+    bake_ao([o], distance=0.3)
+    gg = Geo()
+    rect = alpha_bbox("grass", HALVES["left"])
+    grass_cards(gg, 0, rnd, 2, 0, 0.28, [rect], center=(0.25, -0.15), spread=0.02)
+    grass_cards(gg, 0, rnd, 2, 0, 0.22, [rect], center=(-0.22, 0.12), spread=0.02)
+    o = join([o, gg.obj("stump_grass", [M_grass()])], "stump_mesh")
+    o.parent = root
+    return root
+
+
+# ============================================================ preview / export / checks
 def finalize(root):
     """Cull back faces on closed (non-leaf) materials and make sure nothing dips below z=0."""
     for o in all_descendants(root):
@@ -166,1130 +2344,313 @@ def finalize(root):
         o.data.update()
 
 
-def finish(root, name, icon=None, icon_kw=None, views=()):
+def _game_lights():
+    sun = bpy.data.objects.new("_Sun", bpy.data.lights.new("_Sun", "SUN"))
+    sun.data.energy = 3.6
+    sun.data.angle = math.radians(6)
+    sun.data.color = (1.0, 0.94, 0.82)
+    d = Vector((0.5, -0.42, -0.76))  # light travels right / toward camera / down: sun at the upper left
+    sun.rotation_euler = d.normalized().to_track_quat("-Z", "Y").to_euler()
+    common.link(sun)
+    return [sun]
+
+
+def _fit_camera(root, pitch=45.0, yaw=0.0, margin=1.08):
+    mn, mx = common._bounds(root)
+    corners = [Vector((x, y, z)) for x in (mn.x, mx.x) for y in (mn.y, mx.y) for z in (mn.z, mx.z)]
+    p, yw = math.radians(pitch), math.radians(yaw)
+    back = Vector((math.sin(yw) * math.cos(p), -math.cos(yw) * math.cos(p), math.sin(p)))
+    fwd = -back
+    right = fwd.cross(UP).normalized()
+    up = right.cross(fwd)
+    xs = [c.dot(right) for c in corners]
+    ys = [c.dot(up) for c in corners]
+    C0 = (mn + mx) * 0.5
+    cx, cy = (min(xs) + max(xs)) * 0.5, (min(ys) + max(ys)) * 0.5
+    center = C0 + right * (cx - C0.dot(right)) + up * (cy - C0.dot(up))
+    cam = bpy.data.objects.new("_Cam", bpy.data.cameras.new("_Cam"))
+    common.link(cam)
+    cam.location = center + back * 60.0
+    cam.rotation_euler = fwd.to_track_quat("-Z", "Y").to_euler()
+    cam.data.type = "ORTHO"
+    cam.data.ortho_scale = max(max(xs) - min(xs), max(ys) - min(ys)) * margin
+    cam.data.clip_end = 200.0
+    bpy.context.scene.camera = cam
+    return cam
+
+
+def preview(root, name, res=384, samples=16, pitch=45.0, yaw=0.0, margin=1.08, path=None):
+    """Cycles preview from the game camera direction (45 deg pitch, looking north) -> blender/previews/."""
+    common._setup_render(res, res, transparent=False, samples=samples)
+    tmp = _game_lights()
+    bpy.ops.mesh.primitive_plane_add(size=80, location=(0, 0, -0.002))
+    gr = bpy.context.view_layer.objects.active
+    gr.name = "_Ground"
+    set_mat(gr, mat("_M_PreviewGround", "#8fae52"))
+    tmp.append(gr)
+    tmp.append(_fit_camera(root, pitch, yaw, margin))
+    bpy.context.scene.render.filepath = path or os.path.join(common.PREVIEW_DIR, name + ".png")
+    bpy.ops.render.render(write_still=True)
+    for o in tmp:
+        bpy.data.objects.remove(o, do_unlink=True)
+
+
+def extra_views(root, name, views):
+    """Debug renders into $VEG_SCRATCH (not deliverables): (tag, pitch, yaw, margin)."""
+    if not SCRATCH:
+        return
+    os.makedirs(SCRATCH, exist_ok=True)
+    for tag, pitch, yaw, margin in views:
+        preview(root, name, res=320, samples=12, pitch=pitch, yaw=yaw, margin=margin,
+                path=os.path.join(SCRATCH, f"{name}_{tag}.png"))
+
+
+def glb_check(name):
+    """Read the exported glTF JSON: per material alphaMode / doubleSided / texture; COLOR_0 per primitive."""
+    import json
+    import struct
+    data = open(os.path.join(common.MODELS_DIR, name + ".glb"), "rb").read()
+    ln = struct.unpack("<I", data[12:16])[0]
+    js = json.loads(data[20:20 + ln])
+    mats = []
+    for m in js.get("materials", []):
+        tex = "tex" if "baseColorTexture" in m.get("pbrMetallicRoughness", {}) else "flat"
+        mats.append(f"{m['name']}:{m.get('alphaMode', 'OPAQUE')}/{'2s' if m.get('doubleSided') else '1s'}/{tex}")
+    prims = [p for me in js.get("meshes", []) for p in me["primitives"]]
+    col = sum(1 for p in prims if "COLOR_0" in p["attributes"])
+    return f"mats=[{', '.join(mats)}] COLOR_0={col}/{len(prims)} images={len(js.get('images', []))}"
+
+
+BUDGET = {"sawit_3": 4500, "sawit_2": 3500, "sawit_1": 3500, "tree_big": 3500, "coconut": 3500, "banana": 3500,
+          "cliff_a": 4000}
+UNDERGROWTH = {"fern_a", "fern_b", "keladi", "shrub_a", "shrub_b", "grass_a", "grass_b", "grass_tuft", "flowers",
+               "flowers_white", "flowers_yellow", "vine_log", "pile_fronds", "frond_fallen", "piringan", "bush_a",
+               "bush_b"}
+RESULTS = {}
+
+
+def finish(root, name, views=(), icon=None, icon_kw=None):
     bpy.context.view_layer.update()
     finalize(root)
-    render_preview(root, name)
+    preview(root, name)
     extra_views(root, name, views)
     export_glb(root, name)
-    if icon:
-        render_icon(root, icon, **(icon_kw or {}))
+    if icon and os.environ.get("VEG_ICONS"):
+        common.render_icon(root, icon, **(icon_kw or {}))
     tris = count_tris(root)
-    mats = sorted({s.material.name for o in all_descendants(root) if o.type == "MESH"
-                   for s in o.material_slots if s.material})
-    print(f"[done] {name}: tris={tris} mats={mats}")
-    return tris
-
-
-# ============================================================ palm fronds
-def frond_profile(u):
-    """Leaflet length along the leafy part of the rachis (u: 0 base -> 1 tip)."""
-    return max(0.12, math.sin(math.pi * (0.1 + 0.9 * u))) ** 0.7
-
-
-def frond(g, mi, base, phi, elev, L, droop, rnd, n_side=18, lmax=0.8, lw=0.09, bare=0.22,
-          vfold=18.0, theta0=62.0, twist=0.0, rachis_w=0.05, segs=8, leaf_droop=0.28):
-    """Add one pinnate frond (curved rachis + leaflets on both sides) to Geo `g`.
-
-    base: attachment point, phi: azimuth (rad), elev: start angle above horizon (deg),
-    droop: how many degrees the rachis bends down toward the tip.
-    """
-    base = Vector(base)
-    yaw_drift = rnd.uniform(-0.18, 0.18)
-    pts = [base]
-    ds = L / segs
-    for i in range(segs):
-        t = (i + 0.5) / segs
-        a = math.radians(elev - droop * t ** 1.4)
-        ph = phi + yaw_drift * t
-        d = Vector((math.cos(ph) * math.cos(a), math.sin(ph) * math.cos(a), math.sin(a)))
-        pts.append(pts[-1] + d * ds)
-
-    def frame(t):
-        x = min(max(t, 0.0), 1.0) * segs
-        i = min(int(x), segs - 1)
-        f = x - i
-        p = pts[i].lerp(pts[i + 1], f)
-        T = (pts[i + 1] - pts[i]).normalized()
-        S = T.cross(UP)
-        if S.length < 1e-4:
-            S = Vector((math.sin(phi), -math.cos(phi), 0.0))
-        S.normalize()
-        N = S.cross(T).normalized()
-        if twist:
-            r = Matrix.Rotation(math.radians(twist) * t, 3, T)
-            S, N = r @ S, r @ N
-        return p, T, S, N
-
-    # rachis: a thin tapering ridge (Λ profile), 2 quads per segment
-    ring = []
-    for i in range(segs + 1):
-        t = i / segs
-        p, T, S, N = frame(t)
-        w = rachis_w * (0.22 + 0.78 * (1.0 - t) ** 2.2)
-        ring.append((g.vert(p + S * w - N * w * 0.3), g.vert(p + N * w * 0.7), g.vert(p - S * w - N * w * 0.3)))
-    for i in range(segs):
-        a, b = ring[i], ring[i + 1]
-        _, _, _, N = frame((i + 0.5) / segs)
-        g.face((a[0], b[0], b[1], a[1]), mi, ref=N + frame((i + 0.5) / segs)[2])
-        g.face((a[1], b[1], b[2], a[2]), mi, ref=N - frame((i + 0.5) / segs)[2])
-
-    # leaflets: 2-tri kites, alternating upper/lower insertion -> feathery volume
-    for k in range(n_side):
-        for side in (-1, 1):
-            t = bare + (1.0 - bare) * (k + 0.5 + (0.25 if side > 0 else -0.25)) / n_side
-            t = min(0.985, t + rnd.uniform(-0.3, 0.3) / n_side)
-            p, T, S, N = frame(t)
-            u = (t - bare) / (1.0 - bare)
-            prof = frond_profile(u)
-            ln = lmax * prof * rnd.uniform(0.85, 1.1)
-            th = math.radians(theta0 * (1.0 - 0.4 * u) + rnd.uniform(-7, 7))
-            v = math.radians(vfold + (10 if (k % 2) else -6) + rnd.uniform(-5, 5))
-            sd = S * side * math.cos(v) + N * math.sin(v)
-            D = (T * math.cos(th) + sd * math.sin(th)).normalized()
-            W = D.cross(N).normalized()
-            w = lw * (0.55 + 0.45 * prof)
-            A = p + S * side * rachis_w * (0.22 + 0.78 * (1.0 - t) ** 2.2) * 0.6
-            mid = A + D * ln * 0.42 - UP * ln * leaf_droop * 0.25
-            tip = A + D * ln - UP * ln * leaf_droop
-            ia, il, ir, it = g.vert(A), g.vert(mid + W * w * 0.5), g.vert(mid - W * w * 0.5), g.vert(tip)
-            ref = N + UP * 0.5
-            g.face((ia, ir, il), mi, ref=ref)
-            g.face((il, ir, it), mi, ref=ref)
-    return pts
-
-
-# ============================================================ palm trunk
-def trunk_radius(z, H, r):
-    """Oil-palm trunk: flared root bole, then near-cylindrical."""
-    flare = max(0.0, 1.0 - z / 0.45) ** 2 * 0.45 * r
-    return r * (1.0 + 0.06 * math.sin(z * 2.1)) + flare
-
-
-def palm_trunk(g, mi_core, mi_boot, H, r, rnd, sides=10, rings=6, boots=36, boot_z0=0.35, boot_z1=None,
-               boot_len=0.34, boot_w=0.22, boot_t=0.1, boot_el=(35, 60), cap=True):
-    """Tapered trunk core + spiral of cut frond bases ("boots")."""
-    rows = []
-    for j in range(rings + 1):
-        z = H * (j / rings) ** 1.15
-        rr = trunk_radius(z, H, r) * (0.92 if j == rings else 1.0)
-        row = []
-        for i in range(sides):
-            a = 2 * math.pi * i / sides + j * 0.3
-            jr = rr * rnd.uniform(0.95, 1.05)
-            row.append(g.vert((jr * math.cos(a), jr * math.sin(a), z)))
-        rows.append(row)
-    for j in range(rings):
-        for i in range(sides):
-            a, b = rows[j][i], rows[j][(i + 1) % sides]
-            c, d = rows[j + 1][(i + 1) % sides], rows[j + 1][i]
-            mid = (g.v[a] + g.v[c]) * 0.5
-            g.face((a, b, c, d), mi_core, ref=Vector((mid.x, mid.y, 0)), smooth=True)
-    if cap:
-        top = g.vert((0, 0, H + r * 0.6))
-        for i in range(sides):
-            a, b = rows[-1][i], rows[-1][(i + 1) % sides]
-            g.face((a, b, top), mi_core, ref=UP, smooth=True)
-
-    # boots: phyllotactic spiral of wedge-shaped cut petiole bases.  Each boot is a
-    # triangular prism (flat top, keel underneath) with a slanted cut end.
-    for k in range(boots):
-        f = k / max(1, boots - 1)
-        z = lerp(boot_z0, boot_z1 if boot_z1 is not None else H - 0.3, f ** 0.85)
-        a = k * GOLDEN + rnd.uniform(-0.15, 0.15)
-        O = Vector((math.cos(a), math.sin(a), 0.0))
-        Tg = Vector((-math.sin(a), math.cos(a), 0.0))
-        rr = trunk_radius(z, H, r)
-        C = O * (rr - 0.05) + UP * z
-        el = math.radians(rnd.uniform(*boot_el))
-        D = (O * math.cos(el) + UP * math.sin(el)).normalized()
-        Rn = D.cross(Tg).normalized()  # thickness axis, points up / inward
-        ln = boot_len * rnd.uniform(0.8, 1.15) * (0.7 + 0.3 * f)
-        wb = boot_w * rnd.uniform(0.85, 1.1)
-        we = wb * 0.55
-        tb, te = boot_t, boot_t * 0.7
-        E = C + D * ln
-        cut = ln * 0.3  # upper edge shorter than keel -> cut face looks up/out
-        base = [C + Tg * wb * 0.5 + Rn * tb * 0.4, C - Tg * wb * 0.5 + Rn * tb * 0.4, C - Rn * tb]
-        end = [E - D * cut + Tg * we * 0.5 + Rn * te * 0.4, E - D * cut - Tg * we * 0.5 + Rn * te * 0.4,
-               E - Rn * te]
-        bi = [g.vert(p) for p in base]
-        ei = [g.vert(p) for p in end]
-        ctr = (C + E) * 0.5 - Rn * tb * 0.2
-        for i in range(3):
-            q = (bi[i], bi[(i + 1) % 3], ei[(i + 1) % 3], ei[i])
-            fc = sum((g.v[x] for x in q), Vector()) / 4
-            g.face(q, mi_boot, ref=fc - ctr)
-        g.face(ei, mi_boot, ref=D + Rn)
-
-
-# ============================================================ fruit bunch (TBS)
-def fruit_bunch(name, center, axis, length, rnd, mats, parent=None, n_fruitlets=40, sides=5,
-                core_detail=1, fr_size=0.2, core_mat=0):
-    """Oil-palm fresh fruit bunch (TBS): an ovoid packed with oval fruitlets that
-    point outward and toward the apex like pine-cone scales; each fruitlet is
-    red-orange with a near-black tip.  mats = (M_Fruit, M_Dark).
-    Long axis along `axis`, apex (free end) at +axis.
-    """
-    g = Geo()
-    ax = Vector(axis).normalized()
-    rot = ax.to_track_quat("Z", "Y").to_matrix()
-    C = Vector(center)
-    rad = length * 0.33
-    half = length * 0.5
-
-    def surf(c):
-        egg = 1.0 - 0.14 * c.z
-        return Vector((c.x * rad * egg, c.y * rad * egg, c.z * half))
-
-    # dark core (visible in the gaps between fruitlets)
-    tmp = add_ico("_tmp_core", 1.0, subdiv=core_detail, smooth=False)
-    cv = [v.co.copy() for v in tmp.data.vertices]
-    cf = [list(p.vertices) for p in tmp.data.polygons]
-    me = tmp.data
-    bpy.data.objects.remove(tmp, do_unlink=True)
-    bpy.data.meshes.remove(me)
-    base = len(g.v)
-    for co in cv:
-        g.vert(C + rot @ (surf(co.normalized()) * 0.8))
-    for f in cf:
-        g.face([base + i for i in f], core_mat, smooth=True)
-
-    # fruitlets on a fibonacci spiral over the ovoid (skip the stalk end)
-    for k in range(n_fruitlets):
-        zc = lerp(0.95, -0.8, (k + 0.5) / n_fruitlets) + rnd.uniform(-0.03, 0.03)
-        ang = k * GOLDEN + rnd.uniform(-0.2, 0.2)
-        rc = math.sqrt(max(0.0, 1 - zc * zc))
-        c = Vector((rc * math.cos(ang), rc * math.sin(ang), zc))
-        p = surf(c) * 0.86
-        egg = 1.0 - 0.14 * c.z
-        n = Vector((c.x / (rad * egg), c.y / (rad * egg), c.z / half)).normalized()
-        apex = (Vector((0, 0, 1)) - n * n.z)
-        apex = apex.normalized() if apex.length > 1e-3 else Vector((1, 0, 0))
-        tilt = math.radians(rnd.uniform(38, 55) * (0.4 + 0.6 * rc))
-        D = (n * math.cos(tilt) + apex * math.sin(tilt)).normalized()
-        sz = length * fr_size * rnd.uniform(0.9, 1.1) * (0.7 + 0.3 * rc)
-        rw = sz * 0.5
-        U = D.cross(Vector((0.31, 0.83, 0.47))).normalized()
-        V = D.cross(U)
-        # dark cap grows toward the sunny apex of the bunch
-        cap = lerp(0.12, 0.22, (zc + 0.8) / 1.75) * rnd.uniform(0.8, 1.2)
-        dark = 1 if rnd.random() < lerp(0.2, 0.8, (zc + 0.8) / 1.75) else 0
-        inner = p - D * sz * 0.4
-        ringc = p + D * sz * (0.5 - cap)
-        outer = p + D * sz * 0.5
-        ii = g.vert(C + rot @ inner)
-        io = g.vert(C + rot @ outer)
-        ring = [g.vert(C + rot @ (ringc + (U * math.cos(q) + V * math.sin(q)) * rw * rnd.uniform(0.9, 1.1)))
-                for q in (2 * math.pi * s / sides + k for s in range(sides))]
-        Dw = rot @ D
-        for s in range(sides):
-            a, b = ring[s], ring[(s + 1) % sides]
-            mid = (g.v[a] + g.v[b]) * 0.5
-            g.face((a, b, ii), 0, ref=mid - g.v[ii] - Dw * 0.3, smooth=True)
-            g.face((a, b, io), dark, ref=mid - g.v[io] + Dw * 0.3, smooth=True)
-    return g.obj(name, list(mats), parent)
-
-
-# ============================================================ palms (sawit stages)
-SAWIT_STAGES = {
-    # name: trunk height, radius, frond count, frond length, leaflets per side, ...
-    "sawit_1": dict(young=0.95, H=0.22, r=0.15, n=10, L=1.55, n_side=12, lmax=0.66, lw=0.13, boots=8, boot_len=0.2,
-                    boot_w=0.15, boot_t=0.08, rachis_w=0.055, el=(85, 22), droop=(10, 48), spear=0.6,
-                    base_r=0.08, fruits=0),
-    "sawit_2": dict(young=0.92, H=0.85, r=0.23, n=14, L=2.35, n_side=15, lmax=0.85, lw=0.16, boots=20, boot_len=0.3,
-                    boot_w=0.2, boot_t=0.1, rachis_w=0.075, el=(84, 8), droop=(16, 44), spear=0.9,
-                    base_r=0.14, fruits=0),
-    "sawit_3": dict(H=2.85, r=0.27, n=22, L=2.8, n_side=15, lmax=1.0, lw=0.18, boots=42, boot_len=0.42,
-                    boot_w=0.24, boot_t=0.12, rachis_w=0.1, el=(80, -8), droop=(22, 50), spear=1.2,
-                    base_r=0.2, fruits=5),
-}
-
-
-def build_palm(name, P, seed=3):
-    rnd = random.Random(seed)
-    root = empty(name)
-    m_frond = frond_mat()
-    m_trunk = mat("M_Trunk", "#7a5f40")
-    m_dark = mat("M_Dark", "#3a2820")
-    m_fruit = mat("M_Fruit", "#e0521f")
-    g = Geo()
-    H, r = P["H"], P["r"]
-    palm_trunk(g, 2, 1, H, r, rnd, boots=P["boots"], boot_len=P["boot_len"], boot_w=P["boot_w"],
-               boot_t=P["boot_t"], boot_z0=min(0.35, H * 0.25), rings=max(2, int(H / 0.45)))
-    n = P["n"]
-    top = H + 0.05
-    first_frond_vert = len(g.v)
-    for i in range(n):
-        f = i / (n - 1)  # 0 youngest (upright) -> 1 oldest (drooping)
-        phi = i * GOLDEN + rnd.uniform(-0.1, 0.1)
-        el = lerp(P["el"][0], P["el"][1], f ** 0.85) + rnd.uniform(-4, 4)
-        dr = lerp(P["droop"][0], P["droop"][1], f) + rnd.uniform(-5, 5)
-        L = P["L"] * lerp(P.get("young", 0.72), 1.0, min(1.0, f * 2.2)) * rnd.uniform(0.94, 1.04)
-        zb = top - (0.1 + 0.55 * f) * min(1.0, P["H"] / 1.5 + 0.2)
-        rb = P["base_r"] * (0.4 + 0.6 * f)
-        base = (rb * math.cos(phi), rb * math.sin(phi), zb)
-        frond(g, 0, base, phi, el, L, dr, rnd, n_side=P["n_side"], lmax=P["lmax"], lw=P["lw"],
-              rachis_w=P["rachis_w"], twist=rnd.uniform(-12, 12) + 18 * f, segs=P.get("segs", 6),
-              vfold=lerp(34, 12, min(1.0, f * 1.6)))
-    # spear(s): unopened young leaves pointing straight up out of the crown heart
-    for si, (sp, lean) in enumerate(((P["spear"], 0.06), (P["spear"] * 0.7, -0.1))):
-        spr = P["rachis_w"] * 0.8
-        la = rnd.uniform(0, 6.28)
-        sb = [g.vert((spr * math.cos(a), spr * math.sin(a), top - 0.15)) for a in
-              (la, la + 1.57, la + 3.14, la + 4.71)]
-        st = g.vert((lean * sp * math.cos(la), lean * sp * math.sin(la), top + sp))
-        for i in range(4):
-            g.face((sb[i], sb[(i + 1) % 4], st), 0,
-                   ref=(g.v[sb[i]] + g.v[sb[(i + 1) % 4]]) * 0.5 - Vector((0, 0, top)))
-    for v in g.v[first_frond_vert:]:  # old fronds of young palms rest on the ground instead of piercing it
-        if v.z < 0.02:
-            v.z = 0.02 + 0.01 * (v.x * 7 % 1)
-    body = g.obj(name + "_body", [m_frond, m_trunk, m_dark], root)
-    if P["fruits"]:
-        fr = empty("Fruits", parent=root)
-        for k in range(P["fruits"]):
-            a = (k + 0.5) * (2 * math.pi / P["fruits"]) + rnd.uniform(-0.25, 0.25)
-            z = H - 0.38 + rnd.uniform(-0.08, 0.08)
-            rr = trunk_radius(z, H, r) + 0.16
-            c = (rr * math.cos(a), rr * math.sin(a), z)
-            axis = Vector((math.cos(a) * 0.6, math.sin(a) * 0.6, 1.0))
-            fruit_bunch(f"Fruit_{k}", c, axis, 0.48 * rnd.uniform(0.94, 1.05), rnd, (m_fruit, m_dark), fr,
-                        n_fruitlets=15, sides=4, core_detail=1, fr_size=0.28)
-    return root
-
-
-def build_sawit_0():
-    rnd = random.Random(11)
-    root = empty("sawit_0")
-    m_frond = frond_mat()
-    m_bag = mat("M_Polybag", "#2e2a28", roughness=0.6)
-    m_soil = mat("M_Soil", "#5a4030")
-    m_stem = mat("M_Trunk", "#7a6a3a")
-    g = Geo()
-    # polybag: bulgy wrinkled cylinder with a folded rim
-    sides, rings, Hb, R = 14, 5, 0.35, 0.17
-    rows = []
-    for j in range(rings + 1):
-        t = j / rings
-        z = Hb * t
-        rr = R * (0.92 + 0.14 * math.sin(math.pi * min(1.0, t * 1.2)))
-        if j == rings:
-            rr = R * 0.98
-        row = []
-        for i in range(sides):
-            a = 2 * math.pi * i / sides
-            wr = rr * (1.0 + 0.05 * math.sin(a * 5 + j * 1.7) + rnd.uniform(-0.02, 0.02))
-            row.append(g.vert((wr * math.cos(a), wr * math.sin(a), z + (rnd.uniform(-0.012, 0.012) if 0 < j else 0))))
-        rows.append(row)
-    for j in range(rings):
-        for i in range(sides):
-            a, b = rows[j][i], rows[j][(i + 1) % sides]
-            c, d = rows[j + 1][(i + 1) % sides], rows[j + 1][i]
-            mid = (g.v[a] + g.v[c]) * 0.5
-            g.face((a, b, c, d), 1, ref=Vector((mid.x, mid.y, 0)), smooth=True)
-    # rim folds inward, then soil surface slightly domed
-    soil_ring = []
-    for i in range(sides):
-        a = 2 * math.pi * i / sides
-        soil_ring.append(g.vert((R * 0.9 * math.cos(a), R * 0.9 * math.sin(a), Hb - 0.035)))
-    for i in range(sides):
-        g.face((rows[-1][i], rows[-1][(i + 1) % sides], soil_ring[(i + 1) % sides], soil_ring[i]), 1, ref=UP,
-               smooth=True)
-    sc = g.vert((0, 0, Hb - 0.015))
-    for i in range(sides):
-        g.face((soil_ring[i], soil_ring[(i + 1) % sides], sc), 2, ref=UP, smooth=True)
-    # short fat seedling base
-    stem = []
-    for j, (z, rr) in enumerate(((Hb - 0.03, 0.035), (Hb + 0.07, 0.028))):
-        stem.append([g.vert((rr * math.cos(a), rr * math.sin(a), z)) for a in (0, 2.09, 4.19)])
-    for i in range(3):
-        g.face((stem[0][i], stem[0][(i + 1) % 3], stem[1][(i + 1) % 3], stem[1][i]), 3,
-               ref=Vector((math.cos(i * 2.09 + 1), math.sin(i * 2.09 + 1), 0)))
-    g.face(stem[1], 3, ref=UP)
-    # 5 stiff young fronds fanning out evenly
-    for i in range(5):
-        phi = i * 2 * math.pi / 5 + 0.5 + rnd.uniform(-0.2, 0.2)
-        el = lerp(80, 50, (i % 3) / 2) + rnd.uniform(-4, 4)
-        base = (0.012 * math.cos(phi), 0.012 * math.sin(phi), Hb + 0.06)
-        frond(g, 0, base, phi, el, rnd.uniform(0.34, 0.4), rnd.uniform(18, 30), rnd, n_side=8, lmax=0.17,
-              lw=0.055, bare=0.18, rachis_w=0.014, vfold=30, theta0=55, segs=5, leaf_droop=0.12)
-    g.obj("sawit_0_body", [m_frond, m_bag, m_soil, m_stem], root)
-    return root
-
-
-def build_tbs():
-    rnd = random.Random(21)
-    root = empty("tbs")
-    m_fruit = mat("M_Fruit", "#e0521f")
-    m_dark = mat("M_Dark", "#3a2820")
-    m_stalk = mat("M_Stalk", "#b59a5c")
-    L = 0.45
-    axis = Vector((1.0, 0.15, 0.12))
-    body = fruit_bunch("tbs_bunch", (0, 0, 0), axis, L, rnd, (m_fruit, m_dark), root, n_fruitlets=46, sides=5,
-                       core_detail=1, fr_size=0.22)
-    # stalk stub sticking out of the top end
-    ax = axis.normalized()
-    st = add_cyl("tbs_stalk", 0.045, 0.16, material=m_stalk, verts=6, radius2=0.035)
-    st.rotation_euler = ax.to_track_quat("Z", "Y").to_euler()
-    st.location = -ax * (L * 0.5 + 0.02)
-    parts = [body, st]
-    # a couple of loose fruitlets (brondolan) on the ground
-    for k, (x, y) in enumerate(((0.05, -0.27), (-0.14, -0.24), (0.22, 0.2))):
-        fl = add_ico(f"tbs_loose{k}", 0.035, subdiv=1, scale=(1.0, 0.85, 0.8),
-                     material=m_fruit if k != 1 else m_dark)
-        fl.location = (x, y, 0.028)
-        parts.append(fl)
-    o = join(parts, "tbs_mesh")
-    bake(o)
-    ground(o)
-    o.parent = root
-    return root
-
-
-# ============================================================ generic organic helpers
-def bake(o):
-    """Apply the object's transform into its mesh (origin -> world origin)."""
-    bpy.context.view_layer.update()
-    o.data.transform(o.matrix_world)
-    o.matrix_world = Matrix.Identity(4)
-    o.data.update()
-    return o
-
-
-def blob(name, radius, loc, scale, material, seed, subdiv=2, amp=0.2, freq=1.4, amp2=0.0, freq2=3.0):
-    """Lumpy smooth ellipsoid (bush clumps, canopy blobs, boulders)."""
-    o = add_ico(name, 1.0, subdiv=subdiv, material=material)
-    off = Vector((seed * 1.71, seed * 2.93, seed * 0.77))
-    off2 = Vector((seed * 0.37, seed * 1.13, seed * 2.21))
-    for v in o.data.vertices:
-        n = v.co.normalized()
-        d = 1.0 + amp * noise.noise(n * freq + off) + amp2 * noise.noise(n * freq2 + off2)
-        v.co = Vector((n.x * scale[0], n.y * scale[1], n.z * scale[2])) * radius * d + Vector(loc)
-    o.data.update()
-    shade_smooth(o)
-    return o
-
-
-def two_tone(o, m_top, m_under, thr=-0.3, m_lit=None, lit_thr=0.75):
-    """Assign an underside (and optional lit-top) material by face normal."""
-    me = o.data
-    me.materials.clear()
-    me.materials.append(m_top)
-    me.materials.append(m_under)
-    if m_lit is not None:
-        me.materials.append(m_lit)
-    for pgn in me.polygons:
-        if pgn.normal.z < thr:
-            pgn.material_index = 1
-        elif m_lit is not None and pgn.normal.z > lit_thr:
-            pgn.material_index = 2
-        else:
-            pgn.material_index = 0
-    return o
-
-
-def clamp_floor(o, z0=0.0):
-    for v in o.data.vertices:
-        if v.co.z < z0:
-            v.co.z = z0
-    o.data.update()
-    return o
-
-
-def tube(g, path, radii, sides, mi, rnd=None, jitter=0.0, cap_top=False, smooth=True, twist=0.0):
-    """Generalised cylinder along a list of points."""
-    rows = []
-    n = len(path)
-    for j, (p, r) in enumerate(zip(path, radii)):
-        p = Vector(p)
-        T = (Vector(path[min(j + 1, n - 1)]) - Vector(path[max(j - 1, 0)])).normalized()
-        S = T.cross(Vector((0.0, 1.0, 0.0)) if abs(T.y) < 0.9 else Vector((1.0, 0.0, 0.0))).normalized()
-        B = T.cross(S)
-        row = []
-        for i in range(sides):
-            a = 2 * math.pi * i / sides + twist * j
-            rr = r * (1.0 + (rnd.uniform(-jitter, jitter) if rnd else 0.0))
-            row.append(g.vert(p + (S * math.cos(a) + B * math.sin(a)) * rr))
-        rows.append((row, p))
-    for j in range(n - 1):
-        (ra, pa), (rb, pb) = rows[j], rows[j + 1]
-        for i in range(sides):
-            q = (ra[i], ra[(i + 1) % sides], rb[(i + 1) % sides], rb[i])
-            fc = sum((g.v[x] for x in q), Vector()) / 4
-            g.face(q, mi if not callable(mi) else mi(j), ref=fc - (pa + pb) * 0.5, smooth=smooth)
-    if cap_top:
-        row, p = rows[-1]
-        tip = g.vert(p + (Vector(path[-1]) - Vector(path[-2])).normalized() * radii[-1] * 0.8)
-        for i in range(sides):
-            g.face((row[i], row[(i + 1) % sides], tip), mi if not callable(mi) else mi(n - 1),
-                   ref=g.v[row[i]] - p, smooth=smooth)
-    return rows
-
-
-def blade(g, base, az, height, width, lean, mi, segs=2, curl=0.0, ref=None):
-    """Grass blade / thin leaf: tapered strip that bends outward (segs quads + tip tri)."""
-    base = Vector(base)
-    d = Vector((math.cos(az), math.sin(az), 0.0))
-    side = Vector((-math.sin(az), math.cos(az), 0.0))
-    prev = None
-    for k in range(segs + 1):
-        t = k / (segs + 1)
-        bend = lean * t * t
-        p = base + d * bend * height + UP * height * t * (1.0 - 0.35 * lean * t) + side * curl * t * t * height
-        w = width * (1.0 - t) * 0.5
-        cur = (g.vert(p - side * w), g.vert(p + side * w))
-        if prev:
-            g.face((prev[0], prev[1], cur[1], cur[0]), mi, ref=ref if ref else (d * 0.3 + UP * -0.2 - d))
-        prev = cur
-    tipp = base + d * lean * height + UP * height * (1.0 - 0.35 * lean) + side * curl * height
-    tip = g.vert(tipp)
-    g.face((prev[0], prev[1], tip), mi, ref=ref if ref else (d * 0.3 + UP * -0.2 - d))
-
-
-def leaf_card(g, base, direction, length, width, mi, droop=0.3, fold=0.3):
-    """Small folded leaf (4 tris) pointing along `direction`."""
-    D = Vector(direction).normalized()
-    Sd = D.cross(UP)
-    if Sd.length < 1e-3:
-        Sd = Vector((1, 0, 0))
-    Sd.normalize()
-    N = Sd.cross(D).normalized()
-    b = Vector(base)
-    mid = b + D * length * 0.5 + N * width * fold * 0.5 - UP * length * droop * 0.3
-    tip = b + D * length - UP * length * droop
-    ib, il, ir, it, im = (g.vert(b), g.vert(mid + Sd * width * 0.5 - N * width * fold),
-                          g.vert(mid - Sd * width * 0.5 - N * width * fold), g.vert(tip), g.vert(mid))
-    ref = N if N.z >= 0 else -N
-    for f in ((ib, il, im), (ib, im, ir), (im, il, it), (im, it, ir)):
-        g.face(f, mi, ref=ref)
-
-
-# ============================================================ bushes (semak belukar)
-def kite_leaf(g, base, direction, length, width, mi, droop=0.25, fold=0.35):
-    """Cheap folded leaf: 2 triangles hinged along the midrib."""
-    D = Vector(direction).normalized()
-    Sd = D.cross(UP)
-    if Sd.length < 1e-3:
-        Sd = Vector((1, 0, 0))
-    Sd.normalize()
-    N = Sd.cross(D).normalized()
-    b = Vector(base)
-    mid = b + D * length * 0.45 - UP * length * droop * 0.25
-    tip = b + D * length - UP * length * droop
-    il = g.vert(mid + Sd * width * 0.5 - N * width * fold)
-    ir = g.vert(mid - Sd * width * 0.5 - N * width * fold)
-    ib, it = g.vert(b), g.vert(tip)
-    ref = N if N.z >= 0 else -N
-    g.face((ib, il, it), mi, ref=ref)
-    g.face((ib, it, ir), mi, ref=ref)
-
-
-def build_bush(name, seed, blobs, ferns, grass, twigs, leaves=40):
-    """Wild scrub (semak belukar): lumpy mixed-green core bristling with leaves, fern fronds,
-    green + dry grass blades and dead sticks -> clearly untended vs. cultivated plants."""
-    rnd = random.Random(seed)
-    root = empty(name)
-    m = [mat("M_Leaf", "#55833a"), mat("M_LeafDark", "#3a6030"), mat("M_LeafLight", "#7ea544"),
-         mat("M_Dry", "#a08a58")]
-    for x in m:
-        leafy(x)
-    parts = []
-    for i, (x, y, z, r, sx, sy, sz, mi) in enumerate(blobs):
-        o = blob(f"{name}_b{i}", r * 0.92, (x, y, z), (sx, sy, sz), m[0 if mi == 2 else mi], seed * 10 + i,
-                 subdiv=2, amp=0.22,
-                 freq=1.5)
-        clamp_floor(o, 0.0)
-        parts.append(o)
-    g = Geo()
-    # leaves bristling out of the clumps in every direction -> ragged silhouette
-    placed = 0
-    tries = 0
-    while placed < leaves and tries < leaves * 4:
-        tries += 1
-        bx, by, bz, br, sx, sy, sz, bmi = blobs[rnd.randrange(len(blobs))]
-        a = rnd.uniform(0, 2 * math.pi)
-        el = rnd.uniform(-0.2, 1.2)
-        dirv = Vector((math.cos(a) * math.cos(el), math.sin(a) * math.cos(el), math.sin(el)))
-        p = Vector((bx, by, bz)) + Vector((dirv.x * br * sx, dirv.y * br * sy, dirv.z * br * sz)) * 0.75
-        if p.z < 0.12:
-            continue
-        mi = (2, 0, 2, 1, 0)[placed % 5] if bmi != 2 else (0, 2, 1)[placed % 3]
-        kite_leaf(g, p, dirv + UP * 0.35 + Vector((rnd.uniform(-.3, .3), rnd.uniform(-.3, .3), 0)),
-                  rnd.uniform(0.28, 0.44), rnd.uniform(0.14, 0.2), mi, droop=rnd.uniform(0.15, 0.4))
-        placed += 1
-    for (x, y, z, az, el, L) in ferns:  # pakis fronds arching out of the scrub
-        frond(g, 2, (x, y, z), az, el, L, 55, rnd, n_side=7, lmax=0.24, lw=0.07, bare=0.1, rachis_w=0.014,
-              vfold=15, theta0=70, segs=4, leaf_droop=0.15)
-    for (x, y, n, h) in grass:  # alang-alang: green and dry blades
-        for k in range(n):
-            blade(g, (x + rnd.uniform(-0.1, 0.1), y + rnd.uniform(-0.1, 0.1), 0.0), rnd.uniform(0, 6.28),
-                  h * rnd.uniform(0.7, 1.1), 0.055, rnd.uniform(0.3, 0.9), 3 if k % 3 == 0 else 2, segs=1)
-    for (x, y, z, az, el, L) in twigs:  # dead sticks poking out
-        e = math.radians(el)
-        dvec = Vector((math.cos(az) * math.cos(e), math.sin(az) * math.cos(e), math.sin(e)))
-        p0 = Vector((x, y, z))
-        p1 = p0 + dvec * L * 0.6
-        p2 = p1 + (dvec + Vector((rnd.uniform(-0.4, 0.4), rnd.uniform(-0.4, 0.4), 0.2))).normalized() * L * 0.4
-        tube(g, [p0, p1, p2], [0.03, 0.022, 0.008], 4, 3, smooth=False)
-        fork = p1 + (dvec + Vector((0.5, -0.3, 0.4))).normalized() * L * 0.25
-        tube(g, [p1, fork], [0.015, 0.006], 3, 3, smooth=False)
-    parts.append(g.obj(name + "_bits", m, None))
-    o = join(parts, name + "_mesh")
-    bake(o)
-    clamp_floor(o, 0.0)
-    o.parent = root
-    return root
-
-
-def build_bush_a():
-    # tall, lumpy thicket (~1.3 m) with fern fronds, tall grass and a dead stick
-    blobs = [(0.0, 0.0, 0.5, 0.5, 1.0, 0.9, 1.05, 0), (0.45, 0.2, 0.32, 0.36, 1.0, 1.0, 0.9, 1),
-             (-0.42, -0.1, 0.3, 0.35, 1.1, 0.9, 0.85, 2), (0.08, -0.25, 0.9, 0.32, 1.0, 1.0, 1.05, 2)]
-    ferns = [(0.4, -0.3, 0.3, -0.9, 40, 0.8), (-0.5, 0.2, 0.3, 2.6, 35, 0.75)]
-    grass = [(0.55, -0.4, 5, 1.0), (-0.45, -0.45, 4, 0.8), (0.1, 0.5, 3, 1.05)]
-    twigs = [(0.05, 0.05, 0.6, 0.6, 62, 0.8)]
-    return build_bush("bush_a", 31, blobs, ferns, grass, twigs, leaves=62)
-
-
-def build_bush_b():
-    # low, sprawling scrub (~1.0 m) with tall alang-alang and a sideways dead branch
-    blobs = [(-0.3, 0.0, 0.4, 0.46, 1.15, 1.0, 1.0, 0), (0.38, 0.12, 0.34, 0.42, 1.1, 1.0, 0.95, 1),
-             (0.05, -0.28, 0.28, 0.34, 1.2, 1.0, 0.85, 2), (-0.75, 0.25, 0.22, 0.3, 1.0, 1.0, 0.9, 1)]
-    ferns = [(0.62, -0.1, 0.25, -0.2, 30, 0.65), (-0.3, -0.38, 0.3, 4.4, 40, 0.7)]
-    grass = [(0.8, 0.3, 6, 1.1), (-0.1, 0.45, 5, 0.95), (-0.9, -0.25, 4, 0.8)]
-    twigs = [(-0.2, 0.1, 0.45, 2.9, 25, 0.85)]
-    return build_bush("bush_b", 47, blobs, ferns, grass, twigs, leaves=60)
-
-
-# ============================================================ stump / cleared debris
-def build_stump():
-    rnd = random.Random(5)
-    root = empty("stump")
-    m_bark = mat("M_Bark", "#6e5236")
-    m_wood = mat("M_Wood", "#d9b27a")
-    m_ring = mat("M_WoodDark", "#b8864f")
-    m_dry = mat("M_DryLeaf", "#b98a45")
-    leafy(m_dry)
-    g = Geo()
-    sides = 11
-    R = 0.16
-    prof = [(0.0, 1.35), (0.06, 1.12), (0.15, 1.0), (0.25, 0.97)]
-    rows = []
-    for z, k in prof:
-        row = []
-        for i in range(sides):
-            a = 2 * math.pi * i / sides
-            rr = R * k * rnd.uniform(0.94, 1.06)
-            row.append(g.vert((rr * math.cos(a), rr * math.sin(a), z)))
-        rows.append(row)
-    # slanted saw cut on top
-    top = []
-    for i in range(sides):
-        v0 = g.v[rows[-1][i]]
-        top.append(g.vert((v0.x, v0.y, 0.29 + 0.05 * v0.x / R + rnd.uniform(-0.004, 0.004))))
-    rows.append(top)
-    for j in range(len(rows) - 1):
-        for i in range(sides):
-            q = (rows[j][i], rows[j][(i + 1) % sides], rows[j + 1][(i + 1) % sides], rows[j + 1][i])
-            fc = sum((g.v[x] for x in q), Vector()) / 4
-            g.face(q, 0, ref=Vector((fc.x, fc.y, 0)), smooth=True)
-    # cut face: bark rim -> light wood -> growth ring -> light heart
-    def ring_at(scale, dz=0.0):
-        out = []
-        for i in range(sides):
-            v0 = g.v[top[i]]
-            out.append(g.vert((v0.x * scale, v0.y * scale, v0.z + dz)))
-        return out
-    r1, r2, r3 = ring_at(0.84, 0.004), ring_at(0.55, 0.006), ring_at(0.45, 0.006)
-    for ra, rb, mi in ((top, r1, 0), (r1, r2, 1), (r2, r3, 2)):
-        for i in range(sides):
-            g.face((ra[i], ra[(i + 1) % sides], rb[(i + 1) % sides], rb[i]), mi, ref=UP)
-    c = g.vert((0, 0, 0.295 + 0.006))
-    for i in range(sides):
-        g.face((r3[i], r3[(i + 1) % sides], c), 1, ref=UP)
-    # roots spreading over the ground
-    for k in range(4):
-        a = k * 1.57 + rnd.uniform(-0.3, 0.3)
-        d = Vector((math.cos(a), math.sin(a), 0))
-        p0 = d * R * 0.55 + UP * 0.15
-        p1 = d * R * 1.3 + UP * 0.05
-        p2 = d * R * 1.85 + UP * 0.008
-        tube(g, [p0, p1, p2], [0.075, 0.055, 0.036], 6, 0, smooth=True, cap_top=True)
-    # dry leaves + a wood chip
-    for k, (x, y, rz, s) in enumerate(((0.3, -0.12, 0.4, 1.0), (-0.26, -0.22, 2.2, 0.85), (0.02, 0.05, 1.2, 0.7))):
-        z = 0.02 if k < 2 else 0.31
-        dvec = Vector((math.cos(rz), math.sin(rz), 0.05))
-        leaf_card(g, (x, y, z), dvec, 0.2 * s, 0.1 * s, 3, droop=-0.1, fold=0.25)
-    o = g.obj("stump_mesh", [m_bark, m_wood, m_ring, m_dry], root)
-    chip = add_box("stump_chip", (0.08, 0.05, 0.025), loc=(-0.22, 0.2, 0.012), rot=(0, 0, 0.6), material=m_wood,
-                   bevel=0.008)
-    chip2 = add_box("stump_chip2", (0.06, 0.04, 0.02), loc=(0.18, 0.26, 0.01), rot=(0, 0, 2.0), material=m_wood,
-                    bevel=0.006)
-    o = join([o, chip, chip2], "stump_mesh")
-    bake(o)
-    clamp_floor(o, 0.0)
-    o.parent = root
-    return root
-
-
-# ============================================================ big broadleaf shade tree
-def build_tree_big():
-    rnd = random.Random(9)
-    root = empty("tree_big")
-    m_bark = mat("M_Bark", "#7a5c3e")
-    m_fol = mat("M_Foliage", "#5a8c38")
-    m_dark = mat("M_FoliageDark", "#3d6630")
-    m_lit = mat("M_FoliageLight", "#80ab47")
-    g = Geo()
-    # trunk: flared base, slight S-bend, splits into 3 limbs
-    trunk = [(0, 0, 0), (0.05, 0.0, 0.5), (0.0, 0.05, 1.3), (-0.1, 0.05, 2.1), (-0.05, 0.0, 2.6)]
-    tube(g, trunk, [0.46, 0.33, 0.28, 0.26, 0.24], 9, 0, rnd=rnd, jitter=0.05)
-    limbs = [((-0.05, 0, 2.4), (0.8, 0.2, 3.3), (1.5, 0.3, 3.9)),
-             ((-0.05, 0, 2.4), (-0.8, 0.4, 3.4), (-1.4, 0.6, 3.9)),
-             ((-0.05, 0, 2.4), (0.1, -0.6, 3.5), (0.2, -1.1, 4.0)),
-             ((-0.05, 0, 2.5), (-0.2, 0.3, 3.6), (-0.3, 0.9, 4.4))]
-    for lp in limbs:
-        tube(g, lp, [0.19, 0.13, 0.07], 6, 0, rnd=rnd, jitter=0.05)
-    # root flares
-    for k in range(5):
-        a = k * 2 * math.pi / 5 + rnd.uniform(-0.3, 0.3)
-        d = Vector((math.cos(a), math.sin(a), 0))
-        tube(g, [d * 0.25 + UP * 0.35, d * 0.55 + UP * 0.1, d * 0.8 + UP * 0.0], [0.13, 0.09, 0.03], 5, 0,
-             smooth=True)
-    parts = [g.obj("tree_trunk", [m_bark], None)]
-    # canopy: clumped rounded blobs, lit tops / dark undersides
-    canopy = [(0.1, 0.0, 4.5, 1.6, 1.15, 1.1, 0.78, 0), (1.7, 0.35, 3.95, 1.2, 1.0, 1.0, 0.8, 0),
-              (-1.6, 0.7, 4.0, 1.18, 1.0, 1.0, 0.8, 0), (0.3, -1.5, 3.9, 1.12, 1.0, 1.0, 0.8, 0),
-              (-0.45, 1.6, 4.45, 1.02, 1.0, 1.0, 0.82, 1), (0.4, 0.15, 5.3, 1.05, 1.0, 1.0, 0.78, 1)]
-    for i, (x, y, z, r, sx, sy, sz, lit) in enumerate(canopy):
-        o = blob(f"tree_can{i}", r, (x, y, z), (sx, sy, sz), m_fol, 90 + i, subdiv=3, amp=0.14, freq=1.6,
-                 amp2=0.05, freq2=4.0)
-        two_tone(o, m_lit if lit else m_fol, m_dark, thr=-0.45)
-        parts.append(o)
-    o = join(parts, "tree_big_mesh")
-    bake(o)
-    o.parent = root
-    return root
-
-
-# ============================================================ coconut palm (kelapa)
-def build_coconut():
-    rnd = random.Random(17)
-    root = empty("coconut")
-    m_frond = mat("M_Frond", "#7ea63c")
-    leafy(m_frond)
-    m_trunk = mat("M_Trunk", "#a08e70")
-    m_ring = mat("M_TrunkRing", "#6f604b")
-    m_nut = mat("M_Coconut", "#8fa232")
-    g = Geo()
-    H, lean = 5.7, 1.35
-    bands = 20
-    path, radii = [], []
-    for j in range(bands):
-        for k in range(2):  # ridge row + plain row -> dark ring band between them
-            t = (j + (0.25 if k else 0.0)) / bands
-            x = lean * (1 - (1 - t) ** 2)
-            z = H * t
-            r = lerp(0.2, 0.13, t) + 0.1 * max(0.0, 1 - t * 8) ** 2
-            path.append((x, 0.1 * math.sin(t * 3), z))
-            radii.append(r * (1.08 if k == 0 else 1.0))
-    path.append((lean, 0.1 * math.sin(3), H))
-    radii.append(0.12)
-    # faces from ridge row (k=0) to plain row (k=1) are the dark ring band
-    tube(g, path, radii, 8, lambda j: 1 if j % 2 == 0 else 0, smooth=True)
-    top = Vector(path[-1])
-    # crown heart
-    heart = [top + Vector((0.13 * math.cos(a), 0.13 * math.sin(a), -0.05)) for a in (0, 1.57, 3.14, 4.71)]
-    hi = [g.vert(p) for p in heart]
-    ht = g.vert(top + UP * 0.35)
-    for i in range(4):
-        g.face((hi[i], hi[(i + 1) % 4], ht), 1, ref=(g.v[hi[i]] + g.v[hi[(i + 1) % 4]]) * 0.5 - top)
-    # fronds: long, strongly arching, leaflets hanging down (inverted V) -> droopy mop
-    n = 14
-    for i in range(n):
-        f = i / (n - 1)
-        phi = i * GOLDEN + rnd.uniform(-0.1, 0.1)
-        el = lerp(62, -5, f) + rnd.uniform(-5, 5)
-        dr = lerp(55, 105, f) + rnd.uniform(-8, 8)
-        L = 3.0 * lerp(0.8, 1.0, min(1.0, f * 2)) * rnd.uniform(0.93, 1.05)
-        base = top + Vector((0.08 * math.cos(phi), 0.08 * math.sin(phi), 0.05 - 0.15 * f))
-        frond(g, 2, base, phi, el, L, dr, rnd, n_side=18, lmax=1.0, lw=0.09, bare=0.12, vfold=-35,
-              theta0=72, rachis_w=0.05, segs=6, leaf_droop=0.75, twist=rnd.uniform(-10, 10))
-    body = g.obj("coconut_body", [m_trunk, m_ring, m_frond, m_nut], None)
-    parts = [body]
-    # green coconuts clustered under the crown
-    for k in range(6):
-        a = k * 1.1 + rnd.uniform(-0.2, 0.2)
-        rr = 0.24 + 0.06 * (k % 2)
-        c = top + Vector((rr * math.cos(a), rr * math.sin(a), -0.32 - 0.1 * (k % 3)))
-        nut = add_ico(f"nut{k}", 0.16, loc=c, subdiv=2, scale=(1.0, 1.0, 1.12), material=m_nut)
-        parts.append(nut)
-    o = join(parts, "coconut_mesh")
-    bake(o)
-    o.parent = root
-    return root
-
-
-# ============================================================ banana plant (pisang)
-def banana_leaf(g, base, az, el, L, W, rnd, mi, torn=False, segs=6, droop=70):
-    """Big paddle leaf: petiole + oblong blade with raised midrib, edges curling down.
-    Torn leaves are split into ragged strips along the veins."""
-    base = Vector(base)
-    pet = 0.25
-    pts = [base]
-    for i in range(segs + 1):
-        t = i / segs
-        a = math.radians(el - droop * t ** 1.3)
-        d = Vector((math.cos(az) * math.cos(a), math.sin(az) * math.cos(a), math.sin(a)))
-        pts.append(pts[-1] + d * ((pet if i == 0 else L / segs)))
-    tube(g, [pts[0], pts[1]], [0.03, 0.022], 4, mi, smooth=True)
-    stations = pts[1:]
-    mids, lefts, rights, frames = [], [], [], []
-    for i, p in enumerate(stations):
-        t = i / segs
-        T = (stations[min(i + 1, segs)] - stations[max(i - 1, 0)]).normalized()
-        S = T.cross(UP)
-        if S.length < 1e-3:
-            S = Vector((-math.sin(az), math.cos(az), 0))
-        S.normalize()
-        N = S.cross(T).normalized()
-        w = W * 0.5 * (min(1.0, t * 4.0 + 0.12) ** 0.6) * (max(0.0, 1.0 - t ** 5)) ** 0.5
-        drop = w * 0.4
-        mids.append(g.vert(p + N * 0.02))
-        lefts.append(p + S * w - N * drop)
-        rights.append(p - S * w - N * drop)
-        frames.append((S, N))
-    li = [g.vert(x) for x in lefts]
-    ri = [g.vert(x) for x in rights]
-    for i in range(segs):
-        S, N = frames[i]
-        for edge, idx in ((lefts, li), (rights, ri)):
-            if torn and 0 < i < segs - 1 and rnd.random() < 0.8:
-                # ragged strip: outer edge sags and a gap opens toward the next strip
-                ea, eb = edge[i], edge[i + 1]
-                sag = -N * rnd.uniform(0.06, 0.16) - UP * rnd.uniform(0.02, 0.08)
-                ia = g.vert(ea + sag * 0.6 + (eb - ea) * 0.1)
-                ib = g.vert(eb + sag - (eb - ea) * 0.14)
-            else:
-                ia, ib = idx[i], idx[i + 1]
-            g.face((mids[i], ia, ib, mids[i + 1]), mi, ref=N, smooth=True)
-    return pts
-
-
-def build_banana():
-    rnd = random.Random(23)
-    root = empty("banana")
-    m_leaf = mat("M_Frond", "#6fa640")
-    leafy(m_leaf)
-    m_stem = mat("M_Stem", "#9aa655")
-    m_dry = mat("M_DryLeaf", "#a3814a")
-    leafy(m_dry)
-    m_fruit = mat("M_Banana", "#a6bb3c")
-    g = Geo()
-    # pseudostem (main) + a small sucker
-    main_top = Vector((0.06, 0.02, 1.35))
-    tube(g, [(0, 0, 0), (0.02, 0.0, 0.5), (0.05, 0.02, 1.0), tuple(main_top)], [0.14, 0.12, 0.1, 0.085], 8, 1,
-         rnd=rnd, jitter=0.04, cap_top=True)
-    suck_top = Vector((0.42, -0.25, 0.55))
-    tube(g, [(0.4, -0.25, 0), (0.41, -0.25, 0.3), tuple(suck_top)], [0.07, 0.055, 0.045], 6, 1, cap_top=True)
-    # leaves on the main stem
-    leaves = 7
-    for i in range(leaves):
-        f = i / (leaves - 1)
-        az = i * GOLDEN + 0.3
-        el = lerp(78, 30, f) + rnd.uniform(-4, 4)
-        L = lerp(1.25, 1.55, min(1.0, f * 2)) * rnd.uniform(0.92, 1.05)
-        banana_leaf(g, main_top - UP * 0.1 * f, az, el, L, lerp(0.42, 0.5, f), rnd, 0,
-                    torn=(i in (2, 4, 5)), droop=lerp(35, 80, f))
-    for i in range(3):
-        az = i * 2.2 - 0.4
-        banana_leaf(g, suck_top, az, lerp(75, 45, i / 2), 0.6, 0.24, rnd, 0, droop=40, segs=4)
-    # old dead leaves hanging down against the pseudostem
-    for k, az in enumerate((2.5, 4.5)):
-        banana_leaf(g, main_top - UP * (0.12 + 0.15 * k), az, -62, 0.8 - 0.15 * k, 0.34, rnd, 2, torn=True,
-                    droop=18, segs=4)
-    # hanging bunch: stalk arching out toward the camera side, hands of green bananas
-    stalk = [main_top - UP * 0.05, main_top + Vector((0.05, -0.28, 0.08)), main_top + Vector((0.06, -0.45, -0.25)),
-             main_top + Vector((0.06, -0.47, -0.72))]
-    tube(g, stalk, [0.035, 0.032, 0.028, 0.02], 5, 1)
-    for h in range(3):
-        cz = stalk[2].z - 0.06 - h * 0.14
-        cc = Vector((stalk[2].x, stalk[2].y, cz))
-        for k in range(6):
-            a = k * 1.047 + h * 0.5
-            d = Vector((math.cos(a), math.sin(a), 0))
-            p0 = cc + d * 0.035
-            p1 = p0 + d * 0.08 + UP * 0.03
-            p2 = p1 + d * 0.035 + UP * 0.1
-            tube(g, [p0, p1, p2], [0.024, 0.027, 0.01], 4, 3, smooth=True)
-    o = g.obj("banana_mesh", [m_leaf, m_stem, m_dry, m_fruit], root)
-    return root
-
-
-# ============================================================ rocks
-def boulder(name, size, seed, material, flat=0.7, stretch=(1.0, 0.82), subdiv=3, sink=0.1, loc=(0, 0, 0)):
-    """Soft rounded boulder: lumpy, a bit flattened, broad flat-ish top, flat bottom at z=0."""
-    h = size * flat
-    o = blob(name, 0.5, (0, 0, 0), (size * stretch[0], size * stretch[1], h), material, seed, subdiv=subdiv,
-             amp=0.3, freq=0.85, amp2=0.07, freq2=2.2)
-    rnd = random.Random(seed)
-    # a gently sloped "shoulder" plane squashes one upper side -> reads as stone, not an egg
-    pn = Vector((rnd.uniform(-1, 1), rnd.uniform(-1, 1), 1.6)).normalized()
-    top = max(v.co.z for v in o.data.vertices)
-    for v in o.data.vertices:
-        if v.co.z < 0:  # bottom-heavy: rocks sit, they don't balance
-            v.co.x *= 1.08
-            v.co.y *= 1.08
-        d = v.co.dot(pn) - top * 0.72
-        if d > 0:
-            v.co -= pn * d * 0.75
-        if v.co.z > top * 0.45:  # broad, softly flattened top
-            v.co.z = top * 0.45 + (v.co.z - top * 0.45) * 0.6
-    zmin = min(v.co.z for v in o.data.vertices)
-    for v in o.data.vertices:
-        v.co.z -= zmin + h * sink
-        v.co += Vector(loc)
-    o.data.update()
-    clamp_floor(o, loc[2] if loc else 0.0)
-    return o
-
-
-def build_rock(name, size, seed, extras=()):
-    root = empty(name)
-    m_rock = mat("M_Rock", "#8e8b80")
-    m_dark = mat("M_RockDark", "#737067")
-    parts = [boulder(name + "_main", size, seed, m_rock)]
-    for i, (dx, dy, s, dark) in enumerate(extras):
-        parts.append(boulder(f"{name}_x{i}", size * s, seed + 11 * (i + 1), m_dark if dark else m_rock,
-                             subdiv=2, flat=0.55, loc=(size * dx, size * dy, 0)))
-    o = join(parts, name + "_mesh") if len(parts) > 1 else parts[0]
-    o.name = name + "_mesh"
-    bake(o)
-    clamp_floor(o, 0.0)
-    o.parent = root
-    return root
-
-
-# ============================================================ cliff / rocky outcrop
-def slab(name, size, loc, rot, seed, material, bevel=0.2, amp=0.14):
-    """Rounded, lumpy rock slab: subdivided box, bevelled edges, low-frequency warp."""
-    import bmesh
-    o = common.add_box(name, size, loc=(0, 0, 0), material=material)
-    bm = bmesh.new()
-    bm.from_mesh(o.data)
-    bmesh.ops.subdivide_edges(bm, edges=bm.edges[:], cuts=2 if max(size) > 2.5 else 1, use_grid_fill=True)
-    bm.to_mesh(o.data)
-    bm.free()
-    mod = o.modifiers.new("Bevel", "BEVEL")
-    mod.width = min(bevel, min(size) * 0.3)
-    mod.segments = 2
-    mod.limit_method = "ANGLE"
-    common.apply_modifiers(o)
-    off = Vector((seed * 1.3, seed * 0.7, seed * 2.1))
-    for v in o.data.vertices:
-        c = v.co
-        v.co = c + Vector((noise.noise(c * 0.7 + off), noise.noise(c * 0.7 + off + Vector((5, 0, 0))),
-                           noise.noise(c * 0.7 + off + Vector((0, 9, 0))) * 0.5)) * amp
-    o.rotation_euler = rot
-    o.location = loc
-    bake(o)
-    shade_smooth(o)
-    return o
-
-
-def build_cliff_a():
-    """Stepped outcrop of three strata of rounded slabs (7 x 3 x 2.5 m), grass on the ledges."""
-    rnd = random.Random(41)
-    root = empty("cliff_a")
-    m_c = mat("M_Cliff", "#676863")
-    m_top = mat("M_CliffTop", "#979890")
-    m_dk = mat("M_CliffDark", "#4f504c")
-    m_grass = mat("M_Grass", "#6f9a45")
-    leafy(m_grass)
-    parts = []
-    # (x, y, z_bottom, w, d, h) per slab; each stratum steps back (+y) and up
-    strata = [  # (x, y, z_bottom, w, d, h, rot_z): long slabs, joints offset between strata
-        [(-2.2, -0.3, 0.0, 3.1, 2.4, 0.9, 0.07), (1.15, -0.4, 0.0, 3.5, 2.2, 0.8, -0.05),
-         (3.15, -0.05, 0.0, 1.2, 1.9, 0.62, 0.25)],
-        [(-1.55, 0.3, 0.72, 3.3, 1.9, 0.95, 0.1), (1.65, 0.4, 0.66, 2.6, 1.8, 0.88, -0.14)],
-        [(-0.35, 0.85, 1.52, 2.9, 1.3, 0.98, -0.06), (2.05, 0.95, 1.4, 1.3, 1.1, 0.7, 0.3)],
-    ]
-    k = 0
-    for layer in strata:
-        for (x, y, z0, w, d, h, rz) in layer:
-            rot = (rnd.uniform(-0.05, 0.05), rnd.uniform(-0.06, 0.06), rz)
-            o = slab(f"cliff_s{k}", (w, d, h), (x, y, z0 + h * 0.5), rot, 70 + k, m_c, amp=0.22)
-            two_tone(o, m_c, m_dk, thr=-0.35, m_lit=m_top, lit_thr=0.6)
-            parts.append(o)
-            k += 1
-    # a split-off slab leaning against the foot
-    o = slab("cliff_lean", (1.3, 0.35, 1.0), (-3.45, -1.2, 0.42), (0.35, 0.0, 0.5), 99, m_c, bevel=0.1, amp=0.1)
-    two_tone(o, m_c, m_dk, thr=-0.35, m_lit=m_top, lit_thr=0.6)
-    parts.append(o)
-    for i, (x, y, s) in enumerate(((-2.6, -1.55, 0.6), (0.6, -1.6, 0.5), (2.75, -1.45, 0.6), (-1.3, -1.65, 0.35))):
-        o = boulder(f"cliff_foot{i}", s, 60 + i, m_c, subdiv=2, loc=(x, y, 0))
-        two_tone(o, m_c, m_dk, thr=-0.35, m_lit=m_top, lit_thr=0.6)
-        parts.append(o)
-    # grass tufts growing on the ledges and at the foot
-    g = Geo()
-    tufts = [(-2.9, -0.9, 0.95, 7), (-0.8, -0.75, 0.85, 6), (1.3, -0.5, 1.58, 6), (-2.9, 0.1, 1.72, 5),
-             (0.3, 0.4, 2.45, 6), (2.6, -0.2, 0.9, 5), (-1.0, -1.5, 0.0, 7), (1.9, -1.6, 0.0, 6),
-             (3.4, -1.0, 0.0, 6)]
-    for (x, y, z, n) in tufts:
-        for b in range(n):
-            blade(g, (x + rnd.uniform(-0.15, 0.15), y + rnd.uniform(-0.15, 0.15), z - 0.04), rnd.uniform(0, 6.28),
-                  rnd.uniform(0.25, 0.4), 0.07, rnd.uniform(0.3, 0.7), 0, segs=1)
-    parts.append(g.obj("cliff_grass", [m_grass], None))
-    o = join(parts, "cliff_a_mesh")
-    bake(o)
-    clamp_floor(o, 0.0)
-    o.parent = root
-    return root
-
-
-# ============================================================ grass tuft / flowers
-def build_grass_tuft():
-    rnd = random.Random(3)
-    root = empty("grass_tuft")
-    m = mat("M_Grass", "#78a84a")
-    m2 = mat("M_GrassLight", "#a3c45a")
-    for x in (m, m2):
-        leafy(x)
-    g = Geo()
-    n = 15
-    for k in range(n):
-        a = k * GOLDEN + rnd.uniform(-0.3, 0.3)
-        r = rnd.uniform(0.0, 0.07)
-        base = (r * math.cos(a), r * math.sin(a), 0.0)
-        h = rnd.uniform(0.22, 0.36) * (1.0 - 0.5 * r / 0.07 * 0.5)
-        blade(g, base, a, h, rnd.uniform(0.04, 0.055), rnd.uniform(0.25, 0.75), 1 if k % 4 == 0 else 0, segs=2,
-              curl=rnd.uniform(-0.1, 0.1))
-    g.obj("grass_tuft_mesh", [m, m2], root)
-    return root
-
-
-def build_flowers():
-    rnd = random.Random(8)
-    root = empty("flowers")
-    m_stem = mat("M_Stem", "#5f9440")
-    m_w = mat("M_PetalWhite", "#f7f2e6")
-    m_y = mat("M_PetalYellow", "#f4c542")
-    m_p = mat("M_PetalPink", "#ef8fae")
-    for x in (m_stem, m_w, m_y, m_p):
-        leafy(x)
-    g = Geo()
-    # (x, y, height, petal mat, centre mat, radius)
-    fl = [(0.0, 0.0, 0.26, 1, 2, 0.055), (0.12, 0.08, 0.2, 3, 2, 0.05), (-0.11, 0.07, 0.22, 2, 1, 0.045),
-          (0.07, -0.12, 0.16, 1, 2, 0.045), (-0.14, -0.08, 0.18, 3, 2, 0.045), (0.2, -0.04, 0.13, 2, 1, 0.04),
-          (-0.02, 0.17, 0.15, 1, 2, 0.04), (-0.22, 0.12, 0.11, 3, 2, 0.035)]
-    for (x, y, h, pm, cm, r) in fl:
-        lean = Vector((rnd.uniform(-0.04, 0.04), rnd.uniform(-0.05, 0.02), 0))
-        top = Vector((x, y, h)) + lean
-        # stem: thin triangular prism
-        tube(g, [(x, y, 0), tuple(top)], [0.008, 0.006], 3, 0, smooth=False)
-        # flower head: 5-petal star tilted slightly toward the camera
-        tilt = Matrix.Rotation(math.radians(rnd.uniform(10, 25)), 3, Vector((1, 0, 0))) @ \
-            Matrix.Rotation(rnd.uniform(0, 6.28), 3, UP)
-        ctr = g.vert(top + tilt @ Vector((0, 0, 0.004)))
-        ring = []
-        for i in range(5):  # each petal: notch + two rounded lobe corners
-            a0 = i * 2 * math.pi / 5
-            for fa, rr, dz in ((0.0, 0.42, 0.0), (0.24, 1.0, 0.008), (0.76, 1.0, 0.008)):
-                a = a0 + fa * 2 * math.pi / 5
-                ring.append(g.vert(top + tilt @ Vector((r * rr * math.cos(a), r * rr * math.sin(a), dz))))
-        for i in range(15):
-            g.face((ring[i], ring[(i + 1) % 15], ctr), pm, ref=tilt @ UP)
-        # centre bump
-        cb = [g.vert(top + tilt @ Vector((r * 0.3 * math.cos(a), r * 0.3 * math.sin(a), 0.008))) for a in (0, 2.1, 4.2)]
-        ct = g.vert(top + tilt @ Vector((0, 0, 0.02)))
-        for i in range(3):
-            g.face((cb[i], cb[(i + 1) % 3], ct), cm, ref=tilt @ UP)
-    # leaves at the base
-    for k in range(10):
-        a = k * GOLDEN
-        r = rnd.uniform(0.02, 0.18)
-        blade(g, (r * math.cos(a), r * math.sin(a), 0.0), a, rnd.uniform(0.07, 0.12), 0.045, 0.9, 0, segs=1)
-    g.obj("flowers_mesh", [m_stem, m_w, m_y, m_p], root)
-    return root
+    budget = BUDGET.get(name, 350 if name in UNDERGROWTH else 1500)
+    rep = glb_check(name)
+    flag = "" if tris <= budget else f"  !! OVER BUDGET ({budget})"
+    RESULTS[name] = (tris, budget, rep)
+    print(f"[done] {name}: tris={tris}/{budget}{flag} {rep}")
 
 
 # ============================================================ registry
 ASSETS = {}
 
 
-def asset(name):
-    def deco(fn):
-        ASSETS[name] = fn
-        return fn
-    return deco
+def asset(name, builder, views=(), **kw):
+    ASSETS[name] = lambda: finish(builder(), name, views=views, **kw)
 
 
-SAWIT3_VIEWS = (("game", 55, 0, (0, 0, 2.2), 7.5), ("side", 8, 0, (0, 0, 2.6), 7.0),
-                ("trunk", 12, 30, (0, 0, 1.9), 3.2), ("crown", 40, 30, (0, 0, 2.7), 2.6),
-                ("far", 55, 0, (0, 0, 2.0), 16.0))
+asset("sawit_0", build_sawit_0, icon="icon_bibit", icon_kw=dict(pitch_deg=25, margin=1.0))
+asset("sawit_1", lambda: build_palm("sawit_1", PALMS["sawit_1"], seed=5))
+asset("sawit_2", lambda: build_palm("sawit_2", PALMS["sawit_2"], seed=7))
+asset("sawit_3", lambda: build_palm("sawit_3", PALMS["sawit_3"], seed=3),
+      views=(("side", 8, 0, 1.0), ("close", 45, 0, 0.55), ("top", 88, 0, 1.0)))
+asset("tbs", build_tbs, icon="icon_tbs", icon_kw=dict(pitch_deg=48, yaw_deg=20, margin=0.95))
+asset("fern_a", lambda: build_fern("fern_a", 61, 9, 0.85, (72, 40), (70, 95)))
+asset("fern_b", lambda: build_fern("fern_b", 62, 12, 0.6, (45, 18), (45, 60), tint=(1.0, 1.0, 0.86), spread=0.03))
+asset("keladi", build_keladi)
+asset("shrub_a", build_shrub_a)
+asset("shrub_b", build_shrub_b)
+asset("bush_a", build_bush_a)
+asset("bush_b", build_bush_b)
+asset("grass_a", lambda: build_grass("grass_a", 71, 5, 0.42, "left", spread=0.08))
+asset("grass_b", lambda: build_grass("grass_b", 72, 6, 0.7, "right", spread=0.1, lo=0.5))
+asset("grass_tuft", lambda: build_grass("grass_tuft", 73, 3, 0.3, "left", spread=0.04))
+asset("flowers", lambda: build_flowers("flowers", 81, ("left", "right"), n=4, h=0.4))
+asset("flowers_white", lambda: build_flowers("flowers_white", 82, ("left",), n=3, h=0.42))
+asset("flowers_yellow", lambda: build_flowers("flowers_yellow", 83, ("right",), n=3, h=0.4))
+asset("piringan", build_piringan)
+asset("frond_fallen", build_frond_fallen)
+asset("pile_fronds", build_pile_fronds)
+asset("vine_log", build_vine_log)
+asset("tree_big", build_tree_big)
+asset("coconut", build_coconut)
+asset("banana", build_banana)
+asset("rock_a", lambda: build_rock("rock_a", 0.5, 3, subdiv=3, grass=2))
+asset("rock_b", lambda: build_rock("rock_b", 1.0, 7, extras=((0.62, -0.25, 0.28),), subdiv=3, grass=3))
+asset("rock_c", lambda: build_rock("rock_c", 2.0, 13, extras=((-0.55, -0.35, 0.34), (0.6, -0.2, 0.18)), subdiv=3,
+                                   grass=4))
+asset("cliff_a", build_cliff_a)
+asset("stump", build_stump)
 
 
-@asset("sawit_0")
-def _a_sawit_0():
-    root = build_sawit_0()
-    finish(root, "sawit_0", icon="icon_bibit", icon_kw=dict(pitch_deg=25, margin=1.0),
-           views=(("game", 55, 0, (0, 0, 0.35), 1.1), ("side", 8, 0, (0, 0, 0.4), 1.1)))
+# ============================================================ composite test scene
+def _import_asset(name):
+    before = set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=os.path.join(common.MODELS_DIR, name + ".glb"))
+    new = [o for o in bpy.data.objects if o not in before]
+    for o in new:
+        o.hide_render = True
+    roots = [o for o in new if o.parent is None]
+    return roots[0]
 
 
-@asset("sawit_1")
-def _a_sawit_1():
-    finish(build_palm("sawit_1", SAWIT_STAGES["sawit_1"], seed=5), "sawit_1",
-           views=(("game", 55, 0, (0, 0, 0.6), 3.0), ("side", 8, 0, (0, 0, 0.8), 3.0)))
+def _place(src, loc, rot_z=0.0, scale=1.0):
+    def dup(o, parent):
+        c = o.copy()
+        bpy.context.scene.collection.objects.link(c)
+        c.hide_render = False
+        c.parent = parent
+        for ch in o.children:
+            dup(ch, c)
+        return c
+    r = dup(src, None)
+    r.location = loc
+    r.rotation_euler = (0.0, 0.0, rot_z)
+    r.scale = (scale, scale, scale)
+    return r
 
 
-@asset("sawit_2")
-def _a_sawit_2():
-    finish(build_palm("sawit_2", SAWIT_STAGES["sawit_2"], seed=7), "sawit_2",
-           views=(("game", 55, 0, (0, 0, 1.2), 5.0), ("side", 8, 0, (0, 0, 1.5), 5.0)))
+def _ground_mat(name, tex, tile, fallback):
+    m = bpy.data.materials.new(name)
+    m.use_nodes = True
+    nt = m.node_tree
+    b = nt.nodes["Principled BSDF"]
+    b.inputs["Roughness"].default_value = 1.0
+    b.inputs["Specular IOR Level"].default_value = 0.1
+    path = os.path.join(common.ROOT, "game", "assets", "textures", "ground", tex + ".png")
+    if os.path.exists(path):
+        tc = nt.nodes.new("ShaderNodeTexCoord")
+        mp = nt.nodes.new("ShaderNodeMapping")
+        mp.inputs["Scale"].default_value = (1.0 / tile, 1.0 / tile, 1.0)
+        nt.links.new(tc.outputs["Object"], mp.inputs["Vector"])
+        t = nt.nodes.new("ShaderNodeTexImage")
+        t.image = bpy.data.images.load(path, check_existing=True)
+        nt.links.new(mp.outputs["Vector"], t.inputs["Vector"])
+        nt.links.new(t.outputs["Color"], b.inputs["Base Color"])
+    else:
+        b.inputs["Base Color"].default_value = hex_rgba(fallback)
+    return m
 
 
-@asset("sawit_3")
-def _a_sawit_3():
-    finish(build_palm("sawit_3", SAWIT_STAGES["sawit_3"], seed=3), "sawit_3", views=SAWIT3_VIEWS)
+def scene_test(spacing=6.4, tag="veg_scene", dist=16.0, target=(0.5, 1.0, 0.0)):
+    """A plantation corner with the exported GLBs at the game camera (45 deg, FOV 35, 16 m), rendered
+    small and put side by side with the target screenshot -> blender/previews/veg_scene*.png."""
+    from PIL import Image
+    reset_scene()
+    rnd = random.Random(2024)
+    names = ["sawit_3", "sawit_2", "piringan", "fern_a", "fern_b", "keladi", "shrub_a", "shrub_b", "grass_a",
+             "grass_b", "grass_tuft", "flowers_white", "flowers_yellow", "rock_a", "rock_b", "pile_fronds",
+             "frond_fallen", "vine_log", "bush_a", "bush_b", "tbs", "banana"]
+    src = {n: _import_asset(n) for n in names if os.path.exists(os.path.join(common.MODELS_DIR, n + ".glb"))}
+    bpy.ops.mesh.primitive_plane_add(size=80, location=(0, 0, 0))
+    gr = bpy.context.view_layer.objects.active
+    gr.data.materials.append(_ground_mat("_Grass", "grass", 4.0, "#8aa84a"))
+    bpy.ops.mesh.primitive_plane_add(size=1, location=(0, 0, 0.01))
+    path = bpy.context.view_layer.objects.active
+    path.scale = (3.4, 40, 1)
+    path.rotation_euler = (0, 0, math.radians(-28))
+    path.location = (-7.5, 2.0, 0.01)
+    path.data.materials.append(_ground_mat("_Dirt", "dirt", 4.0, "#b89c68"))
+
+    def on_path(x, y):
+        # distance to the rotated path centre line
+        a = math.radians(-28)
+        d = Vector((x + 7.5, y - 2.0, 0))
+        across = d.dot(Vector((math.cos(a), math.sin(a), 0)))
+        return abs(across) < 2.0
+
+    palms = []
+    for i in range(-3, 4):
+        for j in range(-2, 4):
+            x = i * spacing + (spacing * 0.5 if j % 2 else 0.0) + 1.5
+            y = j * spacing * 0.866
+            if on_path(x, y) or abs(x) > 16 or y > 16:
+                continue
+            palms.append((x, y))
+    for k, (x, y) in enumerate(palms):
+        yaw = rnd.uniform(0, 6.28)
+        _place(src["sawit_3" if k % 5 else "sawit_2"], (x, y, 0), yaw, rnd.uniform(0.92, 1.06))
+        _place(src["piringan"], (x, y, 0), yaw)
+    small = [("fern_a", 5), ("fern_b", 5), ("keladi", 3), ("shrub_a", 3), ("shrub_b", 6), ("grass_a", 10),
+             ("grass_b", 4), ("grass_tuft", 10), ("flowers_white", 4), ("flowers_yellow", 2), ("rock_a", 2),
+             ("rock_b", 1), ("bush_a", 1), ("bush_b", 1)]
+    bag = [n for n, w in small for _ in range(w) if n in src]
+    placed = 0
+    tries = 0
+    while placed < 320 and tries < 6000:
+        tries += 1
+        x, y = rnd.uniform(-14, 14), rnd.uniform(-9, 14)
+        if any((x - px) ** 2 + (y - py) ** 2 < 1.4 ** 2 for px, py in palms):
+            continue
+        n = rnd.choice(bag)
+        if on_path(x, y) and not n.startswith("grass"):
+            continue
+        if on_path(x, y) and rnd.random() < 0.8:
+            continue
+        _place(src[n], (x, y, 0), rnd.uniform(0, 6.28), rnd.uniform(0.85, 1.2))
+        placed += 1
+    for n, (x, y, r) in (("pile_fronds", (6.0, -2.5, 0.4)), ("frond_fallen", (-1.2, -1.8, 2.0)),
+                         ("vine_log", (-3.5, 5.0, 0.3)), ("tbs", (0.2, -0.6, 0.5)), ("tbs", (1.0, -1.2, 2.5)),
+                         ("banana", (-11.0, 8.0, 0.0))):
+        if n in src:
+            _place(src[n], (x, y, 0), r)
+    s = bpy.context.scene
+    common._setup_render(512, 288, transparent=False, samples=20)
+    s.cycles.transparent_max_bounces = 24
+    s.cycles.max_bounces = 4
+    _game_lights()
+    cam = bpy.data.objects.new("_Cam", bpy.data.cameras.new("_Cam"))
+    common.link(cam)
+    back = Vector((0.0, -math.cos(math.radians(45)), math.sin(math.radians(45))))
+    target = Vector(target)
+    cam.location = target + back * dist
+    cam.rotation_euler = (-back).to_track_quat("-Z", "Y").to_euler()
+    cam.data.sensor_fit = "VERTICAL"
+    cam.data.angle = math.radians(35.0)
+    s.camera = cam
+    out = os.path.join(common.PREVIEW_DIR, tag + ".png")
+    s.render.filepath = out
+    bpy.ops.render.render(write_still=True)
+    ref = Image.open(os.path.join(common.ROOT, "art", "reference", "07_target_gameplay.png")).convert("RGB")
+    ref = ref.resize((512, 288))
+    mine = Image.open(out).convert("RGB")
+    both = Image.new("RGB", (512, 576))
+    both.paste(mine, (0, 0))
+    both.paste(ref, (0, 288))
+    both.save(os.path.join(common.PREVIEW_DIR, tag + "_vs_target.png"))
+    print(f"[scene] {out}")
 
 
-@asset("tbs")
-def _a_tbs():
-    finish(build_tbs(), "tbs", icon="icon_tbs", icon_kw=dict(pitch_deg=48, yaw_deg=20, margin=0.95), views=(("game", 55, 0, (0, 0, 0.15), 0.9),
-                                                        ("side", 20, 60, (0, 0, 0.15), 0.9)))
-
-
-def _simple(name, builder, views=()):
-    def fn():
-        finish(builder(), name, views=views)
-    ASSETS[name] = fn
-
-
-_simple("bush_a", build_bush_a, views=(("game", 55, 0, (0, 0, 0.5), 2.2), ("side", 10, 0, (0, 0, 0.6), 2.2)))
-_simple("bush_b", build_bush_b, views=(("game", 55, 0, (0, 0, 0.4), 2.4), ("side", 10, 0, (0, 0, 0.5), 2.4)))
-_simple("stump", build_stump, views=(("game", 55, 0, (0, 0, 0.12), 0.9), ("side", 25, 30, (0, 0, 0.15), 0.9)))
-_simple("tree_big", build_tree_big, views=(("game", 55, 0, (0, 0, 3.0), 8.5), ("side", 8, 0, (0, 0, 3.0), 8.0)))
-_simple("coconut", build_coconut, views=(("game", 55, 0, (0.7, 0, 3.5), 8.0), ("side", 8, 0, (0.7, 0, 3.2), 7.5)))
-_simple("banana", build_banana, views=(("game", 55, 0, (0, 0, 1.2), 3.8), ("side", 8, 0, (0, 0, 1.3), 3.6)))
-_simple("rock_a", lambda: build_rock("rock_a", 0.5, 3), views=(("game", 55, 0, (0, 0, 0.1), 0.9),))
-_simple("rock_b", lambda: build_rock("rock_b", 1.0, 7, extras=((0.62, -0.25, 0.28, True),)),
-        views=(("game", 55, 0, (0.1, 0, 0.2), 1.8),))
-_simple("rock_c", lambda: build_rock("rock_c", 2.0, 13, extras=((-0.55, -0.35, 0.34, False), (0.6, -0.2, 0.18, True))),
-        views=(("game", 55, 0, (0, 0, 0.4), 3.4), ("side", 10, 0, (0, 0, 0.5), 3.4)))
-_simple("cliff_a", build_cliff_a, views=(("game", 55, 0, (0, 0, 1.0), 8.5), ("side", 15, 20, (0, 0, 1.2), 8.5)))
-_simple("grass_tuft", build_grass_tuft, views=(("game", 55, 0, (0, 0, 0.12), 0.6), ("side", 10, 0, (0, 0, 0.16), 0.6)))
-_simple("flowers", build_flowers, views=(("game", 55, 0, (0, 0, 0.1), 0.65), ("side", 15, 0, (0, 0, 0.12), 0.65)))
-
-
+# ============================================================ entry point
 def main(argv):
-    names = argv or list(ASSETS)
+    force_all = "textures" in argv
+    tex_force = [a[4:] for a in argv if a.startswith("tex:")]
+    for t in tex_force:
+        if t not in TEXTURES:
+            raise SystemExit(f"unknown texture {t!r}; choose from {list(TEXTURES)}")
+    names = [a for a in argv if a not in ("textures", "scene", "scene_close") and not a.startswith("tex:")]
     for n in names:
         if n not in ASSETS:
             raise SystemExit(f"unknown asset {n!r}; choose from {list(ASSETS)}")
+    for t in TEXTURES:
+        ensure_texture(t, force=force_all or t in tex_force)
+    if not argv:
+        names = list(ASSETS)
     for n in names:
         reset_scene()
         ASSETS[n]()
+    if "scene" in argv:
+        scene_test()
+    if "scene_close" in argv:
+        scene_test(tag="veg_scene_close", dist=8.0, target=(1.0, -0.5, 0.5))
+    if RESULTS:
+        print("\n==== vegetation summary ====")
+        for n, (tris, budget, rep) in RESULTS.items():
+            print(f"{n:15s} {tris:5d}/{budget:<5d} {'OK ' if tris <= budget else 'OVER'} {rep}")
 
 
 if __name__ == "__main__":

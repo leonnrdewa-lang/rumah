@@ -19,7 +19,11 @@ func _ready() -> void:
 		if (e is InputEventMouseButton and e.pressed) or (e is InputEventScreenTouch and e.pressed):
 			big = not big
 			Sfx.play("click", 1.0, -6.0)
-			get_parent().call_deferred("_layout")
+			var n := get_parent()
+			while n and not n.has_method("_layout"):
+				n = n.get_parent()
+			if n:
+				n.call_deferred("_layout")
 			accept_event())
 
 
@@ -44,7 +48,8 @@ func _draw() -> void:
 	var area := Rect2(Vector2.ZERO, size)
 	var bg := StyleBoxFlat.new()
 	bg.bg_color = Color("3f9aa0")
-	bg.set_corner_radius_all(16)
+	bg.set_corner_radius_all(18)
+	bg.anti_aliasing = true
 	draw_style_box(bg, area)
 	var ws: float = world.world_size
 	var crop := Rect2(-85, -75, 170, 150)
@@ -91,12 +96,22 @@ func _draw() -> void:
 		var pts := PackedVector2Array([pp + dir * 8.0, pp - dir * 5.0 + side * 5.0, pp - dir * 5.0 - side * 5.0])
 		draw_colored_polygon(pts, Color("fdf3dc"))
 		draw_circle(pp, 3.5, Color("d0402a"))
+	# cream frame with a thin tan outline, like the HUD pills
 	var border := StyleBoxFlat.new()
 	border.draw_center = false
-	border.border_color = Color("fdf3dc")
-	border.set_border_width_all(3)
-	border.set_corner_radius_all(16)
+	border.border_color = Color("fcf2dd")
+	border.set_border_width_all(5)
+	border.set_corner_radius_all(18)
+	border.anti_aliasing = true
 	draw_style_box(border, area)
+	var outline := StyleBoxFlat.new()
+	outline.draw_center = false
+	outline.border_color = Color("d8c29a")
+	outline.set_border_width_all(2)
+	outline.set_corner_radius_all(18)
+	outline.anti_aliasing = true
+	draw_style_box(outline, area)
+
 
 
 func quest_target() -> Variant:
