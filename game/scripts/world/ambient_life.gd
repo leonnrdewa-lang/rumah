@@ -342,16 +342,28 @@ func _chimney_tops() -> Array[Vector3]:
 		if out.size() >= 2:
 			break
 	# the chimney top is far above the gameplay camera (52 deg, 17 m), so the mill also
-	# vents steam low at the front: the highest point (<= 5.5 m, i.e. the sterilizer
-	# tank top) within 2.5 m of the facade, which is in frame at the mill's door
+	# vents steam low at the front, which is in frame at the mill's door: from the
+	# highest point (<= 5.5 m) within 2.5 m of the facade (the sterilizer tank top) and
+	# from the highest point of the front centre (the fruit hopper), which the HUD's
+	# corner pills never cover
 	var stacks: Array[Vector2] = []
 	for cl in clusters:
 		stacks.append(Vector2(cl[0].x, cl[0].z) / float(cl[1]))
 	var aabb := node.mesh.get_aabb()
+	for centre_only in [false, true]:
+		var v: Vector3 = _front_vent(faces, aabb, stacks, centre_only)
+		if v.y > 2.0 and (out.is_empty() or (node.global_transform * v).distance_to(out[out.size() - 1]) > 1.5):
+			out.append(node.global_transform * v)
+	return out
+
+
+func _front_vent(faces: PackedVector3Array, aabb: AABB, stacks: Array[Vector2], centre_only: bool) -> Vector3:
+	## centre of the highest top (<= 5.5 m) within 2.5 m of the building's front face
 	var front_z := aabb.end.z - 2.5
+	var mid_x := aabb.get_center().x
 	var best := Vector3(0, -INF, 0)
 	for v in faces:
-		if v.z < front_z or v.y > 5.5:
+		if v.z < front_z or v.y > 5.5 or (centre_only and absf(v.x - mid_x) > 2.5):
 			continue
 		var near_stack := false
 		for st in stacks:
@@ -360,16 +372,15 @@ func _chimney_tops() -> Array[Vector3]:
 				break
 		if not near_stack and v.y > best.y:
 			best = v
-	if best.y > 2.0:
-		# centre of that top: average the vertices at that height nearby
-		var acc := Vector3.ZERO
-		var n := 0
-		for v in faces:
-			if absf(v.y - best.y) < 0.05 and Vector2(v.x - best.x, v.z - best.z).length() < 1.6:
-				acc += v
-				n += 1
-		out.append(node.global_transform * (acc / float(n) if n > 0 else best))
-	return out
+	if best.y == -INF:
+		return best
+	var acc := Vector3.ZERO
+	var n := 0
+	for v in faces:
+		if absf(v.y - best.y) < 0.05 and Vector2(v.x - best.x, v.z - best.z).length() < 1.6:
+			acc += v
+			n += 1
+	return acc / float(n) if n > 0 else best
 
 
 func _build_smoke() -> void:
@@ -377,8 +388,8 @@ func _build_smoke() -> void:
 	var tex := _soft_dot(64, 0.45)
 	var mat := _particle_material(tex, Color(1, 1, 1, 1))
 	for top in tops:
-		# the sea breeze blows south-east, towards the camera, so both the chimney
-		# plume and the low steam drift into the gameplay frame
+		# the breeze blows south, towards the camera, so both the chimney plume and
+		# the low steam drift into the gameplay frame
 		var low: bool = top.y < 6.0
 		var p := CPUParticles3D.new()
 		p.name = "MillSteam" if low else "ChimneySmoke"
@@ -390,7 +401,8 @@ func _build_smoke() -> void:
 		p.initial_velocity_min = 0.7 if low else 1.0
 		p.initial_velocity_max = 1.0 if low else 1.5
 		# the low steam is bent over by the breeze, so it trails across the top of the frame
-		p.gravity = Vector3(0.3, 0.05, 1.3) if low else Vector3(0.4, 0.05, 0.8)
+		# (westwards too: the tank sits right of the door, under the HUD's top-right pills)
+		p.gravity = Vector3(-0.45, 0.05, 1.3) if low else Vector3(0.4, 0.05, 0.8)
 		p.damping_min = 0.1
 		p.damping_max = 0.25
 		p.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE

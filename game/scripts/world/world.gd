@@ -16,10 +16,10 @@ const GROUND_TEX := ["grass", "grass_dry", "dirt", "sand", "mulch"]
 ## (the warm-light / cool-shadow split of the target painting)
 const AMBIENT_DAY := Color("a8ccb8")
 ## "Hemat baterai" turns the sun's shadows off. In the Compatibility renderer that
-## moves the sun from its own additive pass into the base pass, where our (custom
-## shader) materials receive far less of it: measured 0.43x on a 0.5 albedo, the
-## frame drops from V 0.48 to 0.37 (autotest qcmp-style A/B at the same spot). This
-## boost brings the low-quality frame back to the high-quality brightness.
+## moves the sun from its own additive pass into the base pass, where our custom-shader
+## materials receive far less of it (measured 0.43x on a 0.5 albedo; the same frame
+## dropped from mean V 0.48 to 0.37). This boost brings the low-quality frame back to
+## the high-quality brightness (V 0.48 / 0.59 vs 0.48 / 0.61 at two test spots).
 const LQ_SUN_BOOST := 2.2
 
 const DECOR_COLLIDE := {"tree_big": 0.55, "coconut": 0.35, "banana": 0.3, "rock_b": -1.0, "rock_c": -1.0,
@@ -230,15 +230,14 @@ func _apply_quality() -> void:
 	# the additive glow brightens the frame a little; keep "Hemat baterai" as bright
 	env.tonemap_exposure = 1.0 if quality_high else 1.07
 	# "Hemat baterai" halves the undergrowth and drops its shadows
-	# "Hemat baterai" also drops the terrain's extra texture samples
-	if terrain_mat:
-		terrain_mat.set_shader_parameter("hq", 1.0 if quality_high else 0.0)
-		# the baked contact shade was made for the full undergrowth; with half of the
-		# plants gone, lighten it so bare dark patches do not remain
-		terrain_mat.set_shader_parameter("shade_strength", 1.0 if quality_high else 0.72)
 	if undergrowth:
 		undergrowth.set_density(1.0 if quality_high else 0.5)
 		undergrowth.set_shadows(quality_high)
+	# ... and the terrain's extra texture samples; the baked contact shade was made for
+	# the full undergrowth, so it is lightened to not leave bare dark patches
+	if terrain_mat:
+		terrain_mat.set_shader_parameter("hq", 1.0 if quality_high else 0.0)
+		terrain_mat.set_shader_parameter("shade_strength", 1.0 if quality_high else 0.72)
 	if ambient and ambient.has_method("set_quality"):
 		ambient.call("set_quality", quality_high)
 

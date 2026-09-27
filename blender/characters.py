@@ -55,7 +55,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import bpy  # noqa: E402
-from mathutils import Matrix, Quaternion, Vector  # noqa: E402
+from mathutils import Euler, Matrix, Quaternion, Vector  # noqa: E402
 
 import common  # noqa: E402
 from common import (ICONS_DIR, PREVIEW_DIR, bake_vertex_ao, count_tris, link,  # noqa: E402
@@ -1422,6 +1422,7 @@ class Rig:
         self.len = {b.name: b.length for b in bones}
         self.warn = 0
         self.log = []
+        self.seams = {}      # loop clip -> (rotation deg, offset m) between the solver's last and first frame
 
     def r3(self, b):
         return self.rest[b].to_3x3()
@@ -1714,11 +1715,26 @@ def clip_idle(rig, st):
 # The foot really rolls over its heel and ball (pivot fixed on the ground), so the ankle travels
 # less than the ground does - see gait_speed().
 GAIT = {
-    "walk": dict(N=27, sigma=0.55, front=0.14, back=0.18, td_toe=-18.0, to_toe=38.0, lift=0.036,
+    "walk": dict(N=27, sigma=0.55, front=0.14, back=0.18, reach=0.968, heel=0.48, td_toe=-18.0, to_toe=38.0,
+                 lift=0.036,
                  bob=0.03, lean=6.0, arm=34.0, yaw=7.0),
-    "run": dict(N=18, sigma=0.30, front=0.16, back=0.24, td_toe=3.0, to_toe=56.0, lift=0.12,
+    "run": dict(N=18, sigma=0.30, front=0.13, back=0.27, reach=0.968, heel=0.3, td_toe=3.0, to_toe=56.0,
+                lift=0.12,
                 bob=0.03, lean=19.0, arm=46.0, yaw=10.0),
 }
+# Run swing keys: (share of the swing, kind, a, b, foot pitch in deg (+ = toe down; None = just short
+# of the touchdown pitch), least sole clearance x `lift`). kind "fk": a = thigh angle forward from
+# straight down, b = knee bend (deg, + energy x 10 deg extra drive; the knee folds further where the
+# sole would come closer to the ground than the clearance); kind "ik": the ankle at a = 0 (toe-off
+# spot) .. 1 (touchdown spot), b x `lift` above the line from the toe-off to the touchdown ankle
+# height. Heel kick up behind, foot tucked high under the hip while the knee drives forward, reach
+# just past the touchdown spot with the foot still well off the ground, then a short drop onto it
+# (with a little paw-back).
+RUN_SWING = ((0.14, "fk", -14.0, 92.0, 72.0, 0.25), (0.34, "fk", 6.0, 124.0, 60.0, 0.6),
+             (0.55, "fk", 44.0, 118.0, 30.0, 0.4), (0.74, "fk", 64.0, 84.0, 12.0, 0.4),
+             (0.88, "ik", 1.06, 0.2, None, 0.0))
+
+
 def gait_dims(c, st, kind):
     """Scaled stride numbers of one character for one gait (unscaled metres, like pose specs)."""
     g = GAIT[kind]
@@ -1794,19 +1810,22 @@ def gait(rig, st, kind):
     Y0 = g["yaw"] + st["swagger"]
     lean, arm = g["lean"], g["arm"]
     td_toe, to_toe = g["td_toe"], g["to_toe"]
-    lift = g["lift"] * legk * min(st["bob"], 1.15)
+    lift = g["lift"] * legk * clamp(st["bob"], 0.8, 1.15)   # (even a shuffling gait clears the ground)
     bob = g["bob"] * legk * st["bob"]
 
     def stance_toe(v):
+        """planted foot pitch at v = 0 (touchdown) .. 1 (toe-off): land, roll flat, peel the heel up"""
+        r0 = g["heel"]
         if run:
-            return td_toe * (1 - sstep(v / 0.3)) + to_toe * sstep((v - 0.3) / 0.7)
-        return td_toe * (1 - sstep(v / 0.2)) + to_toe * sstep((v - 0.48) / 0.52)
+            return td_toe * (1 - sstep(v / 0.3)) + to_toe * sstep((v - r0) / (1 - r0))
+        return td_toe * (1 - sstep(v / 0.2)) + to_toe * sstep((v - r0) / (1 - r0))
 
     tab = foot_table(c)
     y_td, z_td = foot_roll(-Af, td_toe, tab)
     y_to, z_to = foot_roll(Ab, to_toe, tab)
     if run:   # swing: kick the heel up behind, drive the knee forward and high, reach, land flat
-        sw_toe = Curve([(0.0, to_toe), (0.22, to_toe + 18.0), (0.55, 30.0), (0.84, td_toe + 5.0), (1.0, td_toe)])
+        sw_toe = Curve([(0.0, to_toe)] + [(k[0], k[4] if k[4] is not None else td_toe + 4.0) for k in RUN_SWING]
+                       + [(1.0, td_toe)])
     else:
         sw_toe = Curve([(0.0, to_toe), (0.3, 12.0), (0.72, td_toe - 4.0), (1.0, td_toe)])
 
@@ -1829,8 +1848,10 @@ def gait(rig, st, kind):
         z = z_to + (z_td - z_to) * sstep(w) + lift * bump
         return y, z, sw_toe(w)
 
-    # pelvis height: as high as the legs allow at touchdown / toe-off (knees just short of straight)
-    reach = 0.968 * (d["hip_z"] - d["ankle_z"])
+    # pelvis height: as high as the legs allow at touchdown / toe-off (walk: knees just short of
+    # straight; run: knees still a little bent, so they flex and extend smoothly through the stance
+    # instead of whipping out of / into the locked-straight singularity between two keys)
+    reach = g["reach"] * (d["hip_z"] - d["ankle_z"])
 
     def hip_allowed(ph, y, z):
         hy = d["leg_x"] * math.sin(rad(-Y0 * math.cos(TAU * ph)))
@@ -1860,9 +1881,13 @@ def gait(rig, st, kind):
         c1, s1 = cyc(ph)
         return (lean * 0.5 + 1.5 * math.cos(2 * TAU * ph), -Y0 * c1, -roll * s1)
 
-    # Run swing leg in forward kinematics: thigh angle and knee bend are keyed curves (heel kick,
-    # knee drive, reach, paw back), joined to the exact planted-foot IK angles at toe-off and
-    # touchdown, so the ankle path never folds through the hip and the thigh turns smoothly.
+    # Run swing leg in forward kinematics: thigh angle and knee bend are keyed curves, joined to the
+    # exact planted-foot IK angles at toe-off and touchdown (stance keys on the same cyclic curves, so
+    # the joints keep their pace through both), so the thigh turns smoothly and the ankle path never
+    # folds through the hip. The swing keys are designed as ankle positions (RUN_SWING: heel kick
+    # behind, foot tucked high under the hip, knee drive, reach, then a short drop onto the touchdown
+    # spot with a little paw-back) and turned into joint angles by planar IK at their own phase: the
+    # foot stays well off the ground until the last ~10% of the swing and never drags forward.
     L1u, L2u = d["hip_z"] - d["knee_z"], d["knee_z"] - d["ankle_z"]
     head = Vector((0.0, 0.0, d["pelvis_z"]))
 
@@ -1883,6 +1908,15 @@ def gait(rig, st, kind):
         return (J.y - L1u * math.sin(t) - L2u * math.sin(k),
                 J.z - L1u * math.cos(t) - L2u * math.cos(k) - d["ankle_z"])
 
+    # the foot's lowest sole point relative to the flat foot's, pitched by t degrees (+ = toe down)
+    fyz = [(p.y, p.z) for p in (Vector(v) - Vector((d["leg_x"], 0.0, az)) for ch in c.chunks
+                                if ch[4] == ("foot", 1) for v in ch[0])]
+    flat = min(z for _, z in fyz)
+
+    def sole_drop(t):
+        st_, ct = math.sin(rad(t)), math.cos(rad(t))
+        return min(y * st_ + z * ct for y, z in fyz) - flat
+
     swing_fk = {}
     if run:
         E = st["energy"]
@@ -1893,12 +1927,25 @@ def gait(rig, st, kind):
                 uu = v * sig
                 y, z, _ = foot(uu)
                 keys.append((uu,) + leg_angles(hip_joint((uu - off) % 1.0, side), y, z))
-            th_td, ka_td = keys[0][1], keys[0][2]
-            th_to = keys[-1][1]
-            for w, th, ka in ((0.12, th_to - 3.0, 70.0), (0.32, 4.0, 112.0 + 10.0 * (E - 1)),
-                              (0.55, 44.0 + 10.0 * (E - 1), 100.0), (0.76, 58.0 + 10.0 * (E - 1), 56.0),
-                              (0.9, th_td + 7.0, ka_td + 5.0)):
-                keys.append((sig + w * (1 - sig), th, ka))
+            for w, kind_, a, b, t, h in RUN_SWING:
+                uu = sig + w * (1 - sig)
+                J = hip_joint((uu - off) % 1.0, side)
+                if kind_ == "ik":
+                    y = y_to + (y_td - y_to) * a              # 0 = toe-off spot, 1 = touchdown spot
+                    z = z_to + (z_td - z_to) * w + lift * b   # above the line from toe-off to touchdown
+                    keys.append((uu,) + leg_angles(J, y, z))
+                    continue
+                th, ka = a + 10.0 * (E - 1.0), b + 10.0 * (E - 1.0)
+                # the sole keeps at least h x lift off the ground whatever the character's hip height:
+                # a hip that sits low for its legs folds the knee more
+                need = h * lift - sole_drop(t)
+                lo_, hi_ = ka, 165.0
+                if leg_fk(J, th, ka)[1] < need:
+                    for _ in range(30):
+                        mid = (lo_ + hi_) / 2
+                        lo_, hi_ = (mid, hi_) if leg_fk(J, th, mid)[1] < need else (lo_, mid)
+                    ka = hi_
+                keys.append((uu, th, ka))
             swing_fk[side] = (Curve([(k[0], k[1]) for k in keys], 1.0), Curve([(k[0], k[2]) for k in keys], 1.0))
 
     def get(ch, f):
@@ -2411,6 +2458,9 @@ SCALE_BONES = ("extra_eye_L", "extra_eye_R", "extra_mouth", "extra_jaw")   # sca
 
 
 CHECKS = {}    # name -> {clip: numbers} filled by the automated clip checks (printed in the summary)
+KNEE_MAX = 25.0        # deg: walk/run thigh direction change per frame and sideways knee angle
+BLADE_MIN = 0.015      # m: parang blade clearance from the body (right arm excluded) over the chop
+FIST_SINK_MAX = 0.008  # m: how deep the right fist may sink into the body in the chop
 
 
 def leg_metrics(legs_fk, loop):
@@ -2554,6 +2604,11 @@ def bake_actions(rig, st, names=None):
                 pb.keyframe_insert("location", frame=0, group=pb.name)
             if pb.name in SCALE_BONES:
                 pb.keyframe_insert("scale", frame=0, group=pb.name)
+        if loop:   # the solver's own last frame must already be the first one (seamless loop)
+            rot_d = max(quat_angle(frames[0][b][1].to_quaternion(), frames[N][b][1].to_quaternion())
+                        for b in frames[0])
+            loc_d = max((frames[0][b][0] - frames[N][b][0]).length for b in frames[0]) / rig.S
+            rig.seams[name] = (rot_d, loc_d)
         for fc in act.fcurves:
             bname = fc.data_path.split('"')[1]
             prop = fc.data_path.rsplit(".", 1)[1]
@@ -2584,13 +2639,315 @@ def bake_actions(rig, st, names=None):
         rig.log = []
         if name in ("walk", "run"):
             step, side_ = leg_metrics(legs_fk, loop)
-            flag = "  !! over limit (25 deg)" if max(step, side_) > 25.0 else ""
             print(f"  [check] {rig.c.name}/{name}: thigh turn per frame max {step:.1f} deg, "
-                  f"sideways knee max {side_:.1f} deg{flag}")
+                  f"sideways knee max {side_:.1f} deg")
+            if max(step, side_) > KNEE_MAX:
+                fail(rig.c.name, f"{name}: knee flare / thigh turn over {KNEE_MAX:.0f} deg "
+                                 f"(thigh {step:.1f} deg per frame, sideways knee {side_:.1f} deg)")
             CHECKS.setdefault(rig.c.name, {})[name] = (round(step, 1), round(side_, 1))
         acts[name] = act
     ob.animation_data.action = acts.get("idle")
     return acts
+
+
+# --------------------------------------------------------------------------- animation: motion checks
+# Automated checks on the baked clips, evaluated from the F-curves the exporter samples (so they see
+# what the game plays), plus a check of the exported GLB's rotation keys themselves. A failed check
+# prints "!! FAIL" and is collected in FAILS: build_one() then does not export that character (unless
+# --allow-fail) and main() ends with exit status 1.
+JUMP_MAX = 30.0       # deg: most any bone may turn in one 1/60 s step (the game draws at 60 fps)
+SLIDE_MAX = 0.10      # planted foot: mean speed error of its sole contact point / ground speed
+SWING_EARLY = 0.06    # share of a swing at its start in which the toe is still peeling off the ground
+SWING_LATE = 0.90     # share of a swing after which the foot may come down for the touchdown
+CLEAR = 0.008         # m (x scale): a sole point closer than this to the ground is touching it
+                      # (the game's foot probe counts a sole within 8 mm of the floor as planted)
+SEAM_DEG, SEAM_M = 0.5, 0.0005   # loops: largest bone turn / offset between the last and first frame
+FAILS = []            # (character, message)
+
+
+def fail(name, msg):
+    FAILS.append((name, msg))
+    print(f"  !! FAIL {name}: {msg}")
+
+
+def quat_angle(a, b):
+    """Angle (deg) between two rotations, whatever the quaternions' hemispheres."""
+    return math.degrees(2.0 * math.acos(min(1.0, abs(a.dot(b)))))
+
+
+class Sampler:
+    """A baked action as the game plays it: the exporter samples the F-curves at every frame and
+    writes LINEAR glTF channels, so between two frames the rotations slerp and locations / scales
+    lerp. Evaluated at any (fractional) frame (cyclic clips wrap), with forward kinematics to
+    armature space like Blender's pose."""
+
+    def __init__(self, rig, act):
+        self.rig = rig
+        self.fc = {}
+        for fc in act.fcurves:
+            b = fc.data_path.split('"')[1]
+            prop = fc.data_path.rsplit(".", 1)[1]
+            self.fc.setdefault(b, {}).setdefault(prop, [None, None, None])[fc.array_index] = fc
+
+        def depth(n):
+            return 0 if rig.par[n] is None else 1 + depth(rig.par[n])
+        self.order = sorted(rig.rest, key=depth)
+        self.rest_inv = {b: m.inverted() for b, m in rig.rest.items()}
+        self.keys = {}
+
+    def key(self, f):
+        """{bone: (location, quaternion, scale)} of the exported key at integer frame f."""
+        if f not in self.keys:
+            out = {}
+            for b in self.order:
+                ch = self.fc.get(b, {})
+
+                def val(prop, dflt):
+                    fcs = ch.get(prop)
+                    return dflt if not fcs else [fcs[i].evaluate(f) if fcs[i] else dflt[i] for i in range(3)]
+                out[b] = (Vector(val("location", (0.0, 0.0, 0.0))),
+                          Euler(val("rotation_euler", (0.0, 0.0, 0.0)), "XYZ").to_quaternion(),
+                          Vector(val("scale", (1.0, 1.0, 1.0))))
+            self.keys[f] = out
+        return self.keys[f]
+
+    def local(self, f):
+        """{bone: (location, rotation quaternion, scale)} at frame f (keys interpolated like the game)."""
+        f0 = math.floor(f + 1e-9)
+        t = f - f0
+        A = self.key(f0)
+        if t < 1e-9:
+            return A
+        B = self.key(f0 + 1)
+        out = {}
+        for b in self.order:
+            (la, qa, sa), (lb, qb, sb) = A[b], B[b]
+            if qa.dot(qb) < 0.0:
+                qb = -qb
+            out[b] = (la.lerp(lb, t), qa.slerp(qb, t), sa.lerp(sb, t))
+        return out
+
+    def world(self, f):
+        """{bone: armature-space pose matrix} at frame f."""
+        W = {}
+        for b, (loc, q, sc) in self.local(f).items():
+            m = Matrix.Translation(loc) @ q.to_matrix().to_4x4() @ Matrix.Diagonal(tuple(sc) + (1.0,))
+            p = self.rig.par[b]
+            W[b] = (W[p] @ self.rig.rel[b] if p else self.rig.rest[b]) @ m
+        return W
+
+
+def rotation_steps(rig, act, N, loop, step=0.5):
+    """{bone: (largest local rotation in one step, frame)} over the clip, `step` frames apart
+    (0.5 = 1/60 s); loops are also checked across the seam."""
+    smp = Sampler(rig, act)
+    worst, prev = {}, None
+    n = int(round(N / step)) + (1 if loop else 0)
+    for i in range(n + 1):
+        f = i * step
+        cur = smp.local(f)
+        if prev is not None:
+            for b, (_, q, _) in cur.items():
+                a = quat_angle(prev[b][1], q)
+                if a > worst.get(b, (0.0, 0.0))[0]:
+                    worst[b] = (a, f)
+        prev = cur
+    return worst
+
+
+def seam_kink(act, N):
+    """Loops: how much more the keyed channels change pace across the seam than anywhere inside the
+    cycle (largest second difference at the seam minus the largest inside, degrees / units x 100)."""
+    inside = seam = 0.0
+    for fc in act.fcurves:
+        k = 100.0 if "location" in fc.data_path else (math.degrees(1.0) if "rotation" in fc.data_path else 10.0)
+        v = [fc.evaluate(f) for f in range(N + 1)]
+        v[N] = v[0]
+        dd = [abs(v[(i + 1) % N] - 2 * v[i] + v[(i - 1) % N]) * k for i in range(N)]
+        seam = max(seam, dd[0])
+        inside = max([inside] + dd[1:])
+    return seam - inside
+
+
+def foot_points(body, x):
+    """Rest positions and bone weights of the vertices weighted mostly to foot_<x> (the sole the
+    game's foot probe tracks)."""
+    names = {g.index: g.name for g in body.vertex_groups}
+    out = []
+    for v in body.data.vertices:
+        ws = [(names[g.group], g.weight) for g in v.groups if g.weight > 0.0]
+        if dict(ws).get("foot_" + x, 0.0) >= 0.5:
+            out.append((v.co.copy(), ws))
+    return out
+
+
+def gait_check(c, st, rig, body, act, kind, step=0.25, win=4):
+    """Walk/run feet on the ground, sampled every `step` frames at 1x playback while the ground moves
+    back at the exported ground speed (gait_speed):
+      slide   - planted foot (its phase in the stance share): the lowest sole point tracked over `win`
+                steps (one frame, about one game frame at the game's ~2x playback, starting between keys
+                too), |its speed - ground speed| / ground speed, mean and 90th percentile
+      lift    - swinging foot: lowest sole point above the ground between SWING_EARLY and SWING_LATE
+                of the swing (min), and the share of the swing after which it is back within CLEAR
+      band    - the game measures the stride from the ankle while it is in the lowest quarter of its
+                height range: share of mid-swing (0.15..0.75, before the foot comes down) spent there
+                (must be 0)
+      ankle   - planted ankle's mean backward speed, m/s at 1x (moves back under the hips)"""
+    g = GAIT[kind]
+    N, sig = g["N"], g["sigma"]
+    v = gait_speed(c, st, kind)[0]
+    smp = Sampler(rig, act)
+    feet = {x: foot_points(body, x) for x in ("L", "R")}
+    n = int(round(N / step))
+    dt = step / FPS
+    rows = {x: [] for x in feet}
+    for i in range(n + 1):
+        W = smp.world(i * step)
+        M = {b: W[b] @ smp.rest_inv[b] for b in W}
+        for x, pts in feet.items():
+            ps = []
+            for co, ws in pts:
+                p = Vector()
+                for b, w in ws:
+                    p += (M[b] @ co) * w
+                ps.append(p)
+            rows[x].append((ps, W["foot_" + x].translation.copy()))
+    S = c.S
+    res = dict(slide=0.0, slide_p90=0.0, lift=9.0, down=1.0, band=0.0, ankle=0.0, stance_h=0.0)
+    slides, lifts, heights, ank_v = [], [], [], []
+    for x, off in (("L", 0.0), ("R", 0.5)):
+        R_ = rows[x]
+        ank_z = [r[1].z for r in R_]
+        lo, hi = min(ank_z), max(ank_z)
+        band = lo + 0.25 * (hi - lo)
+        in_band = n_mid = 0
+        for i in range(n):
+            u0 = (i * step / N + off) % 1.0
+            u1 = u0 + win * step / N
+            P0, P1 = R_[i][0], R_[(i + win) % n][0]
+            k = min(range(len(P0)), key=lambda j: P0[j].z)
+            if u1 <= sig + 1e-9:
+                d = (P1[k] - P0[k]) / (win * dt)
+                slides.append(math.hypot(d.x, d.y - v) / v)
+                heights.append(P0[k].z)
+                ank_v.append((R_[(i + win) % n][1].y - R_[i][1].y) / (win * dt))
+            elif u0 >= sig:
+                w = (u0 - sig) / (1.0 - sig)
+                lifts.append((w, P0[k].z))
+                if 0.15 <= w <= 0.75:
+                    n_mid += 1
+                    in_band += R_[i][1].z < band
+        res["band"] = max(res["band"], in_band / max(1, n_mid))
+    ground = sorted(heights)[len(heights) // 2]
+    slides.sort()
+    res["slide"] = sum(slides) / len(slides)
+    res["slide_p90"] = slides[int(0.9 * len(slides))]
+    res["stance_h"] = (max(heights) - ground) / S
+    res["ankle"] = sum(ank_v) / len(ank_v)
+    mid = [h - ground for (w, h) in lifts if SWING_EARLY <= w <= SWING_LATE]
+    res["lift"] = min(mid) / S
+    touching = [w for (w, h) in lifts if h - ground < CLEAR * S and w > SWING_EARLY]
+    res["down"] = min(touching) if touching else 1.0
+    res["v"] = v
+    return res
+
+
+def motion_checks(c, st, rig, body, acts):
+    """Rotation jumps (every clip, every bone), loop seams, and the walk/run feet (see gait_check)."""
+    name = c.name
+    out = {}
+    jumps = {}
+    for clip, act in acts.items():
+        N = int(act.frame_range[1])
+        loop = clip in LOOPS
+        w = rotation_steps(rig, act, N, loop)
+        b, (a, f) = max(w.items(), key=lambda kv: kv[1][0])
+        jumps[clip] = round(a, 1)
+        if a > JUMP_MAX:
+            bad = ", ".join(f"{bb} {aa:.0f} deg @{ff / FPS:.3f}s" for bb, (aa, ff) in
+                            sorted(w.items(), key=lambda kv: -kv[1][0]) if aa > JUMP_MAX)
+            fail(name, f"{clip}: bones turn more than {JUMP_MAX:.0f} deg in 1/60 s: {bad}")
+        if loop:
+            rd, ld = rig.seams.get(clip, (0.0, 0.0))
+            kink = seam_kink(act, N)
+            if rd > SEAM_DEG or ld > SEAM_M or kink > 3.0:
+                fail(name, f"{clip}: loop seam mismatch (last vs first frame {rd:.2f} deg / {ld * 1000:.1f} mm, "
+                           f"pace change {kink:.1f} over the inside)")
+    out["jump"] = jumps
+    out["seam"] = {k: round(v[0], 2) for k, v in rig.seams.items()}
+    for kind in ("walk", "run"):
+        r = gait_check(c, st, rig, body, acts[kind], kind)
+        out[kind + "_feet"] = r
+        print(f"  [check] {name}/{kind}: planted slide mean {100 * r['slide']:.1f}% p90 {100 * r['slide_p90']:.1f}% "
+              f"(ground {r['v']:.2f} m/s at 1x, ankle back {r['ankle']:.2f} m/s, sole lift in stance "
+              f"{r['stance_h'] * 1000:.1f} mm), swing lift min {r['lift'] * 1000:.0f} mm "
+              f"(w {SWING_EARLY}..{SWING_LATE}), down at {100 * r['down']:.0f}% of swing, "
+              f"ankle in stance band {100 * r['band']:.0f}% of mid-swing")
+        if r["slide"] > SLIDE_MAX:
+            fail(name, f"{kind}: planted foot slides {100 * r['slide']:.0f}% of the ground speed (max {100 * SLIDE_MAX:.0f}%)")
+        if r["lift"] < CLEAR:
+            fail(name, f"{kind}: swinging foot touches the ground at {100 * r['down']:.0f}% of its swing "
+                       f"(lowest {r['lift'] * 1000:.0f} mm before {100 * SWING_LATE:.0f}%)")
+        if r["band"] > 0.0:
+            fail(name, f"{kind}: ankle in the stance height band for {100 * r['band']:.0f}% of mid-swing")
+        if r["ankle"] <= 0.0:
+            fail(name, f"{kind}: planted ankle does not move back ({r['ankle']:.2f} m/s)")
+    print(f"  [check] {name}: most turn per 1/60 s by clip {jumps} (max {JUMP_MAX:.0f}), loop seams {out['seam']} deg")
+    CHECKS.setdefault(name, {}).update(motion=out)
+    return out
+
+
+def glb_anim_check(path, name):
+    """The exported rotation keys as the game reads them: largest turn per 1/60 s (linear slerp
+    between keys), quaternion hemisphere flips between consecutive keys, loop first key == last key."""
+    import json
+    import struct
+    data = open(path, "rb").read()
+    length = struct.unpack_from("<III", data, 0)[2]
+    off, js, blob = 12, None, None
+    while off < length:
+        clen, ctype = struct.unpack_from("<II", data, off)
+        chunk = data[off + 8: off + 8 + clen]
+        off += 8 + clen
+        if ctype == 0x4E4F534A:
+            js = json.loads(chunk)
+        elif ctype == 0x004E4942:
+            blob = chunk
+
+    def acc(i):
+        a = js["accessors"][i]
+        bv = js["bufferViews"][a["bufferView"]]
+        k = {"SCALAR": 1, "VEC3": 3, "VEC4": 4}[a["type"]]
+        o = bv.get("byteOffset", 0) + a.get("byteOffset", 0)
+        stride = bv.get("byteStride", 4 * k)
+        return [struct.unpack_from("<%df" % k, blob, o + j * stride) for j in range(a["count"])]
+    out = {}
+    for an in js.get("animations", []):
+        worst, flips, seam = (0.0, ""), 0, 0.0
+        for ch in an["channels"]:
+            if ch["target"]["path"] != "rotation":
+                continue
+            s = an["samplers"][ch["sampler"]]
+            t, q = acc(s["input"]), [Quaternion((w, x, y, z)) for (x, y, z, w) in acc(s["output"])]
+            bone = js["nodes"][ch["target"]["node"]].get("name", "?")
+            for j in range(1, len(q)):
+                flips += q[j - 1].dot(q[j]) < 0.0
+                a = quat_angle(q[j - 1], q[j]) * min(1.0, (1.0 / 60.0) / max(1e-6, t[j][0] - t[j - 1][0]))
+                if a > worst[0]:
+                    worst = (a, "%s @%.3fs" % (bone, t[j][0]))
+            if an["name"] in LOOPS:
+                seam = max(seam, quat_angle(q[0], q[-1]))
+        out[an["name"]] = (round(worst[0], 1), worst[1], flips, round(seam, 2))
+        if worst[0] > JUMP_MAX:
+            fail(name, f"GLB {an['name']}: {worst[1]} turns {worst[0]:.0f} deg in 1/60 s")
+        if seam > SEAM_DEG:
+            fail(name, f"GLB {an['name']}: loop's last rotation key differs from the first by {seam:.1f} deg")
+        if flips:
+            print(f"  [check] {name}: GLB {an['name']} has {flips} quaternion hemisphere flips between keys "
+                  f"(harmless for slerp, reported)")
+    print(f"  [check] {name}: GLB most turn per 1/60 s {{{', '.join(f'{k}: {v[0]}' for k, v in out.items())}}}")
+    CHECKS.setdefault(name, {}).update(glb=out)
+    return out
 
 
 
@@ -3403,13 +3760,17 @@ def mesh_bounds(ob):
             Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts))))
 
 
-def build_one(name, out=True, sheets=None):
+def build_one(name, out=True, sheets=None, bake=True, allow_fail=False):
+    """Build, animate, check and (out=True) export one character. bake=False skips the AO bake (fast
+    check-only runs). A character failing a check is not exported unless allow_fail."""
+    nfail = len(FAILS)
     c = BUILDERS[name]()
     st = dict(STYLE, **c.style)
-    rig_ob, body = assemble(c, bake=True)
+    rig_ob, body = assemble(c, bake=bake)
     rig = Rig(rig_ob, c)
     acts = bake_actions(rig, st)
     bpy.context.view_layer.update()
+    motion_checks(c, st, rig, body, acts)
     # automated clip checks: cloth layers (hidden inner-layer vertices that come out in a pose, worst
     # frame), parang blade clearance over the swing and how deep the right fist sinks into the body
     lay = {}
@@ -3423,6 +3784,10 @@ def build_one(name, out=True, sheets=None):
         fist_sink_mm=round(max(v[2] for v in bl.values()) * 1000, 1))
     print(f"  [check] {name}: exposed cloth vertices (worst frame) {lay}, parang clearance "
           f"{CHECKS[name]['blade_cm']} cm, fist sink {CHECKS[name]['fist_sink_mm']} mm")
+    if CHECKS[name]["blade_cm"] < BLADE_MIN * 100:
+        fail(name, f"chop: parang blade {CHECKS[name]['blade_cm']} cm from the body (min {BLADE_MIN * 100:.1f} cm)")
+    if CHECKS[name]["fist_sink_mm"] > FIST_SINK_MAX * 1000:
+        fail(name, f"chop: right fist sinks {CHECKS[name]['fist_sink_mm']} mm into the body")
     mn, mx = mesh_bounds(body)
     tris = count_tris(body)
     mats = sorted(m.name for m in body.data.materials)
@@ -3432,10 +3797,14 @@ def build_one(name, out=True, sheets=None):
         print(f"  !! {name} over triangle budget")
     if len(mats) > 6:
         print(f"  !! {name} over material budget")
-    if out:
+    ok = len(FAILS) == nfail
+    if out and not ok and not allow_fail:
+        print(f"  !! {name}: {len(FAILS) - nfail} check(s) failed - NOT exported (--allow-fail exports anyway)")
+    if out and (ok or allow_fail):
         rig_ob.animation_data.action = acts["idle"]
         bpy.context.scene.frame_set(0)
-        export_char(rig_ob, "char_" + name, gait_extras(c, st))
+        path = export_char(rig_ob, "char_" + name, gait_extras(c, st))
+        glb_anim_check(path, name)
         mark_loops_in_import("char_" + name)
         preview_materials(True)
         render_preview_posed(c, rig, body, acts, "char_" + name)
@@ -3470,9 +3839,14 @@ def lineup(names):
 
 
 def main(argv):
+    """python3 blender/characters.py [names...] [--sheets[=clip,..]] [--no-out] [--lineup]
+    [--check-only] [--allow-fail]. --check-only = no AO bake, no export, no renders: just build,
+    animate and run the checks (fast). Exit status 1 when any check failed."""
     names = [a for a in argv if not a.startswith("--")]
     only_lineup = "--lineup" in argv
-    no_out = "--no-out" in argv
+    check_only = "--check-only" in argv
+    no_out = "--no-out" in argv or check_only
+    allow_fail = "--allow-fail" in argv
     sheets = None
     for a in argv:
         if a.startswith("--sheets"):
@@ -3482,9 +3856,9 @@ def main(argv):
     infos = []
     for n in todo:
         reset_scene()
-        _, _, _, info = build_one(n, out=not no_out, sheets=sheets)
+        _, _, _, info = build_one(n, out=not no_out, sheets=sheets, bake=not check_only, allow_fail=allow_fail)
         infos.append(info)
-    if (not names or only_lineup) and not no_out:
+    if (not names or only_lineup) and not no_out and not FAILS:
         lineup(order)
     print("\n==== summary ====")
     for i in infos:
@@ -3492,6 +3866,23 @@ def main(argv):
         print(f"{i['name']:8s} height={i['height']:.3f} tris={i['tris']:5d} mats={len(i['mats'])}  "
               f"walk/run thigh-step,side-knee={ck.get('walk')}/{ck.get('run')}  layers={ck.get('layers')}  "
               f"parang={ck.get('blade_cm')}cm fist_sink={ck.get('fist_sink_mm')}mm")
+        mo = ck.get("motion")
+        if mo:
+            feet = "  ".join(f"{k}: slide {100 * mo[k + '_feet']['slide']:.1f}% lift {mo[k + '_feet']['lift'] * 1000:.0f}mm "
+                             f"down@{100 * mo[k + '_feet']['down']:.0f}%" for k in ("walk", "run"))
+            top = max(mo["jump"].items(), key=lambda kv: kv[1])
+            glb = ck.get("glb")
+            gtop = max(((k, v[0]) for k, v in glb.items()), key=lambda kv: kv[1]) if glb else None
+            print(f"{'':8s} {feet}  most turn/60Hz: {top[0]} {top[1]} deg (chop {mo['jump'].get('chop')})"
+                  + (f"  GLB: {gtop[0]} {gtop[1]} deg" if gtop else ""))
+    if FAILS:
+        print("\n" + "!" * 72)
+        print(f"!! {len(FAILS)} CHECK(S) FAILED:")
+        for n, msg in FAILS:
+            print(f"!!   {n}: {msg}")
+        print("!" * 72)
+        sys.exit(1)
+    print("all checks passed")
 
 
 if __name__ == "__main__":
