@@ -39,11 +39,11 @@ Material contract (the game relies on it):
   * one material name <-> one texture:  M_Frond=frond, M_FrondDry=frond_dry,
     M_CocoFrond=frond_coco, M_Fern=fern, M_Leaf / M_Bush / M_Canopy=leaves,
     M_Grass=grass, M_Flower=flowers, M_BananaLeaf=banana, M_Piringan=piringan (single-sided ground decal).
-  * sawit_3: root Empty -> `sawit_3_body` + child Empty `Fruits` -> `Fruit_0..3`.  The ripe bunches show
-    from the 45 deg game camera at ANY yaw (the game rotates palms at random): 4 separate bunches hang low on
-    the trunk (1.9-2.2 m), well out from it, each under a +-34 deg gap in the spreading fronds, which rise
-    at >= 50 deg before they droop.  Fruit colour comes from the fruit.png ramp by UV (ONE opaque material
-    M_Fruit for all fruit), fruitlets carry custom dome normals.
+  * sawit_3: root Empty -> `sawit_3_body` + child Empty `Fruits` -> `Fruit_0..3`.  4 separate bunches hang
+    low on the trunk (1.8-2.0 m), well out from it, each under a +-36 deg gap in every frond tier; the fronds
+    rise at 34-70 deg, then arch out and droop (umbrella crown).  The game turns ripe palms to 45 + 90k deg
+    (+- jitter) so one bunch faces the ~43 deg camera.  Fruit colour comes from the fruit.png ramp by UV (ONE
+    opaque material M_Fruit for all fruit), fruitlets carry custom dome normals.
   * vertex colours are soft-floored at 0.46 (finalize); leaf-card vertices stay >= 1.5 cm above z=0,
     solid rocks / logs may sink below it.
   * game/assets/textures/foliage/materials.json lists material -> texture for the game side.
@@ -1588,24 +1588,29 @@ def fruit_bunch(name, center, axis, length, rnd, mat_, parent=None, n=54, width=
 PALMS = {
     # tiers: fronds from the youngest (top) down; el / droop in degrees, zr = attach depth below the crown top,
     # pw = how late the frond bends down (see arc_points).  pet = bare petiole share of the frond.
-    # sawit_3 matches the target: ~3.4 m rough trunk with the bunches hanging on it under an arching crown
-    # (~5 m across, ~5.5 m tall); the spreading fronds rise first and droop late, tips stay >= ~2.6 m up.
+    # sawit_3 matches the target: ~3 m rough trunk with the bunches hanging on it under an umbrella crown
+    # (~5.5 m across, ~4 m tall): the fronds rise briefly (32-68 deg), then arch out and droop (pw ~1.1, i.e.
+    # early), and their leaflets hang down along both edges (fold1), so the crown reads as a rounded umbrella
+    # with feathery fringes instead of an upright fan.  Frond tips end ~2.6-3 m up; 17 fronds (was 22) so
+    # single fronds read from the game camera, not a solid wall of leaves.
     "sawit_1": dict(H=0.25, r=0.11, wr=0.56, boots=5, boot=(0.14, 0.12, 0.06), rings=2, spear=0.5, segs=6, fruits=0,
                     epi=0, crown_r=0.05, ao=0.6, pet=0.12,
                     tiers=[dict(n=11, el=(80, 30), droop=(20, 60), zr=(-0.1, 0.2), L=(0.8, 1.3), pw=1.6)]),
-    "sawit_2": dict(H=0.9, r=0.2, wr=0.58, boots=20, boot=(0.26, 0.2, 0.09), rings=3, spear=0.8, segs=7, fruits=0,
-                    epi=1, crown_r=0.12, ao=0.58, pet=0.16,
-                    tiers=[dict(n=7, el=(78, 58), droop=(20, 40), zr=(-0.1, 0.08), L=(1.3, 1.75), pw=1.5),
-                           dict(n=9, el=(44, 26), droop=(58, 72), zr=(0.14, 0.26), L=(1.8, 2.05), pw=1.7)]),
-    # sawit_3 must show its ripe bunches from the 45 deg game camera at ANY yaw (the game rotates palms at random):
+    "sawit_2": dict(H=0.9, r=0.2, wr=0.66, boots=20, boot=(0.26, 0.2, 0.09), rings=3, spear=0.8, segs=7, fruits=0,
+                    epi=1, crown_r=0.12, ao=0.58, pet=0.16, fold0=(0.24, 0.14), fold1=(0.3, 0.5),
+                    tiers=[dict(n=7, el=(70, 56), droop=(46, 66), zr=(-0.1, 0.08), L=(1.3, 1.75), pw=1.3),
+                           dict(n=9, el=(40, 28), droop=(88, 104), zr=(0.14, 0.26), L=(1.8, 2.05), pw=1.2)]),
+    # sawit_3 must show its ripe bunches from the ~43 deg game camera:
     # 4 bunches hang low on the trunk (fruit_z), well out from it (fruit_r past the trunk surface), each under a
-    # gap of +-`gap` deg in the spreading tiers; the spreading fronds attach above them.
-    "sawit_3": dict(H=3.4, r=0.31, wr=0.7, boots=48, boot=(0.42, 0.3, 0.14), rings=7, spear=1.1, segs=7,
-                    fruits=4, epi=1, crown_r=0.24, ao=0.55, fruit=(0.86, 0.94), fruit_z=(2.2, 1.9), fruit_r=0.46,
-                    fruit_out=0.32, fruit_az=0.0, gap=34, pet=0.18,
-                    tiers=[dict(n=8, el=(76, 62), droop=(45, 60), zr=(-0.12, 0.0), L=(2.1, 2.4), pw=1.5),
-                           dict(n=8, el=(58, 50), droop=(74, 86), zr=(0.02, 0.1), L=(2.9, 3.15), pw=2.1, win=True),
-                           dict(n=6, el=(56, 50), droop=(70, 80), zr=(0.12, 0.2), L=(2.5, 2.7), pw=2.2, win=True,
+    # gap of +-`gap` deg in every tier (with drooping fronds a frond above a bunch hides it); tile_view.gd turns
+    # ripe palms so one bunch faces the camera (yaw 45 + 90k deg +- jitter), the others show at the sides.
+    "sawit_3": dict(H=3.0, r=0.31, wr=0.82, boots=44, boot=(0.42, 0.3, 0.14), rings=6, spear=1.1, segs=7,
+                    fruits=4, epi=1, crown_r=0.24, ao=0.55, fruit=(0.92, 1.0), fruit_z=(2.0, 1.78), fruit_r=0.52,
+                    fruit_out=0.32, fruit_az=0.0, gap=36, pet=0.18, fold0=(0.16, 0.1), fold1=(0.24, 0.4),
+                    tiers=[dict(n=5, el=(68, 56), droop=(50, 66), zr=(-0.12, 0.0), L=(2.0, 2.2), pw=1.3, win=True,
+                                off=0.25),
+                           dict(n=7, el=(46, 40), droop=(72, 82), zr=(0.02, 0.1), L=(2.9, 3.1), pw=1.15, win=True),
+                           dict(n=5, el=(38, 32), droop=(76, 86), zr=(0.12, 0.2), L=(2.65, 2.8), pw=1.1, win=True,
                                 off=0.5)]),
 }
 
@@ -1677,7 +1682,8 @@ def build_palm(name, P, seed=3):
             base = Vector((rb * math.cos(phi), rb * math.sin(phi), zb))
             pts = arc_points(base, phi, el, dr, L, P["segs"], yaw_drift=rnd.uniform(-0.15, 0.15), pw=T.get("pw", 1.4))
             tint = (1.0, 1.0, 0.88) if age < 0.18 else ((0.97, 0.93, 0.74) if age > 0.9 else (1.0, 1.0, 1.0))
-            card_path(g, 0, pts, L * P["wr"], prof=prof, fold=(lerp(0.36, 0.2, age), lerp(0.25, 0.5, age)),
+            fold = (lerp(*P.get("fold0", (0.36, 0.2)), age), lerp(*P.get("fold1", (0.25, 0.5)), age))
+            card_path(g, 0, pts, L * P["wr"], prof=prof, fold=fold,
                       across=5, twist=rnd.uniform(-12, 12), vmap=vm,
                       col_fn=lambda t, s, tint=tint: cscale(tint, plant_ao(t, s, lo=P["ao"], reach=0.42)),
                       side_hint=Vector((math.sin(phi), -math.cos(phi), 0.0)))

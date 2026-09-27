@@ -512,7 +512,11 @@ func _run() -> void:
 			world.start_game(false)
 			world.ui.close()
 			world.ui.visible = false
-			for pd in [[45.0, 16.5, 1.6], [45.0, 16.5, 2.2], [46.0, 17.5, 2.0], [44.0, 17.0, 2.4]]:
+			var sets := [[45.0, 12.5, 0.8], [43.0, 12.5, 0.8], [45.0, 13.0, 1.2], [44.0, 12.0, 0.6]]
+			for a in OS.get_cmdline_user_args():
+				if a.begins_with("--sets="):
+					sets = JSON.parse_string(a.get_slice("=", 1))
+			for pd in sets:
 				world.cam_pitch = pd[0]
 				world.cam_distance = pd[1]
 				world.cam_lead = pd[2]
@@ -595,6 +599,7 @@ func _run() -> void:
 							var fv = st[grp][k]
 							sm.set_shader_parameter(k, Vector3(fv[0], fv[1], fv[2]) if fv is Array else fv)
 				world.env.adjustment_saturation = st.get("sat", world.POST_SATURATION)
+				world.env.adjustment_brightness = st.get("bright", world.POST_BRIGHTNESS)
 				if st.has("low"):
 					world.set_quality(not st["low"])
 				for sp in only.split(","):

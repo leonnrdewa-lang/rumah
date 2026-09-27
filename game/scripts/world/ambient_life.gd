@@ -401,7 +401,7 @@ func _build_smoke() -> void:
 		var mat: StandardMaterial3D = _steam_mat if low else _smoke_mat
 		var p := CPUParticles3D.new()
 		p.name = "MillSteam" if low else "ChimneySmoke"
-		p.amount = 18
+		p.amount = 11 if low else 18
 		p.lifetime = 4.5 if low else 6.0
 		p.mesh = _quad(1.1 if low else 1.0, mat)
 		p.direction = Vector3.UP
@@ -419,9 +419,9 @@ func _build_smoke() -> void:
 		p.scale_amount_max = 1.4
 		var curve := Curve.new()
 		curve.add_point(Vector2(0, 0.45))
-		curve.add_point(Vector2(1, 3.0 if low else 2.8))
+		curve.add_point(Vector2(1, 2.4 if low else 2.8))
 		p.scale_amount_curve = curve
-		p.color_ramp = _fade_ramp(Color(0.97, 0.96, 0.93, 0.5) if low else Color(0.93, 0.92, 0.88, 0.8), 0.2 if low else 0.14)
+		p.color_ramp = _fade_ramp(Color(0.97, 0.96, 0.93, 0.32) if low else Color(0.93, 0.92, 0.88, 0.8), 0.2 if low else 0.14)
 		p.local_coords = false
 		p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(p)
@@ -547,8 +547,9 @@ func _process(delta: float) -> void:
 		# day: soft cream smoke; night: a faint cool grey wisp in the dark
 		_smoke_mat.albedo_color = Color(0.95, 0.95, 0.93, 0.95).lerp(Color(0.2, 0.23, 0.32, 0.45), _night)
 		# the low steam in the gameplay frame: a thin haze about as bright as the sunlit
-		# walls behind it (V ~0.8), not a white glow
-		_steam_mat.albedo_color = Color(0.84, 0.86, 0.85, 0.5).lerp(Color(0.2, 0.23, 0.32, 0.35), _night)
+		# walls behind it (V ~0.8), not a white glow (fix round 3: fainter, fewer and
+		# smaller puffs; at the closer camera it still read as a pale blob on the hopper)
+		_steam_mat.albedo_color = Color(0.74, 0.78, 0.76, 0.34).lerp(Color(0.2, 0.23, 0.32, 0.3), _night)
 	_leaves.global_position = c + Vector3(0, 7.5, -2.0)
 	_leaves.emitting = _night < 0.5
 	var ff := _night > 0.45

@@ -163,8 +163,13 @@ static func convert_material(m: Material, fade := true, rim := 0.0) -> Material:
 				# the v2 palm crowns read lime (S 0.68 / V 0.65 against the target's 0.54 /
 				# 0.54): less saturated and darker, with more light-to-dark along the frond
 				# and less glow through the leaves
-				sm.set_shader_parameter("green_sat", 0.56)
-				sm.set_shader_parameter("tone", 0.83)
+				# (fix round 3: the umbrella crowns shade themselves more and the post
+				# saturation dropped to 0.96: lighter, a bit more saturated and warmer, crown
+				# pixels now measure V 0.58 / S 0.52 / hue 81 against the target's 0.57 /
+				# 0.54 / 80)
+				sm.set_shader_parameter("green_sat", 0.64)
+				sm.set_shader_parameter("green_warm", 0.12)
+				sm.set_shader_parameter("tone", 0.88)
 				sm.set_shader_parameter("tip_light", 0.3)
 				sm.set_shader_parameter("backlight", Vector3(0.18, 0.2, 0.1))
 		elif mname.findn("Grass") >= 0 or mname.findn("Flower") >= 0 or mname.findn("Petal") >= 0:

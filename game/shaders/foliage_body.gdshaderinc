@@ -4,7 +4,8 @@
 //
 // wind sway + optional albedo texture + vertex-colour AO (COLOR) + normals bent
 // towards the sky for small plants (so cards shade like the ground) + translucency
-// + the see-through hole near the player + low plants bending away from the player.
+// + the see-through hole near the player + low plants bending away from the player
+// and thinning out on its camera side.
 
 global uniform vec2 occlude_center;
 global uniform float occlude_depth;
@@ -38,7 +39,7 @@ uniform sampler2D noise_tex : hint_default_white, filter_linear_mipmap, repeat_e
 
 varying vec3 world_pos;
 varying float height_tint;
-// where the vertex ends up after the trample (for the leg window below)
+// where the vertex ends up after the trample (for the thinning near the player below)
 varying vec3 bent_pos;
 
 void vertex() {
@@ -106,15 +107,21 @@ void fragment() {
 	ROUGHNESS = 1.0;
 	BACKLIGHT = backlight;
 	if (trample > 0.0) {
-		// a small see-through window in the leaves right in front of the player's legs
-		// (camera side), so a character standing in a thicket still shows
+		// The low plants on the camera side of the player thin out (dithered) within ~1.2 m
+		// of their feet, leaving only the lowest leaves as a trampled ring, so the
+		// character always stands visibly in the carpet as in the target (v2 fix round 3:
+		// the knee-high carpet hid them to the waist at the closer camera). Plants behind
+		// the player stay whole.
 		vec2 dp = bent_pos.xz - player_pos.xz;
-		float lw = length(vec2(dp.x, dp.y * 0.8));
-		if (dp.y > -0.15 && lw < 0.9 && bent_pos.y < player_pos.y + 0.95) {
+		float dd = length(vec2(dp.x, dp.y * (dp.y > 0.0 ? 0.75 : 1.3)));
+		float hgt = bent_pos.y - player_pos.y;
+		float fade = (1.0 - smoothstep(0.7, 1.25, dd)) * smoothstep(0.06, 0.22, hgt)
+			* smoothstep(-0.45, 0.0, dp.y) * (1.0 - smoothstep(1.4, 1.8, hgt));
+		if (fade > 0.0) {
 			int wx = int(FRAGCOORD.x) % 4;
 			int wy = int(FRAGCOORD.y) % 4;
 			float wb[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
-			if ((wb[wx + wy * 4] + 0.5) / 16.0 < (1.0 - smoothstep(0.45, 0.9, lw)) * 0.8) {
+			if ((wb[wx + wy * 4] + 0.5) / 16.0 < fade * 0.9) {
 				discard;
 			}
 		}

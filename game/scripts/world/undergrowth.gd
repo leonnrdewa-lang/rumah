@@ -19,12 +19,13 @@ const STRIDE := 16          # floats per instance: 3x4 transform + colour
 const MARGIN := 3.0         # built area = view footprint + this (m)
 ## a camera higher than this (the title fly-over, 25 m up) sees ~3x the gameplay ground
 ## area with every plant a few pixels big: it gets FAR_DENSITY of every cell (fix round:
-## a third was not enough; sampled over the whole title orbit it peaked at 452k tris)
+## a third was not enough; sampled over the whole title orbit it peaked at 452k tris;
+## fix round 3: 0.3 / 0.5 still reached 370k on a 21:9 window, now ~0.24 / 0.4)
 const FAR_HEIGHT := 21.0
-const FAR_DENSITY := 0.3
+const FAR_DENSITY := 0.24
 ## ... and the modelled plants (ferns, shrubs, keladi: 200-320 tris, ~10% of the plants
 ## but ~75% of the undergrowth triangles) only FAR_DENSITY * FAR_HEAVY
-const FAR_HEAVY := 0.5
+const FAR_HEAVY := 0.4
 const HEAVY_TRIS := 100
 ## v1 models used when a v2 asset has not been exported (model, scale factor)
 const FALLBACK := {
@@ -52,7 +53,15 @@ var _far := false
 static var _proc_meshes := {}
 
 
-func build(data: Dictionary, is_blocked: Callable) -> void:
+## Every planting spot keeps a clear disc of this radius that no leaf reaches into, so
+## the bush / cleared / seedling / palm states read at a glance (v2 fix round 3: the
+## cover plants' leaves reached to ~0.9 m of the spots and crowded the piringan). A
+## plant stands at least TILE_CLEAR + TILE_REACH x its half-width from a spot.
+const TILE_CLEAR := 1.3
+const TILE_REACH := 0.6
+
+
+func build(data: Dictionary, is_blocked: Callable, tile_dist := Callable()) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 7331
 	for model in data:
@@ -72,11 +81,15 @@ func build(data: Dictionary, is_blocked: Callable) -> void:
 			mesh = ModelLib.merged_mesh(mesh_name, model in FADE_MODELS)
 		if mesh == null or mesh.get_surface_count() == 0:
 			continue
+		var ab := mesh.get_aabb()
+		var half := maxf(ab.size.x, ab.size.z) * 0.5 * sfac
 		var cells := {}
 		for k in range(0, arr.size() - 4, 5):
 			var x: float = arr[k]
 			var z: float = arr[k + 2]
 			if is_blocked.call(x, z):
+				continue
+			if tile_dist.is_valid() and float(tile_dist.call(x, z)) < TILE_CLEAR + TILE_REACH * half * float(arr[k + 4]):
 				continue
 			var key := Vector2i(floori(x / CELL), floori(z / CELL))
 			if not cells.has(key):

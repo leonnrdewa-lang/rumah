@@ -27,7 +27,13 @@ const SUN_DAY := Color("fff0a8")
 const SUN_ENERGY := 1.42
 const AMBIENT_DAY := Color("94bfe2")
 const AMBIENT_ENERGY := 0.77
-const POST_SATURATION := 1.08
+## Fix round 3 (closer camera): the hero frame measured V 0.51 / S 0.55 against the
+## target's 0.57 / 0.50 (the palm row's crowns and their shade fill more of it now). A
+## little post brightness, less post saturation and slightly lighter cast shadows lift it
+## to ~0.55 / 0.51; the crowns get their own saturation back in model_lib.gd.
+const POST_SATURATION := 0.96
+const POST_BRIGHTNESS := 1.05
+const SHADOW_OPACITY := 0.72
 ## "Hemat baterai" turns the sun's shadows off. In the Compatibility renderer that
 ## moves the sun from its own additive pass into the base pass, where our custom-shader
 ## materials receive far less of it (measured 0.43x on a 0.5 albedo), so the sun is
@@ -90,15 +96,15 @@ var _ring: MeshInstance3D
 var _title_t := 0.0
 var _t := 0.0
 var night_k := 0.0   # 0 = day, 1 = night (read by ambient_life.gd)
-## The target's three-quarter view: ~45 deg pitch, 16.5 m (about 19 m of ground across a
-## 16:9 screen at the player), so palms show their full crowns from the side and the
-## ground recedes with depth. The look point sits `cam_lead` m up-screen (north) of the
-## player: the player stands a little below the centre, and the crowns of the palms
-## just behind them, which rise up the screen, stay in frame (at 45 deg without the
-## lead they left the top edge).
-var cam_distance := 16.5
-var cam_pitch := 45.0
-var cam_lead := 2.0
+## The target's three-quarter view: 44 deg pitch, 12 m (about 13.5 m of ground across
+## a 16:9 screen at the player: the character is ~1/7.5 of the screen height and a grown
+## palm crown ~1/3 of its width, as in the target; v2 used 45 deg / 16.5 m, where the
+## character was ~1/11). The look point sits `cam_lead` m up-screen (north) of the
+## player, so the player stands just below the centre and the crowns of the palms
+## behind them stay in frame.
+var cam_distance := 12.0
+var cam_pitch := 44.0
+var cam_lead := 0.7
 ## extra look-ahead in the walking direction (s of travel): about cancels the follow lag,
 ## so the scene ahead of a walking player is in view
 const CAM_MOVE_LEAD := 0.3
@@ -110,6 +116,7 @@ var terrain_mat: ShaderMaterial
 var _plant_mask := PackedByteArray()
 var _pm_n := 0
 const PM_RES := 0.5
+var _tile_grid := {}   # 4 m cell -> planting spots (xz) in it and its neighbours
 
 
 func _ready() -> void:
@@ -227,14 +234,14 @@ func _build_environment() -> void:
 	env.glow_hdr_scale = 1.5
 	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_ADDITIVE
 	env.adjustment_enabled = true
-	env.adjustment_brightness = 1.0
+	env.adjustment_brightness = POST_BRIGHTNESS
 	env.adjustment_contrast = 1.05
 	env.adjustment_saturation = POST_SATURATION
 	we.environment = env
 	add_child(we)
 	sun = DirectionalLight3D.new()
 	sun.shadow_enabled = true
-	sun.shadow_opacity = 0.8
+	sun.shadow_opacity = SHADOW_OPACITY
 	sun.shadow_blur = 2.2
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
 	sun.directional_shadow_max_distance = 31.0   # set per frame in _place_camera
@@ -442,10 +449,18 @@ func _build_plant_mask() -> void:
 		var d: Vector3 = door_points[id]
 		_mask_circle(d.x, d.z, 1.4)
 	# planting spots: terrain.py keeps the ferns / leafy cover 1.5 m and taller plants
-	# 1.6-2.3 m away (a ~2 m weeded circle); grass may reach the piringan's rim at 1.1 m
+	# 1.6-2.3 m away (a ~2 m weeded circle); undergrowth.gd also keeps every plant's
+	# leaves out of a TILE_CLEAR disc (tile_dist below); the bitmap is the coarse backstop
 	for key in tile_views:
 		var tp: Vector3 = tile_views[key].position
 		_mask_circle(tp.x, tp.z, 1.05)
+		var cell := Vector2i(floori(tp.x / 4.0), floori(tp.z / 4.0))
+		for cx in range(cell.x - 1, cell.x + 2):
+			for cz in range(cell.y - 1, cell.y + 2):
+				var ck := Vector2i(cx, cz)
+				if not _tile_grid.has(ck):
+					_tile_grid[ck] = []
+				_tile_grid[ck].append(Vector2(tp.x, tp.z))
 	for it in interactables:
 		if it.has("pos") and not it.has("tile"):
 			var ip: Vector3 = it["pos"]
@@ -481,6 +496,14 @@ func _mask_circle(x: float, z: float, r: float) -> void:
 				_plant_mask[j * _pm_n + i] = 1
 
 
+func tile_dist(x: float, z: float) -> float:
+	## distance (xz) to the nearest parcel planting spot, up to ~4 m (INF beyond)
+	var best := INF
+	for tp in _tile_grid.get(Vector2i(floori(x / 4.0), floori(z / 4.0)), []):
+		best = minf(best, Vector2(x, z).distance_to(tp))
+	return best
+
+
 func plant_blocked(x: float, z: float) -> bool:
 	if _pm_n == 0:
 		return false
@@ -496,7 +519,7 @@ func _build_undergrowth() -> void:
 	undergrowth = Undergrowth.new()
 	undergrowth.name = "Undergrowth"
 	add_child(undergrowth)
-	undergrowth.build(layout.get("undergrowth", {}), plant_blocked)
+	undergrowth.build(layout.get("undergrowth", {}), plant_blocked, tile_dist)
 
 
 func _build_buildings() -> void:
@@ -920,7 +943,7 @@ func _tile_action(pid: int, idx: int) -> void:
 			float_text(tv.global_position, "Dipupuk", Color("2f6d2a"))
 		"harvest":
 			Sfx.play("harvest")
-			burst(tv.global_position + Vector3(0, 2.6, 0), Color("c9401f"), 16)
+			burst(tv.global_position + Vector3(0, 2.1, 0), Color("c9401f"), 16)
 			float_text(tv.global_position + Vector3(0, 1.0, 0), "+TBS", Color("b8401f"))
 			_drop_bunches(tv.global_position)
 
@@ -935,7 +958,7 @@ func _drop_bunches(at: Vector3) -> void:
 		var a := randf() * TAU
 		var land := at + Vector3(cos(a), 0, sin(a)) * randf_range(0.9, 1.4)
 		land.y = height_at(land.x, land.z)
-		mi.position = at + Vector3(0, 2.6, 0)
+		mi.position = at + Vector3(0, 2.0, 0)
 		mi.rotation = Vector3(randf() * 0.6, randf() * TAU, randf() * 0.6)
 		add_child(mi)
 		var shadow := GroundFx.blob(0.32, 0.4)
