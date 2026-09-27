@@ -1365,7 +1365,12 @@ class Rig:
                 fk_h = fk_h.to_quaternion().slerp(gm.to_quaternion(), gw).to_matrix()
             put(ha, fk_h)
 
-        # --- legs (IK: ankle target in world, knee pole forward, foot orientation in world)
+        # --- legs (IK: ankle target in world, knee pole in the leg's sagittal plane, foot orientation
+        # in world). The pole is built from the lateral axis (hips + foot yaw) and the hip->ankle
+        # direction: lateral x (hip->ankle) always points to the front of the leg line (forward-down
+        # when the heel kicks up behind, forward-up when the foot reaches ahead), so the knee stays
+        # in the sagittal plane and never flips out sideways; `kneeout` opens it outward on purpose.
+        Qh = W["hips"].to_3x3() @ self.r3("hips").inverted()
         for side in (1, -1):
             x = sfx(side)
             th, sh, ft = "thigh_" + x, "shin_" + x, "foot_" + x
@@ -1374,8 +1379,14 @@ class Rig:
             dx, dy, dz, toe, yaw = P["leg" + x]
             A0 = self.rest[ft].translation
             tgt = A0 + Vector((dx, dy, dz)) * S
-            fwd = Matrix.Rotation(rad(yaw), 3, "Z") @ FRONT
-            pole = fwd + Vector((side * P["kneeout"][0 if side > 0 else 1], 0, 0.35))
+            lat = Matrix.Rotation(rad(yaw), 3, "Z") @ Vector((1.0, 0.0, 0.0)) + Qh @ Vector((1.0, 0.0, 0.0))
+            lat.z = 0.0
+            lat.normalize()
+            u = tgt - J
+            u = u.normalized() if u.length > 1e-6 else -UP
+            pole = u.cross(lat)
+            pole = (pole.normalized() if pole.length > 1e-4 else FRONT.copy()) + \
+                lat * (side * P["kneeout"][0 if side > 0 else 1])
             E, reached = two_bone(J, tgt, self.len[th], self.len[sh], pole, soft=0.975)
             if (reached - tgt).length > 0.004 * S:
                 self.warn += 1
@@ -1405,6 +1416,7 @@ class Rig:
         put("extra_mouth", Matrix.Identity(3), scale=Vector((1.0, 1.0, P["mouth"][0])))
         jw = P["jaw"][0]
         put("extra_jaw", Matrix.Identity(3), scale=Vector((1.0 + 0.1 * (jw - 1), 1.0, jw)))
+        self.W = W
         return out
 
 
@@ -2123,6 +2135,28 @@ LOC_BONES = ("hips", "extra_brow_L", "extra_brow_R")                        # tr
 SCALE_BONES = ("extra_eye_L", "extra_eye_R", "extra_mouth", "extra_jaw")   # scaled only (blink, mouth)
 
 
+CHECKS = {}    # name -> {clip: numbers} filled by the automated clip checks (printed in the summary)
+
+
+def leg_metrics(legs_fk, loop):
+    """(max thigh-direction change between consecutive frames, max sideways knee angle) in degrees
+    over both legs. Sideways knee = how far the knee's offset from the hip-ankle line leans out of
+    the sagittal (world YZ) plane - a flared or flipping knee shows up here."""
+    step = side_ = 0.0
+    for x in ("L", "R"):
+        dirs = []
+        for row in legs_fk:
+            J, E, A = row["thigh_" + x], row["shin_" + x], row["foot_" + x]
+            dirs.append((E - J).normalized())
+            u = (A - J).normalized()
+            k = (E - J) - u * (E - J).dot(u)
+            if k.length > 0.004 * (E - J).length:
+                side_ = max(side_, math.degrees(math.asin(min(1.0, abs(k.normalized().x)))))
+        for a, b in zip(dirs, dirs[1:]):
+            step = max(step, math.degrees(a.angle(b, 0.0)))
+    return step, side_
+
+
 def bake_actions(rig, st, names=None):
     """Evaluate every clip at each frame and write it as Bezier keys into one action per clip."""
     ob = rig.ob
@@ -2137,8 +2171,11 @@ def bake_actions(rig, st, names=None):
         rig.warn = 0
         frames = {}
         prev = {pb.name: None for pb in ob.pose.bones}
+        legs_fk = []
         for f in range(N + 1):
             basis = rig.solve(spec(f))
+            legs_fk.append({b: rig.W[b].translation.copy() for b in
+                            ("thigh_L", "shin_L", "foot_L", "thigh_R", "shin_R", "foot_R")})
             row = {}
             for pb in ob.pose.bones:
                 loc, q, sc = basis[pb.name]
@@ -2186,6 +2223,12 @@ def bake_actions(rig, st, names=None):
                 worst[limb] = max(worst.get(limb, 0.0), v)
             print(f"  [anim] {rig.c.name}/{name}: {rig.warn} IK targets out of reach, worst (m): {worst}")
         rig.log = []
+        if name in ("walk", "run"):
+            step, side_ = leg_metrics(legs_fk, loop)
+            flag = "  !! over limit (25 deg)" if max(step, side_) > 25.0 else ""
+            print(f"  [check] {rig.c.name}/{name}: thigh turn per frame max {step:.1f} deg, "
+                  f"sideways knee max {side_:.1f} deg{flag}")
+            CHECKS.setdefault(rig.c.name, {})[name] = (round(step, 1), round(side_, 1))
         acts[name] = act
     ob.animation_data.action = acts.get("idle")
     return acts
