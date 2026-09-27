@@ -58,6 +58,7 @@ var _cur_speed := 0.0
 var _emote: Label3D
 var _emote_t := 0.0
 var _name_label: Label3D
+var player_dist := INF    # distance to the player last frame (name label de-clutter)
 var _greeted := false
 var _wave_cd := 0.0
 var _face_player_t := 0.0
@@ -202,7 +203,16 @@ func _process(delta: float) -> void:
 		pdist = pl.global_position.distance_to(global_position)
 	if pl and _name_label:
 		var near: bool = world.state == "play" and pdist < 5.5
+		if near:
+			# two villagers side by side (chatting at the warung): only the one nearer
+			# the player keeps its name, so the labels never print over each other
+			for o in _neighbours():
+				if o != self and o.visible and o.player_dist < pdist \
+						and o.global_position.distance_to(global_position) < 2.8:
+					near = false
+					break
 		_name_label.visible = near and not talking and not _emote.visible
+	player_dist = pdist
 	var awake := is_awake()
 	visible = awake or talking or position.distance_to(home) > 1.0
 	var sad := is_sad()

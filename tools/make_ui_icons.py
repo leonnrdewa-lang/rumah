@@ -119,6 +119,21 @@ def sun(px=128):
     p.save("ui_sun")
 
 
+def moon(px=128):
+    """Crescent for the night clock: a pale disc with a transparent bite."""
+    p = Pad(px)
+    p.circle(0.5, 0.5, 0.40, (214, 170, 72, 255))
+    p.circle(0.5, 0.5, 0.37, (250, 222, 132, 255))
+    p.circle(0.42, 0.44, 0.20, (255, 238, 176, 255))
+    # the bite: clear a disc offset to the upper right
+    k = p.k
+    cx, cy, r = 0.70, 0.36, 0.33
+    p.d.ellipse([(cx - r) * k, (cy - r) * k, (cx + r) * k, (cy + r) * k], fill=(0, 0, 0, 0))
+    for x, y, rr in ((0.30, 0.58, 0.045), (0.42, 0.74, 0.03)):
+        p.circle(x, y, rr, (226, 186, 96, 255))
+    p.save("ui_moon")
+
+
 def leaf(px=128):
     p = Pad(px)
     p.badge(CREAM, ring=RING, ring_w=0.07)
@@ -344,6 +359,7 @@ def app_icon(px=256):
 if __name__ == "__main__":
     coins()
     sun()
+    moon()
     leaf()
     eye()
     bolt()

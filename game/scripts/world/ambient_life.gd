@@ -343,7 +343,7 @@ func _chimney_tops() -> Array[Vector3]:
 		out.append(node.global_transform * p)
 		if out.size() >= 2:
 			break
-	# the chimney top is far above the gameplay camera (52 deg, 17 m), so the mill also
+	# the chimney top is far above the gameplay camera (44 deg, 12 m), so the mill also
 	# vents steam low at the front, which is in frame at the mill's door: from the
 	# highest point (<= 5.5 m) within 2.5 m of the facade (the sterilizer tank top) and
 	# from the highest point of the front centre (the fruit hopper), which the HUD's

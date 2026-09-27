@@ -747,6 +747,8 @@ func _run() -> void:
 				tp(s[0], s[1], Vector3(0, 0, 1))
 				await shot("tiles_stand_%d_%d" % [s[0], s[1]], 14)
 			world.ui.visible = true
+		"showcase":
+			await _showcase()
 		"tour":
 			world.start_game(false)
 			world.ui.close()
@@ -754,3 +756,113 @@ func _run() -> void:
 			for s in spots:
 				tp(s[0], s[1])
 				await shot("tour_%d_%d" % [s[0], s[1]], 25)
+
+
+func grab(name: String) -> void:
+	## save the frame being shown right now (for 0.1 s bursts: no extra frame waits)
+	await RenderingServer.frame_post_draw
+	var img := get_viewport().get_texture().get_image()
+	img.save_png("%s/%s.png" % [shots_dir, name])
+	print("[grab] ", name)
+
+
+func _near_npc(npc: Node3D, back := 1.6) -> void:
+	## stand south of an NPC (camera side), facing it
+	var p := npc.global_position
+	tp(p.x + 0.4, p.z + back, Vector3(-0.4, 0, -back).normalized())
+
+
+func _showcase() -> void:
+	## Release showcase frames (integration rounds): named PNGs in --shots=<dir>
+	world.start_game(false)
+	world.ui.close()
+	GS.hour = 8.5
+	GS.money = 6000000
+	GS.inv["surat"] = 1
+	GS.upgrades["preman"] = 1
+	GS.stats_changed.emit()
+	# every palm of the player's parcel ripe
+	for t in GS.parcels[0]["tiles"]:
+		if t["s"] == "palm":
+			t["st"] = 3
+			t["fr"] = true
+	GS.parcel_changed.emit(0)
+	# 1. hero harvest at the player's parcel
+	tp(-17.4, 25.4, Vector3(-0.5, 0, -1).normalized())
+	await wait(0.6)
+	await shot("hero", 20)
+	world._tile_action(0, 1)
+	for k in 6:
+		await wait(0.1)
+		await grab("burst_harvest_%d" % k)
+	await wait(0.4)
+	await shot("hero_harvest", 2)
+	# 2. village road + a walking burst along it
+	GS.hour = 8.5
+	tp(-9, 10, Vector3(0, 0, -1))
+	await shot("village_road", 30)
+	tp(-20, 8.5, Vector3(1, 0, 0))
+	world.player.touch_vec = Vector2(0.55, 0)
+	await wait(0.8)
+	for k in 6:
+		await wait(0.1)
+		await grab("burst_walk_%d" % k)
+	world.player.touch_vec = Vector2.ZERO
+	await wait(0.3)
+	# 3. the warung with villagers gathered in front
+	var wd: Vector3 = world.door_points.get("warung", Vector3(8, 0, 5))
+	var guests := ["kakek", "nenek"]
+	for i in guests.size():
+		var n: Npc = world.npcs[guests[i]]
+		n.set_anchor(wd + Vector3(-1.6 + i * 1.3, 0, 1.6 + i * 0.3), 0.3, true)
+	(world.npcs["kakek"] as Npc)._start_chat(world.npcs["nenek"], 20.0, true)
+	(world.npcs["nenek"] as Npc)._start_chat(world.npcs["kakek"], 20.0, false)
+	tp(wd.x + 1.8, wd.z + 3.2, Vector3(-0.3, 0, -1).normalized())
+	await wait(1.0)
+	await shot("warung", 10)
+	# 4. the mill
+	tp(49, -3, Vector3(0, 0, -1))
+	await shot("pabrik", 30)
+	# 5. beach and jetty
+	var j: Vector3 = world.building_nodes["dermaga"].global_position
+	tp(j.x - 2.0, j.z + 3.0, Vector3(1, 0, 0))
+	await shot("beach_jetty", 30)
+	# 6. villager dialog with the land choices (the target's dialog)
+	var ibu: Npc = world.npcs["ibu"]
+	_near_npc(ibu)
+	await wait(0.5)
+	world.deals.talk("ibu")
+	await wait(0.3)
+	world.deals.land_menu("ibu")
+	await wait(1.5)
+	world.ui.finish_typing()
+	await shot("dialog_choices", 10)
+	world.ui.close()
+	await wait(0.3)
+	# 7. shop menu
+	var td: Vector3 = world.door_points.get("toko", Vector3(-14, 0, 3))
+	tp(td.x, td.z + 0.8, Vector3(0, 0, -1))
+	await wait(0.3)
+	world.deals.open_toko()
+	await shot("shop_menu", 20)
+	world.ui.close()
+	# 8. night in the village (warung lights, fireflies)
+	GS.hour = 20.5
+	tp(wd.x, wd.z + 4.0, Vector3(0, 0, -1))
+	await shot("night", 50)
+	# 9. morning report
+	GS.sleep()
+	await shot("morning_report", 25)
+	world.ui.close()
+	# 10. touch layout at a landscape phone size
+	GS.hour = 8.5
+	world.ui._touch_mode = true
+	world.ui.touch.visible = true
+	world.ui._prompt_cache = ""
+	get_window().size = Vector2i(915, 412)
+	tp(-17.4, 25.4, Vector3(-0.5, 0, -1).normalized())
+	await wait(0.5)
+	world.ui._layout()
+	await shot("touch_915x412", 20)
+	get_window().size = Vector2i(1280, 720)
+	await wait(0.3)

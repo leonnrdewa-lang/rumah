@@ -43,6 +43,7 @@ var prompt_key: Label
 var prompt_label: Label
 var money_label: Label
 var clock_label: Label
+var clock_icon: TextureRect   # sun by day, crescent moon from dusk to dawn
 var energy_bar: ProgressBar
 var rep_bar: ProgressBar
 var heat_bar: ProgressBar
@@ -462,7 +463,9 @@ func _build_hud() -> void:
 	clock_label = _label("Hari 1   06:00", 23, BROWN, true)
 	var money_pill := _stat_pill("ui_coins", money_label)
 	money_pill.name = "MoneyPill"
-	var row1 := _hrow([money_pill, _stat_pill("ui_sun", clock_label)], 10)
+	var clock_pill := _stat_pill("ui_sun", clock_label)
+	clock_icon = clock_pill.get_child(0).get_child(0) as TextureRect
+	var row1 := _hrow([money_pill, clock_pill], 10)
 	row1.name = "Row1"
 	tl.add_child(row1)
 	energy_bar = _bar(BAR_GOLD, 132, 12)
@@ -779,6 +782,11 @@ func show_hud() -> void:
 
 
 func _clock_text() -> String:
+	if clock_icon:
+		var night := GS.hour >= 18.5 or GS.hour < 5.5
+		var want := icon("ui_moon" if night else "ui_sun")
+		if want and clock_icon.texture != want:
+			clock_icon.texture = want
 	return "Hari %d   %s" % [GS.day, GS.clock_text()]
 
 
