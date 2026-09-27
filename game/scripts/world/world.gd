@@ -12,8 +12,9 @@ const AMBIENT_SCRIPT := preload("res://scripts/world/ambient_life.gd")
 const SHADE_TEX_PATH := "res://assets/textures/world_shade.png"
 const GROUND_DIR := "res://assets/textures/ground/"
 const GROUND_TEX := ["grass", "grass_dry", "dirt", "sand", "mulch"]
-## soft green-grey sky bounce; keeps shadows olive like the target instead of grey
-const AMBIENT_DAY := Color("b8c4c0")
+## green-teal sky/foliage bounce: sunlit ground reads warm yellow-green, shadows deep green
+## (the warm-light / cool-shadow split of the target painting)
+const AMBIENT_DAY := Color("a8ccb8")
 
 const DECOR_COLLIDE := {"tree_big": 0.55, "coconut": 0.35, "banana": 0.3, "rock_b": -1.0, "rock_c": -1.0,
 	"cliff_a": -1.0, "bush_a": 0.45, "bush_b": 0.45, "sawit_wild": 0.45}
@@ -174,7 +175,7 @@ func _build_environment() -> void:
 	env.background_color = Color("3a8f94")
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = AMBIENT_DAY
-	env.ambient_light_energy = 0.52
+	env.ambient_light_energy = 0.56
 	env.tonemap_mode = Environment.TONE_MAPPER_LINEAR
 	# soft painterly post: a subtle glow on highlights, a little more saturation/contrast
 	env.glow_enabled = true
@@ -945,7 +946,7 @@ func _update_daylight() -> void:
 	sun.light_color = col
 	sun.light_energy = lerpf(1.08, 0.32, night) * lerpf(0.88, 1.0, day_k)
 	env.ambient_light_color = AMBIENT_DAY.lerp(Color("5b6fa8"), night).lerp(Color("e0b090"), clampf(dusk, 0.0, 1.0) * 0.4)
-	env.ambient_light_energy = lerpf(0.52, 0.46, night)
+	env.ambient_light_energy = lerpf(0.56, 0.46, night)
 	env.background_color = Color("3a8f94").lerp(Color("14304a"), night)
 	RenderingServer.global_shader_parameter_set("night", night)
 	for l in lamps:

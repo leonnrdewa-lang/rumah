@@ -53,6 +53,7 @@ var talk_t := 0.0           # >0: play the talk loop instead of idle (callers re
 var idle_clip := "idle"     # "sad" for villagers who lost their land
 var skinned := false        # true when driving a v2 AnimationPlayer
 var idle_seed := randf() * 10.0
+var held_tool := ""         # tool kept in hand between actions (see hold_tool)
 
 # ---------------------------------------------------------------- v2 state
 var ap: AnimationPlayer
@@ -166,6 +167,14 @@ func play_action(kind: String, duration := -1.0) -> void:
 	_act_left = a.length / rate
 	_show_tool(spec[2], _act_left - BLEND_ACTION_OUT * 0.6)
 	bump(0.5)
+
+
+func hold_tool(kind: String) -> void:
+	## Keep a tool in hand between actions (e.g. the hotbar selection): an action
+	## kind ("harvest", "clear", "plant", "fert") or a tool name ("egrek",
+	## "parang", "trowel", "sack"); "" for empty hands.
+	var spec: Array = ACTIONS.get(kind, ["", 1.0, kind])
+	held_tool = spec[2] if spec[2] in ["egrek", "parang", "trowel", "sack"] else ""
 
 
 func is_busy() -> bool:
@@ -553,6 +562,10 @@ func _show_tool(kind: String, seconds: float) -> void:
 
 
 func _update_tool(delta: float) -> void:
+	if held_tool != "" and (_tool_kind == "" or _tool_kind == held_tool) and _act_left <= 0.0 and action_t <= 0.0:
+		if _tool_kind == "":
+			_show_tool(held_tool, 0.3)
+		_tool_timer = 0.3
 	if _tool_kind == "" or not _tools.has(_tool_kind):
 		return
 	_tool_timer -= delta

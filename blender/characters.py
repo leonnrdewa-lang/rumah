@@ -1210,12 +1210,12 @@ def two_bone(S, Tg, L1, L2, pole, soft=0.95):
     when a target is almost or entirely out of reach). Returns (elbow/knee, point reached)."""
     d = Tg - S
     dist = d.length
+    u = d / max(dist, 1e-9)
     lo, hi = abs(L1 - L2) + 1e-4, (L1 + L2) * 0.9995
     ds = hi * soft
     if dist > ds:
         dist = ds + (hi - ds) * (1.0 - math.exp(-(dist - ds) / (hi - ds)))
     reach = clamp(dist, lo, hi)
-    u = d / max(dist, 1e-9)
     p = pole - u * pole.dot(u)
     if p.length < 1e-6:
         p = Vector((0, 0, 1)) - u * u.z
@@ -1480,37 +1480,150 @@ def clip_idle(rig, st):
     return N, True, get
 
 
-def gait(rig, st, N, stance, amp, lift, bob, lean, arm, run=False):
-    """Shared walk / run cycle. Left foot contacts at frame 0, right at N/2."""
+# Locomotion. The stride is sized for the game's speeds (NPC stroll 1.25 m/s, player run ~5 m/s):
+# the planted foot travels `front + back` metres (x stride style x leg length) while it is on the
+# ground for `sigma` of the cycle, so ground speed = travel / (sigma * clip length) at 1x playback.
+# The foot really rolls over its heel and ball (pivot fixed on the ground), so the ankle travels
+# less than the ground does - see gait_speed().
+GAIT = {
+    "walk": dict(N=27, sigma=0.55, front=0.14, back=0.18, td_toe=-18.0, to_toe=38.0, lift=0.036,
+                 bob=0.03, lean=6.0, arm=34.0, yaw=7.0),
+    "run": dict(N=18, sigma=0.30, front=0.16, back=0.24, td_toe=3.0, to_toe=56.0, lift=0.12,
+                bob=0.03, lean=15.0, arm=46.0, yaw=10.0),
+}
+def gait_dims(c, st, kind):
+    """Scaled stride numbers of one character for one gait (unscaled metres, like pose specs)."""
+    g = GAIT[kind]
+    d = c.d
+    legk = (d["hip_z"] - d["ankle_z"]) / (DEF["hip_z"] - DEF["ankle_z"])
+    sk = st["stride"] * legk
+    return g, legk, g["front"] * sk, g["back"] * sk
+
+
+def foot_table(c):
+    """How the planted foot rolls, from the character's own (rounded) sole: for each pitch angle
+    (+ = heel up / toe down) the ankle offset that keeps the sole touching the ground without
+    slipping (the contact point walks along the sole by the arc length it rolls over).
+    Returns {deg: (dy, dz)} relative to the flat foot, deg in -40..90."""
+    d = c.d
+    A = Vector((d["leg_x"], 0.0, d["ankle_z"]))
+    pts = [Vector(v) - A for (vs, fs, m, sm, rule) in c.chunks if rule == ("foot", 1) for v in vs]
+    yz = [(p.y, p.z) for p in pts]
+
+    def contact(deg):
+        th = rad(deg)
+        cth, sth = math.cos(th), math.sin(th)
+        best = min(range(len(yz)), key=lambda i: yz[i][0] * sth + yz[i][1] * cth)
+        y, z = yz[best]
+        return best, y * cth - z * sth, y * sth + z * cth
+    tab = {}
+    i0, cy0, cz0 = contact(0.0)
+    for sgn, rng in ((1, range(0, 91)), (-1, range(0, -41, -1))):
+        s_arc, prev = 0.0, None
+        # the flat foot touches at its lowest point; rolling starts from the contact at +-0.5 deg
+        for deg in rng:
+            i, cy, cz = contact(deg if deg else sgn * 0.5)
+            if prev is not None and i != prev:
+                s_arc += math.hypot(yz[i][0] - yz[prev][0], yz[i][1] - yz[prev][1])
+            prev = i
+            if deg == 0:
+                base_y = cy
+            tab[deg] = (base_y - sgn * s_arc - cy, cz0 - cz)
+    tab[0] = (0.0, 0.0)
+    return tab
+
+
+def foot_roll(L, toe, tab):
+    """Ankle (dy, dz) of a planted foot whose flat-foot ankle would be at dy = L, rolled by
+    `toe` degrees (+ = heel up, rolling onto the ball; - = toe up, rocking on the heel)."""
+    t = clamp(toe, -40.0, 90.0)
+    a = math.floor(t)
+    b = min(a + 1, 90)
+    k = t - a
+    (ya, za), (yb, zb) = tab[int(a)], tab[int(b)]
+    return L + lerp(ya, yb, k), lerp(za, zb, k)
+
+
+def gait_speed(c, st, kind):
+    """(ground speed at 1x in m/s, ankle travel / ground travel) for one character's clip."""
+    g, legk, Af, Ab = gait_dims(c, st, kind)
+    tab = foot_table(c)
+    y0 = foot_roll(-Af, g["td_toe"], tab)[0]
+    y1 = foot_roll(Ab, g["to_toe"], tab)[0]
+    T = g["N"] / FPS
+    return (Af + Ab) * c.S / (g["sigma"] * T), (y1 - y0) / (Af + Ab)
+
+
+def gait(rig, st, kind):
+    """Shared walk / run cycle. Left foot touches down at frame 0, right at N/2. In place: the
+    pelvis never drifts; planted feet slide back at exactly the ground speed."""
+    c = rig.c
+    d = c.d
+    g, legk, Af, Ab = gait_dims(c, st, kind)
+    N, sig, run = g["N"], g["sigma"], kind == "run"
     base = stand(st)
-    A = amp * st["stride"]
-    Y0 = (9.0 if run else 7.0) + st["swagger"]
+    az = d["ankle_z"]
+    Y0 = g["yaw"] + st["swagger"]
+    lean, arm = g["lean"], g["arm"]
+    td_toe, to_toe = g["td_toe"], g["to_toe"]
+    lift = g["lift"] * legk * min(st["bob"], 1.15)
+    bob = g["bob"] * legk * st["bob"]
+
+    def stance_toe(v):
+        if run:
+            return td_toe * (1 - sstep(v / 0.3)) + to_toe * sstep((v - 0.3) / 0.7)
+        return td_toe * (1 - sstep(v / 0.2)) + to_toe * sstep((v - 0.48) / 0.52)
+
+    tab = foot_table(c)
+    y_td, z_td = foot_roll(-Af, td_toe, tab)
+    y_to, z_to = foot_roll(Ab, to_toe, tab)
+    if run:   # swing: kick the heel up behind, drive the knee forward and high, reach, land flat
+        sw_toe = Curve([(0.0, to_toe), (0.22, to_toe + 18.0), (0.55, 30.0), (0.84, td_toe + 5.0), (1.0, td_toe)])
+    else:
+        sw_toe = Curve([(0.0, to_toe), (0.3, 12.0), (0.72, td_toe - 4.0), (1.0, td_toe)])
 
     def foot(u):
-        """(dy, dz, toe_down) of one foot at its own phase u."""
-        if u < stance:
-            v = u / stance
-            y = -A + 2 * A * v
-            if run:
-                toe = lerp(4.0, 30.0, sstep((v - 0.45) / 0.55))
-            else:
-                toe = -14.0 * (1 - sstep(v / 0.22)) + 22.0 * sstep((v - 0.62) / 0.38)
-            z = 0.0
+        """(dy, dz, toe) of one foot at its own phase u (0 = touchdown, sig = toe-off)."""
+        if u < sig:
+            v = u / sig
+            toe = stance_toe(v)
+            y, z = foot_roll(-Af + (Af + Ab) * v, toe, tab)
+            return y, z, toe
+        w = (u - sig) / (1 - sig)
+        if run:
+            e = sstep((w - 0.06) / 0.84)
+            e = e * e * (3 - 2 * e)
+            bump = math.sin(math.pi * clamp(w / 0.92) ** 0.62)
         else:
-            v = (u - stance) / (1 - stance)
-            e = v * v * v * (v * (6 * v - 15) + 10)       # smootherstep
-            y = A - 2 * A * e
-            if run:   # kick the heel up behind, then reach forward
-                y += 0.07 * math.sin(math.pi * v) * (1 - v) * 1.4
-                toe = lerp(30.0, 4.0, sstep(v / 0.9))
-                z = lift * math.sin(math.pi * v ** 0.75)
-            else:
-                toe = lerp(22.0, -14.0, sstep(v / 0.85))
-                z = lift * math.sin(math.pi * v ** 0.8)
-        # keep the toe (or heel) on the ground while the foot rolls
-        piv = 0.085 if toe > 0 else 0.03
-        z += piv * math.sin(rad(abs(toe)))
-        return y, z, toe
+            e = w * w * w * (w * (6 * w - 15) + 10)       # smootherstep
+            bump = math.sin(math.pi * w ** 0.8)
+        y = y_to + (y_td - y_to) * e
+        z = z_to + (z_td - z_to) * sstep(w) + lift * bump
+        return y, z, sw_toe(w)
+
+    # pelvis height: as high as the legs allow at touchdown / toe-off (knees just short of straight)
+    reach = 0.968 * (d["hip_z"] - d["ankle_z"])
+
+    def hip_allowed(ph, y, z):
+        hy = d["leg_x"] * math.sin(rad(-Y0 * math.cos(TAU * ph)))
+        dy = y - hy
+        return az + z + math.sqrt(max(1e-6, reach * reach - dy * dy)) - d["hip_z"]
+
+    if run:
+        def prof(ph):    # 0 at mid-stance (lowest), 1 in mid-flight (highest)
+            return 0.5 - 0.5 * math.cos(2 * TAU * (ph - sig / 2))
+    else:
+        def prof(ph):    # 0 at the contacts (lowest), 1 at passing (highest); sharp bounce off the ground
+            b = abs(math.sin(TAU * ph))
+            return 0.65 * b + 0.35 * b * b
+    roll = 4.0 * st["energy"]
+    if run:
+        z_lo = min(hip_allowed(0.0, y_td, z_td) - bob * prof(0.0), hip_allowed(sig, y_to, z_to) - bob * prof(sig))
+        z_hi = z_lo + bob
+    else:   # highest at passing, with the stance knee just short of straight (the hip rolls up a bit)
+        z_hi = -(1.0 - 0.972) * (d["hip_z"] - az) - d["leg_x"] * math.sin(rad(roll))
+        z_lo = min(z_hi - bob, (hip_allowed(0.0, y_td, z_td) - z_hi * prof(0.0)) / (1.0 - prof(0.0)),
+                   (hip_allowed(sig, y_to, z_to) - z_hi * prof(sig)) / (1.0 - prof(sig)))
 
     def get(ch, f):
         ph = f / N
@@ -1523,13 +1636,10 @@ def gait(rig, st, N, stance, amp, lift, bob, lean, arm, run=False):
         bl = abs(math.sin(TAU * (ph - 2 / N)))
         c1, s1 = cyc(ph)
         if ch == "hips_off":
-            if run:
-                zz = -0.05 - bob * math.cos(2 * TAU * (ph - stance / 2))
-            else:
-                zz = -0.02 + bob * (0.65 * bounce + 0.35 * bounce * bounce - 0.55)
+            zz = z_lo + (z_hi - z_lo) * prof(ph)
             return (0.014 * st["energy"] * math.sin(TAU * (ph - 1 / N)), 0.0, zz)
         if ch == "hips":
-            return (lean * 0.5 + 1.5 * math.cos(2 * TAU * ph), -Y0 * c1, -4.5 * st["energy"] * s1)
+            return (lean * 0.5 + 1.5 * math.cos(2 * TAU * ph), -Y0 * c1, -roll * s1)
         if ch == "spine":
             c2, s2 = cyc(ph - 2 / N)
             return (base["spine"][0] + lean * 0.3, 0.35 * Y0 * c2, 2.4 * s2)
@@ -1549,8 +1659,8 @@ def gait(rig, st, N, stance, amp, lift, bob, lean, arm, run=False):
             ab = 10.0 + st["arm_out"] + (4.0 if run else 3.0) * bounce
             a = arm * st["walk_arms"]
             if run:
-                return (8.0 + a * fwd, ab + 4, 12.0, 82.0 - 12.0 * fwd)
-            return (4.0 + a * fwd, ab, 8.0, 22.0 + 14.0 * fwd)
+                return (8.0 + a * fwd, ab + 4, 12.0, 84.0 - 14.0 * fwd)
+            return (4.0 + a * fwd, ab, 8.0, 22.0 + 16.0 * fwd)
         if ch in ("handL", "handR"):
             side = 1 if ch == "handL" else -1
             fwd = -side * math.cos(TAU * (ph - 5 / N))
@@ -1562,16 +1672,11 @@ def gait(rig, st, N, stance, amp, lift, bob, lean, arm, run=False):
 
 
 def clip_walk(rig, st):
-    N = 27
-    return N, True, gait(rig, st, N, stance=0.56, amp=0.085, lift=0.052 * st["bob"], bob=0.025 * st["bob"],
-                         lean=5.0, arm=28.0)
+    return GAIT["walk"]["N"], True, gait(rig, st, "walk")
 
 
 def clip_run(rig, st):
-    N = 18
-    return N, True, gait(rig, st, N, stance=0.38, amp=0.1, lift=0.075 * min(st["bob"], 1.1),
-                         bob=0.018 * min(st["bob"], 1.15),
-                         lean=14.0, arm=38.0, run=True)
+    return GAIT["run"]["N"], True, gait(rig, st, "run")
 
 
 def clip_talk(rig, st):
@@ -1957,7 +2062,7 @@ def build_player():
     c = Char("player", style=dict(energy=1.0, bob=1.05))
     SK, DK = "M_Skin", "M_Dark"
     face(c, SK, eyes="smug", mouth="smirk", brows="smug")
-    hair(c, DK, front=70, side=89, back=106, part=8, tmin=48, rings=2)
+    hair(c, DK, front=70, side=95, back=134, part=8, tmin=48, rings=4)
     # straw safari hat, tipped back, thick rolled brim + batik band
     H = hat_xf(c, tilt=-13, roll=3, lift=0.004)
     crown = [(0.214, 0.066), (0.33, 0.047), (0.35, 0.052), (0.357, 0.066), (0.347, 0.078), (0.3, 0.078),
@@ -1991,11 +2096,11 @@ def build_player():
 
 
 def build_kakek():
-    c = Char("kakek", style=dict(stoop=9.0, stride=0.8, bob=0.7, energy=0.7, idle_arms="behind"),
+    c = Char("kakek", style=dict(stoop=9.0, stride=0.9, bob=0.7, energy=0.7, idle_arms="behind"),
              head_r=(0.226, 0.212, 0.204))
     SK, DK, PALE = "M_SkinTan", "M_Dark", "M_FadedShirt"
     face(c, SK, eyes="happy", mouth=None, brows="bushy", brow_mat=PALE)
-    hair(c, PALE, front=80, side=90, back=108, seg=20, tmin=60, rings=2)
+    hair(c, PALE, front=80, side=95, back=130, seg=20, tmin=60, rings=4)
     moustache(c, PALE, thick=1.1, droop=5.0)
     # wide conical caping (woven bamboo) with a thick rim and two woven rings
     H = hat_xf(c, tilt=-10)
@@ -2026,7 +2131,7 @@ def build_kakek():
 
 
 def build_ibu():
-    c = Char("ibu", style=dict(stride=0.75, energy=0.85, idle_arms="front", head_tilt=2.0), sh_x=0.118,
+    c = Char("ibu", style=dict(stride=0.88, energy=0.85, idle_arms="front", head_tilt=2.0), sh_x=0.118,
              sh_z=0.545)
     SK = "M_Skin"
     face(c, SK, eyes="round", mouth="smile", brows="soft", ears=False, lash=True, hl="M_Floral")
@@ -2056,7 +2161,7 @@ def build_kades():
     c = Char("kades", style=dict(chest=-5.0, idle_arms="behind", swagger=2.0, energy=0.85))
     SK, DK = "M_Skin", "M_Dark"
     face(c, SK, eyes="round", mouth="smile", brows="normal")
-    hair(c, DK, front=74, side=90, back=108, lift=0.012, seg=20, tmin=40, rings=2)
+    hair(c, DK, front=74, side=95, back=132, lift=0.012, seg=20, tmin=40, rings=4)
     moustache(c, DK, thick=1.2, droop=3.0, width=14)
     # black peci (velvet cap)
     H = hat_xf(c, tilt=-4)
@@ -2088,7 +2193,7 @@ def build_kades():
 
 
 def build_nenek():
-    c = Char("nenek", style=dict(stoop=15.0, stride=0.7, bob=0.6, energy=0.6, idle_arms="front", head_tilt=-2.0))
+    c = Char("nenek", style=dict(stoop=15.0, stride=0.85, bob=0.6, energy=0.6, idle_arms="front", head_tilt=-2.0))
     SK, DK, GR = "M_Skin", "M_Dark", "M_HairGrey"
     face(c, SK, eyes="happy", mouth="smile", brows="soft", brow_mat=GR)
     hair(c, GR, front=62, side=92, back=116, lift=0.018)
@@ -2164,7 +2269,7 @@ def build_petani():
     c = Char("petani", style=dict(energy=0.95))
     SK, DK = "M_SkinTan", "M_Dark"
     face(c, SK, eyes="round", mouth="smile", brows="normal")
-    hair(c, DK, front=78, side=89, back=106, seg=20, tmin=58, rings=2)
+    hair(c, DK, front=78, side=95, back=134, seg=20, tmin=58, rings=4)
     # olive bucket hat with a thick rolled brim
     H = hat_xf(c, tilt=-9)
     bucket = [(0.212, 0.074), (0.3, 0.024), (0.318, 0.022), (0.326, 0.034), (0.318, 0.048), (0.3, 0.052),
@@ -2237,7 +2342,7 @@ def build_preman():
              fore_r=0.045, wrist_r=0.036, hand_k=1.35, head_c=1.012, head_r=(0.222, 0.208, 0.2))
     SK, DK, INK = "M_SkinTan", "M_Dark", "M_Ink"
     face(c, SK, eyes="narrow", mouth="frown", brows="angry", hl=None)
-    hair(c, DK, front=60, side=88, back=112, lift=0.006, rim=None, seg=22, rings=4)
+    hair(c, DK, front=60, side=90, back=122, lift=0.006, rim=None, seg=22, rings=4)
     p0, n0 = c.hp(9, -21.2, 0.0)   # toothpick
     c.add("head", tube_vf([p0 - n0 * 0.01, p0 + Vector((0.055, -0.03, -0.018))], [0.0045, 0.0035], 4), "M_Gold")
     # black tank top over a big chest, skin shoulders
@@ -2284,7 +2389,7 @@ def build_calo():
     c = Char("calo", style=dict(swagger=4.0, idle_arms="front", head_tilt=4.0, energy=1.0, rub=1.0))
     SK, DK, TW = "M_Skin", "M_Dark", "M_Tweed"
     face(c, SK, eyes=None, mouth="smirk", brows=None)
-    hair(c, DK, front=80, side=89, back=106, lift=0.014, seg=20, tmin=60, rings=2)
+    hair(c, DK, front=80, side=95, back=132, lift=0.014, seg=20, tmin=60, rings=4)
     sunglasses_on_face(c, DK)
     for s in (1, -1):   # pencil moustache
         pts = [(s * 2.5, -15.8), (s * 7, -16.2), (s * 11.5, -15.2), (s * 14, -13.2)]
@@ -2319,7 +2424,7 @@ def build_petugas():
     c = Char("petugas", style=dict(chest=-3.0, idle_arms="clip", energy=0.8))
     SK, DK, UN = "M_Skin", "M_Dark", "M_Uniform"
     face(c, SK, eyes="round", mouth="flat", brows="angry")
-    hair(c, DK, front=80, side=89, back=106, lift=0.012, seg=20, tmin=58, rings=2)
+    hair(c, DK, front=80, side=95, back=132, lift=0.012, seg=20, tmin=58, rings=4)
     # peaked uniform cap with a dark band, visor and a gold badge
     H = hat_xf(c, tilt=-3)
     cap = [(0.205, 0.086), (0.212, 0.146), (0.245, 0.194), (0.254, 0.2), (0.255, 0.212), (0.236, 0.222),
@@ -2357,7 +2462,7 @@ def build_buruh():
     c = Char("buruh", style=dict(stoop=4.0, energy=0.8, stride=0.95))
     SK, DK = "M_SkinTan", "M_Dark"
     face(c, SK, eyes="round", mouth="flat", brows="worried")
-    hair(c, DK, front=80, side=89, back=106, lift=0.012, seg=20, tmin=58, rings=2)
+    hair(c, DK, front=80, side=95, back=132, lift=0.012, seg=20, tmin=58, rings=4)
     # yellow hard hat with a short front peak and a ridge over the top
     H = hat_xf(c, tilt=-5)
 
@@ -2589,18 +2694,72 @@ def render_portrait(c, rig, body, acts):
 
 
 # --------------------------------------------------------------------------- build / export
+def _brace_balance(txt):
+    """{ minus } outside double-quoted strings (the .import format is Godot's ConfigFile)."""
+    depth, q, esc = 0, False, False
+    for ch in txt:
+        if q:
+            if esc:
+                esc = False
+            elif ch == "\\":
+                esc = True
+            elif ch == '"':
+                q = False
+        elif ch == '"':
+            q = True
+        elif ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+    return depth
+
+
+def loops_import_text(txt):
+    """Return the .glb.import text with `_subresources=` set to exactly our loop block.
+    Line based and idempotent: the old value (however many lines, balanced or not - e.g. the
+    stray `}` lines an earlier regex version left behind) is dropped up to the next `key=` line or
+    section header, then one balanced block is written. `gltf/naming_version` is kept at 2."""
+    import re
+    block = ["_subresources={", "\"animations\": {"]
+    block += [",\n".join("\"%s\": {\n\"settings/loop_mode\": 1\n}" % n for n in LOOPS)]
+    block += ["}", "}"]
+    block = "\n".join(block).split("\n")
+    key = re.compile(r"^[A-Za-z_][\w/.\-]*=")
+    out, skipping, done = [], False, False
+    for line in txt.split("\n"):
+        if skipping:
+            if key.match(line) or line.startswith("["):
+                skipping = False
+            else:
+                continue
+        if line.startswith("_subresources="):
+            if not done:
+                out += block
+                done = True
+            skipping = not line.rstrip().endswith("{}") and _brace_balance(line) != 0
+            continue
+        if line.startswith("gltf/naming_version="):
+            line = "gltf/naming_version=2"
+        out.append(line)
+    if not done:   # no _subresources line yet: put it at the end of [params]
+        i = max(k for k, l in enumerate(out) if l.strip()) + 1
+        out[i:i] = block
+    new = "\n".join(out)
+    assert _brace_balance(new) == 0, "unbalanced braces in the .import sidecar"
+    return new
+
+
 def mark_loops_in_import(name):
     """Tell Godot's importer to loop the cyclic clips (sets loop_mode = LINEAR on re-import) by
     writing them into the existing .glb.import sidecar. Other import settings are left alone."""
-    import re
     path = os.path.join(common.MODELS_DIR, name + ".glb.import")
     if not os.path.exists(path):
+        print("[import] no sidecar yet for", name, "- open the project in Godot once, then re-run")
         return
     txt = open(path).read()
-    block = "_subresources={\n\"animations\": {\n" + ",\n".join(
-        "\"%s\": {\n\"settings/loop_mode\": 1\n}" % n for n in LOOPS) + "\n}\n}"
-    new, n = re.subn(r"_subresources=\{.*?\n\}\n(?=\S)|_subresources=\{\}", block, txt, count=1, flags=re.S)
-    if n and new != txt:
+    new = loops_import_text(txt)
+    assert loops_import_text(new) == new, "sidecar rewrite is not idempotent"
+    if new != txt:
         open(path, "w").write(new)
         print("[import] loops marked in", os.path.basename(path))
 

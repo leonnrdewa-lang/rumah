@@ -7,6 +7,7 @@ Run:  python3 blender/vegetation.py                 # textures (if missing) + ev
       python3 blender/vegetation.py tex:frond       # re-render one texture
       python3 blender/vegetation.py scene           # composite test render at the game camera (reads the GLBs)
       python3 blender/vegetation.py scene_close     # same plantation corner from 8 m (detail check)
+      python3 blender/vegetation.py scene_win       # palms within +-35 deg yaw (camera window towards the camera)
                                                     # -> blender/previews/veg_scene*.png (+ _vs_target)
 
 Look (see ART_DIRECTION_V2.md and art/reference/07_target_gameplay.png): lush, layered,
@@ -25,6 +26,7 @@ those textures on cheap curved / V-folded card strips:
   grass.png      2 side-view clumps: lush | tall wild with dry blades
   flowers.png    2 side-view clumps: white daisies | yellow wedelia
   piringan.png   top-down weeded circle: red-brown mulch + dry frond bits, ragged edge
+  banana.png     banana leaf: pleated blade, pale midrib, wind-torn slits (banana)
 
 Material contract (the game relies on it):
   * textured materials export as glTF alphaMode MASK (texture alpha -> Math ROUND ->
@@ -35,8 +37,12 @@ Material contract (the game relies on it):
     trunks / logs, yellowing on old fronds);
   * one material name <-> one texture:  M_Frond=frond, M_FrondDry=frond_dry,
     M_CocoFrond=frond_coco, M_Fern=fern, M_Leaf / M_Bush / M_Canopy=leaves,
-    M_Grass=grass, M_Flower=flowers, M_Piringan=piringan (single-sided ground decal).
-  * sawit_3: root Empty -> `sawit_3_body` + child Empty `Fruits` -> `Fruit_0..n`.
+    M_Grass=grass, M_Flower=flowers, M_BananaLeaf=banana, M_Piringan=piringan (single-sided ground decal).
+  * sawit_3: root Empty -> `sawit_3_body` + child Empty `Fruits` -> `Fruit_0..n`.  Its spreading fronds
+    leave a "camera window" facing -Y (the game camera side) so the trunk and the front bunches show
+    under the crown like in the target; keep the in-game yaw of sawit_3 within ~+-40 deg to use it.
+  * vertex colours are soft-floored at 0.46 (finalize); leaf-card vertices stay >= 1.5 cm above z=0,
+    solid rocks / logs may sink below it.
   * game/assets/textures/foliage/materials.json lists material -> texture for the game side.
 
 Set VEG_SCRATCH=<dir> to also write extra close-up debug renders there.
@@ -656,35 +662,40 @@ def _t_frond_coco(w, h):
 # ---------------------------------------------------------------- fern (pakis)
 @texture("fern", (256, 512))
 def _t_fern(w, h):
+    """Pakis frond: few, broad, shallowly lobed pinnae so the comb outline survives mipmapping at game
+    distance (a fern card is only ~60 px long on screen); dark rachis base (plant centre stays dark)."""
     rnd = random.Random(5)
     m = _tex_mat(rough=0.7, spec=0.2)
     g = Geo()
     ytip = 1.97
-    y0 = 0.3
+    y0 = 0.26
     n = 24
     pts = [(0.03 * math.sin(i / n * 2.5), ytip * i / n) for i in range(n + 1)]
-    strip_xy(g, pts, [lerp(0.04, 0.008, i / n) for i in range(n + 1)],
-             lambda t: cmix(lin("#5d7d30"), lin("#7c9c3e"), t), z=0.06)
-    cb, cm, ct = lin("#335a24"), lin("#548434"), lin("#86ab4a")
-    N = 21
+    strip_xy(g, pts, [lerp(0.045, 0.01, i / n) for i in range(n + 1)],
+             lambda t: cmix(lin("#34501f"), lin("#6f9038"), min(1.0, t * 1.6)), z=0.06)
+    cb, cm, ct = lin("#2c5220"), lin("#4d8232"), lin("#83ac4a")
+    N = 13
     for side in (-1, 1):
         for k in range(N):
             u = clamp01((k + 0.5 + 0.3 * side) / N)
-            y = y0 + (ytip - 0.05 - y0) * u
+            y = y0 + (ytip - 0.08 - y0) * u
             x = 0.03 * math.sin(y / ytip * 2.5)
-            prof = math.sin(math.pi * (0.12 + 0.86 * u)) ** 0.5 * (1.0 - 0.3 * u)
-            ln = 0.46 * prof * rnd.uniform(0.92, 1.05)
-            th = math.radians(lerp(78, 52, u) + rnd.uniform(-3, 3))
-            br = rnd.uniform(0.84, 1.1)
+            prof = math.sin(math.pi * (0.16 + 0.84 * u)) ** 0.5 * (1.0 - 0.3 * u)
+            ln = 0.47 * prof * rnd.uniform(0.93, 1.05)
+            th = math.radians(lerp(74, 50, u) + rnd.uniform(-3, 3))
+            br = rnd.uniform(0.86, 1.08) * lerp(0.82, 1.0, min(1.0, u * 2.5))
 
             def col(s, sd, br=br):
                 c = cmix(cb, cm, s * 1.6) if s < 0.6 else cmix(cm, ct, (s - 0.6) * 2.5)
-                return cscale(c, br * (1.1 if sd == 0 else (0.94 if sd == -side else 1.0)))
+                return cscale(c, br * (1.1 if sd == 0 else (0.9 if sd == -side else 1.0)))
 
             flat_leaf(g, (x + side * 0.012, y, 0.02 + 0.02 * u), (side * math.sin(th), math.cos(th)), ln,
-                      0.105 * (0.7 + 0.3 * prof), col, st=24, fold=0.18, bend=-side * 0.1,
-                      shape=lambda s: math.sin(math.pi * (0.15 + 0.85 * s ** 0.9)) ** 0.6, lobes=7, lobe_depth=0.42,
-                      zdrop=0.03)
+                      0.155 * (0.72 + 0.28 * prof), col, st=18, fold=0.2, bend=-side * 0.1,
+                      shape=lambda s: math.sin(math.pi * (0.12 + 0.88 * s ** 0.9)) ** 0.55, lobes=4,
+                      lobe_depth=0.26, zdrop=0.03)
+    # a small lobed tip
+    flat_leaf(g, (0.03 * math.sin(2.4), ytip - 0.12, 0.08), (0.02, 1.0), 0.14, 0.07,
+              lambda s, sd: cscale(cm, 1.05), st=6, fold=0.2, shape=shape_lance)
     g.obj("_fern_tex", [m])
     arr = _tex_render(w, h, (0.0, 1.0, 0.0), 2.0, samples=24, world=0.78, sun=((-0.2, 0.45, 1.0), 1.5))
     _tex_save(arr, "fern")
@@ -970,6 +981,66 @@ def _t_flowers(w, h):
         tiles.append(_tex_render(w // 2, h, (0.0, 0.0, 0.42), 0.92, elev=28.0, samples=24, world=0.8,
                                  sun=((-0.3, -0.6, 1.0), 1.4)))
     _tex_save(np.concatenate(tiles, axis=1), "flowers")
+
+
+# ---------------------------------------------------------------- banana leaf (top-down, base at bottom)
+@texture("banana", (256, 512))
+def _t_banana(w, h):
+    """Banana (pisang) leaf: oblong pleated blade, pale midrib, lateral veins at ~70 deg, wind-torn
+    slits along the veins and a few dry brown edges."""
+    rnd = random.Random(19)
+    m = _tex_mat(rough=0.45, spec=0.35)
+    g = Geo()
+    yb, yt = 0.14, 1.8
+    n = 24
+    strip_xy(g, [(0.0, yb - 0.1 + (yt - yb + 0.06) * i / n) for i in range(n + 1)],
+             [lerp(0.05, 0.012, i / n) for i in range(n + 1)], lambda t: cmix(lin("#9fb45a"), lin("#c4cf7c"), t),
+             z=0.05)
+    cb, cm, ce = lin("#3a7428"), lin("#5b9a3c"), lin("#86b650")
+    dry = lin("#a08445")
+    cot = 1.0 / math.tan(math.radians(70))
+
+    def half_w(y):
+        u = clamp01((y - yb) / (yt - yb))
+        tip = math.sqrt(max(0.0, 1.0 - ((u - 0.72) / 0.28) ** 2)) if u > 0.72 else 1.0
+        return 0.45 * min(1.0, u / 0.16) ** 0.55 * tip + 0.004
+
+    for side in (-1, 1):
+        y = yb
+        k = 0
+        while y < yt - 0.02:
+            dy = rnd.uniform(0.045, 0.075)
+            y1 = min(yt, y + dy)
+            tear0 = k > 0 and rnd.random() < 0.34      # slit at this strip's lower boundary
+            tin = rnd.uniform(0.08, 0.55)               # slit reaches this far towards the midrib
+            gap = rnd.uniform(0.008, 0.02)
+            br = rnd.uniform(0.94, 1.05) * (1.02 if k % 2 else 0.98)
+            dry_edge = rnd.random() < 0.12
+            pleat = 0.006 if k % 2 else -0.006
+            rows = []
+            for j in range(5):
+                t = j / 4
+                pts = []
+                for yy, lower in ((y, True), (y1, False)):
+                    wv = half_w(yy)
+                    q = Vector((side * (0.02 + (wv - 0.02) * t), yy + wv * t * cot * 0.8, 0.0))
+                    if lower and tear0 and t >= tin:
+                        q.y += gap * smoothstep(tin, min(1.0, tin + 0.15), t)
+                    q.z = 0.03 - 0.06 * t * t + (pleat if not lower else -pleat) * t
+                    pts.append(q)
+                c = cmix(cb, cm, t * 1.6) if t < 0.6 else cmix(cm, ce, (t - 0.6) * 2.5)
+                if dry_edge and t > 0.7:
+                    c = cmix(c, dry, (t - 0.7) / 0.3)
+                c = cscale(c, br)
+                rows.append((g.vert(pts[0], c), g.vert(pts[1], c)))
+            for j in range(4):
+                a, b = rows[j], rows[j + 1]
+                g.face((a[0], a[1], b[1], b[0]), 0, ref=UP)
+            y = y1
+            k += 1
+    g.obj("_banana_tex", [m])
+    arr = _tex_render(w, h, (0.0, 1.0, 0.0), 2.0, samples=24, world=0.7, sun=((-0.3, 0.6, 1.0), 2.0))
+    _tex_save(arr, "banana")
 
 
 # ---------------------------------------------------------------- piringan (weeded mulch circle, top-down)
@@ -1323,8 +1394,8 @@ def palm_trunk(g, mi, H, r, rnd, boots, boot, rings, sides=12, z0=0.3, z1=None, 
 
 FRUIT_TINTS = (  # vertex-colour multipliers on M_Fruit (#ec6c30); every channel stays >= 0.5
     (1.0, 1.0, 1.0),      # ripe orange
-    (0.93, 0.86, 0.84),   # orange-red
-    (0.84, 0.62, 0.6),    # red (#d4502a-ish)
+    (0.92, 0.8, 0.78),    # orange-red
+    (0.8, 0.56, 0.55),    # red (#d04a26-ish)
 )
 
 
@@ -1344,7 +1415,7 @@ def fruit_bunch(name, center, axis, length, rnd, mats, parent=None, n=20, sides=
         return Vector((c.x * b_ * egg, c.y * b_ * egg, c.z * a_))
 
     # core: every fruitlet base is buried in it (no loose parts)
-    verts, faces = ico_data(1)
+    verts, faces = ico_data(2)
     base = len(g.v)
     for co in verts:
         nn = co.normalized()
@@ -1368,10 +1439,10 @@ def fruit_bunch(name, center, axis, length, rnd, mats, parent=None, n=20, sides=
         rw = sz * 0.5
         U = D.cross(Vector((0.31, 0.83, 0.47))).normalized()
         V = D.cross(U)
-        tint = FRUIT_TINTS[0 if rnd.random() < 0.45 else (1 if rnd.random() < 0.6 else 2)]
+        tint = FRUIT_TINTS[0 if rnd.random() < 0.4 else (1 if rnd.random() < 0.5 else 2)]
         lit = lerp(0.9, 1.0, (zc + 0.85) / 1.75)  # a touch darker towards the stalk end
         body = cscale(tint, lit)
-        foot = cmul(body, (0.82, 0.8, 0.8))
+        foot = cmul(body, (0.76, 0.68, 0.68))
         ph = rnd.uniform(0, 6.28)
         ring = lambda f, r: [p + D * sz * f + (U * math.cos(q) + V * math.sin(q)) * rw * r
                              for q in (ph + 2 * math.pi * s_ / sides for s_ in range(sides))]
@@ -1396,7 +1467,7 @@ def fruit_bunch(name, center, axis, length, rnd, mats, parent=None, n=20, sides=
                 g.face(tri, 1, ref=(g.v[iCd[s_]] + g.v[iCd[(s_ + 1) % sides]]) * 0.5 - P + Dw * 0.3, smooth=True)
         else:
             # plump body tapering into an orange spike, a little redder at the point
-            it = g.vert(C + R @ (p + D * sz * 0.86), cmul(body, (0.8, 0.62, 0.62)))
+            it = g.vert(C + R @ (p + D * sz * 0.96), cmul(body, (0.8, 0.62, 0.62)))
             for s_ in range(sides):
                 tri = (iB[s_], iB[(s_ + 1) % sides], it)
                 g.face(tri, 0, ref=(g.v[iB[s_]] + g.v[iB[(s_ + 1) % sides]]) * 0.5 - P + Dw * 0.3, smooth=True)
@@ -1421,11 +1492,11 @@ PALMS = {
                            dict(n=9, el=(44, 26), droop=(58, 72), zr=(0.14, 0.26), L=(1.8, 2.05), pw=1.7)]),
     # win: the crown's camera window - the spreading tiers leave the -Y sector (+-window deg) open so the trunk
     # and the front bunches show from the game camera (as in the target); the steep young fronds still cover it.
-    "sawit_3": dict(H=3.4, r=0.28, wr=0.6, boots=54, boot=(0.38, 0.28, 0.13), rings=7, spear=1.1, segs=7,
-                    fruits=6, epi=2, crown_r=0.22, ao=0.55, fruit=(0.8, 0.9), pet=0.2, window=42,
-                    tiers=[dict(n=6, el=(78, 66), droop=(40, 55), zr=(-0.12, 0.0), L=(1.95, 2.25), pw=1.5),
-                           dict(n=8, el=(56, 46), droop=(76, 90), zr=(0.02, 0.1), L=(2.5, 2.75), pw=1.9, win=True),
-                           dict(n=6, el=(40, 32), droop=(88, 95), zr=(0.12, 0.2), L=(2.35, 2.55), pw=2.1, win=True,
+    "sawit_3": dict(H=3.4, r=0.31, wr=0.62, boots=48, boot=(0.42, 0.3, 0.14), rings=7, spear=1.1, segs=7,
+                    fruits=6, epi=1, crown_r=0.24, ao=0.55, fruit=(0.8, 0.9), pet=0.18, window=42,
+                    tiers=[dict(n=6, el=(76, 62), droop=(45, 60), zr=(-0.12, 0.0), L=(2.1, 2.4), pw=1.5),
+                           dict(n=8, el=(54, 44), droop=(80, 92), zr=(0.02, 0.1), L=(2.75, 3.0), pw=2.1, win=True),
+                           dict(n=6, el=(38, 30), droop=(88, 95), zr=(0.12, 0.2), L=(2.5, 2.7), pw=2.2, win=True,
                                 off=0.5)]),
 }
 
@@ -1473,7 +1544,7 @@ def build_palm(name, P, seed=3):
             base = Vector((rb * math.cos(phi), rb * math.sin(phi), zb))
             pts = arc_points(base, phi, el, dr, L, P["segs"], yaw_drift=rnd.uniform(-0.15, 0.15), pw=T.get("pw", 1.4))
             tint = (1.0, 1.0, 0.88) if age < 0.18 else ((0.97, 0.93, 0.74) if age > 0.9 else (1.0, 1.0, 1.0))
-            card_path(g, 0, pts, L * P["wr"], prof=prof, fold=(lerp(0.45, 0.25, age), lerp(0.3, 0.6, age)),
+            card_path(g, 0, pts, L * P["wr"], prof=prof, fold=(lerp(0.36, 0.2, age), lerp(0.25, 0.5, age)),
                       across=5, twist=rnd.uniform(-12, 12), vmap=vm,
                       col_fn=lambda t, s, tint=tint: cscale(tint, plant_ao(t, s, lo=P["ao"], reach=0.42)),
                       side_hint=Vector((math.sin(phi), -math.cos(phi), 0.0)))
@@ -1592,23 +1663,30 @@ def build_tbs():
 
 
 # ============================================================ undergrowth
-def build_fern(name, seed, n, L, elev, droop, tint=(1.0, 1.0, 1.0), spread=0.05, curl=0.0):
+def build_fern(name, seed, tiers, tint=(1.0, 1.0, 1.0), spread=0.05, wmul=0.56, segs=5):
+    """Mounded fern clump: tiers of arching fronds, the young inner ones upright and the outer ones
+    spreading and drooping, so the clump reads as layered (not a flat star) from the game camera.
+    tiers: (n, el0, el1, droop0, droop1, L0, L1, pw, brightness, yellow tint).  Dark centre."""
     rnd = random.Random(seed)
     root = empty(name)
     g = Geo()
     prof = alpha_profile("fern")
-    for i in range(n):
-        f = i / max(1, n - 1)
-        phi = i * GOLDEN + rnd.uniform(-0.2, 0.2)
-        el = lerp(elev[0], elev[1], f) + rnd.uniform(-6, 6)
-        dr = lerp(droop[0], droop[1], f) + rnd.uniform(-8, 8)
-        Li = L * rnd.uniform(0.82, 1.08) * lerp(0.8, 1.0, f)
-        base = Vector((spread * math.cos(phi), spread * math.sin(phi), 0.0))
-        pts = arc_points(base, phi, el, dr, Li, 5, yaw_drift=rnd.uniform(-0.3, 0.3))
-        br = rnd.uniform(0.9, 1.08)
-        card_path(g, 0, pts, Li * 0.5, prof=prof, across=3, fold=(0.25, 0.25), twist=rnd.uniform(-20, 20) + curl,
-                  col_fn=lambda t, s, br=br: cscale(tint, br * plant_ao(t, s, lo=0.5, reach=0.5)),
-                  side_hint=Vector((math.sin(phi), -math.cos(phi), 0.0)))
+    i = 0
+    for n, el0, el1, dr0, dr1, L0, L1, pw, br0, yel in tiers:
+        for k in range(n):
+            f = k / max(1, n - 1)
+            phi = i * GOLDEN + rnd.uniform(-0.25, 0.25)
+            i += 1
+            el = lerp(el0, el1, f) + rnd.uniform(-5, 5)
+            dr = lerp(dr0, dr1, f) + rnd.uniform(-8, 8)
+            Li = lerp(L0, L1, f) * rnd.uniform(0.84, 1.1)
+            base = Vector((spread * math.cos(phi), spread * math.sin(phi), 0.02))
+            pts = arc_points(base, phi, el, dr, Li, segs, yaw_drift=rnd.uniform(-0.3, 0.3), pw=pw)
+            br = br0 * rnd.uniform(0.92, 1.06)
+            tt = cmul(tint, (1.0, 1.0, 1.0 - yel))
+            card_path(g, 0, pts, Li * wmul, prof=prof, across=3, fold=(0.14, 0.2), twist=rnd.uniform(-14, 14),
+                      col_fn=lambda t, s, br=br, tt=tt: cscale(tt, br * plant_ao(t, s, lo=0.46, reach=0.6)),
+                      side_hint=Vector((math.sin(phi), -math.cos(phi), 0.0)))
     g.obj(name + "_mesh", [M_fern()], root)
     return root
 
@@ -1677,7 +1755,7 @@ def build_shrub_a():
         base = Vector((0.12 * math.cos(a), 0.12 * math.sin(a), 0.12 + 0.2 * rnd.random()))
         L = rnd.uniform(0.36, 0.48)
         br = rnd.uniform(0.88, 1.05)
-        leaf_card(g, 0, base, D, L, L * 0.55, ATLAS["broad"], droop=0.3, segs=2, prof=bprof, across=3,
+        leaf_card(g, 0, base, D, L, L * 0.9, ATLAS["broad"], droop=0.3, segs=2, prof=bprof, across=3,
                   fold=(0.3, 0.2), twist=rnd.uniform(-20, 20),
                   col_fn=lambda t, s, br=br: grey(br * plant_ao(t, s, lo=0.55, reach=0.5)))
     g.obj("shrub_a_mesh", [M_leaf("M_Bush")], root)
@@ -1685,25 +1763,49 @@ def build_shrub_a():
 
 
 def build_shrub_b():
-    """Low rosette of big pointed broad leaves (like the target's undergrowth seedlings)."""
+    """Mounded broad-leaf bush (~0.8 m): a dark leafy core with tiers of big glossy pointed leaves -
+    wide and drooping at the bottom, rising towards the top - plus a few sprigs and leaf clusters."""
     rnd = random.Random(35)
     root = empty("shrub_b")
     g = Geo()
-    prof = alpha_profile("leaves", ATLAS["broad"])
-    tiers = [(8, (8, 24), (0.42, 0.52), 0.35, 0.0), (6, (40, 58), (0.36, 0.44), 0.3, 0.08),
-             (3, (68, 80), (0.26, 0.32), 0.15, 0.14)]
+    cc = ((ATLAS["cluster"][0] + ATLAS["cluster"][2]) / 2, (ATLAS["cluster"][1] + ATLAS["cluster"][3]) / 2)
+    geo_blob(g, 0, (0, 0, 0.34), 0.2, (1.1, 1.0, 1.75), seed=8, subdiv=1, amp=0.14,
+             col_fn=lambda p, n: grey(lerp(0.5, 0.75, smoothstep(0.0, 0.7, p.z))), uv_fn=sphere_uv(cc, 0.05),
+             floor=0.0)
+    bprof = alpha_profile("leaves", ATLAS["broad"])
+    # stacked tiers of near-horizontal leaves (broad side up, so they read from the 45 deg camera):
+    #        n, z,    el range,  length range, droop, brightness
+    tiers = [(7, 0.1, (0, 12), (0.46, 0.54), 0.36, 0.8),
+             (7, 0.28, (8, 20), (0.42, 0.5), 0.32, 0.86),
+             (7, 0.46, (14, 28), (0.38, 0.44), 0.28, 0.93),
+             (6, 0.62, (22, 36), (0.32, 0.38), 0.24, 1.0),
+             (4, 0.76, (38, 56), (0.26, 0.3), 0.18, 1.06)]
     k = 0
-    for cnt, els, lens, droop, z in tiers:
+    for cnt, z, els, lens, droop, br0 in tiers:
         for i in range(cnt):
             a = k * GOLDEN + rnd.uniform(-0.25, 0.25)
             k += 1
             e = math.radians(rnd.uniform(*els))
             D = Vector((math.cos(a) * math.cos(e), math.sin(a) * math.cos(e), math.sin(e)))
             L = rnd.uniform(*lens)
-            br = rnd.uniform(0.9, 1.06)
-            leaf_card(g, 0, Vector((0.03 * math.cos(a), 0.03 * math.sin(a), z)), D, L, L * 0.52, ATLAS["broad"],
-                      droop=droop, segs=3, prof=prof, across=3, fold=(0.3, 0.25), twist=rnd.uniform(-15, 15),
-                      col_fn=lambda t, s, br=br: grey(br * plant_ao(t, s, lo=0.55, reach=0.45)))
+            r0 = 0.06 + 0.12 * (1.0 - z / 0.76)
+            base = Vector((r0 * math.cos(a), r0 * math.sin(a), z + rnd.uniform(-0.03, 0.03)))
+            br = br0 * rnd.uniform(0.94, 1.05)
+            leaf_card(g, 0, base, D, L, L * 0.95, ATLAS["broad"], droop=droop, segs=2, prof=bprof, across=3,
+                      fold=(0.16, 0.14), twist=rnd.uniform(-8, 8),
+                      col_fn=lambda t, s, br=br: grey(br * plant_ao(t, s, lo=0.62, reach=0.5)))
+    sprof = alpha_profile("leaves", ATLAS["sprig"])
+    for i in range(3):
+        a = i * 2.1 + 0.6
+        e = math.radians(rnd.uniform(35, 55))
+        D = Vector((math.cos(a) * math.cos(e), math.sin(a) * math.cos(e), math.sin(e)))
+        leaf_card(g, 0, Vector((0.08 * math.cos(a), 0.08 * math.sin(a), 0.35)), D, 0.5, 0.42, ATLAS["sprig"],
+                  droop=0.3, segs=2, prof=sprof, across=3, col_fn=lambda t, s: grey(plant_ao(t, s, lo=0.6, reach=0.6)))
+    for i in range(4):
+        a = i * 1.57 + 0.3
+        n = Vector((math.cos(a) * 0.6, math.sin(a) * 0.6, 0.8))
+        quad_card(g, 0, Vector((0.12 * math.cos(a), 0.12 * math.sin(a), 0.62)), n, 0.4, ATLAS["cluster"],
+                  spin=rnd.uniform(0, 6.28), col=grey(1.0), col_rim=grey(0.8))
     g.obj("shrub_b_mesh", [M_leaf("M_Leaf")], root)
     return root
 
@@ -1749,7 +1851,7 @@ def build_bush(name, seed, blobs, sprigs, clusters, broad=0):
         x, y, z, r, sx, sy, sz = blobs[k % len(blobs)]
         base = Vector((x + math.cos(a) * r * 0.5, y + math.sin(a) * r * 0.5, 0.05))
         L = rnd.uniform(0.4, 0.5)
-        leaf_card(g, 0, base, D, L, L * 0.52, ATLAS["broad"], droop=0.35, segs=2, prof=bprof, across=3,
+        leaf_card(g, 0, base, D, L, L * 0.9, ATLAS["broad"], droop=0.35, segs=2, prof=bprof, across=3,
                   col_fn=lambda t, s: grey(plant_ao(t, s, lo=0.5, reach=0.5)))
     g.obj(name + "_mesh", [M_leaf("M_Bush")], root)
     return root
@@ -1877,44 +1979,70 @@ def build_piringan():
 
 
 def build_vine_log():
-    """Mossy fallen log with ivy sprigs and a fern growing over it."""
+    """Fallen log sunk a little into the ground: ridged bark with dark crevices, moss (M_Moss) on its
+    upper side, sawn ends, a branch stub, ivy sprigs and a few broad leaves growing over it."""
     rnd = random.Random(57)
     root = empty("vine_log")
-    m_bark = vmat("M_LogBark", "#9a8468")
+    m_bark = vmat("M_LogBark", "#7d6547")
     m_wood = vmat("M_Wood", "#c9a06a")
+    m_moss = vmat("M_Moss", "#6d8a36", rough=1.0, spec=0.1)
     g = Geo()
-    L = 2.2
-    path = [Vector((-L / 2 + L * t, 0.06 * math.sin(t * 5), 0.2 + 0.03 * math.sin(t * 3))) for t in [i / 5 for i in range(6)]]
-    radii = [0.21, 0.2, 0.19, 0.2, 0.18, 0.17]
-    path = [path[0]] + [(a + b) * 0.5 for a, b in zip(path[:-1], path[1:])] + [path[-1]]
-    path = sorted(path, key=lambda v: v.x)
-    radii = [lerp(0.21, 0.17, i / (len(path) - 1)) * (1.0 + 0.06 * math.sin(i * 1.7)) for i in range(len(path))]
-    rows = tube(g, path, radii, 10, 0, rnd=rnd, jitter=0.07, smooth=True)
-    for end, sgn in ((rows[0], -1), (rows[-1], 1)):  # sawn ends
-        row, p = end
-        cidx = g.vert(p + Vector((sgn * 0.02, 0, 0)), grey(0.9))
-        for i in range(10):
-            g.face((row[i], row[(i + 1) % 10], cidx), 1, ref=Vector((sgn, 0, 0)))
-    tube(g, [path[2] + Vector((0, 0.1, 0.1)), path[2] + Vector((0.1, 0.35, 0.3))], [0.06, 0.03], 4, 0, cap_top=True)
+    L, sides = 2.2, 14
+    n = 7
+    path = [Vector((-L / 2 + L * t, 0.05 * math.sin(t * 5), 0.17 + 0.03 * math.sin(t * 3))) for t in
+            [i / (n - 1) for i in range(n)]]
+    rows = []
+    for j, p in enumerate(path):
+        rr = lerp(0.22, 0.18, j / (n - 1)) * (1.0 + 0.05 * math.sin(j * 1.9))
+        T = (path[min(j + 1, n - 1)] - path[max(j - 1, 0)]).normalized()
+        S = T.cross(UP).normalized()
+        B = S.cross(T)
+        row = []
+        for i in range(sides):
+            a = 2 * math.pi * i / sides + 0.12 * math.sin(j * 1.3)
+            ridge = i % 2 == 0
+            r_ = rr * (1.06 if ridge else 0.9) * rnd.uniform(0.97, 1.03)
+            q = p + (S * math.cos(a) + B * math.sin(a)) * r_
+            row.append(g.vert(q, grey(1.0 if ridge else 0.62)))
+        rows.append((row, p))
+    for j in range(n - 1):
+        (ra, pa), (rb, pb) = rows[j], rows[j + 1]
+        for i in range(sides):
+            q = (ra[i], ra[(i + 1) % sides], rb[(i + 1) % sides], rb[i])
+            fc = sum((g.v[x] for x in q), Vector()) / 4
+            g.face(q, 0, ref=fc - (pa + pb) * 0.5, smooth=True)
+    for (row, p), sgn in ((rows[0], -1), (rows[-1], 1)):  # sawn ends with a darker heart
+        T = (path[-1] - path[0]).normalized() * sgn
+        cidx = g.vert(p + T * 0.02, grey(0.7))
+        for i in range(sides):
+            g.face((row[i], row[(i + 1) % sides], cidx), 1, ref=T)
+    tube(g, [path[2] + Vector((0, 0.1, 0.08)), path[2] + Vector((0.1, 0.35, 0.28))], [0.06, 0.03], 4, 0, cap_top=True)
     log = g.obj("vine_log_wood", [m_bark, m_wood])
     bake_ao([log], distance=0.5)
-    moss_tint(log, thr=0.2, amp=0.55, freq=2.5, tint=(0.42, 0.85, 0.3))
+    moss_faces(log, m_moss, thr=0.93, amp=0.34, freq=4.2)
+    moss_tint(log, thr=0.5, amp=0.5, freq=2.5, tint=(0.85, 0.92, 0.7))
+    # the moss material only on the bark (never on the sawn ends)
+    me = log.data
+    mi_moss = [m.name for m in me.materials].index("M_Moss")
+    for pg in me.polygons:
+        if pg.material_index == mi_moss and abs(pg.normal.x) > 0.8:
+            pg.material_index = 1
     lg = Geo()
     prof = alpha_profile("leaves", ATLAS["sprig"])
-    for k in range(12):
+    for k in range(10):
         t = rnd.uniform(0.05, 0.95)
         p = Vector((-L / 2 + L * t, 0.0, 0.3))
         a = rnd.uniform(0, 6.28)
         D = Vector((math.cos(a) * 0.5, math.sin(a), rnd.uniform(-0.6, 0.1)))
-        leaf_card(lg, 0, p + Vector((0, 0, 0.08)), D, rnd.uniform(0.35, 0.5), 0.4, ATLAS["sprig"], droop=0.5, segs=2,
+        leaf_card(lg, 0, p + Vector((0, 0, 0.06)), D, rnd.uniform(0.35, 0.5), 0.4, ATLAS["sprig"], droop=0.5, segs=2,
                   prof=prof, across=3, col_fn=lambda t, s: grey(plant_ao(t, s, lo=0.6)))
     bprof = alpha_profile("leaves", ATLAS["broad"])
-    for k in range(4):
+    for k in range(3):
         a = rnd.uniform(0, 6.28)
-        e = math.radians(rnd.uniform(15, 45))
+        e = math.radians(rnd.uniform(15, 40))
         D = Vector((math.cos(a) * math.cos(e), math.sin(a) * math.cos(e), math.sin(e)))
         base = Vector((rnd.uniform(-0.8, 0.8), rnd.choice((-0.28, 0.28)), 0.02))
-        leaf_card(lg, 0, base, D, 0.38, 0.2, ATLAS["broad"], droop=0.3, segs=2, prof=bprof, across=3,
+        leaf_card(lg, 0, base, D, 0.38, 0.34, ATLAS["broad"], droop=0.3, segs=2, prof=bprof, across=3,
                   col_fn=lambda t, s: grey(plant_ao(t, s, lo=0.55)))
     leaves = lg.obj("vine_log_leaves", [M_leaf()])
     o = join([log, leaves], "vine_log_mesh")
@@ -2101,10 +2229,25 @@ def leafy(m):
     return m
 
 
+def banana_card(g, gs, base, az, el, L, rnd, droop=70, segs=6, pw=1.3, br=1.0):
+    """Textured banana leaf: short petiole tube (Geo `gs`, stem material) + a pleated, Λ-folded card
+    with the torn-leaf texture (Geo `g`)."""
+    base = Vector(base)
+    d0 = Vector((math.cos(az) * math.cos(math.radians(el)), math.sin(az) * math.cos(math.radians(el)),
+                 math.sin(math.radians(el))))
+    p1 = base + d0 * 0.22
+    tube(gs, [base, p1], [0.03, 0.022], 4, 0, smooth=True, col_fn=lambda j, i, q: grey(0.8 + 0.15 * j))
+    pts = arc_points(p1, az, el, droop, L, segs, yaw_drift=rnd.uniform(-0.15, 0.15), pw=pw)
+    card_path(g, 0, pts, L * 0.52, prof=alpha_profile("banana"), across=5, fold=(0.22, 0.32),
+              twist=rnd.uniform(-10, 10),
+              col_fn=lambda t, s: grey(br * plant_ao(t, s, lo=0.62, reach=0.4)),
+              side_hint=Vector((math.sin(az), -math.cos(az), 0.0)))
+
+
 def build_banana():
     rnd = random.Random(23)
     root = empty("banana")
-    m_leaf = leafy(vmat("M_BananaLeaf", "#5f9a3a", rough=0.55, spec=0.35))
+    m_leaf = tmat("M_BananaLeaf", "banana", rough=0.5, spec=0.35)
     m_stem = vmat("M_Stem", "#8e9a4c")
     m_dry = leafy(vmat("M_DryLeaf", "#a3814a"))
     m_fruit = vmat("M_Banana", "#a6bb3c", rough=0.5)
@@ -2114,14 +2257,16 @@ def build_banana():
          rnd=rnd, jitter=0.04, cap_top=True)
     suck_top = Vector((0.42, -0.25, 0.55))
     tube(g, [(0.4, -0.25, 0), (0.41, -0.25, 0.3), tuple(suck_top)], [0.07, 0.055, 0.045], 6, 1, cap_top=True)
+    lg = Geo()
+    sg = Geo()
     for i in range(8):
         f = i / 7
         az = i * GOLDEN + 0.3
-        banana_leaf(g, main_top - UP * 0.1 * f, az, lerp(78, 28, f) + rnd.uniform(-4, 4),
-                    lerp(1.3, 1.6, min(1.0, f * 2)) * rnd.uniform(0.92, 1.05), lerp(0.44, 0.52, f), rnd, 0,
-                    torn=(i in (2, 4, 6)), droop=lerp(35, 80, f))
+        banana_card(lg, sg, main_top - UP * 0.1 * f, az, lerp(80, 34, f) + rnd.uniform(-4, 4),
+                    lerp(1.3, 1.65, min(1.0, f * 2)) * rnd.uniform(0.92, 1.05), rnd, droop=lerp(40, 95, f),
+                    br=lerp(1.04, 0.92, f))
     for i in range(3):
-        banana_leaf(g, suck_top, i * 2.2 - 0.4, lerp(75, 45, i / 2), 0.62, 0.26, rnd, 0, droop=40, segs=4)
+        banana_card(lg, sg, suck_top, i * 2.2 - 0.4, lerp(76, 50, i / 2), 0.66, rnd, droop=50, segs=4)
     for k, az in enumerate((2.5, 4.5)):
         banana_leaf(g, main_top - UP * (0.12 + 0.15 * k), az, -62, 0.8 - 0.15 * k, 0.34, rnd, 2, torn=True, droop=18,
                     segs=4)
@@ -2136,8 +2281,12 @@ def build_banana():
             p0 = cc + d * 0.035
             p1 = p0 + d * 0.08 + UP * 0.03
             tube(g, [p0, p1, p1 + d * 0.035 + UP * 0.1], [0.024, 0.027, 0.01], 4, 3, smooth=True)
+    petioles = sg.obj("banana_petioles", [m_stem])
     o = g.obj("banana_mesh", [m_leaf, m_stem, m_dry, m_fruit])
-    bake_ao([o], distance=0.6, floor=0.5)
+    o = join([o, petioles], "banana_mesh")
+    bake_ao([o], distance=0.6, floor=0.55)
+    leaves = lg.obj("banana_leaves", [m_leaf])
+    o = join([o, leaves], "banana_mesh")
     o.parent = root
     # a few grass clumps around the foot
     gg = Geo()
@@ -2204,14 +2353,14 @@ def boulder(name, size, seed, material, flat=0.7, stretch=(1.0, 0.82), subdiv=2,
         v.co.z -= zmin + h * sink
         v.co += Vector(loc)
     o.data.update()
-    clamp_floor(o, loc[2] if loc else 0.0)
-    return o
+    return o  # the bottom stays sunk `sink`*height below the ground (sits into uneven terrain)
 
 
 def build_rock(name, size, seed, extras=(), subdiv=2, grass=0):
     rnd = random.Random(seed)
     root = empty(name)
-    m_rock = vmat("M_Rock", "#a8a69b")
+    m_rock = vmat("M_Rock", "#8b897f")
+    m_moss = vmat("M_RockMoss", "#71883e", rough=1.0, spec=0.1)
     parts = [boulder(name + "_main", size, seed, m_rock, subdiv=subdiv)]
     for i, (dx, dy, s) in enumerate(extras):
         parts.append(boulder(f"{name}_x{i}", size * s, seed + 11 * (i + 1), m_rock, subdiv=2 if s < 0.3 else 3,
@@ -2221,10 +2370,11 @@ def build_rock(name, size, seed, extras=(), subdiv=2, grass=0):
     bpy.context.view_layer.update()
     o.data.transform(o.matrix_world)
     o.matrix_world = Matrix.Identity(4)
-    clamp_floor(o, 0.0)
-    set_cols(o, lambda p, n: grey(1.0))
+    # lit tops a touch lighter, undersides darker (on top of the baked AO), mossy caps as a material
+    set_cols(o, lambda p, n: grey(lerp(0.8, 1.0, 0.5 + 0.5 * n.z)))
     bake_ao([o], distance=size * 0.6)
-    moss_tint(o, thr=0.7, amp=0.5, freq=3.0 / size, tint=(0.6, 0.78, 0.42))
+    moss_faces(o, m_moss, thr=0.86, amp=0.45, freq=3.6 / size)
+    moss_tint(o, thr=0.55, amp=0.5, freq=3.0 / size, tint=(0.82, 0.92, 0.68))
     o.parent = root
     if grass:
         g = Geo()
@@ -2308,7 +2458,6 @@ def build_cliff_a():
         o = boulder(f"cliff_foot{i}", s, 60 + i, m_c, subdiv=2, loc=(x, y, 0))
         parts.append(o)
     o = join(parts, "cliff_rock")
-    clamp_floor(o, 0.0)
     set_cols(o, lambda p, n: grey(1.0))
     bake_ao([o], distance=1.2)
     moss_tint(o, thr=0.62, amp=0.45, freq=0.9, tint=(0.66, 0.8, 0.46))
@@ -2548,8 +2697,15 @@ asset("sawit_2", lambda: build_palm("sawit_2", PALMS["sawit_2"], seed=7))
 asset("sawit_3", lambda: build_palm("sawit_3", PALMS["sawit_3"], seed=3),
       views=(("side", 8, 0, 1.0), ("close", 45, 0, 0.55), ("top", 88, 0, 1.0)))
 asset("tbs", build_tbs, icon="icon_tbs", icon_kw=dict(pitch_deg=48, yaw_deg=20, margin=0.95))
-asset("fern_a", lambda: build_fern("fern_a", 61, 9, 0.85, (72, 40), (70, 95)))
-asset("fern_b", lambda: build_fern("fern_b", 62, 12, 0.6, (45, 18), (45, 60), tint=(1.0, 1.0, 0.86), spread=0.03))
+# fern_a: tall pakis clump (~0.65 m tall, ~1.5 m wide), 16 fronds in 3 tiers
+asset("fern_a", lambda: build_fern("fern_a", 61, [(5, 86, 76, 66, 80, 0.78, 0.86, 1.6, 1.04, 0.12),
+                                                  (6, 70, 60, 88, 96, 0.86, 0.94, 1.7, 0.96, 0.0),
+                                                  (5, 54, 44, 98, 106, 0.8, 0.88, 1.8, 0.88, 0.0)]))
+# fern_b: lower, yellower, denser clump (~0.5 m tall, ~1.2 m wide), 18 narrower fronds
+asset("fern_b", lambda: build_fern("fern_b", 62, [(5, 82, 74, 55, 68, 0.62, 0.7, 1.5, 1.05, 0.2),
+                                                  (7, 66, 56, 80, 92, 0.66, 0.76, 1.6, 0.97, 0.12),
+                                                  (6, 48, 40, 92, 102, 0.62, 0.7, 1.7, 0.9, 0.08)],
+                                   tint=(1.0, 1.0, 0.9), spread=0.03, wmul=0.5, segs=4))
 asset("keladi", build_keladi)
 asset("shrub_a", build_shrub_a)
 asset("shrub_b", build_shrub_b)
@@ -2626,9 +2782,10 @@ def _ground_mat(name, tex, tile, fallback):
     return m
 
 
-def scene_test(spacing=6.4, tag="veg_scene", dist=16.0, target=(0.5, 1.0, 0.0)):
+def scene_test(spacing=6.4, tag="veg_scene", dist=16.0, target=(0.5, 1.0, 0.0), palm_yaw=None):
     """A plantation corner with the exported GLBs at the game camera (45 deg, FOV 35, 16 m), rendered
-    small and put side by side with the target screenshot -> blender/previews/veg_scene*.png."""
+    small and put side by side with the target screenshot -> blender/previews/veg_scene*.png.
+    palm_yaw: None = fully random palm rotation, else max |yaw| in degrees (camera-window use)."""
     from PIL import Image
     reset_scene()
     rnd = random.Random(2024)
@@ -2662,7 +2819,7 @@ def scene_test(spacing=6.4, tag="veg_scene", dist=16.0, target=(0.5, 1.0, 0.0)):
                 continue
             palms.append((x, y))
     for k, (x, y) in enumerate(palms):
-        yaw = rnd.uniform(0, 6.28)
+        yaw = rnd.uniform(0, 6.28) if palm_yaw is None else math.radians(rnd.uniform(-palm_yaw, palm_yaw))
         _place(src["sawit_3" if k % 5 else "sawit_2"], (x, y, 0), yaw, rnd.uniform(0.92, 1.06))
         _place(src["piringan"], (x, y, 0), yaw)
     small = [("fern_a", 5), ("fern_b", 5), ("keladi", 3), ("shrub_a", 3), ("shrub_b", 6), ("grass_a", 10),
@@ -2726,6 +2883,7 @@ MANIFEST = {
     "M_Canopy": ("leaves", True, "tree_big canopy (core blobs + cluster cards)"),
     "M_Grass": ("grass", True, "grass clump cards"),
     "M_Flower": ("flowers", True, "flower clump cards"),
+    "M_BananaLeaf": ("banana", True, "banana leaf cards (torn-leaf texture)"),
     "M_Piringan": ("piringan", False, "flat ground decal (single-sided), keep above terrain"),
 }
 
@@ -2745,7 +2903,7 @@ def main(argv):
     for t in tex_force:
         if t not in TEXTURES:
             raise SystemExit(f"unknown texture {t!r}; choose from {list(TEXTURES)}")
-    names = [a for a in argv if a not in ("textures", "scene", "scene_close") and not a.startswith("tex:")]
+    names = [a for a in argv if a not in ("textures", "scene", "scene_close", "scene_win") and not a.startswith("tex:")]
     for n in names:
         if n not in ASSETS:
             raise SystemExit(f"unknown asset {n!r}; choose from {list(ASSETS)}")
@@ -2759,6 +2917,8 @@ def main(argv):
         ASSETS[n]()
     if "scene" in argv:
         scene_test()
+    if "scene_win" in argv:  # palms turned within +-35 deg: the crown's camera window faces the camera
+        scene_test(tag="veg_scene_win", palm_yaw=35.0)
     if "scene_close" in argv:
         scene_test(tag="veg_scene_close", dist=8.0, target=(1.0, -0.5, 0.5))
     if RESULTS:

@@ -153,8 +153,8 @@ func _build_flock() -> void:
 		var row := ceilf(i / 2.0)
 		var off := Vector3(((i % 2) * 2.0 - 1.0) * 0.9 * row, _rng.randf_range(-0.3, 0.3), -0.9 * row)
 		_bird_offsets.append(off)
-		mm.set_instance_transform(i, Transform3D(Basis(), off))
-		mm.set_instance_color(i, Color("fcf6ea"))
+		mm.set_instance_transform(i, Transform3D(Basis().scaled(Vector3.ONE * 0.8), off))
+		mm.set_instance_color(i, Color("f4efe4"))
 	_flock = MultiMeshInstance3D.new()
 	_flock.name = "Birds"
 	_flock.multimesh = mm
@@ -335,35 +335,27 @@ func _chimney_tops() -> Array[Vector3]:
 		out.append(node.global_transform * p)
 		if out.size() >= 2:
 			break
-	# the chimney top is above the camera most of the time, so the mill also puffs
-	# steam from the ridge of its main hall, which the gameplay camera can see
+	# the chimney top is above the gameplay camera most of the time, so the mill also
+	# puffs steam from the highest roof point in the front third of the building,
+	# which the camera (looking north) can see
 	var stacks: Array[Vector2] = []
 	for cl in clusters:
 		stacks.append(Vector2(cl[0].x, cl[0].z) / float(cl[1]))
-	var ridge := -INF
-	var cand: Array[Vector3] = []
+	var aabb := node.mesh.get_aabb()
+	var front_z := aabb.end.z - aabb.size.z * 0.35
+	var best := Vector3(0, -INF, 0)
 	for v in faces:
-		if v.y >= top * 0.62:
+		if v.z < front_z or v.y >= top * 0.7:
 			continue
 		var near_stack := false
 		for st in stacks:
 			if Vector2(v.x, v.z).distance_to(st) < 2.0:
 				near_stack = true
 				break
-		if not near_stack:
-			cand.append(v)
-			ridge = maxf(ridge, v.y)
-	if ridge > 3.0:
-		var acc := Vector3.ZERO
-		var n := 0
-		for v in cand:
-			if v.y > ridge - 0.05:
-				acc += v
-				n += 1
-		if n > 0:
-			var p := acc / float(n)
-			p.y = ridge
-			out.append(node.global_transform * p)
+		if not near_stack and v.y > best.y:
+			best = v
+	if best.y > 2.5:
+		out.append(node.global_transform * best)
 	return out
 
 

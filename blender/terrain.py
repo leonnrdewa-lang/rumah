@@ -385,12 +385,12 @@ ZONES = [
                             "shrub_b": 0.3, "rock_a": 0.2}),
     ("beach", zone_beach, 0.1, {"grass_b": 1.0, "grass_a": 0.5}),
 ]
-UG_SCALE = {"grass_a": (0.8, 1.3), "grass_b": (0.8, 1.3), "fern_a": (0.8, 1.25), "fern_b": (0.8, 1.25),
-            "keladi": (0.8, 1.2), "shrub_a": (0.8, 1.25), "shrub_b": (0.8, 1.25), "flowers_white": (0.8, 1.2),
+UG_SCALE = {"grass_a": (0.9, 1.4), "grass_b": (0.9, 1.4), "fern_a": (0.9, 1.4), "fern_b": (0.9, 1.4),
+            "keladi": (0.85, 1.3), "shrub_a": (0.95, 1.5), "shrub_b": (0.95, 1.5), "flowers_white": (0.8, 1.2),
             "flowers_yellow": (0.8, 1.2), "frond_fallen": (0.65, 0.9), "vine_log": (0.8, 1.05),
             "pile_fronds": (0.9, 1.1), "rock_a": (0.45, 0.9)}
-UG_GAP = {"grass_a": 0.35, "grass_b": 0.35, "flowers_white": 0.35, "flowers_yellow": 0.35, "fern_a": 0.6, "fern_b": 0.6,
-          "keladi": 0.55, "shrub_a": 0.85, "shrub_b": 0.85, "frond_fallen": 0.9, "vine_log": 1.3, "pile_fronds": 1.1,
+UG_GAP = {"grass_a": 0.35, "grass_b": 0.35, "flowers_white": 0.35, "flowers_yellow": 0.35, "fern_a": 0.65, "fern_b": 0.65,
+          "keladi": 0.6, "shrub_a": 1.0, "shrub_b": 1.0, "frond_fallen": 0.9, "vine_log": 1.3, "pile_fronds": 1.1,
           "rock_a": 0.4}
 UG_PAD = {"shrub_a": 0.5, "shrub_b": 0.5, "vine_log": 0.8, "pile_fronds": 0.6, "frond_fallen": 0.5}
 DENSITY = float(os.environ.get("UG_DENSITY", "1.0"))

@@ -16,6 +16,8 @@ const FALLBACK := {
 }
 ## the larger plants keep their shadows, everything else is shadowless
 const SHADOW_MODELS := ["shrub_a", "shrub_b"]
+## only plants tall enough to hide the player take part in the see-through hole
+const FADE_MODELS := ["shrub_a", "shrub_b", "keladi", "pile_fronds"]
 ## the smallest plants are dropped a little earlier when far from the camera
 const SMALL_MODELS := ["grass_a", "grass_b", "flowers_white", "flowers_yellow", "rock_a", "frond_fallen"]
 
@@ -37,7 +39,7 @@ func build(data: Dictionary, is_blocked: Callable) -> void:
 			sfac = fb[1]
 			if mesh_name == "" or not ModelLib.has_model(mesh_name):
 				continue
-		var mesh := ModelLib.merged_mesh(mesh_name, true)
+		var mesh := ModelLib.merged_mesh(mesh_name, model in FADE_MODELS)
 		if mesh.get_surface_count() == 0:
 			continue
 		var chunks := {}

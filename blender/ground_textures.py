@@ -4,6 +4,8 @@
 Run:  python3 blender/ground_textures.py                  # all five textures
       python3 blender/ground_textures.py grass dirt       # only some
 Flags: --check   also write <name>_3x3.png tiling mosaics + a seam report to $GT_SCRATCH (default /tmp/gt)
+       --keep-raw  keep the raw Cycles render as $GT_SCRATCH/<name>_raw.png
+       --from-raw  skip building / rendering and only redo the post-processing from that kept raw render
 
 Output: game/assets/textures/ground/{grass,grass_dry,dirt,sand,mulch}.png  (512 x 512 RGB, seamless)
 
@@ -472,7 +474,7 @@ def painterly(img, seed, soft=1.3, amount=0.5, blotch=0.07, sigma=12.0):
     n = img.shape[0]
     img = img * (1 - amount) + gblur(img, soft) * amount
     b = 0.75 * pnoise(n, sigma, seed) + 0.35 * pnoise(n, sigma * 0.4, seed + 1)
-    b = np.clip(b, -2.5, 2.5)
+    b = 1.8 * np.tanh(b / 1.8)          # soft-limit the extremes: no single dark / light blob that repeats per tile
     img = img * (1 + blotch * b)[..., None]
     img[..., 0] += 0.018 * b
     img[..., 2] -= 0.01 * b
@@ -530,12 +532,12 @@ def build_grass(dry=False):
         dark = [lin("#7f8a44"), lin("#74823f"), lin("#8e8a4c")]
         mid = [lin("#b7a96e"), lin("#c7ba6b"), lin("#a9a85a"), lin("#98a64e"), lin("#a6b056")]
         tips = [lin("#dbcb94"), lin("#d8c77e"), lin("#c9c86e"), lin("#b8c75e")]
-        nbl, Lr, wr = 12500, (0.09, 0.18), (0.018, 0.028)
+        nbl, Lr, wr = 4600, (0.15, 0.3), (0.032, 0.048)
     else:
         dark = [lin("#4f6e2c"), lin("#5b7536"), lin("#56722f")]
         mid = [lin("#7fa047"), lin("#88a646"), lin("#98ac4d"), lin("#739a40")]
         tips = [lin("#b8c75e"), lin("#a9bd5d"), lin("#c2cb6a"), lin("#9fbd52")]
-        nbl, Lr, wr = 13500, (0.08, 0.17), (0.02, 0.032)
+        nbl, Lr, wr = 4900, (0.14, 0.29), (0.036, 0.054)
     for _ in range(nbl):
         x, y = uniform_xy(rnd)
         c = clump(x, y)
@@ -547,32 +549,33 @@ def build_grass(dry=False):
                             rnd.uniform(0, 2 * math.pi), cb, ct)
         B.add(v, f, cc, x, y, r, z=height(x, y) - 0.004)
     # --- clover patches
-    ncl_patch = 3 if dry else 14
+    # clover patches: big enough (leaflets 4-6 cm, ~4 texels at the game camera) to read as clover
+    ncl_patch = 5 if dry else 12
     for _ in range(ncl_patch):
         px, py = uniform_xy(rnd)
-        rad = rnd.uniform(0.12, 0.3)
-        for _k in range(int(rad * 70)):
+        rad = rnd.uniform(0.14, 0.3) if dry else rnd.uniform(0.16, 0.36)
+        for _k in range(int(rad * 30)):
             a = rnd.uniform(0, 2 * math.pi)
             rr = rad * math.sqrt(rnd.random())
             x, y = px + rr * math.cos(a), py + rr * math.sin(a)
-            base = mix(lin("#5d8a3a"), lin("#6f9a44"), rnd.random())
+            base = mix(lin("#4c8636"), lin("#63a044"), rnd.random())
             if dry:
-                base = mix(base, lin("#a4a456"), 0.6)
-            v, f, cc, r = clover(rnd, rnd.uniform(0.024, 0.034), base, mix(base, lin("#a9c46a"), 0.3),
-                                 rnd.uniform(0.03, 0.07))
+                base = mix(base, lin("#aaa85a"), 0.78)
+            v, f, cc, r = clover(rnd, rnd.uniform(0.042, 0.058), base, mix(base, lin("#c2de84"), 0.5),
+                                 rnd.uniform(0.07, 0.13))
             B.add(v, f, cc, x, y, r, z=height(x, y))
     # --- leaf litter + dry frond leaflet bits + twigs + a few pebbles
     litter = [lin("#a0763e"), lin("#b8914e"), lin("#8a6a3e"), lin("#c9a55e"), lin("#7d6a44")]
-    for _ in range(90 if dry else 55):
+    for _ in range(60 if dry else 40):
         x, y = uniform_xy(rnd)
         col = rnd.choice(litter)
-        v, f, cc, r = leaf_flat(rnd, rnd.uniform(0.025, 0.05), rnd.uniform(0.012, 0.022), rnd.uniform(0, 6.28),
-                                col, scale(col, 1.1), z=rnd.uniform(0.004, 0.03), curl=0.004)
+        v, f, cc, r = leaf_flat(rnd, rnd.uniform(0.04, 0.075), rnd.uniform(0.02, 0.034), rnd.uniform(0, 6.28),
+                                col, scale(col, 1.1), z=rnd.uniform(0.004, 0.03), curl=0.006)
         B.add(v, f, cc, x, y, r, z=height(x, y))
     for _ in range(14 if dry else 8):
         x, y = uniform_xy(rnd)
         col = rnd.choice([lin("#b59a5a"), lin("#9c8350"), lin("#c2a868")])
-        v, f, cc, r = strip(rnd, rnd.uniform(0.1, 0.2), rnd.uniform(0.012, 0.018), rnd.uniform(0, 6.28), col,
+        v, f, cc, r = strip(rnd, rnd.uniform(0.14, 0.26), rnd.uniform(0.018, 0.026), rnd.uniform(0, 6.28), col,
                             scale(col, 0.85), z=rnd.uniform(0.01, 0.03), arc=rnd.uniform(-0.12, 0.12))
         B.add(v, f, cc, x, y, r, z=height(x, y))
     for _ in range(6):
@@ -603,8 +606,8 @@ def build_dirt():
         prof = np.exp(-d ** 4)
         tread = 0.5 + 0.5 * np.cos(2 * math.pi * yy / (TILE / 34))
         track += prof * (1.0 + 0.25 * tread * (np.abs(d) < 0.8))
-    track *= 0.6 + 0.4 * (0.5 + 0.5 * pnoise(n, 40, seed + 5))        # fades in and out
-    h = h * (1 - 0.4 * np.clip(track, 0, 1)) - 0.0028 * track
+    track *= 0.7 + 0.3 * (0.5 + 0.5 * pnoise(n, 40, seed + 5))        # fades in and out a little
+    h = h * (1 - 0.5 * np.clip(track, 0, 1)) - 0.0075 * track
     height = Field(h)
     # --- albedo: packed earth #97865c .. #b7a96e, darker compacted track, light dusty patches, grain speckle
     tone = 0.75 * fbm(n, 7, seed + 6, 3) + 0.35 * pnoise(n, 1.6, seed + 7)
@@ -612,7 +615,7 @@ def build_dirt():
                                  (2.4, "#cdb888")])
     speck = pnoise(n, 0.7, seed + 8)
     alb *= (1 + 0.06 * np.clip(speck, -2, 2))[..., None]
-    alb *= (1 - 0.025 * np.clip(track, 0, 1.3))[..., None]
+    alb *= (1 - 0.11 * np.clip(track, 0, 1.3))[..., None]           # compacted, darker ruts
     ground_plane(height, save_albedo(alb, name))
     B = Batch()
     pcols = [lin("#b3aea0"), lin("#c9bd98"), lin("#a88f68"), lin("#9a8a72"), lin("#d4c49a"), lin("#8e877a")]
@@ -655,13 +658,13 @@ def build_sand():
     ph = 2 * math.pi * (9 * xx + 4 * yy) / TILE + warp * 2 * math.pi / 0.4
     rip = np.sin(ph) + 0.35 * np.sin(2 * ph + 1.0)
     rip *= 0.75 + 0.25 * (0.5 + 0.5 * pnoise(n, 50, seed + 1))
-    h = rip * 0.002 + fbm(n, 16, seed + 2, 3) * 0.003 + pnoise(n, 1.0, seed + 3) * 0.0005
+    h = rip * 0.0032 + fbm(n, 16, seed + 2, 3) * 0.003 + pnoise(n, 1.0, seed + 3) * 0.0005
     height = Field(h)
     tone = fbm(n, 10, seed + 4, 3)
-    alb = paint(n, tone, [(-2, "#dccb9e"), (0, "#e6d6aa"), (2, "#efe1b9")])
+    alb = paint(n, tone, [(-2, "#c2b284"), (0, "#cdbf94"), (2, "#d9cca4")])
     speck = pnoise(n, 0.6, seed + 5)
     alb *= (1 + 0.045 * np.clip(speck, -2.5, 2.5))[..., None]
-    alb *= (1 - 0.03 * rip)[..., None]
+    alb *= (1 - 0.06 * rip)[..., None]
     ground_plane(height, save_albedo(alb, name))
     B = Batch()
     for _ in range(60):
@@ -743,16 +746,16 @@ def build_mulch():
 
 # name -> (builder, grade mean, luminance std, kuwahara radius, soften sigma, saturation)
 TEXTURES = {
-    "grass": (lambda: build_grass(False), "#8ea84a", 0.07, 0, 0.0, 1.0),
-    "grass_dry": (lambda: build_grass(True), "#b0a862", 0.07, 0, 0.0, 1.0),
+    "grass": (lambda: build_grass(False), "#8ea84a", 0.07, 2, 0.0, 1.0),
+    "grass_dry": (lambda: build_grass(True), "#b0a862", 0.07, 2, 0.0, 1.0),
     "dirt": (build_dirt, "#b8a16c", 0.05, 0, 0.0, 1.0),
-    "sand": (build_sand, "#e2d3a6", 0.04, 0, 0.0, 1.0),
+    "sand": (build_sand, "#cdbf94", 0.05, 0, 0.0, 1.0),
     "mulch": (build_mulch, "#7a5a3c", 0.08, 0, 0.0, 1.0),
 }
 
 
-FLATTEN = {"grass": 0.5, "grass_dry": 0.5, "dirt": 0.75, "sand": 0.7, "mulch": 0.6}
-PAINT = {"grass": dict(seed=91, blotch=0.05, sigma=9.0), "grass_dry": dict(seed=92, blotch=0.045, sigma=9.0),
+FLATTEN = {"grass": 0.75, "grass_dry": 0.75, "dirt": 0.75, "sand": 0.7, "mulch": 0.6}
+PAINT = {"grass": dict(seed=91, soft=1.2, blotch=0.07, sigma=16.0), "grass_dry": dict(seed=95, soft=1.2, blotch=0.06, sigma=16.0),
          "mulch": dict(seed=93, amount=0.3, blotch=0.04, sigma=9.0)}
 
 
@@ -779,6 +782,12 @@ def main():
     names = args or list(TEXTURES)
     for nm in names:
         builder, mean_hex, lstd, kuwa, soft, sat = TEXTURES[nm]
+        kept = os.path.join(CHECK_DIR, nm + "_raw.png")
+        if "--from-raw" in sys.argv and os.path.exists(kept):
+            path = finish_texture(kept, nm, mean_hex, lstd, kuwa, soft, sat, FLATTEN.get(nm, 0.6), PAINT.get(nm))
+            if "--check" in sys.argv:
+                check_tiling(path, nm)
+            continue
         C.reset_scene()
         print(f"[build] {nm}")
         builder()

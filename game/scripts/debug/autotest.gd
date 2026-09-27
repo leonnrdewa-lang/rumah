@@ -352,6 +352,18 @@ func _run() -> void:
 			for s in [[-17, 28.0, "parcel"], [-9, 10, "road"], [-44, 36, "garden"], [-3, 36, "kantor"], [49, 2, "pabrik"], [54, -21, "smoke"], [-30, -20, "field"]]:
 				tp(s[0], s[1], Vector3(0, 0, -1))
 				await shot("vis_" + s[2], 40)
+			# buy Kakek's garden, clear a few tiles and plant: the parcel batch must follow
+			GS.money = 60000000
+			world.deals._buy_fair("kakek")
+			world.ui.close()
+			for i in [0, 1, 2, 5, 6]:
+				GS.energy = 100
+				world._tile_action(1, i)
+			for i in [0, 1]:
+				GS.energy = 100
+				world._tile_action(1, i)
+			tp(-44, 36, Vector3(0, 0, -1))
+			await shot("vis_garden_cleared", 30)
 			# running along the road: dust puffs
 			tp(-20, 8.5, Vector3(1, 0, 0))
 			world.player.touch_vec = Vector2(1, 0)

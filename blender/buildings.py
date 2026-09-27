@@ -56,7 +56,7 @@ def siding_ring(name, poly, z0, z1, n, groove, m):
             p = Vector(poly[i]) + offs[i] * o
             verts.append((p.x, p.y, z))
     rnd = random.Random(_seed(name, z0, z1, n, *[c for p_ in poly for c in p_]))
-    pshade = [[rnd.uniform(-0.16, 0.08) for _ in range(N)] for _ in range(n)]
+    pshade = [[rnd.uniform(-0.24, 0.1) for _ in range(N)] for _ in range(n)]
     shade = []
     for r in range(len(prof) - 1):
         plank = prof[r][1] > 1e-6 and prof[r + 1][1] > 1e-6
@@ -66,6 +66,7 @@ def siding_ring(name, poly, z0, z1, n, groove, m):
             shade.append(pshade[min(n - 1, r // 3)][i] if plank else -0.45)
     o = mesh_from_data(name, verts, faces, m)
     wattr(o, "w_shade", shade)
+    wattr(o, "w_shadev", [rnd.uniform(-0.1, 0.06) for _ in verts], "POINT")   # streaks along each plank
     return o
 
 
@@ -91,7 +92,7 @@ def vplank_panel(name, origin, rotz, x0, x1, zb_fn, zt_fn, pw, g, m, breaks=()):
         verts.append(fpt(origin, rotz, (x, -off, zb_fn(x))))
         verts.append(fpt(origin, rotz, (x, -off, zt_fn(x))))
     rnd = random.Random(_seed(name, origin[0], origin[1], rotz, x0, x1, pw))
-    pshade = [rnd.uniform(-0.16, 0.08) for _ in range(n)]
+    pshade = [rnd.uniform(-0.24, 0.1) for _ in range(n)]
     shade = []
     for i in range(len(cols) - 1):
         faces.append((2 * i, 2 * i + 2, 2 * i + 3, 2 * i + 1))
@@ -102,6 +103,9 @@ def vplank_panel(name, origin, rotz, x0, x1, zb_fn, zt_fn, pw, g, m, breaks=()):
             shade.append(-0.45)
     o = mesh_from_data(name, verts, faces, m)
     wattr(o, "w_shade", shade)
+    # weathered plank ends: bottoms a little darker and streaky, tops random
+    wattr(o, "w_shadev", [(rnd.uniform(-0.14, 0.0) if k % 2 == 0 else rnd.uniform(-0.05, 0.06)) for k in range(len(verts))],
+          "POINT")
     return o
 
 
@@ -186,7 +190,7 @@ def tri_wave(x, period, amp):
 
 def new_wear(style, rust=1.0, moss=1.0, seed=0):
     """Per-face / per-vertex weathering lists filled by tile_slope (see props.weather_bake)."""
-    return dict(style=style, rust_k=rust, moss_k=moss, seed=seed, shade=[], rust=[], moss=[], down=[])
+    return dict(style=style, rust_k=rust, moss_k=moss, seed=seed, shade=[], rust=[], moss=[], down=[], mossv=[])
 
 
 def _streaks(rnd, x0, x1, per_m, wmin, wmax, smin, smax):
@@ -215,6 +219,23 @@ def tile_slope(verts, faces, origin, ex, ev, en, v_len, ext_fn, rows, period=0.4
         lo_, hi_ = min(lo_, ext_fn(0)[0]), max(hi_, ext_fn(0)[1])
         rust_st = _streaks(wrnd, lo_, hi_, 2.2, 0.05, 0.3, 0.35, 1.0)
         moss_st = _streaks(wrnd, lo_, hi_, 0.7, 0.15, 0.5, 0.4, 0.9)
+        # clay: soft moss / lichen blobs (per vertex, so they fade out instead of stopping at tile edges),
+        # mostly on the lower half of the slope, plus a faint damp band along the eave
+        blobs = []
+        if wear['style'] != 'zinc':
+            for _ in range(max(1, int(round((hi_ - lo_) * 0.7)))):
+                blobs.append((wrnd.uniform(lo_, hi_), wrnd.uniform(0.3, 1.05) * v_len, wrnd.uniform(0.5, 1.1),
+                              wrnd.uniform(0.7, 1.0)))
+
+    def moss_v(x, v):
+        if wear is None or wear['style'] == 'zinc':
+            return 0.0
+        m = 0.25 * (v / v_len) ** 3
+        for bx_, bv, r, st in blobs:
+            d2 = ((x - bx_) ** 2 + ((v - bv) * 1.4) ** 2) / (r * r)
+            if d2 < 1.0:
+                m = max(m, st * (1.0 - d2) ** 2)
+        return wear['moss_k'] * m
 
     def wear_face(kind, i, xc):
         if wear is None:
@@ -228,9 +249,9 @@ def tile_slope(verts, faces, origin, ex, ev, en, v_len, ext_fn, rows, period=0.4
             wear['moss'].append(wear['moss_k'] * 0.8 * _streak_val(moss_st, xc))
         else:
             tr = random.Random(_seed(wear['seed'], i, round(xc / period)))
-            wear['shade'].append(tr.uniform(-0.14, 0.1) - (0.1 if kind == 1 else 0.0))
+            wear['shade'].append(tr.uniform(-0.22, 0.12) - (0.1 if kind == 1 else 0.0))
             wear['rust'].append(0.0)
-            wear['moss'].append(wear['moss_k'] * (tr.uniform(0.3, 0.7) if tr.random() < 0.14 else 0.0))
+            wear['moss'].append(0.0)
     flip = ex.cross(ev).dot(en) < 0
     P3 = lambda x, v, n: O + ex * x + ev * v + en * n
     rl = v_len / rows
@@ -250,6 +271,7 @@ def tile_slope(verts, faces, origin, ex, ev, en, v_len, ext_fn, rows, period=0.4
             verts.append(P3(xb, v2, tri_wave(xb, period, amp)))
             if wear is not None:
                 wear['down'] += [v0 / v_len, v1 / v_len, v2 / v_len]
+                wear['mossv'] += [moss_v(xt, v0), moss_v(xm, v1), moss_v(xb, v2)]
         for c in range(len(cols) - 1):
             t0, m0, b0_ = base + 3 * c, base + 3 * c + 1, base + 3 * c + 2
             t1, m1, b1_ = t0 + 3, m0 + 3, b0_ + 3
@@ -271,6 +293,7 @@ def tile_slope(verts, faces, origin, ex, ev, en, v_len, ext_fn, rows, period=0.4
             kinds.append(2)
         if wear is not None:
             wear['down'] += [0.0, 0.0, 1.0, 1.0]
+            wear['mossv'] += [0.0] * 4
             wear_face(2, 0, 0.0)
 
 
@@ -286,6 +309,8 @@ def roof_mesh(name, verts, faces, kinds, m_tile, m_lip=None, smooth_deg=None, we
         wattr(o, "w_rust", wear['rust'])
         wattr(o, "w_moss", wear['moss'])
         wattr(o, "w_down", wear['down'], "POINT")
+        if any(wear['mossv']):
+            wattr(o, "w_mossv", wear['mossv'], "POINT")
     return o
 
 
@@ -934,12 +959,12 @@ def build_pabrik():
     M = dict(metal=mat("M_Metal", "metal"), dark=mat("M_MetalDark", "metal_dark"), red=mat("M_Red", "red"),
              white=mat("M_White", "white"))
     P = []
-    ZK = dict(period=0.34, amp=0.05, step=0.04, cham=0.06, thick=0.07)
+    ZK = dict(period=0.5, amp=0.06, step=0.04, cham=0.06, thick=0.07)
     # --- main press hall
     hx0, hx1, hy0, hy1, hz = -4.4, 2.0, -1.5, 3.6, 4.0
     P.append(bx("hall_base", (hx1 - hx0 + 0.2, hy1 - hy0 + 0.2, 0.3), ((hx0 + hx1) / 2, (hy0 + hy1) / 2, 0.15),
                 M['dark'], 0.05, 1))
-    box_walls(P, M['metal'], hx0, hx1, hy0, hy1, 0.3, hz, pw=0.4)
+    box_walls(P, M['metal'], hx0, hx1, hy0, hy1, 0.3, hz, pw=0.55)
     for x in (hx0, hx1):
         for y in (hy0, hy1):
             P.append(bx("hall_corner", (0.22, 0.22, hz), (x, y, hz / 2), M['white'], 0.04, 1))
@@ -953,15 +978,15 @@ def build_pabrik():
     for sx, xx in ((-1, hx0), (1, hx1)):
         top = lambda q: max(hz, zr - 0.1 - abs(q) * t)
         P.append(vplank_panel("gable", (xx, hyc, 0), facing_rot((sx, 0)), -half, half, lambda q: hz - 0.05, top,
-                              0.34, 0.04, M['metal'], breaks=(0.0,)))
+                              0.5, 0.04, M['metal'], breaks=(0.0,)))
     # roof vents (little cowls) on the hall roof
     for x in (-2.8, -0.6):
-        P.append(add_cyl("vent", 0.28, 0.7, loc=(x, hyc + 0.9, zr - 0.9 * t + 0.25), material=M['metal'], verts=10))
-        P.append(add_cyl("vent_cap", 0.42, 0.22, loc=(x, hyc + 0.9, zr - 0.9 * t + 0.7), material=M['red'], verts=10,
+        P.append(add_cyl("vent", 0.28, 0.7, loc=(x, hyc + 0.9, zr - 0.9 * t + 0.25), material=M['metal'], verts=8))
+        P.append(add_cyl("vent_cap", 0.42, 0.22, loc=(x, hyc + 0.9, zr - 0.9 * t + 0.7), material=M['red'], verts=8,
                          radius2=0.12))
     # clerestory windows + big roller doors
     for x in (-3.6, -2.2, 0.6):
-        P.append(bx("win", (0.9, 0.08, 0.55), (x, hy0 - 0.03, 3.25), M['dark'], 0.02, 1))
+        P.append(bx("win", (0.9, 0.08, 0.55), (x, hy0 - 0.03, 3.25), M['dark'], 0))
     P.append(bx("roller", (2.0, 0.1, 2.3), (-1.3, hy0 - 0.04, 1.3 + 1.15), M['red'], 0.03, 1))
     P.append(bx("roller_box", (2.3, 0.3, 0.3), (-1.3, hy0 - 0.12, 3.75), M['dark'], 0.04, 1))
     P.append(bx("side_door", (0.1, 1.8, 2.4), (hx0 - 0.04, 1.6, 1.5), M['red'], 0.03, 1))
@@ -969,7 +994,7 @@ def build_pabrik():
     bx0, bx1, by0, by1, bz = hx1, 5.0, 0.4, 3.6, 3.0
     P.append(bx("boiler_base", (bx1 - bx0 + 0.1, by1 - by0 + 0.2, 0.3), ((bx0 + bx1) / 2 + 0.05, (by0 + by1) / 2, 0.15),
                 M['dark'], 0.05, 1))
-    box_walls(P, M['metal'], bx0, bx1, by0, by1, 0.3, bz, pw=0.34, sides=(True, True, False, True))
+    box_walls(P, M['metal'], bx0, bx1, by0, by1, 0.3, bz, pw=0.46, sides=(True, True, False, True))
     for x in (bx1,):
         for y in (by0, by1):
             P.append(bx("boiler_corner", (0.2, 0.2, bz), (x, y, bz / 2), M['white'], 0.04, 1))
@@ -981,23 +1006,30 @@ def build_pabrik():
     # --- chimney (red / white bands) on a plinth behind the boiler house
     cx, cy = 4.6, 4.35
     P.append(bx("chim_base", (1.4, 1.4, 0.9), (cx, cy, 0.45), M['dark'], 0.06, 2))
-    nb = 7
+    nb, nv = 7, 12
     zc0, zc1 = 0.9, 10.2
     r0, r1 = 0.55, 0.36
+    cv, cf, cm = [], [], []                      # one tapered tube, red / white bands, no hidden band caps
+    for i in range(nb + 1):
+        z_ = zc0 + (zc1 - zc0) * i / nb
+        r_ = r0 + (r1 - r0) * i / nb
+        cv += [(cx + r_ * math.cos(2 * math.pi * k / nv), cy + r_ * math.sin(2 * math.pi * k / nv), z_) for k in range(nv)]
     for i in range(nb):
-        za = zc0 + (zc1 - zc0) * i / nb
-        zb_ = zc0 + (zc1 - zc0) * (i + 1) / nb
-        ra = r0 + (r1 - r0) * i / nb
-        rb = r0 + (r1 - r0) * (i + 1) / nb
-        P.append(add_cyl("chim", ra, zb_ - za, loc=(cx, cy, (za + zb_) / 2), material=M['red'] if i % 2 else M['white'],
-                         verts=12, radius2=rb))
-    P.append(add_cyl("chim_lip", r1 + 0.1, 0.25, loc=(cx, cy, zc1 + 0.1), material=M['dark'], verts=12))
-    P.append(rod("flue", (bx1 - 0.6, 3.3, 2.4), (cx, cy - 0.3, 2.4), 0.18, M['dark'], 8))
+        for k in range(nv):
+            a, b = i * nv + k, i * nv + (k + 1) % nv
+            cf.append((a, b, b + nv, a + nv))
+            cm.append(1 if i % 2 else 0)
+    chim = mk_multi("chim", cv, cf, [M['white'], M['red']], cm)
+    fix_normals(chim)
+    smooth_angle(chim, 40)
+    P.append(chim)
+    P.append(add_cyl("chim_lip", r1 + 0.1, 0.25, loc=(cx, cy, zc1 + 0.1), material=M['dark'], verts=10))
+    P.append(rod("flue", (bx1 - 0.6, 3.3, 2.4), (cx, cy - 0.3, 2.4), 0.18, M['dark'], 6))
     # --- oil storage tanks + pipes
     for (tx, ty, tr, th) in ((4.5, -2.6, 1.15, 2.7), (6.25, -0.55, 0.72, 2.2)):
-        P.append(add_cyl("tank", tr, th, loc=(tx, ty, th / 2), material=M['white'], verts=16))
-        P.append(add_cyl("tank_band", tr + 0.03, 0.3, loc=(tx, ty, th * 0.62), material=M['red'], verts=16))
-        P.append(add_cyl("tank_roof", tr + 0.06, tr * 0.45, loc=(tx, ty, th + tr * 0.22), material=M['metal'], verts=16,
+        P.append(add_cyl("tank", tr, th, loc=(tx, ty, th / 2), material=M['white'], verts=14))
+        P.append(add_cyl("tank_band", tr + 0.03, 0.3, loc=(tx, ty, th * 0.62), material=M['red'], verts=14))
+        P.append(add_cyl("tank_roof", tr + 0.06, tr * 0.45, loc=(tx, ty, th + tr * 0.22), material=M['metal'], verts=14,
                          radius2=0.12))
         P.append(bx("tank_ladder", (0.3, 0.06, th), (tx - tr * 0.7, ty - tr * 0.72, th / 2), M['dark'], 0,
                     rotz=math.radians(-45)))
@@ -1006,7 +1038,7 @@ def build_pabrik():
     for p1, p2 in zip(pts, pts[1:]):
         P.append(rod("pipe", p1, p2, 0.13, M['red'], 8))
     for p in pts[1:3]:
-        P.append(add_sphere("elbow", 0.17, loc=p, material=M['red'], segments=8, rings=4))
+        P.append(add_sphere("elbow", 0.17, loc=p, material=M['red'], segments=8, rings=3))
     P.append(rod("pipe2", (5.0, 1.2, 1.4), (6.25, 1.2, 1.4), 0.1, M['dark'], 8))
     P.append(rod("pipe2", (6.25, 1.2, 1.4), (6.25, 0.05, 1.4), 0.1, M['dark'], 8))
     P.append(rod("pipe_leg", (4.5, -0.8, 0), (4.5, -0.8, pz), 0.07, M['dark'], 6))
@@ -1017,8 +1049,8 @@ def build_pabrik():
     P.append(bx("office_roof", (ox1 - ox0 + 0.5, oy1 - oy0 + 0.5, 0.22), ((ox0 + ox1) / 2, (oy0 + oy1) / 2 - 0.05,
                                                                             oz + 0.08), M['red'], 0.06, 2))
     P.append(bx("office_door", (0.8, 0.08, 1.55), (-5.5, oy0 - 0.02, 0.8), M['dark'], 0.03, 1))
-    P.append(bx("office_win", (0.7, 0.08, 0.6), (-6.4, oy0 - 0.02, 1.45), M['dark'], 0.03, 1))
-    P.append(bx("office_win", (0.08, 0.8, 0.6), (ox1 + 0.02, -3.6, 1.45), M['dark'], 0.03, 1))
+    P.append(bx("office_win", (0.7, 0.08, 0.6), (-6.4, oy0 - 0.02, 1.45), M['dark'], 0))
+    P.append(bx("office_win", (0.08, 0.8, 0.6), (ox1 + 0.02, -3.6, 1.45), M['dark'], 0))
     P.append(bx("office_ac", (0.5, 0.3, 0.35), (ox0 + 0.5, oy1 + 0.1, 1.9), M['metal'], 0.04, 1))
     P.append(bx("office_step", (1.0, 0.4, 0.12), (-5.5, oy0 - 0.2, 0.06), M['dark'], 0.03, 1))
     # --- loading dock + ramp + hopper (front, where the fruit trucks tip their load)
@@ -1372,7 +1404,7 @@ def build_truck():
     for i, (x, y, layer) in enumerate(spots):
         z = bz + 0.08 + layer * 0.34
         CP.append(PR.bunch("tbs", (M['fruit'], M['fruit'], M['dark']), loc=(x, y, z - 0.03),
-                           size=1.18 + rnd.uniform(-0.08, 0.08), seed=i, core_tint=("#c8401e", "#e2682c"),
+                           size=1.18 + rnd.uniform(-0.08, 0.08), seed=i, core_tint=("#d24c26", "#e2682c"),
                            rot=(rnd.uniform(-0.4, 0.4), rnd.uniform(-0.4, 0.4), rnd.uniform(0, 6.28))))
     cargo = join(CP, "Cargo")
     cargo.data.name = "Cargo"

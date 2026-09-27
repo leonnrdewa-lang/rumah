@@ -117,6 +117,14 @@ static func run(at: Node) -> void:
 		pl.touch_vec = Vector2(0.5, 0)
 		await seq.call("carrywalk", 4, 0.15)
 		pl.touch_vec = Vector2.ZERO
+		# a tool kept in hand between actions (hotbar selection)
+		pl.anim.hold_tool("harvest")
+		cam_state["off"] = Vector3(0.6, 1.6, 4.4)
+		pl.touch_vec = Vector2(0.4, 0)
+		await seq.call("hold", 3, 0.2)
+		pl.touch_vec = Vector2.ZERO
+		pl.anim.hold_tool("")
+		await at.wait(0.4)
 		cam_state["off"] = Vector3(2.4, 1.7, 3.4)
 
 	if _on(only, "talk"):

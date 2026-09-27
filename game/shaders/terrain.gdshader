@@ -29,7 +29,7 @@ uniform float world_size = 200.0;
 uniform float water_level = -0.3;
 uniform float shade_strength = 1.0;
 uniform float tex_saturation = 0.9;
-uniform vec3 grass_tint = vec3(1.3, 1.04, 1.6);   // linear multiplier: lime texture -> target olive
+uniform vec3 grass_tint = vec3(1.28, 1.04, 1.6);   // linear multiplier: lime texture -> target olive
 uniform float detail_contrast = 1.15;
 // v1 procedural palette (fallbacks) + tints anchored to the target palette
 uniform vec3 grass_dark : source_color = vec3(0.30, 0.45, 0.235);
@@ -83,7 +83,7 @@ void fragment() {
 		g = sat(g, tex_saturation) * grass_tint;
 		// shady olive <-> sunny yellow-green macro variation
 		float t = smoothstep(0.22, 0.8, tone + (n2.b - 0.5) * 0.35);
-		g *= mix(vec3(0.6, 0.74, 0.6), vec3(1.14, 1.14, 0.98), t);
+		g *= mix(vec3(0.58, 0.72, 0.62), vec3(1.1, 1.14, 1.0), t);
 	} else {
 		g = mix(grass_dark, grass_mid, smoothstep(0.22, 0.48, tone + (n2.g - 0.5) * 0.2));
 		g = mix(g, grass_light, smoothstep(0.58, 0.82, tone + (n2.b - 0.5) * 0.35));

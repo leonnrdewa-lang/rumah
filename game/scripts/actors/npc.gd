@@ -8,7 +8,7 @@ extends Node3D
 
 const WAVE_RANGE := 4.5
 const LOOK_RANGE := 6.0
-const ANIM_RANGE := 45.0   # beyond this from the player the model is not animated
+const ANIM_RANGE := 32.0   # beyond this from the player (off screen) the model is not animated
 const NO_WAVE := ["char_preman", "char_petugas"]
 
 var vid := ""            # villager id in GS.villagers, or "" for extras
@@ -177,7 +177,7 @@ func _process(delta: float) -> void:
 	# a player walking up gets a wave (the dispossessed just stare)
 	if awake and pl and world.state == "play" and pdist < WAVE_RANGE and not _greeted:
 		_greeted = true
-		if not sad and _wave_cd <= 0.0 and randf() < 0.85 and not model_name in NO_WAVE:
+		if not sad and _wave_cd <= 0.0 and not model_name in NO_WAVE:
 			_end_chat()
 			_wave_cd = randf_range(35.0, 70.0)
 			_face_player_t = 1.4

@@ -53,6 +53,12 @@
   "double_sided": true,
   "note": "flower clump cards"
  },
+ "M_BananaLeaf": {
+  "texture": "res://assets/textures/foliage/banana.png",
+  "alpha_scissor": 0.5,
+  "double_sided": true,
+  "note": "banana leaf cards (torn-leaf texture)"
+ },
  "M_Piringan": {
   "texture": "res://assets/textures/foliage/piringan.png",
   "alpha_scissor": 0.5,

@@ -13,7 +13,10 @@ v2: every exported mesh carries an active colour attribute `Col` (glTF COLOR_0) 
 ambient occlusion x cheap weathering (per-part / per-plank shade, dark plank grooves, rust and moss
 streaks, a dirt band at the base), see weather_bake(). The game multiplies albedo by it (linear).
 New props: karung_tumpuk (sack stack on a pallet), drum (rusty oil drum), pagar_bambu (2 m bamboo
-fence along X); pagar is now a rustic post-and-rail fence.
+fence along X); pagar is now a rustic post-and-rail fence. Both fences end in HALF posts so tiled
+segments share one post. tumpukan_tbs / the truck cargo use bunch(): red cores, round orange
+fruitlets, dark spikes (the target's bunches). The vertex colour never goes below COL_FLOOR (0.46,
+soft knee) and can carry a second colour per face (w_tint) to stay within 4 materials.
 """
 import math
 import os
@@ -249,14 +252,25 @@ def board_with_uv(name, w, h, d, m, origin, bevel=0.012):
 #           untinted: lets one material carry a second colour (window glass on the cab paint, a green
 #           print on cream sacks) and keeps assets within the 4-material budget.
 #   w_mossv (POINT) extra moss with a soft per-vertex falloff (moss blobs on clay tiles).
+#   w_shadev (POINT) extra per-vertex brightness offset (streaky weathering along planks).
 # The brightest channel of the result never drops below COL_FLOOR (contract: never darker than ~0.45).
 # the game multiplies these in linear space, so they are much stronger than they look as hex
 RUST = np.array((0.55, 0.24, 0.09))
 MOSS = np.array((0.45, 0.62, 0.16))
+MOSS_V = np.array((0.34, 0.74, 0.22))      # moss blobs on (orange) clay tiles: kill red to read olive-green
 DIRT = np.array((0.52, 0.38, 0.24))
 COL_FLOOR = 0.46          # > 0.45 even after 8-bit quantisation
+KNEE, KNEE_LO = 0.66, 0.15
+
+
+def soft_floor(v):
+    """v >= KNEE unchanged; below it compressed smoothly (slope 1 at KNEE) onto [COL_FLOOR, KNEE],
+    reaching the floor at KNEE_LO."""
+    g = (KNEE - KNEE_LO) / (KNEE - COL_FLOOR)
+    t = np.clip((v - KNEE_LO) / (KNEE - KNEE_LO), 0.0, 1.0)
+    return np.where(v >= KNEE, v, COL_FLOOR + (KNEE - COL_FLOOR) * t ** g)
 NO_VAR = ("Glass", "Lamp", "Window", "Fruit")
-W_ATTRS = ("w_shade", "w_rust", "w_moss", "w_mossv", "w_down", "w_tint")
+W_ATTRS = ("w_shade", "w_shadev", "w_rust", "w_moss", "w_mossv", "w_down", "w_tint")
 
 
 def lin_hex(h):
@@ -456,9 +470,10 @@ def weather_bake(root, dirt=0.5, dirt_h=0.45, ground=True, distance=1.0, floor=0
         lt = np.empty(nf, np.int64)
         me.polygons.foreach_get("loop_total", lt)
         fi = np.repeat(np.arange(nf), lt)
-        shade = _lattr(me, "w_shade", fi, vi)
+        shade = _lattr(me, "w_shade", fi, vi) + _lattr(me, "w_shadev", fi, vi)
         rust = _lattr(me, "w_rust", fi, vi)
-        moss = _lattr(me, "w_moss", fi, vi) + _lattr(me, "w_mossv", fi, vi)
+        moss = _lattr(me, "w_moss", fi, vi)
+        mossv = _lattr(me, "w_mossv", fi, vi)
         down = _lattr(me, "w_down", fi, vi)
         ta = me.attributes.get("w_tint")
         tint = np.ones((nl, 3))
@@ -475,13 +490,16 @@ def weather_bake(root, dirt=0.5, dirt_h=0.45, ground=True, distance=1.0, floor=0
         rgb *= 1.0 - ra * (1.0 - RUST)
         ma = np.clip(moss * (0.25 + 0.75 * down), 0, 1)[:, None]
         rgb *= 1.0 - ma * (1.0 - MOSS)
+        rgb *= 1.0 - np.clip(mossv, 0, 1)[:, None] * (1.0 - MOSS_V)
         if dirt > 0:
             t = np.clip(wz / dirt_h, 0, 1)
             t = t * t * (3 - 2 * t)
             rgb *= 1.0 - (dirt * (1 - t))[:, None] * (1.0 - DIRT)
         rgb *= tint
-        # keep the hue but never let the brightest channel drop below COL_FLOOR (soft, never black)
-        rgb *= np.maximum(1.0, COL_FLOOR / np.maximum(rgb.max(1), 1e-3))[:, None]
+        # keep the hue but never let the brightest channel drop below COL_FLOOR: a soft knee (C1 at KNEE)
+        # instead of a hard clamp, so deep corners keep their gradation instead of flattening at the floor
+        m = np.maximum(rgb.max(1), 1e-4)
+        rgb *= (soft_floor(m) / m)[:, None]
         out = np.ones((nl, 4), np.float32)
         out[:, :3] = np.clip(rgb, 0.0, 1.0)
         col.data.foreach_set("color", out.ravel())
@@ -590,8 +608,8 @@ def sack(name, m_body, m_band, loc=(0, 0, 0), rotz=0.0, L=0.74, W=0.48, T=0.2, l
     return o
 
 
-def bunch(name, mats, loc=(0, 0, 0), size=1.0, seed=0, rot=(0, 0, 0), n=10, spikes=10, sides=5, core=-0.15,
-          red=0.2, core_tint=None):
+def bunch(name, mats, loc=(0, 0, 0), size=1.0, seed=0, rot=(0, 0, 0), n=10, spikes=10, sides=5, core=-0.05,
+          red=0.15, core_tint=None):
     """Palm fruit bunch (TBS) like the target's: a red ovoid core covered in round orange fruitlets with
     near-black spikes (bracts) poking out between them. Cheap (~20 + 5n + 3*spikes tris): each fruitlet is
     a low `sides`-sided smooth-shaded dome whose rim sits just inside the core (reads as a round bump),
@@ -632,7 +650,7 @@ def bunch(name, mats, loc=(0, 0, 0), size=1.0, seed=0, rot=(0, 0, 0), n=10, spik
         c = Vector((rc * math.cos(ang), rc * math.sin(ang), zc))
         D = normal(c)
         U, V = frame(D)
-        rw = 0.1 * size * rnd.uniform(0.88, 1.08)
+        rw = 0.113 * size * rnd.uniform(0.88, 1.06)
         base = surf(c) * 0.92 - D * 0.02 * size
         ph = rnd.uniform(0, 6.28)
         b0 = len(verts)
@@ -658,7 +676,7 @@ def bunch(name, mats, loc=(0, 0, 0), size=1.0, seed=0, rot=(0, 0, 0), n=10, spik
         ph = rnd.uniform(0, 6.28)
         b0 = len(verts)
         verts += [base + (U * math.cos(q) + V * math.sin(q)) * r0 for q in (ph, ph + 2.09, ph + 4.19)]
-        verts.append(base + D * 0.17 * size * rnd.uniform(0.85, 1.15))
+        verts.append(base + D * 0.15 * size * rnd.uniform(0.85, 1.15))
         for s_ in range(3):
             faces.append((b0 + s_, b0 + (s_ + 1) % 3, b0 + 3))
             fmat.append(2)
@@ -705,23 +723,31 @@ def plastic_chair(P, m, x, y, rotz=0.0):
 
 def crate_parts(P, m_wood, m_dark, loc=(0, 0, 0), size=(0.6, 0.45, 0.4), rotz=0.0, lo=False):
     """Slatted wooden crate: dark core + light slats + corner posts (lo=True: no bevels, ~84 tris;
-    the core is tagged darker so one wood material is enough)."""
+    the core is tagged darker so one wood material is enough). Slats and posts get streaky per-vertex
+    weathering (w_shadev), the full crate a lid of three planks with dark gaps."""
     x, y, z = loc
     sx, sy, sz = size
     b1, b2 = (0.0, 0.0) if lo else (0.015, 0.015)
+    rnd = random.Random(_seed("crate", x, y, z, rotz))
     fr = lambda lx, ly, lz: fpt((x, y, z), rotz, (lx, ly, lz))
+
+    def streak(o, lo_=-0.16, hi_=0.06):
+        return wattr(o, "w_shadev", [rnd.uniform(lo_, hi_) for _ in o.data.vertices], "POINT")
     core = bx("crate_core", (sx - 0.04, sy - 0.04, sz - 0.02), fr(0, 0, sz / 2), m_dark, 0, rotz=rotz)
     if lo or m_dark is m_wood:
         wattr(core, "w_shade", -0.45)
     P.append(core)
     for k, zz in enumerate((0.25, 0.75)):
-        P.append(bx("crate_slat", (sx - 0.02, sy - 0.02, sz * 0.3), fr(0, 0, sz * zz), m_wood, b1, 1, rotz))
+        P.append(streak(bx("crate_slat", (sx - 0.02, sy - 0.02, sz * 0.3), fr(0, 0, sz * zz), m_wood, b1, 1, rotz)))
     for ax in (-1, 1):
         for ay in (-1, 1):
-            P.append(bx("crate_post", (0.07, 0.07, sz), fr(ax * (sx / 2 - 0.035), ay * (sy / 2 - 0.035), sz / 2),
-                        m_wood, b2, 1, rotz))
+            P.append(streak(bx("crate_post", (0.07, 0.07, sz), fr(ax * (sx / 2 - 0.035), ay * (sy / 2 - 0.035), sz / 2),
+                               m_wood, b2, 1, rotz), -0.2, 0.02))
     if not lo:
-        P.append(bx("crate_top", (sx - 0.1, sy - 0.1, 0.03), fr(0, 0, sz - 0.02), m_wood, 0, rotz=rotz))
+        w = (sx - 0.1) / 3
+        for i in range(3):
+            P.append(streak(bx("crate_top", (w - 0.018, sy - 0.1, 0.03), fr(-(sx - 0.1) / 2 + w * (i + 0.5), 0, sz - 0.02),
+                               m_wood, 0, rotz=rotz)))
 
 
 def prop_root(name):
@@ -779,6 +805,24 @@ def build_jerigen():
     return root
 
 
+def cut_half(o, keep):
+    """Apply o's modifiers, cut it by its local YZ plane and keep the half on the `keep` side
+    (+1 = +X, -1 = -X), capping the cut (a half post for tiling fence segments)."""
+    C.apply_modifiers(o)
+    bm = bmesh.new()
+    bm.from_mesh(o.data)
+    geom = bm.verts[:] + bm.edges[:] + bm.faces[:]
+    res = bmesh.ops.bisect_plane(bm, geom=geom, dist=1e-5, plane_co=(0, 0, 0), plane_no=(1, 0, 0),
+                                 clear_inner=keep > 0, clear_outer=keep < 0)
+    cut = [e for e in res["geom_cut"] if isinstance(e, bmesh.types.BMEdge)]
+    if cut:
+        bmesh.ops.edgenet_fill(bm, edges=cut)
+    bm.to_mesh(o.data)
+    bm.free()
+    o.data.update()
+    return o
+
+
 def picket(name, x, y, w, h, t, m, z0=0.0):
     """Pointed fence picket (pentagon prism) facing -Y."""
     prof = [(-w / 2, 0), (w / 2, 0), (w / 2, h - w / 2), (0, h), (-w / 2, h - w / 2)]
@@ -804,9 +848,12 @@ def build_pagar():
     pw, ph = 0.15, 1.08
     P.append(bx("post", (pw, pw, ph), (0.0, 0.0, ph / 2), M['d'], 0.03, 1))
     for sx in (-1, 1):   # half posts, one fixed shade so the two halves of a joint post match
-        o = bx("post_end", (pw / 2, pw, ph), (sx * (1.0 - pw / 4), 0.0, ph / 2), M['d'], 0.02, 1)
+        o = bx("post_end", (pw, pw, ph), (sx * 1.0, 0.0, ph / 2), M['d'], 0.03, 1)
         wattr(o, "w_shade", -0.04)
-        P.append(o)
+        P.append(cut_half(o, -sx))
+    for p in P:
+        if p.name.startswith("post") and not p.name.startswith("post_end"):
+            wattr(p, "w_shade", -0.04)
     for z in (0.5, 0.88):
         for xa, xb in ((-1.0, -0.004), (0.004, 1.0)):
             dz = rnd.uniform(-0.025, 0.025)
@@ -1006,11 +1053,11 @@ def build_tumpukan_tbs():
     bunches); <= 600 tris."""
     name = "tumpukan_tbs"
     root = prop_root(name)
-    mats = (mat("M_Fruit", "#c8401e", roughness=0.55), mat("M_FruitOrange", "#ec7430", roughness=0.5),
+    mats = (mat("M_Fruit", "#d24c26", roughness=0.55), mat("M_FruitOrange", "#ec7430", roughness=0.5),
             mat("M_FruitDark", "#3a1f18", roughness=0.5))
     P = []
     rnd = random.Random(5)
-    spots = [(-0.46, -0.2, 0), (0.08, -0.4, 0), (0.52, 0.04, 0), (-0.3, 0.36, 0), (0.22, 0.4, 0),
+    spots = [(-0.41, -0.18, 0), (0.07, -0.36, 0), (0.46, 0.03, 0), (-0.27, 0.32, 0), (0.2, 0.35, 0),
              (-0.04, 0.0, 0.2)]
     for i, (x, y, z) in enumerate(spots):
         top = z > 0
