@@ -111,6 +111,28 @@ road_d = np.full_like(X, 1e9)
 for line in L.ROADS:
     for a, b in zip(line[:-1], line[1:]):
         road_d = np.minimum(road_d, seg_dist(X, Z, a, b))
+# v2: dead ends (road tips that do not join another road or a building) narrow
+# and fade out over their last ~4 m instead of ending in a blunt round cap
+def _dead_ends():
+    ends = []
+    for li, line in enumerate(L.ROADS):
+        for pt in (line[0], line[-1]):
+            joined = False
+            for lj, other in enumerate(L.ROADS):
+                if lj == li:
+                    continue
+                for a, b in zip(other[:-1], other[1:]):
+                    if float(seg_dist(np.array(pt[0]), np.array(pt[1]), a, b)) < 1.0:
+                        joined = True
+            near_bld = any(math.hypot(pt[0] - bb["pos"][0], pt[1] - bb["pos"][1]) < 3.0 for bb in L.BUILDINGS)
+            if not joined and not near_bld:
+                ends.append(pt)
+    return ends
+
+
+DEAD_ENDS = _dead_ends()
+for ex, ez in DEAD_ENDS:
+    road_d = road_d + 1.9 * (1.0 - smoothstep(0.0, 4.5, np.hypot(X - ex, Z - ez)))
 wobble = (fractal_noise(N, (20, 120), 1.5, seed=5) - 0.5) * 0.9
 road = 1.0 - smoothstep(L.ROAD_WIDTH / 2 - 0.4, L.ROAD_WIDTH / 2 + 0.5, road_d + wobble)
 road *= (sd > 2).astype(float)
