@@ -26,6 +26,8 @@ var _last_pos := Vector3.ZERO
 
 func _ready() -> void:
 	motion_mode = CharacterBody3D.MOTION_MODE_FLOATING
+	# slide around round trunks even when walking almost straight into them
+	wall_min_slide_angle = deg_to_rad(3.0)
 	collision_layer = 2
 	collision_mask = 1
 	var shape := CollisionShape3D.new()
@@ -103,10 +105,19 @@ func _physics_process(delta: float) -> void:
 		if fd.length() > 0.2:
 			facing = fd.normalized()
 	_face_t -= delta
+	# speed ramps up and down (a touch of weight), but the heading follows the
+	# stick at once so the controls stay as snappy as before; the model turns
+	# smoothly on its own in CharAnim.turn_towards
 	var hv := Vector3(velocity.x, 0, velocity.z)
 	if global_position.distance_to(_last_pos) > 2.5:
 		hv = Vector3.ZERO   # teleported (new day, cutscene, debug): no momentum
-	hv = hv.move_toward(want, (ACCEL if want.length() > hv.length() else DECEL) * delta)
+	var cur := hv.length()
+	var target := want.length()
+	var new_speed := move_toward(cur, target, (ACCEL if target > cur else DECEL) * delta)
+	if target > 0.01:
+		hv = want / target * new_speed
+	elif cur > 0.001:
+		hv = hv / cur * new_speed
 	velocity = hv
 	# keep out of the sea: slide along the shoreline instead (probe with the
 	# wanted velocity so the look-ahead matches full speed while accelerating)

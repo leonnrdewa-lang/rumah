@@ -875,11 +875,13 @@ func _show_bottom_hud(on: bool) -> void:
 		return
 	_bottom_shown = on
 	var prompts: Control = hud.get_node("Prompts")
-	for c in [hotbar, prompts, action_btn, tool_tip, touch.get_node("JoyHint")]:
+	# (the touch layer is faded as a whole: action_btn's own alpha shows
+	# whether the context action is available)
+	for c in [hotbar, prompts, tool_tip, touch]:
 		if c == null:
 			continue
 		var tw := (c as Control).create_tween()
-		tw.tween_property(c, "modulate:a", (1.0 if c != action_btn else 0.45) if on else 0.0, 0.15)
+		tw.tween_property(c, "modulate:a", 1.0 if on else 0.0, 0.15)
 
 
 func _focus_first(panel: Control) -> void:

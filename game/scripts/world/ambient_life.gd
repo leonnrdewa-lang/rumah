@@ -449,8 +449,8 @@ func _build_dust() -> void:
 	_dust = CPUParticles3D.new()
 	_dust.name = "RunDust"
 	var mat := _particle_material(_soft_dot(32, 0.2), Color(1, 1, 1, 1), false)
-	_dust.mesh = _quad(0.4, mat)
-	_dust.amount = 12
+	_dust.mesh = _quad(0.55, mat)
+	_dust.amount = 16
 	_dust.lifetime = 0.7
 	_dust.direction = Vector3(0, 1, 0)
 	_dust.spread = 60.0
@@ -465,7 +465,7 @@ func _build_dust() -> void:
 	curve.add_point(Vector2(0, 0.5))
 	curve.add_point(Vector2(1, 1.6))
 	_dust.scale_amount_curve = curve
-	_dust.color_ramp = _fade_ramp(Color(0.86, 0.79, 0.6, 0.55), 0.15)
+	_dust.color_ramp = _fade_ramp(Color(0.88, 0.8, 0.62, 0.85), 0.12)
 	_dust.local_coords = false
 	_dust.emitting = false
 	_dust.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF

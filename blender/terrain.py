@@ -201,15 +201,15 @@ TALL = ("tree_big", "sawit_wild", "banana", "coconut")
 
 def tall_block(x, z):
     # not beside a road, and not in the strip just south of one (it would hide the road)
-    for dz, m in ((0.0, 5.0), (4.0, 3.5), (8.0, 3.5), (11.0, 3.0)):
+    for dz, m in ((0.0, 4.5), (3.5, 3.5), (6.5, 2.0)):
         if sample(road_d, x, z - dz) < L.ROAD_WIDTH / 2 + m:
             return True
     for (x0, z0, x1, z1) in parcel_rects:
-        if x0 - 2.5 < x < x1 + 2.5 and z0 < z < z1 + 11.0:
+        if x0 - 2.0 < x < x1 + 2.0 and z0 < z < z1 + 7.0:
             return True
     for b in L.BUILDINGS:
         bx, bz = b["pos"]
-        if abs(x - bx) < 9.0 and bz - 3.0 < z < bz + 13.0:
+        if abs(x - bx) < 8.0 and bz - 3.0 < z < bz + 10.0:
             return True
     return False
 
@@ -381,7 +381,7 @@ ZONES = [
     ("forest", zone_forest, 0.7, {"fern_a": 2, "fern_b": 2, "shrub_a": 1.2, "shrub_b": 1.2, "vine_log": 0.22,
                                   "frond_fallen": 0.6, "keladi": 1.0, "rock_a": 0.3, "grass_b": 0.6}),
     ("inner", zone_inner, 0.28, {"fern_a": 1.0, "grass_b": 1.5, "frond_fallen": 1.4, "grass_a": 1.0}),
-    ("open", land_ok, 0.2, {"grass_a": 2, "grass_b": 2, "flowers_white": 1.0, "flowers_yellow": 0.8, "fern_a": 0.6,
+    ("open", land_ok, 0.28, {"grass_a": 2, "grass_b": 2, "flowers_white": 1.0, "flowers_yellow": 0.8, "fern_a": 0.6,
                             "shrub_b": 0.3, "rock_a": 0.2}),
     ("beach", zone_beach, 0.1, {"grass_b": 1.0, "grass_a": 0.5}),
 ]
