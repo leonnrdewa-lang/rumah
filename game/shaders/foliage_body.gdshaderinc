@@ -21,6 +21,10 @@ uniform float normal_up = 0.0;
 uniform float fade_enabled = 1.0;
 uniform float tint_strength = 0.22;
 uniform float tip_light = 0.18;
+// green leaves are pulled towards the target's soft olive palette (the textures and
+// the post saturation make them read neon otherwise); yellow/white petals keep colour
+uniform float green_sat = 0.72;
+uniform float green_warm = 0.05;
 uniform sampler2D noise_tex : hint_default_white, filter_linear_mipmap, repeat_enable;
 
 varying vec3 world_pos;
@@ -57,9 +61,14 @@ void fragment() {
 	vec3 c = albedo.rgb * tex.rgb * (1.0 - tint_strength * 0.5 + tint_strength * n);
 	c *= mix(vec3(1.0), COLOR.rgb, vcol_strength);
 	c *= 1.0 - tip_light * 0.5 + tip_light * height_tint;
+	float gdom = smoothstep(0.0, 0.06, c.g - max(c.r, c.b));
+	float lum = dot(c, vec3(0.299, 0.587, 0.114));
+	vec3 cs = mix(vec3(lum), c, green_sat);
+	cs.r += green_warm * cs.g;
+	c = mix(c, cs, gdom);
 	ALBEDO = c;
 	ROUGHNESS = 1.0;
-	BACKLIGHT = vec3(0.3, 0.34, 0.12);
+	BACKLIGHT = vec3(0.26, 0.28, 0.14);
 	if (fade_enabled > 0.5) {
 		vec2 d = (SCREEN_UV - occlude_center) * vec2(VIEWPORT_SIZE.x / VIEWPORT_SIZE.y, 1.0);
 		float r = length(d);

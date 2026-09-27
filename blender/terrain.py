@@ -220,7 +220,7 @@ def tall_block(x, z):
         if sample(road_d, x, z - dz) < L.ROAD_WIDTH / 2 + m:
             return True
     for (x0, z0, x1, z1) in parcel_rects:
-        if x0 - 2.0 < x < x1 + 2.0 and z0 < z < z1 + 7.0:
+        if x0 - 2.5 < x < x1 + 2.5 and z0 < z < z1 + 9.0:
             return True
     for b in L.BUILDINGS:
         bx, bz = b["pos"]
@@ -228,7 +228,7 @@ def tall_block(x, z):
             return True
     # the villagers' yards (door +- 5 m) and the camera strip south of them
     for dx, dz in DOOR_PTS:
-        if abs(x - dx) < 9.5 and dz - 6.5 < z < dz + 12.0:
+        if abs(x - dx) < 11.0 and dz - 6.5 < z < dz + 12.0:
             return True
     return False
 
@@ -350,7 +350,10 @@ for d in decor:
     if d["model"] in ("tree_big", "sawit_wild"):
         tree_d = np.minimum(tree_d, np.hypot(X - d["pos"][0], Z - d["pos"][2]))
 
-keep_out = [(x, z, r) for (x, z, r) in circles if r < 3.4] + [(x, z, 1.95) for x, z in tile_pts] + \
+# planting spots: low grass may grow up to the piringan's edge (1.45 m), taller plants
+# keep 1.95 m clear (TILE_BIG_R) so the tile state stays readable
+TILE_BIG_R = 1.95
+keep_out = [(x, z, r) for (x, z, r) in circles if r < 3.4] + [(x, z, 1.45) for x, z in tile_pts] + \
            [(x, z, 1.7) for x, z in sign_pts]
 for b in L.BUILDINGS:          # jetty and its road end
     if b["model"] == "dermaga":
@@ -376,6 +379,10 @@ def kept_out(x, z, pad=0.0):
         if (x - cx) ** 2 + (z - cz) ** 2 < (r + pad) ** 2:
             return True
     return False
+
+
+def near_tile(x, z, r):
+    return any((x - tx) ** 2 + (z - tz) ** 2 < r * r for tx, tz in tile_pts)
 
 
 land_ok = (sd > 3.0) & (sand < 0.5)
@@ -409,12 +416,12 @@ ZONES = [
 ]
 # the door approach keeps only low plants
 DOOR_LOW = {"grass_a", "grass_b", "flowers_white", "flowers_yellow"}
-UG_SCALE = {"grass_a": (0.9, 1.4), "grass_b": (0.9, 1.4), "fern_a": (0.9, 1.4), "fern_b": (0.9, 1.4),
+UG_SCALE = {"grass_a": (1.0, 1.6), "grass_b": (1.0, 1.6), "fern_a": (0.9, 1.4), "fern_b": (0.9, 1.4),
             "keladi": (0.85, 1.3), "shrub_a": (0.95, 1.5), "shrub_b": (0.95, 1.5), "flowers_white": (0.8, 1.2),
             "flowers_yellow": (0.8, 1.2), "frond_fallen": (0.65, 0.9), "vine_log": (0.8, 1.05),
             "pile_fronds": (0.9, 1.1), "rock_a": (0.45, 0.9)}
-UG_GAP = {"grass_a": 0.35, "grass_b": 0.35, "flowers_white": 0.35, "flowers_yellow": 0.35, "fern_a": 0.65, "fern_b": 0.65,
-          "keladi": 0.6, "shrub_a": 1.0, "shrub_b": 1.0, "frond_fallen": 0.9, "vine_log": 1.3, "pile_fronds": 1.1,
+UG_GAP = {"grass_a": 0.35, "grass_b": 0.35, "flowers_white": 0.35, "flowers_yellow": 0.35, "fern_a": 0.55, "fern_b": 0.55,
+          "keladi": 0.5, "shrub_a": 0.8, "shrub_b": 0.8, "frond_fallen": 0.9, "vine_log": 1.3, "pile_fronds": 1.1,
           "rock_a": 0.4}
 UG_PAD = {"shrub_a": 0.5, "shrub_b": 0.5, "vine_log": 0.8, "pile_fronds": 0.6, "frond_fallen": 0.5}
 DENSITY = float(os.environ.get("UG_DENSITY", "1.0"))
@@ -455,57 +462,79 @@ def ug_free(x, z, gap, small=False):
     return True
 
 
-rejects = {"keep_out": 0, "road": 0, "spacing": 0, "refilled": 0}
+rejects = {"keep_out": 0, "road": 0, "spacing": 0}
 
 
 cell_area = PX * PX
 expected = density * cell_area
-counts = urng.poisson(expected)
-for i, j in zip(*np.nonzero(counts)):
-    zi = zone_id[i, j]
-    if zi < 0:
-        continue
+
+
+def cell_weights(i, j, zi):
     weights = dict(ZONES[zi][3])
     if door_low[i, j]:
         weights = {nm: w for nm, w in weights.items() if nm in DOOR_LOW} or {"grass_a": 1.0}
     thicket = clump[i, j] > 0.55
     for nm in weights:
         if nm in BIG:
-            weights[nm] *= 2.2 if thicket else 0.8
+            weights[nm] *= 4.0 if thicket else 1.3
         elif nm in SMALL:
             weights[nm] *= 0.7 if thicket else 1.4
+    return weights
+
+
+def pick(weights):
     names = list(weights.keys())
-    wsum = sum(weights.values())
-    for _ in range(counts[i, j]):
-        x = float(X[i, j] + urng.uniform(-PX / 2, PX / 2))
-        z = float(Z[i, j] + urng.uniform(-PX / 2, PX / 2))
-        r = upy.uniform(0, wsum)
-        m = names[-1]
-        for nm in names:
-            r -= weights[nm]
-            if r <= 0:
-                m = nm
-                break
-        # big pieces must not poke onto the road or into keep-out circles; a low grass
-        # clump takes the spot instead so thickets stay filled underneath
-        if m in UG_PAD and (sample(road_edge, x, z) < UG_PAD[m] + 0.3 or kept_out(x, z, UG_PAD[m])):
-            rejects["road"] += 1
-            m = "grass_b" if "grass_b" in weights else "grass_a"
-        if kept_out(x, z):
-            rejects["keep_out"] += 1
+    r = upy.uniform(0, sum(weights.values()))
+    for nm in names:
+        r -= weights[nm]
+        if r <= 0:
+            return nm
+    return names[-1]
+
+
+def place(m, x, z):
+    gap = UG_GAP[m]
+    sc = upy.uniform(*UG_SCALE[m])
+    y = height_at(x, z)
+    undergrowth.setdefault(m, []).extend([round(x, 2), y, round(z, 2), round(upy.uniform(0, 360), 0), round(sc, 2)])
+    ug_pts.setdefault((int(math.floor(x)), int(math.floor(z))), []).append((x, z, gap))
+    ug_list.append((m, x, z, sc))
+
+
+# the cheap grass / flower carpet (~12-24 tris a clump) is laid denser than the zone
+# figure so the ground between thickets reads as covered, not as bare lawn
+SMALL_BOOST = 1.7
+# Two passes so the grass carpet cannot crowd out the thickets: first the big plants
+# (ferns, shrubs, keladi, logs), then the small ones (grass, flowers, fronds, pebbles)
+# in the gaps. Each cell's expected count is split by the species weights.
+for big_pass in (True, False):
+    for i, j in zip(*np.nonzero(expected > 0)):
+        zi = zone_id[i, j]
+        if zi < 0:
             continue
-        if not ug_free(x, z, UG_GAP[m], m in SMALL):
-            if m in SMALL or not ug_free(x, z, UG_GAP["grass_a"], True):
+        weights = cell_weights(i, j, zi)
+        part = {nm: w for nm, w in weights.items() if (nm in BIG) == big_pass}
+        if not part:
+            continue
+        n = urng.poisson(expected[i, j] * sum(part.values()) / sum(weights.values()) * (1.0 if big_pass else SMALL_BOOST))
+        for _ in range(n):
+            x = float(X[i, j] + urng.uniform(-PX / 2, PX / 2))
+            z = float(Z[i, j] + urng.uniform(-PX / 2, PX / 2))
+            m = pick(part)
+            if kept_out(x, z):
+                rejects["keep_out"] += 1
+                continue
+            # big pieces must not poke onto the road or into keep-out circles
+            if m in UG_PAD and (sample(road_edge, x, z) < UG_PAD[m] + 0.3 or kept_out(x, z, UG_PAD[m])):
+                rejects["road"] += 1
+                continue
+            if big_pass and near_tile(x, z, TILE_BIG_R + UG_PAD.get(m, 0.0)):
+                rejects["keep_out"] += 1
+                continue
+            if not ug_free(x, z, UG_GAP[m], m in SMALL):
                 rejects["spacing"] += 1
                 continue
-            rejects["refilled"] += 1
-            m = "grass_a" if upy.random() < 0.5 else "grass_b"
-        gap = UG_GAP[m]
-        sc = upy.uniform(*UG_SCALE[m])
-        y = height_at(x, z)
-        undergrowth.setdefault(m, []).extend([round(x, 2), y, round(z, 2), round(upy.uniform(0, 360), 0), round(sc, 2)])
-        ug_pts.setdefault((int(math.floor(x)), int(math.floor(z))), []).append((x, z, gap))
-        ug_list.append((m, x, z, sc))
+            place(m, x, z)
 print("undergrowth:", {m: len(v) // 5 for m, v in sorted(undergrowth.items())}, "total", len(ug_list), "rejected", rejects)
 
 # ------------------------------------------------------------------ world_shade.png (v2)
@@ -530,7 +559,7 @@ def splat(acc, x, z, sigma, amount):
 
 
 # (sigma m, amount): fix round 1 raised these so every plant sits in a dark contact patch
-DECOR_SHADE = {"tree_big": (2.6, 1.5), "sawit_wild": (1.9, 1.15), "coconut": (1.0, 0.6), "banana": (1.1, 0.9),
+DECOR_SHADE = {"tree_big": (2.4, 1.3), "sawit_wild": (1.7, 1.0), "coconut": (1.0, 0.6), "banana": (1.1, 0.9),
                "bush_a": (0.9, 0.95), "bush_b": (0.9, 0.95), "rock_b": (0.6, 0.6), "rock_c": (1.2, 0.6),
                "rock_a": (0.35, 0.35), "cliff_a": (3.0, 0.6)}
 for d in decor:
@@ -542,10 +571,12 @@ for d in decor:
         splat(litter, d["pos"][0], d["pos"][2], 1.8 * d.get("scale", 1.0), 0.9)
     elif d["model"] == "sawit_wild":
         splat(litter, d["pos"][0], d["pos"][2], 1.2 * d.get("scale", 1.0), 0.7)
-UG_SHADE = {"shrub_a": (0.8, 1.05), "shrub_b": (0.8, 1.05), "keladi": (0.55, 0.8), "fern_a": (0.6, 0.8),
-            "fern_b": (0.6, 0.8), "vine_log": (0.7, 0.6), "pile_fronds": (0.7, 0.6), "grass_a": (0.36, 0.42),
-            "grass_b": (0.36, 0.42), "frond_fallen": (0.55, 0.3), "rock_a": (0.3, 0.35),
-            "flowers_white": (0.3, 0.3), "flowers_yellow": (0.3, 0.3)}
+# (the grass / flower carpet only gets a faint patch: at ~1 clump per m^2 anything
+# stronger darkens all open ground evenly instead of pooling shade under thickets)
+UG_SHADE = {"shrub_a": (0.55, 1.4), "shrub_b": (0.55, 1.4), "keladi": (0.38, 0.8), "fern_a": (0.38, 0.9),
+            "fern_b": (0.38, 0.9), "vine_log": (0.6, 0.5), "pile_fronds": (0.6, 0.5), "grass_a": (0.25, 0.1),
+            "grass_b": (0.25, 0.1), "frond_fallen": (0.45, 0.15), "rock_a": (0.3, 0.3),
+            "flowers_white": (0.2, 0.06), "flowers_yellow": (0.2, 0.06)}
 for (m, x, z, sc) in ug_list:
     sg, am = UG_SHADE.get(m, (0.3, 0.1))
     splat(shade_acc, x, z, sg * sc, am)

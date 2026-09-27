@@ -74,6 +74,7 @@ func update_carry(tbs: int) -> void:
 	if _carry == null:
 		return
 	_carry.visible = tbs > 0
+	anim.back_load = tbs > 0   # a pole carried on the shoulder leans out past the basket
 	for i in 3:
 		var b := _carry.get_node_or_null("Bunch%d" % i)
 		if b:

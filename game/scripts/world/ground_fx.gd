@@ -91,6 +91,29 @@ static func soil_material() -> ShaderMaterial:
 static var _tiling := {}
 
 
+static func average_linear(tex: Texture2D) -> Vector3:
+	## Mean colour of a (source_color) texture in linear space, for shaders that
+	## scale detail around the average instead of sampling a 1x1 mip every pixel.
+	var img := tex.get_image() if tex else null
+	if img == null:
+		return Vector3(0.27, 0.39, 0.065)
+	img = img.duplicate()
+	if img.is_compressed():
+		img.decompress()
+	img.clear_mipmaps()
+	img.convert(Image.FORMAT_RGBA8)
+	# halving with bilinear filtering is a box filter, so every texel counts
+	while img.get_width() > 16 and img.get_height() > 16:
+		img.resize(img.get_width() / 2, img.get_height() / 2, Image.INTERPOLATE_BILINEAR)
+	img.resize(16, 16, Image.INTERPOLATE_BILINEAR)
+	var acc := Vector3.ZERO
+	for y in 16:
+		for x in 16:
+			var c := img.get_pixel(x, y).srgb_to_linear()
+			acc += Vector3(c.r, c.g, c.b)
+	return acc / 256.0
+
+
 static func load_tiling_texture(path: String) -> Texture2D:
 	## Loads a ground texture and makes sure it has mipmaps (the default PNG import
 	## has none, which makes world-space tiling shimmer). null when missing.

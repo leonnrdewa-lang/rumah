@@ -11,13 +11,15 @@ extends RefCounted
 
 
 static func run(at: Node) -> void:
-	## Optional `--anim-only=bench,loco,work,talk,wave,worker,village,offscreen`
+	## Optional `--anim-only=title,bench,loco,work,talk,wave,worker,village,offscreen`
 	## runs a subset; `--anim-noshots` skips the bench's frame captures.
 	var only := ""
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--anim-only="):
 			only = a.get_slice("=", 1)
 	var world: Node = at.world
+	if _on(only, "title"):
+		await _title_check(at)
 	world.start_game(false)
 	world.ui.close()
 	GS.hour = 9.0   # villagers are up and about
@@ -222,19 +224,39 @@ static func run(at: Node) -> void:
 		cam.queue_free()
 		return
 	at.tp(-4, 4)
-	# count chats that start and visits that end in a chat or fail
+	if world.worker_npcs.is_empty():
+		GS.workers.append({"id": "buruh_village", "name": "Buruh harian", "wage": 1, "vid": ""})
+		world.refresh_workers()
+	GS.hour = 8.0
+	# count chats that start, visits that end in a chat or fail, trips to the
+	# warung (and back) and how much of the time the hired hands are working
 	var partner_prev := {}
 	var chat_starts := 0
 	var pairs := {}
 	var visits := {}
 	var visit_ok := 0
 	var visit_fail := 0
+	var away_prev := {}
+	var trips := []
+	var trips_back := 0
+	var work_busy := 0
+	var work_n := 0
 	var steps := int(120.0 / 0.25)
 	for i in steps:
 		await at.wait(0.25)
 		var chat := 0
 		var busy := 0
 		var visit := 0
+		for w in world.worker_npcs:
+			work_n += 1
+			work_busy += 1 if w.anim.is_busy() else 0
+		for n in world.npcs.values() + world.extras.values():
+			var away: bool = n._away
+			if away and not away_prev.get(n, false):
+				trips.append("%s (%.0f m)" % [n.display_name, n._route_length()])
+			if not away and away_prev.get(n, false):
+				trips_back += 1
+			away_prev[n] = away
 		for n in world.npcs.values() + world.extras.values() + world.worker_npcs:
 			var partner: Npc = n._chat_with
 			if partner != null:
@@ -260,9 +282,12 @@ static func run(at: Node) -> void:
 			for n in world.npcs.values() + world.extras.values():
 				print("[anim]     %s pos=(%.0f,%.0f) idle=%s cd=%.1f wait=%.1f vis=%s" % [n.display_name, n.position.x, n.position.z,
 					n.is_idle(), n._social_cd, n._wait, n.visible])
-	print("[anim] village 120 s: chats started=%d between %d pairs %s; visits ok=%d failed=%d" % [chat_starts,
+	print("[anim] village 120 s (game hour now %.1f): chats started=%d between %d pairs %s; visits ok=%d failed=%d" % [GS.hour, chat_starts,
 		pairs.size(), pairs.keys(), visit_ok, visit_fail])
-	await at.shot("village", 1)
+	print("[anim] village trips to the warung started=%d %s, headed back=%d; hired hands working %.0f%% of the time" % [
+		trips.size(), trips, trips_back, 100.0 * work_busy / maxf(work_n, 1)])
+	if DisplayServer.get_name() != "headless":
+		await at.shot("village", 1)
 
 	# every character model in the village, sanity-checked
 	var n_skinned := 0
@@ -274,9 +299,83 @@ static func run(at: Node) -> void:
 	cam.queue_free()
 
 
+static func _title_check(at: Node) -> void:
+	## The title screen: the camera orbits the island while the villagers go
+	## about their day. Everyone the camera sees must be animated (not frozen on
+	## a stale pose), walk with the walk clip and face where they walk. Films a
+	## walking villager (crops, 0.1 s apart) when rendering.
+	var world: Node = at.world
+	GS.hour = 9.0
+	var cam: Camera3D = world.camera
+	var tree: SceneTree = at.get_tree()
+	var stats := {}
+	var prev_pos := {}
+	var bad := 0
+	var samples := 0
+	var moving_samples := 0
+	var head_err := 0.0
+	var head_max := 0.0
+	var film: Npc = null
+	var film_n := 0
+	var film_t := 0.0
+	var t := 0.0
+	var next_sample := 0.0
+	var shots := "--anim-noshots" not in OS.get_cmdline_user_args() and DisplayServer.get_name() != "headless"
+	while t < 30.0:
+		await tree.process_frame
+		var dt := at.get_process_delta_time()
+		t += dt
+		if shots and film != null and film_n < 8 and t >= film_t:
+			var sp := cam.unproject_position(film.global_position + Vector3(0, 0.6, 0))
+			var img := at.get_viewport().get_texture().get_image()
+			var r := Rect2i(int(sp.x) - 70, int(sp.y) - 70, 140, 140).intersection(Rect2i(0, 0, img.get_width(), img.get_height()))
+			if r.size.x == 140 and r.size.y == 140:
+				img.get_region(r).save_png("%s/title_%s_%d.png" % [at.shots_dir, film.model_name, film_n])
+				print("[anim]   title film %d %s speed=%.2f clip=%s t=%.3f" % [film_n, film.display_name, film._cur_speed,
+					film.anim._cur, film.anim.ap.current_animation_position])
+				film_n += 1
+			film_t = t + 0.1
+		if t < next_sample:
+			continue
+		next_sample = t + 0.25
+		for n in world.npcs.values() + world.extras.values():
+			var p: Vector3 = n.global_position
+			var last: Vector3 = prev_pos.get(n, p)
+			prev_pos[n] = p
+			if not n.visible or not cam.is_position_in_frustum(p + Vector3(0, 0.6, 0)):
+				continue
+			samples += 1
+			var st: Dictionary = stats.get(n.display_name, {"in": 0, "walk": 0, "bad": 0})
+			st["in"] += 1
+			var ok: bool = not n.anim.skinned or not n.anim._stale
+			var mv := Vector2(p.x - last.x, p.z - last.z)
+			if n._cur_speed > 0.3 and mv.length() > 0.1:
+				moving_samples += 1
+				st["walk"] += 1
+				ok = ok and (not n.anim.skinned or n.anim._cur_kind in ["walk", "run"])
+				var err := rad_to_deg(absf(wrapf(n.model.rotation.y - atan2(mv.x, mv.y), -PI, PI)))
+				head_err += err
+				head_max = maxf(head_max, err)
+				if film == null and n.anim.skinned:
+					# film one near the middle of the screen (it stays in frame)
+					var sp := cam.unproject_position(p + Vector3(0, 0.6, 0))
+					var vs := at.get_viewport().get_visible_rect().size
+					if sp.x > vs.x * 0.2 and sp.x < vs.x * 0.8 and sp.y > vs.y * 0.2 and sp.y < vs.y * 0.8:
+						film = n
+			if not ok:
+				bad += 1
+				st["bad"] += 1
+			stats[n.display_name] = st
+	for k in stats:
+		print("[anim]   title %-18s in view %d samples, walking in %d, not animated %d" % [k, stats[k]["in"], stats[k]["walk"], stats[k]["bad"]])
+	var ok := bad == 0 and moving_samples > 0
+	print("[anim] title %s: %d in-view samples (%d walking), %d not animated / wrong clip; heading vs. walk direction %.0f deg mean, %.0f max" % [
+		"PASS" if ok else "FAIL", samples, moving_samples, bad, head_err / maxf(moving_samples, 1), head_max])
+
+
 static func _offscreen_check(at: Node) -> void:
 	## A villager whose work clip starts near the player must not freeze once the
-	## player leaves (beyond Npc.ANIM_RANGE it is no longer animated).
+	## player leaves (out of the camera's view it is no longer animated).
 	var world: Node = at.world
 	var n: Npc = world.npcs.get("petani")
 	if n == null:
@@ -299,9 +398,9 @@ static func _offscreen_check(at: Node) -> void:
 	for i in 30:
 		await at.wait(0.5)
 		moved = maxf(moved, n.position.distance_to(p0))
-	var ok: bool = busy0 and not busy1 and dist > Npc.ANIM_RANGE
-	print("[anim] offscreen %s: busy at start=%s, 2 s after the player went %.0f m away busy=%s, wandered %.1f m in 15 s" % [
-		"PASS" if ok else "FAIL", busy0, dist, busy1, moved])
+	var ok: bool = busy0 and not busy1 and not n.in_view()
+	print("[anim] offscreen %s: busy at start=%s, 2 s after the player went %.0f m away (in view=%s) busy=%s, wandered %.1f m in 15 s, model faces its heading=%s" % [
+		"PASS" if ok else "FAIL", busy0, dist, n.in_view(), busy1, moved, absf(wrapf(n.model.rotation.y - n.anim._yaw, -PI, PI)) < 0.001])
 
 
 static func _on(only: String, part: String) -> bool:

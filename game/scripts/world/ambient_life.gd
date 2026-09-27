@@ -2,7 +2,7 @@ extends Node3D
 ## Cheap ambient life around the camera, added by world.gd:
 ##   * a small flock of egrets flying over now and then (casting moving shadows)
 ##   * butterflies fluttering around flowers near the player (daytime)
-##   * smoke from the pabrik chimney
+##   * smoke from the pabrik chimney and steam from its front tank (in frame at its door)
 ##   * a few leaves drifting down
 ##   * fireflies around the player at night
 ##   * dust puffs at the player's feet when running
@@ -341,17 +341,17 @@ func _chimney_tops() -> Array[Vector3]:
 		out.append(node.global_transform * p)
 		if out.size() >= 2:
 			break
-	# the chimney top is above the gameplay camera most of the time, so the mill also
-	# puffs steam from the highest roof point in the front third of the building,
-	# which the camera (looking north) can see
+	# the chimney top is far above the gameplay camera (52 deg, 17 m), so the mill also
+	# vents steam low at the front: the highest point (<= 5.5 m, i.e. the sterilizer
+	# tank top) within 2.5 m of the facade, which is in frame at the mill's door
 	var stacks: Array[Vector2] = []
 	for cl in clusters:
 		stacks.append(Vector2(cl[0].x, cl[0].z) / float(cl[1]))
 	var aabb := node.mesh.get_aabb()
-	var front_z := aabb.end.z - aabb.size.z * 0.35
+	var front_z := aabb.end.z - 2.5
 	var best := Vector3(0, -INF, 0)
 	for v in faces:
-		if v.z < front_z or v.y >= top * 0.7:
+		if v.z < front_z or v.y > 5.5:
 			continue
 		var near_stack := false
 		for st in stacks:
@@ -360,8 +360,15 @@ func _chimney_tops() -> Array[Vector3]:
 				break
 		if not near_stack and v.y > best.y:
 			best = v
-	if best.y > 2.5:
-		out.append(node.global_transform * best)
+	if best.y > 2.0:
+		# centre of that top: average the vertices at that height nearby
+		var acc := Vector3.ZERO
+		var n := 0
+		for v in faces:
+			if absf(v.y - best.y) < 0.05 and Vector2(v.x - best.x, v.z - best.z).length() < 1.6:
+				acc += v
+				n += 1
+		out.append(node.global_transform * (acc / float(n) if n > 0 else best))
 	return out
 
 
@@ -370,27 +377,30 @@ func _build_smoke() -> void:
 	var tex := _soft_dot(64, 0.45)
 	var mat := _particle_material(tex, Color(1, 1, 1, 1))
 	for top in tops:
+		# the sea breeze blows south-east, towards the camera, so both the chimney
+		# plume and the low steam drift into the gameplay frame
+		var low: bool = top.y < 6.0
 		var p := CPUParticles3D.new()
-		p.name = "ChimneySmoke"
-		p.amount = 18
-		p.lifetime = 5.0
-		p.mesh = _quad(1.0, mat)
+		p.name = "MillSteam" if low else "ChimneySmoke"
+		p.amount = 16 if low else 18
+		p.lifetime = 4.2 if low else 6.0
+		p.mesh = _quad(0.9 if low else 1.0, mat)
 		p.direction = Vector3.UP
-		p.spread = 12.0
-		p.initial_velocity_min = 1.0
-		p.initial_velocity_max = 1.5
-		p.gravity = Vector3(0.45, 0.15, 0.2)
-		p.damping_min = 0.1
-		p.damping_max = 0.3
+		p.spread = 14.0
+		p.initial_velocity_min = 1.3 if low else 1.0
+		p.initial_velocity_max = 1.8 if low else 1.5
+		p.gravity = Vector3(0.35, -0.05, 0.75) if low else Vector3(0.4, 0.05, 0.8)
+		p.damping_min = 0.15
+		p.damping_max = 0.35
 		p.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
-		p.emission_sphere_radius = 0.25
+		p.emission_sphere_radius = 0.3 if low else 0.25
 		p.scale_amount_min = 1.0
 		p.scale_amount_max = 1.4
 		var curve := Curve.new()
-		curve.add_point(Vector2(0, 0.5))
-		curve.add_point(Vector2(1, 2.6))
+		curve.add_point(Vector2(0, 0.45))
+		curve.add_point(Vector2(1, 2.4 if low else 2.8))
 		p.scale_amount_curve = curve
-		p.color_ramp = _fade_ramp(Color(0.95, 0.94, 0.9, 0.9), 0.1)
+		p.color_ramp = _fade_ramp(Color(0.97, 0.96, 0.93, 0.85) if low else Color(0.93, 0.92, 0.88, 0.9), 0.12)
 		p.local_coords = false
 		p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(p)

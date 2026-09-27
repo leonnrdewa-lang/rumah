@@ -36,7 +36,7 @@ uniform float tile_m = 5.5;
 uniform float world_size = 200.0;
 uniform float water_level = -0.3;
 uniform float shade_strength = 1.0;
-uniform float tex_saturation = 0.9;
+uniform float tex_saturation = 0.85;
 uniform vec3 grass_tint = vec3(1.28, 1.04, 1.6);   // linear multiplier: texture -> target olive
 // average colour of grass_tex (linear), set by world.gd; detail is scaled around it
 uniform vec3 grass_avg = vec3(0.27, 0.39, 0.065);
@@ -53,11 +53,14 @@ uniform vec3 wet_sand : source_color = vec3(0.80, 0.745, 0.56);
 uniform vec3 road_col : source_color = vec3(0.79, 0.69, 0.50);
 uniform vec3 dry_col : source_color = vec3(0.78, 0.73, 0.42);
 uniform vec3 mulch_col : source_color = vec3(0.45, 0.35, 0.24);
-uniform vec3 shade_tint : source_color = vec3(0.80, 0.93, 0.88);
+uniform vec3 shade_tint : source_color = vec3(0.78, 0.95, 0.82);
 // macro variation: shady olive <-> sunlit yellow-green (linear multipliers)
-uniform vec3 macro_shady = vec3(0.52, 0.66, 0.56);
-uniform vec3 macro_sunny = vec3(0.9, 0.95, 0.84);
-uniform float shade_depth = 0.36;
+uniform vec3 macro_shady = vec3(0.6, 0.64, 0.6);
+uniform vec3 macro_sunny = vec3(1.12, 1.16, 1.02);
+uniform float shade_depth = 0.4;
+// warm tan roads like the target's (the dirt texture lights up rather yellow)
+uniform vec3 road_tint = vec3(0.9, 0.84, 1.08);
+uniform vec3 dry_tint = vec3(0.97, 0.92, 1.08);
 
 varying vec3 wpos;
 
@@ -120,12 +123,12 @@ void fragment() {
 	vec3 gd;
 	if (has_grass_dry > 0.5) {
 		vec2 duv = rot2(tuv, 0.6) * 0.93 + vec2(0.21, 0.13);
-		gd = textureGrad(grass_dry_tex, duv, rot2(tdx, 0.6) * 0.93, rot2(tdy, 0.6) * 0.93).rgb;
+		gd = textureGrad(grass_dry_tex, duv, rot2(tdx, 0.6) * 0.93, rot2(tdy, 0.6) * 0.93).rgb * dry_tint;
 	} else {
 		gd = dry_col * (0.88 + 0.16 * n3 + 0.06 * n4);
 	}
 	float dry = sh.g + (n2.r - 0.5) * 0.55 + (n3 - 0.5) * 0.2;
-	vec3 col = mix(g, gd * 0.9, smoothstep(0.58, 0.88, dry) * 0.7);
+	vec3 col = mix(g, gd * 0.9, smoothstep(0.6, 0.9, dry) * 0.55);
 
 	// ---------------------------------------------------------------- forest-floor litter
 	if (sh.b > 0.01) {
@@ -173,7 +176,7 @@ void fragment() {
 				bool ax = along_x > 0.5;
 				r = textureGrad(dirt_tex, ax ? xuv : tuv * 1.3, (ax ? tdx.yx : tdx) * 1.3, (ax ? tdy.yx : tdy) * 1.3).rgb;
 			}
-			r *= 0.95 + 0.08 * n2.g;
+			r *= (0.95 + 0.08 * n2.g) * road_tint;
 		} else {
 			r = road_col * (0.9 + 0.14 * n3 + 0.06 * n4);
 		}

@@ -16,7 +16,14 @@ contract bone names (ART_DIRECTION_V2.md):
     hips > spine > chest > neck > head > extra_eye_L/R, extra_brow_L/R, extra_mouth, extra_jaw
                          chest > upperarm_L > forearm_L > hand_L   (and _R)
            hips > thigh_L > shin_L > foot_L                        (and _R)
+           hips > extra_skirt_0..7   (kakek, ibu, nenek only: skirt panels, see skirt_rig())
     Body   (mesh, Armature modifier, <= 6000 tris, <= 6 materials, baked AO + blush in `Col`)
+
+Cloth layers around the hips (shirt over trousers / skirt over the tops of the leg tubes) share one
+skin-weight field there (Char.hip_field), and geometry hidden under a layer is trimmed, so kneeling
+and high knees don't push one layer through another; decals take the weights of the cloth point under
+them. Every build runs automated checks and prints them (walk/run knee flare and thigh turn per frame,
+cloth layer exposure, parang clearance over the chop, fist sinking into the body).
 
 Bone axes: every limb/spine bone points along its local +Y; local +Z points to the
 character's front (feet: local +Z points up). So +X rotation swings any arm/leg/spine
@@ -541,6 +548,8 @@ DEF = dict(
 BONES = ("hips", "spine", "chest", "neck", "head", "upperarm_L", "forearm_L", "hand_L", "upperarm_R",
          "forearm_R", "hand_R", "thigh_L", "shin_L", "foot_L", "thigh_R", "shin_R", "foot_R")
 EXTRAS = ("extra_eye_L", "extra_eye_R", "extra_brow_L", "extra_brow_R", "extra_mouth", "extra_jaw")
+SKIRT_N = 8
+SKIRT = tuple("extra_skirt_%d" % i for i in range(SKIRT_N))   # skirt panels (children of hips), see skirt_rig()
 FRONT = Vector((0.0, -1.0, 0.0))
 UP = Vector((0.0, 0.0, 1.0))
 
@@ -562,6 +571,7 @@ class Char:
         self.extras = {}          # extra bone name -> (point, outward normal) (unscaled)
         self.blush = []           # (centre, radius) cheek tint spots
         self.skin = "M_Skin"
+        self.skirt = None         # skirt panel rig (long skirts / sarongs), see skirt_rig()
 
     # ---- geometry bookkeeping
     def add(self, rule, vf, m, smooth=True):
@@ -654,6 +664,17 @@ class Char:
     def w_skirt(self, p, kmax=0.72):
         d = self.d
         zw, zh, zc = self.zones()
+        if self.skirt:     # hip field at the waist (like the top over it), panels below
+            g = ss(zh, zh - 0.07, p.z)
+            w = {b: v * (1 - g) for b, v in self.hip_field(p, self.thigh_share(p, low=0.0)).items()}
+            a = math.atan2(p.x, -p.y / self.skirt["sy"]) % TAU
+            t = a / (TAU / SKIRT_N)
+            i0 = int(math.floor(t)) % SKIRT_N
+            t -= math.floor(t)
+            w[SKIRT[i0]] = w.get(SKIRT[i0], 0.0) + g * (1 - t)
+            i1 = (i0 + 1) % SKIRT_N
+            w[SKIRT[i1]] = w.get(SKIRT[i1], 0.0) + g * t
+            return w
         lo = ss(zh, d["ankle_z"] + 0.02, p.z)
         k = self.thigh_share(p, low=0.0) + (kmax - 0.3) * lo * (1.0 - 0.45 * ss(-0.02, 0.1, p.y))
         w = self.hip_field(p, k, split=0.05 + 0.03 * ss(zh, zh - 0.08, p.z))
@@ -882,13 +903,55 @@ def hat_xf(c, tilt=-10.0, roll=0.0, lift=0.0, fwd=0.0):
     return T(c.hc + Vector((0.0, fwd, lift))) @ R("X", tilt) @ R("Y", roll) @ Sc(c.hr[0] / 0.228)
 
 
+def skirt_rig(c, prof, sy):
+    """Long skirts / sarongs get SKIRT_N panel bones (extra_skirt_*, children of hips) hinged at the
+    hip joints' height around the body. The solver swings each panel out just enough to clear the
+    legs and the ground and lets it hang back when the hips tilt, so the cloth never has to follow
+    two legs going opposite ways (kneeling, running) - it drapes over the knee instead."""
+    d = c.d
+    surf = lathe_surf(prof, 1.0, sy)
+    pz = d["hip_z"]
+    zs = [z for (r, z) in prof if r > 1e-6]
+    hem_z = min(zs)
+    dirs, tabs, hems = [], [], []
+    for i in range(SKIRT_N):
+        a = TAU * i / SKIRT_N
+        k = math.hypot(math.sin(a), sy * math.cos(a))
+        h = Vector((math.sin(a), -sy * math.cos(a), 0.0)).normalized()
+        tab = []
+        z = hem_z
+        while z < pz - 1e-4:
+            rr, dz = surf.r_at(z) * k, pz - z
+            tab.append((math.hypot(rr, dz), math.atan2(rr, dz)))    # (distance from hinge, angle from down)
+            z += 0.005
+        widest = max(prof, key=lambda q: q[0] if q[1] < pz else -1.0)
+        hem = h * surf.r_at(hem_z) * k + Vector((0.0, 0.0, hem_z - pz))
+        dirs.append((h * widest[0] * k + Vector((0.0, 0.0, widest[1] - pz))).normalized())
+        tabs.append(sorted(tab))
+        hems.append(hem)
+    c.skirt = dict(sy=sy, dirs=dirs, tabs=tabs, hems=hems)
+
+
+def skirt_beta(tab, dist):
+    """Angle (from straight down) of the skirt surface at `dist` from the hinge (unscaled)."""
+    if dist <= tab[0][0]:
+        return math.pi / 2
+    for (d0, b0), (d1, b1) in zip(tab, tab[1:]):
+        if d0 <= dist <= d1:
+            return b0 + (b1 - b0) * ((dist - d0) / (d1 - d0) if d1 > d0 else 0.0)
+    return tab[-1][1]
+
+
 # --------------------------------------------------------------------------- body
 # (radius, z) profiles, revolved with sy = BODY_SY
-TORSO = [(0.0, 0.296), (0.118, 0.297), (0.146, 0.308), (0.153, 0.33), (0.151, 0.39), (0.147, 0.45),
-         (0.141, 0.5), (0.128, 0.545), (0.101, 0.58), (0.062, 0.603), (0.0, 0.61)]
-TUCKED = [(0.0, 0.33), (0.13, 0.331), (0.146, 0.345), (0.149, 0.39)] + TORSO[5:]
-PELVIS = [(0.0, 0.262), (0.07, 0.265), (0.116, 0.279), (0.137, 0.305), (0.143, 0.345), (0.14, 0.385),
-          (0.0, 0.395)]
+# (the tops get extra rings around the hips, where the skin weights change quickly, so the shirt
+# bends as smoothly as the trousers under it; the trousers end in a low dome just above the hem)
+TORSO = [(0.0, 0.296), (0.118, 0.297), (0.146, 0.308), (0.153, 0.33), (0.1528, 0.35), (0.152, 0.37),
+         (0.151, 0.39), (0.147, 0.45), (0.141, 0.5), (0.128, 0.545), (0.101, 0.58), (0.062, 0.603), (0.0, 0.61)]
+TUCKED = [(0.0, 0.33), (0.13, 0.331), (0.146, 0.345), (0.148, 0.365), (0.149, 0.39)] + \
+    [p for p in TORSO if p[1] >= 0.45]
+PELVIS = [(0.0, 0.262), (0.07, 0.265), (0.116, 0.279), (0.137, 0.305), (0.1415, 0.325), (0.138, 0.34),
+          (0.1, 0.352), (0.0, 0.356)]
 BODY_SY = 0.84
 
 
@@ -995,29 +1058,40 @@ def legs(c, skin, pants=None, pants_mat=None, foot="shoe", foot_mat="M_Dark", st
         H, K, A = c.leg_pts(side)
         x = H.x
         up = Vector((0, 0, 1))
+        # leg tubes start (flat-capped) at the hip joint, well inside the pelvis/trousers, instead of
+        # reaching up under the shirt where a flexing thigh would push them out through it
+        top = H.z
         if dress:
             c.add(rule, tube_vf([A + up * 0.085, A + up * 0.02], [d["ankle_r"] * 1.05, d["ankle_r"]], 10,
                                 up=FRONT, round_caps=1), skin)
         elif pants != "long":
-            zs = [H.z + 0.03, H.z - 0.02, (H.z + K.z) / 2, K.z, (K.z + A.z) / 2 + 0.01, A.z + 0.015]
-            rs = [d["thigh_r"] * 0.9, d["thigh_r"], d["thigh_r"] * 0.94, d["knee_r"], d["shin_r"], d["ankle_r"]]
-            c.add(rule, tube_vf([Vector((x, 0, z)) for z in zs], rs, 8, up=FRONT, round_caps=1), sock_mat or skin)
+            zs = [top, H.z - 0.025, (H.z + K.z) / 2, K.z, (K.z + A.z) / 2 + 0.01, A.z + 0.015]
+            rs = [d["thigh_r"] * 0.95, d["thigh_r"], d["thigh_r"] * 0.94, d["knee_r"], d["shin_r"], d["ankle_r"]]
+            if pants in ("shorts", "rolled"):   # bare leg only from just inside the trouser hem down
+                z0 = (shorts_z if pants == "shorts" else K.z - 0.035) + 0.025
+                r0 = lathe_surf(list(zip(rs, zs))[::-1]).r_at(z0)
+                keep = [(z, r) for z, r in zip(zs, rs) if z < z0 - 0.012]
+                zs, rs = [z0] + [z for z, r in keep], [r0] + [r for z, r in keep]
+            c.add(rule, tube_vf([Vector((x, 0, z)) for z in zs], rs, 8, up=FRONT, round_caps=(0, 1)),
+                  sock_mat or skin)
         hm = hem_mat or pants_mat
         if pants == "long":
-            zs = [H.z + 0.04, H.z - 0.02, (H.z + K.z) / 2, K.z, (K.z + A.z) / 2, A.z + 0.03, A.z + 0.004]
-            rs = [d["thigh_r"] + 0.006, d["thigh_r"] + 0.012, d["thigh_r"] + 0.008, d["knee_r"] + 0.012,
+            zs = [top, H.z - 0.025, (H.z + K.z) / 2, K.z, (K.z + A.z) / 2, A.z + 0.03, A.z + 0.004]
+            rs = [d["thigh_r"] + 0.009, d["thigh_r"] + 0.012, d["thigh_r"] + 0.008, d["knee_r"] + 0.012,
                   d["shin_r"] + 0.013, d["ankle_r"] + 0.016, d["ankle_r"] + 0.017]
-            c.add(rule, tube_vf([Vector((x, 0, z)) for z in zs], rs, 10, up=FRONT, round_caps=1), pants_mat)
+            c.add(rule, tube_vf([Vector((x, 0, z)) for z in zs], rs, 10, up=FRONT, round_caps=(0, 1)), pants_mat)
         elif pants in ("shorts", "rolled"):
             z0 = shorts_z if pants == "shorts" else K.z - 0.035
-            zs = [H.z + 0.04, H.z - 0.02, (H.z + z0) / 2, z0]
-            rs = [d["thigh_r"] + 0.012, d["thigh_r"] + 0.02, d["thigh_r"] + 0.018, d["thigh_r"] + 0.014]
-            if pants == "rolled":
-                rs = [d["thigh_r"] + 0.008, d["thigh_r"] + 0.013, d["knee_r"] + 0.014, d["shin_r"] + 0.012]
-            c.add(rule, tube_vf([Vector((x, 0, z)) for z in zs], rs, 10, up=FRONT, round_caps=1), pants_mat)
+            zs = [top, H.z - 0.025, (H.z + z0) / 2, z0]
+            rs = [d["thigh_r"] + 0.016, d["thigh_r"] + 0.02, d["thigh_r"] + 0.018, d["thigh_r"] + 0.014]
+            if pants == "rolled":    # (a ring at the knee, so the bent knee stays inside)
+                zs = [top, H.z - 0.025, (H.z + K.z) / 2, K.z + 0.01, K.z - 0.012, z0]
+                rs = [d["thigh_r"] + 0.011, d["thigh_r"] + 0.013, d["thigh_r"] + 0.01, d["knee_r"] + 0.016,
+                      d["knee_r"] + 0.015, d["shin_r"] + 0.012]
+            c.add(rule, tube_vf([Vector((x, 0, z)) for z in zs], rs, 10, up=FRONT, round_caps=0), pants_mat)
             hw = 0.009 if pants == "shorts" else 0.016
             c.add(rule, tube_vf([Vector((x, 0, z0 + hw)), Vector((x, 0, z0 - hw * 0.5))],
-                                [rs[-1] + 0.006, rs[-1] + 0.005], 10, up=FRONT, round_caps=1), hm)
+                                [rs[-1] + 0.006, rs[-1] + 0.005], 10, up=FRONT, round_caps=0), hm)
         # feet
         fy = -0.026
         fr = ("foot", side)
@@ -1089,6 +1163,10 @@ def build_rig(c, name):
         p, nrm = c.extras.get(n, (c.hc + Vector((0, -c.hr[1], 0)), FRONT))
         up = (UP - nrm * UP.dot(nrm)).normalized()
         bone(n, p, p + nrm * 0.03, "head", roll_to=up)
+    if c.skirt:
+        piv = Vector((0.0, 0.0, d["hip_z"]))
+        for i, n in enumerate(SKIRT):
+            bone(n, piv, piv + c.skirt["dirs"][i] * 0.12, "hips", roll_to=UP)
     bpy.ops.object.mode_set(mode="OBJECT")
     for pb in ob.pose.bones:
         pb.rotation_mode = "XYZ"
@@ -1124,7 +1202,7 @@ def build_mesh(c, name):
     assert len(me.vertices) == nv, "validate() removed vertices"
     ob = bpy.data.objects.new(name, me)
     link(ob)
-    groups = {b: ob.vertex_groups.new(name=b) for b in BONES + EXTRAS}
+    groups = {b: ob.vertex_groups.new(name=b) for b in BONES + EXTRAS + (SKIRT if c.skirt else ())}
     for i, w in enumerate(vw):
         items = sorted(((b, x) for b, x in w.items() if x > 0.004), key=lambda t: -t[1])[:4]
         tot = sum(x for _, x in items)
@@ -1276,7 +1354,63 @@ def two_bone(S, Tg, L1, L2, pole, soft=0.95):
     return E, S + u * reach
 
 
+FOOT_PTS = ((0.0, -0.095, -0.045, 0.034), (0.0, -0.03, -0.055, 0.04), (0.0, 0.04, -0.035, 0.034))
+SKIRT_GRAVITY = 0.7     # how much of the hips' tilt a hanging skirt panel takes back
+
+
 class Rig:
+    def solve_skirt(self, W, put, conj, Qh):
+        c, S, d, sk = self.c, self.S, self.c.d, self.c.skirt
+        QhT = Qh.transposed()
+        piv = W["hips"] @ (self.rest["hips"].inverted() @ (Vector((0.0, 0.0, d["hip_z"])) * S))
+        pts = []                                  # leg surface samples in the hips frame (scaled)
+        for x in ("L", "R"):
+            J, E, A = W["thigh_" + x].translation, W["shin_" + x].translation, W["foot_" + x].translation
+            Mf = W["foot_" + x] @ self.rest["foot_" + x].inverted()
+            A0 = self.rest["foot_" + x].translation
+            smp = [(J.lerp(E, 0.5), d["thigh_r"] + 0.015), (E, d["knee_r"] + 0.012), (E.lerp(A, 0.5), d["shin_r"] + 0.012),
+                   (A, d["ankle_r"] + 0.01)]
+            smp += [(Mf @ (A0 + Vector(o[:3]) * S), o[3]) for o in FOOT_PTS]
+            pts += [(QhT @ (p - piv), r * S) for (p, r) in smp]
+        g_h = QhT @ Vector((0.0, 0.0, -1.0))
+        dA = TAU / SKIRT_N
+        m = 0.018 * S          # (a little spare room: the game may widen the stride procedurally)
+        ths, axes = [], []
+        for i, n in enumerate(SKIRT):
+            D0 = sk["dirs"][i]
+            h = Vector((D0.x, D0.y, 0.0)).normalized()
+            axis = Vector((0.0, 0.0, -1.0)).cross(h).normalized()
+            tab = sk["tabs"][i]
+            hem_d = tab[-1][0] * S
+            th = SKIRT_GRAVITY * math.atan2(g_h.dot(h), -g_h.z)          # hang with gravity
+            pref = th
+            for (ph, r) in pts:
+                rho = math.hypot(ph.x, ph.y)
+                if rho < 1e-6:
+                    continue
+                psi = math.acos(clamp((ph.x * h.x + ph.y * h.y) / rho, -1.0, 1.0))
+                wf = ss(dA, dA * 0.5, psi)
+                ro = rho + r + m
+                Dp = math.hypot(ro, ph.z)
+                w = wf * ss(hem_d + 0.03 * S, hem_d - 0.02 * S, Dp)
+                if w <= 0.0:
+                    continue
+                need = math.atan2(ro, -ph.z) - skirt_beta(tab, Dp / S)
+                if need > pref:
+                    th = max(th, pref + w * (need - pref))
+            th = clamp(th, rad(-35.0), rad(100.0))
+            q = sk["hems"][i] * S                                     # keep the hem above the ground
+            for _ in range(140):
+                if piv.z + (Qh @ (Matrix.Rotation(th, 3, axis) @ q)).z >= 0.006 * S or th >= rad(100.0):
+                    break
+                th += rad(0.5)
+            ths.append(th)
+            axes.append(axis)
+        # a panel next to a strongly lifted one lifts a little too (round hem, no spikes)
+        ths = [max(t, 0.5 * t + 0.25 * (ths[i - 1] + ths[(i + 1) % SKIRT_N])) for i, t in enumerate(ths)]
+        for n, th, axis in zip(SKIRT, ths, axes):
+            put(n, conj(n, Matrix.Rotation(th, 3, axis)))
+
     def __init__(self, ob, c):
         self.ob, self.c, self.S = ob, c, c.S
         bones = ob.data.bones
@@ -1365,10 +1499,10 @@ class Rig:
                     tgt = gR + ax * t
                     grip, grip_world = ax, True
             if tgt is not None:
-                pole = Qc @ Vector(P.get("ikp" + x, (side * 0.7, 0.5, -0.5)))
+                pole = Qc @ Vector(P["ikp" + x])
                 wr = tgt.copy()
                 for _ in range(4):   # solve for the wrist so that the fist (not the wrist) lands on the target
-                    E, reached = two_bone(Sw, wr, L1, L2, pole, soft=0.88)
+                    E, reached = two_bone(Sw, wr, L1, L2, pole, soft=P["iksoft"])
                     D1 = (E - Sw).normalized()
                     D2 = (reached - E).normalized()
                     if grip is not None:
@@ -1445,6 +1579,10 @@ class Rig:
             want = Matrix.Rotation(rad(yaw), 3, "Z") @ Matrix.Rotation(rad(toe), 3, "X") @ self.r3(ft)
             put(ft, (W[sh] @ self.rel[ft]).to_3x3().inverted() @ want)
 
+        # --- skirt panels: swing out just enough to clear the legs and the ground, hang with gravity
+        if self.c.skirt:
+            self.solve_skirt(W, put, conj, Qh)
+
         # --- face extras
         eL, eR = P["eyes"]
         for x, e in (("L", eL), ("R", eR)):
@@ -1478,6 +1616,7 @@ def stand(st):
         "ikL": (0.0,), "ikR": (0.0,), "iktL": (0.1, -0.2, 0.3), "iktR": (-0.1, -0.2, 0.3),
         "gripL": (0.0, -1.0, 0.0), "gripR": (0.0, -1.0, 0.0), "gripwL": (0.0,), "gripwR": (0.0,),
         "iksp": (0.0,), "ikgnd": (0.0,), "polefollow": (0.0,), "poled": (0.11,), "kneeout": (0.12, 0.12),
+        "ikpL": (0.7, 0.5, -0.5), "ikpR": (-0.7, 0.5, -0.5), "iksoft": (0.88,),
     }
 
 
@@ -1490,9 +1629,10 @@ def spec_from(get, f):
     for x in ("L", "R"):
         P["ik" + x] = get("ik" + x, f)[0]
         P["ikt" + x] = get("ikt" + x, f)
+        P["ikp" + x] = get("ikp" + x, f)
         P["grip" + x] = get("grip" + x, f)
         P["gripw" + x] = get("gripw" + x, f)[0]
-    for k in ("iksp", "ikgnd", "polefollow", "poled"):
+    for k in ("iksp", "ikgnd", "polefollow", "poled", "iksoft"):
         P[k] = get(k, f)[0]
     P["kneeout"] = get("kneeout", f)
     return P
@@ -1525,37 +1665,38 @@ def clip_idle(rig, st):
         shl = math.sin(TAU * (ph - 5 / N) + 0.6)  # torso follows a little later
         shl2 = math.sin(TAU * (ph - 9 / N) + 0.6)
         brl = math.sin(TAU * (ph - 6 / N))
+        # (sized to read at game scale: ~3 cm of hip sway, the chest and shoulders rise with the breath)
         if ch == "hips_off":
-            return (0.011 * sh, 0.0, -0.007 + 0.002 * math.sin(2 * TAU * ph))
+            return (0.016 * sh, 0.0, -0.008 + 0.003 * math.sin(2 * TAU * ph))
         if ch == "hips":
-            return (0.0, 1.2 * sh, -2.4 * sh)
+            return (0.0, 1.8 * sh, -3.6 * sh)
         if ch == "spine":
-            return (base["spine"][0] + 0.5 * br, -0.6 * shl, 1.4 * shl)
+            return (base["spine"][0] + 0.9 * br, -0.9 * shl, 2.3 * shl)
         if ch == "chest":
-            return (base["chest"][0] - 1.6 * br, -0.4 * shl2, 0.9 * shl2)
+            return (base["chest"][0] - 2.6 * br, -0.6 * shl2, 1.5 * shl2)
         if ch == "neck":
-            return (base["neck"][0] + 0.8 * brl, 0.4 * look(f - 3), 0.0)
+            return (base["neck"][0] + 1.2 * brl, 0.4 * look(f - 3), 0.0)
         if ch == "head":
-            return (base["head"][0] + 1.3 * brl, 0.8 * look(f), base["head"][2] + tilt(f) - 0.8 * shl2)
+            return (base["head"][0] + 2.0 * brl, 0.8 * look(f), base["head"][2] + tilt(f) - 1.2 * shl2)
         if ch in ("armL", "armR"):
             side = 1 if ch == "armL" else -1
             fk, ikw, _ = idle_arm_pose(st, side, rig)
             lag = math.sin(TAU * (ph - 10 / N))
-            return (fk[0] + 1.6 * lag, fk[1] + 1.4 * brl + 0.8 * side * shl, fk[2], fk[3] + 3.0 * lag)
+            return (fk[0] + 2.4 * lag, fk[1] + 2.6 * brl + 1.2 * side * shl, fk[2], fk[3] + 4.5 * lag)
         if ch in ("handL", "handR"):
             lag = math.sin(TAU * (ph - 14 / N))
-            return (4.0 * lag, 0.0, 0.0)
+            return (6.0 * lag, 0.0, 0.0)
         if ch in ("ikL", "ikR"):
             return (idle_arm_pose(st, 1 if ch == "ikL" else -1, rig)[1],)
         if ch in ("iktL", "iktR"):
             side = 1 if ch == "iktL" else -1
             # hands on hips (akimbo) / clasped in front of the belly / clipboard at the chest
             if st["idle_arms"] == "clip" and side > 0:
-                return (0.07, -0.16, 0.44 + 0.004 * br)
+                return (0.07, -0.16, 0.44 + 0.006 * br)
             if st["idle_arms"] == "front":
                 rub = 0.012 * st.get("rub", 0.0) * math.sin(2 * TAU * 4 * ph) * side
-                return (side * 0.03 + rub, -0.15 * d["sh_x"] / DEF["sh_x"], d["hip_z"] + 0.07 + 0.003 * br)
-            return (side * (d["sh_x"] + 0.05), -0.01, d["hip_z"] + 0.055 + 0.003 * br)
+                return (side * 0.03 + rub, -0.15 * d["sh_x"] / DEF["sh_x"], d["hip_z"] + 0.07 + 0.006 * br)
+            return (side * (d["sh_x"] + 0.05), -0.01, d["hip_z"] + 0.055 + 0.005 * br)
         if ch in ("gripL", "gripR"):
             return (0.0, 0.0, 1.0) if st["idle_arms"] == "clip" else (0.0, -1.0, 0.0)
         if ch == "gripwL":
@@ -1939,10 +2080,11 @@ def clip_cheer(rig, st):
                  (22, (40, 84, -20, 96)), (26, (26, 132, -12, 16)), (31, (12, 40, 4, 34))],
         "handL": [(0, b["handL"]), (10, (-12, 0, 0)), (18, (8, 0, 0)), (26, (-12, 0, 0)), (32, b["handL"])],
         "handR": [(0, b["handR"]), (10, (-12, 0, 0)), (18, (8, 0, 0)), (26, (-12, 0, 0)), (32, b["handR"])],
-        "legL": [(0, b["legL"]), (6, b["legL"]), (10, (0.012, 0.012, 0.056, 30, 7)), (13, (0.014, 0.012, 0.062, 26, 7)),
+        # (feet tucked a little at the top of the hop so the legs never have to over-stretch)
+        "legL": [(0, b["legL"]), (6, b["legL"]), (10, (0.012, 0.012, 0.07, 30, 7)), (13, (0.014, 0.012, 0.076, 26, 7)),
                  (16, (0.01, 0.0, 0.004, 4, 7)), (17, b["legL"])],
-        "legR": [(0, b["legR"]), (6, b["legR"]), (10, (-0.012, 0.012, 0.056, 30, -7)),
-                 (13, (-0.014, 0.012, 0.062, 26, -7)), (16, (-0.01, 0.0, 0.004, 4, -7)), (17, b["legR"])],
+        "legR": [(0, b["legR"]), (6, b["legR"]), (10, (-0.012, 0.012, 0.07, 30, -7)),
+                 (13, (-0.014, 0.012, 0.076, 26, -7)), (16, (-0.01, 0.0, 0.004, 4, -7)), (17, b["legR"])],
         "eyes": [(0, (1, 1)), (6, (1, 1)), (9, (0.3, 0.3)), (28, (0.3, 0.3)), (32, (1, 1))],
         "jaw": [(0, (1,)), (6, (1,)), (10, (4.2,)), (18, (3.2,)), (22, (4.0,)), (28, (3.4,)), (32, (1,))],
         "brow": [(0, (0, 0)), (8, (4, 0.008)), (28, (4, 0.008)), (33, (0, 0))],
@@ -2057,18 +2199,60 @@ def clip_harvest(rig, st):
     return N, False, tr
 
 
+def stand_hand(rig, st, side, arm=None, hand=None):
+    """Fist centre, blade axis (hand local +Z) and elbow pole direction of the neutral stance (or of
+    the FK arm / hand angles given), in the chest's rest frame (unscaled): IK arm clips start and end
+    exactly on the FK stance and can pass through FK-designed poses."""
+    b = dict(stand(st))
+    x = sfx(side)
+    if arm is not None:
+        b["arm" + x] = arm
+    if hand is not None:
+        b["hand" + x] = hand
+    rig.solve(spec_from(lambda ch, f: b[ch], 0))
+    W = rig.W
+    Ci = rig.rest["chest"] @ W["chest"].inverted()
+    Mh = W["hand_" + x]
+    fist = Ci @ (Mh @ Vector((0.0, 0.036 * rig.S * rig.c.d["hand_k"], 0.0)))
+    G = Ci.to_3x3() @ (Mh.to_3x3() @ Vector((0.0, 0.0, 1.0)))
+    Sh, El, Wr = (Ci @ W[n + x].translation for n in ("upperarm_", "forearm_", "hand_"))
+    u = (Wr - Sh).normalized()
+    pole = (El - Sh) - u * (El - Sh).dot(u)
+    return tuple(fist / rig.S), tuple(G.normalized()), tuple(pole.normalized())
+
+
 def clip_chop(rig, st):
-    """Parang (machete) slash with the right hand: cock it up at the right shoulder, then a fast
-    diagonal sweep across the front to the lower left, follow through, recover.
-    The blade runs along hand_R's local +Z (the thumb side of the fist)."""
+    """Parang (machete) chop with the right hand: cock it high out over the right shoulder with the
+    blade pointing up and back (clear of the head, the widest hat brims and the back), then a fast
+    swing down the right side and forward, the blade slicing forward-down at the bushes in front,
+    follow through, recover. The right arm is IK all through (fist + blade direction = hand_R
+    local +Z, where the game puts the blade, in the chest frame so the torso twist adds to the
+    swing); it starts and ends exactly on the neutral stance."""
     N = 24
     b = stand(st)
+    d = rig.c.d
     hc, hh = b["chest"][0], b["head"][0]
+    k = (d["l_up"] + d["l_fore"]) / (DEF["l_up"] + DEF["l_fore"])
+    shR = Vector((-d["sh_x"], 0.0, d["sh_z"]))
+    f0, g0, p0 = stand_hand(rig, st, -1)
+    fk = {f: stand_hand(rig, st, -1, arm, hand) for f, arm, hand in
+          ((12, (72, 6, 18, 22), (-42, 0, 0)), (14, (64, -16, 24, 26), (-52, 0, 0)), (18, (30, 8, 10, 36), (-10, 0, 0)))}
+
+    def fist(x, y, z):      # offset from the right shoulder (x < 0 = outward), scaled by arm length
+        return tuple(shR + Vector((x, y, z)) * k)
     tr = one_shot(N, b, {
-        "armR": [(0, b["armR"]), (6, (36, 80, -20, 96)), (9, (40, 84, -22, 102)), (12, (72, 6, 18, 22)),
-                 (14, (64, -16, 24, 26)), (18, (30, 8, 10, 36))],
-        "handR": [(0, b["handR"]), (6, (24, 0, 0)), (9, (30, 0, 0)), (12, (-42, 0, 0)), (14, (-52, 0, 0)),
-                  (19, (-10, 0, 0))],
+        # IK all through the swing: the wind-up poses are designed as fist + blade direction, the
+        # strike and follow-through are the fist / blade of keyed FK arm poses
+        "iksp": [(0, (1,)), (24, (1,))], "iksoft": [(0, (0.985,)), (24, (0.985,))],
+        "ikR": [(0, (0,)), (3, (1,)), (19, (1,)), (23, (0,))], "gripwR": [(0, (0,)), (3, (1,)), (19, (1,)), (23, (0,))],
+        # (the fist leaves and comes back out to the side, clear of hip bags and sashes)
+        "iktR": [(0, f0), (2, fist(-0.1, -0.03, -0.12)), (3, fist(-0.11, -0.02, 0.0)), (6, fist(-0.135, 0.02, 0.085)),
+                 (9, fist(-0.135, 0.035, 0.095)), (11, fist(-0.1, -0.1, 0.02))] + [(f, fk[f][0]) for f in (12, 14, 18)] +
+                [(20, fist(-0.09, -0.07, -0.17)), (22, f0)],
+        "gripR": [(0, g0), (3, (-0.75, -0.35, 0.55)), (6, (-0.68, 0.42, 0.6)), (9, (-0.64, 0.52, 0.56)),
+                  (11, (-0.68, -0.22, 0.7))] + [(f, fk[f][1]) for f in (12, 14, 18)] + [(22, g0)],
+        "ikpR": [(0, p0), (4, (-0.6, -0.2, -0.8)), (9, (-0.6, -0.1, -0.8))] + [(f, fk[f][2]) for f in (12, 14, 18)] +
+                [(22, p0)],
         "armL": [(0, b["armL"]), (6, (12, 30, 6, 42)), (9, (14, 32, 6, 44)), (12, (-6, 26, 6, 30)),
                  (15, (-4, 24, 6, 28)), (20, (4, 14, 6, 22))],
         "hips_off": [(0, b["hips_off"]), (6, (-0.01, 0.006, -0.012)), (9, (-0.011, 0.007, -0.014)),
@@ -2130,6 +2314,7 @@ def clip_plant(rig, st):
     kz = (d["hip_z"] - d["ankle_z"]) / (DEF["hip_z"] - DEF["ankle_z"])
     hk = d["hand_k"]
     G = PLANT_FIST * hk
+    GL = G + st.get("plant_lift_L", 0.0)      # (petugas keeps the clipboard in the left hand off the soil)
     drop = -0.2 * kz
     back = 0.03 * kz
     lam = plant_lean(d, st, drop, G, 0.035)
@@ -2176,8 +2361,8 @@ def clip_plant(rig, st):
         "kneeout": [(0, (0.12, 0.12)), (4, (0.9, 0.12)), (28, (0.9, 0.12))],
         "legL": [(0, b["legL"]), (3, (0.02 * kz, -0.045 * kz, 0.035 * kz, -6, 16)), (6, foot_l), (26, foot_l),
                  (29, (0.02 * kz, -0.05 * kz, 0.012, 0, 16)), (31, (0.012, -0.015, 0.0, 0, 9))],
-        "legR": [(0, b["legR"]), (4, (-0.01, 0.04 * kz, 0.012, 20, -8)), (8, kneel_r), (25, kneel_r),
-                 (28, (-0.01, y_ank * 0.6, 0.02, 34, -8)), (31, (-0.01, 0.01, 0.0, 4, -7))],
+        "legR": [(0, b["legR"]), (4, (-0.01, 0.04 * kz, tab[20][1] + 0.004, 20, -8)), (8, kneel_r), (25, kneel_r),
+                 (28, (-0.01, y_ank * 0.6, tab[34][1] + 0.006, 34, -8)), (31, (-0.01, 0.01, tab[4][1], 4, -7))],
         "ikgnd": [(0, (1,)), (36, (1,))],
         "ikR": [(0, (0,)), (4, (0,)), (9, (1,)), (25, (1,)), (29, (0.0,))],
         "iktR": [(0, (0.0, -0.06, 0.3)), (7, (0.0, -0.05, G + 0.06)), (10, (0.0, -0.035, G)),
@@ -2185,10 +2370,10 @@ def clip_plant(rig, st):
                  (19, (-0.01, -0.02, G + 0.05)), (22, (0.015, -0.035, G)), (23, (0.015, -0.035, G + 0.025)),
                  (24, (0.015, -0.035, G)), (26, (0.0, -0.02, G + 0.06))],
         "ikL": [(0, (0,)), (4, (0,)), (9, (1,)), (26, (1,)), (30, (0,))],
-        "iktL": [(0, (0.0, -0.06, 0.3)), (8, (0.02, -0.06, G + 0.09)), (15, (0.02, -0.06, G + 0.08)),
-                 (18, (0.035, -0.04, G + 0.03)), (20, (0.035, -0.035, G + 0.002)), (21, (0.035, -0.035, G)),
-                 (22, (0.03, -0.035, G + 0.02)), (23, (0.03, -0.035, G)), (24, (0.03, -0.035, G + 0.02)),
-                 (25, (0.03, -0.035, G)), (27, (0.02, -0.03, G + 0.06))],
+        "iktL": [(0, (0.0, -0.06, 0.3)), (8, (0.02, -0.06, GL + 0.09)), (15, (0.02, -0.06, GL + 0.08)),
+                 (18, (0.035, -0.04, GL + 0.03)), (20, (0.035, -0.035, GL + 0.002)), (21, (0.035, -0.035, GL)),
+                 (22, (0.03, -0.035, GL + 0.02)), (23, (0.03, -0.035, GL)), (24, (0.03, -0.035, GL + 0.02)),
+                 (25, (0.03, -0.035, GL)), (27, (0.02, -0.03, GL + 0.06))],
         "armR": [(0, b["armR"]), (7, (40, 16, 10, 40)), (25, (40, 16, 10, 40))],
         "armL": [(0, b["armL"]), (7, (40, 16, 10, 40)), (26, (40, 16, 10, 40))],
         # wrists stay nearly straight while the fists are on the soil (the IK aims the fist, not the
@@ -2279,11 +2464,15 @@ def layer_check(c, body, set_pose, frames, near=0.035, far=0.08, verbose=False):
     play = [vlayer[p[0]] for p in polys]            # a face lies in one chunk
     levels = sorted({L for L in vlayer if L is not None})
 
+    fmat_of = [vmat[p[0]] for p in polys]
+    L_faces = {}
+
     def trees(co):
         out = {}
         for L in levels:
-            ps = [p for p, pl in zip(polys, play) if pl is not None and pl > L]
-            out[L] = BVHTree.FromPolygons(co, ps, all_triangles=False) if ps else None
+            idx = [k for k, pl in enumerate(play) if pl is not None and pl > L]
+            out[L] = BVHTree.FromPolygons(co, [polys[k] for k in idx], all_triangles=False) if idx else None
+            L_faces[id(out[L])] = idx
         return out
 
     def covered(tr, p, n, dist):
@@ -2291,6 +2480,11 @@ def layer_check(c, body, set_pose, frames, near=0.035, far=0.08, verbose=False):
             return False
         hit = tr.ray_cast(p, n, dist)
         return hit[0] is not None and hit[1].dot(n) > 0.0
+
+    def same_mat(tr, p, m):
+        """poking through a same-coloured layer (trouser leg through the trousers) is invisible"""
+        hit = tr.find_nearest(p, 0.008 * c.S)
+        return hit[0] is not None and fmat_of[L_faces[id(tr)][hit[2]]] == m
 
     co0 = [v.co.copy() for v in me.vertices]
     tr0 = trees(co0)
@@ -2312,7 +2506,8 @@ def layer_check(c, body, set_pose, frames, near=0.035, far=0.08, verbose=False):
         tr = trees(co)
         bad = {}
         for i in test:
-            if not covered(tr[vlayer[i]], co[i], nr[i], far * c.S):
+            if not covered(tr[vlayer[i]], co[i], nr[i], far * c.S) and \
+                    not same_mat(tr[vlayer[i]], co[i], vmat[i]):
                 bad[vmat[i]] = bad.get(vmat[i], 0) + 1
                 if verbose:
                     print("    exposed f%d v%d %s L%.1f rest=(%.3f %.3f %.3f)" % ((f, i, vmat[i], vlayer[i]) +
@@ -2401,7 +2596,7 @@ def bake_actions(rig, st, names=None):
 
 # --------------------------------------------------------------------------- characters
 def build_player():
-    c = Char("player", style=dict(energy=1.0, bob=1.05))
+    c = Char("player", style=dict(energy=1.0, bob=1.05, arm_out=4.0))
     SK, DK = "M_Skin", "M_Dark"
     face(c, SK, eyes="smug", mouth="smirk", brows="smug")
     hair(c, DK, front=70, side=95, back=134, part=8, tmin=48, rings=4)
@@ -2438,7 +2633,7 @@ def build_player():
 
 
 def build_kakek():
-    c = Char("kakek", style=dict(stoop=9.0, stride=0.9, bob=0.7, energy=0.7, idle_arms="behind"),
+    c = Char("kakek", style=dict(stoop=9.0, stride=0.9, bob=0.7, energy=0.7, idle_arms="behind", arm_out=8.0),
              head_r=(0.226, 0.212, 0.204))
     SK, DK, PALE = "M_SkinTan", "M_Dark", "M_FadedShirt"
     face(c, SK, eyes="happy", mouth=None, brows="bushy", brow_mat=PALE)
@@ -2458,22 +2653,25 @@ def build_kakek():
     neck(c, SK)
     torso(c, PALE)
     collar(c, PALE, dip=0.02, thick=(0.014, 0.018))
-    sar = [(0.0, 0.118), (0.13, 0.112), (0.162, 0.114), (0.168, 0.132), (0.162, 0.25), (0.152, 0.35), (0.0, 0.37)]
-    c.add("skirt", lathe_vf(sar, 20, 1.0, 0.88), "M_Sarong")
-    ssurf = lathe_surf(sar, 1.0, 0.88)
-    for z in (0.16, 0.22, 0.28):
+    # (the sarong's top tucks in under the shirt's hem band)
+    sar = [(0.0, 0.118), (0.13, 0.112), (0.162, 0.114), (0.168, 0.132), (0.162, 0.25), (0.152, 0.285),
+           (0.145, 0.305), (0.13, 0.325), (0.0, 0.335)]
+    c.add("skirt", lathe_vf(sar, 20, 1.0, BODY_SY), "M_Sarong")
+    skirt_rig(c, sar, BODY_SY)
+    ssurf = lathe_surf(sar, 1.0, BODY_SY)
+    for z in (0.16, 0.22, 0.272):
         prof = [(ssurf.r_at(z - 0.008) + 0.003, z - 0.008), (ssurf.r_at(z + 0.008) + 0.003, z + 0.008)]
-        c.add("skirt", lathe_vf(prof, 20, 1.0, 0.88), PALE)
+        c.add("skirt", lathe_vf(prof, 20, 1.0, BODY_SY), PALE)
     for k in range(10):
         a = TAU * (k + 0.5) / 10
-        c.add("skirt", strip_vf(ssurf, a, 0.12, 0.33, 0.012, 0.0035, 3), PALE)
+        c.add("skirt", strip_vf(ssurf, a, 0.12, 0.3, 0.012, 0.0035, 3), PALE)
     arms(c, SK, sleeve="short", sleeve_mat=PALE)
     legs(c, SK, dress=True, foot="sandal", foot_mat=DK, strap_mat="M_Sarong")
     return c
 
 
 def build_ibu():
-    c = Char("ibu", style=dict(stride=0.88, energy=0.85, idle_arms="front", head_tilt=2.0), sh_x=0.118,
+    c = Char("ibu", style=dict(stride=0.88, energy=0.85, idle_arms="front", head_tilt=2.0, arm_out=12.0), sh_x=0.118,
              sh_z=0.545)
     SK = "M_Skin"
     face(c, SK, eyes="round", mouth="smile", brows="soft", ears=False, lash=True, hl="M_Floral")
@@ -2487,6 +2685,7 @@ def build_ibu():
     dress = [(0.0, 0.07), (0.19, 0.066), (0.228, 0.074), (0.234, 0.094), (0.215, 0.18), (0.182, 0.27),
              (0.158, 0.35), (0.148, 0.42), (0.132, 0.5), (0.0, 0.53)]
     c.add("skirt", lathe_vf(dress, 22, 1.0, 0.88), "M_Dress")
+    skirt_rig(c, dress, 0.88)
     dsurf = lathe_surf(dress, 1.0, 0.88)
     hem_ring(c, dsurf, 0.085, "M_Floral", sx=1.0, sy=0.88, out=0.006, w=0.009, rule="skirt")
     rows = ((0.135, 9, 0.026), (0.215, 8, 0.024), (0.3, 7, 0.022))
@@ -2500,7 +2699,7 @@ def build_ibu():
 
 
 def build_kades():
-    c = Char("kades", style=dict(chest=-5.0, idle_arms="behind", swagger=2.0, energy=0.85))
+    c = Char("kades", style=dict(chest=-5.0, idle_arms="behind", swagger=2.0, energy=0.85, arm_out=4.0))
     SK, DK = "M_Skin", "M_Dark"
     face(c, SK, eyes="round", mouth="smile", brows="normal")
     hair(c, DK, front=74, side=95, back=132, lift=0.012, seg=20, tmin=40, rings=4)
@@ -2535,7 +2734,8 @@ def build_kades():
 
 
 def build_nenek():
-    c = Char("nenek", style=dict(stoop=15.0, stride=0.85, bob=0.6, energy=0.6, idle_arms="front", head_tilt=-2.0))
+    c = Char("nenek", style=dict(stoop=15.0, stride=0.85, bob=0.6, energy=0.6, idle_arms="front", head_tilt=-2.0,
+                              arm_out=12.0))
     SK, DK, GR = "M_Skin", "M_Dark", "M_HairGrey"
     face(c, SK, eyes="happy", mouth="smile", brows="soft", brow_mat=GR)
     hair(c, GR, front=62, side=92, back=116, lift=0.018)
@@ -2554,27 +2754,30 @@ def build_nenek():
     c.add("head", tube_vf(c.head_path([(-14, -4), (0, -2.5), (14, -4)], 0.017), 0.0045, 4), DK)
     # kebaya top (light, with a peplum) and batik kain to the ankles
     neck(c, SK)
-    keb = [(0.0, 0.3), (0.136, 0.296), (0.166, 0.305), (0.164, 0.33), (0.153, 0.39), (0.148, 0.45), (0.141, 0.5),
+    keb = [(0.0, 0.3), (0.136, 0.296), (0.166, 0.305), (0.164, 0.33), (0.1595, 0.35), (0.156, 0.37), (0.153, 0.39),
+           (0.148, 0.45), (0.141, 0.5),
            (0.128, 0.545), (0.101, 0.58), (0.062, 0.603), (0.0, 0.61)]
     surf = torso(c, "M_Kebaya", keb)
     collar(c, "M_Kebaya", dip=0.05, thick=(0.012, 0.016))
     for z in (0.39, 0.44, 0.49):
         c.add("torso", decal_vf(surf, 0.0, z, circle(0.009, 6), thick=0.002), GR)
-    kain = [(0.0, 0.07), (0.125, 0.064), (0.152, 0.068), (0.157, 0.09), (0.153, 0.25), (0.148, 0.34), (0.0, 0.345)]
+    kain = [(0.0, 0.07), (0.125, 0.064), (0.152, 0.068), (0.157, 0.09), (0.153, 0.25), (0.151, 0.29), (0.147, 0.31),
+            (0.13, 0.33), (0.0, 0.335)]
     c.add("skirt", lathe_vf(kain, 20, 1.0, 0.88), "M_Kain")
+    skirt_rig(c, kain, 0.88)
     ksurf = lathe_surf(kain, 1.0, 0.88)
-    for ri, z in enumerate((0.11, 0.17, 0.23, 0.29)):
+    for ri, z in enumerate((0.105, 0.16, 0.215, 0.27)):
         for k in range(9):
             a = TAU * (k + 0.5 * (ri % 2)) / 9
             c.add("skirt", decal_vf(ksurf, a, z, diamond(0.024, 0.03), 0.0035), "M_Kebaya")
-    c.add("skirt", strip_vf(ksurf, rad(-18), 0.07, 0.3, 0.01, 0.0045, 3), "M_Kebaya")
+    c.add("skirt", strip_vf(ksurf, rad(-18), 0.07, 0.285, 0.01, 0.0045, 3), "M_Kebaya")
     arms(c, SK, sleeve="long", sleeve_mat="M_Kebaya")
     legs(c, SK, dress=True, foot="sandal", foot_mat=DK, strap_mat="M_Kain")
     return c
 
 
 def build_pemuda():
-    c = Char("pemuda", style=dict(energy=1.2, bob=1.2, swagger=3.0, stride=1.05))
+    c = Char("pemuda", style=dict(energy=1.2, bob=1.2, swagger=3.0, stride=1.05, arm_out=12.0))
     SK, DK = "M_Skin", "M_Dark"
     face(c, SK, eyes="round", mouth="grin", brows="normal")
     messy_hair(c, DK)
@@ -2586,7 +2789,7 @@ def build_pemuda():
     collar(c, "M_GreenTee", dip=0.0, vneck=False, thick=(0.012, 0.014), rx=0.07, ry=0.062)
     pelvis(c, "M_Jeans")
     L_ = Vector((0.11, 0.0, 0.59))
-    Rp = Vector((-0.16, 0.0, 0.32))
+    Rp = Vector((-0.155, 0.03, 0.325))   # knot towards the back of the right hip (clear of the swinging hand)
     C = (L_ + Rp) / 2
     u = (L_ - Rp).normalized()
     v = Vector((0.0, 1.0, 0.0))
@@ -2598,9 +2801,9 @@ def build_pemuda():
     for i in range(N):
         mname = DK if i % 4 == 0 else "M_SarongRed"
         c.add("torso_rigid", tube_vf([pts[i], pts[(i + 1) % N]], (0.02, 0.044), 5, up=nrm, caps=False), mname)
-    c.add("torso_rigid", xf(ellipsoid_vf((0.048, 0.04, 0.044), 8, 5), T(Rp + Vector((-0.01, -0.02, 0.0)))),
+    c.add("torso_rigid", xf(ellipsoid_vf((0.046, 0.04, 0.044), 8, 5), T(Rp + Vector((-0.004, 0.02, 0.0)))),
           "M_SarongRed")
-    c.add("torso_rigid", xf(ellipsoid_vf((0.027, 0.02, 0.058), 6, 4), T(Rp + Vector((-0.018, -0.03, -0.062)))),
+    c.add("torso_rigid", xf(ellipsoid_vf((0.025, 0.02, 0.056), 6, 4), T(Rp + Vector((-0.008, 0.04, -0.06)))),
           "M_SarongRed")
     arms(c, SK, sleeve="short", sleeve_mat="M_GreenTee")
     legs(c, SK, pants="shorts", pants_mat="M_Jeans", foot="sandal", foot_mat=DK)
@@ -2608,7 +2811,7 @@ def build_pemuda():
 
 
 def build_petani():
-    c = Char("petani", style=dict(energy=0.95))
+    c = Char("petani", style=dict(energy=0.95, arm_out=4.0))
     SK, DK = "M_SkinTan", "M_Dark"
     face(c, SK, eyes="round", mouth="smile", brows="normal")
     hair(c, DK, front=78, side=95, back=134, seg=20, tmin=58, rings=4)
@@ -2640,7 +2843,7 @@ def build_petani():
 
 
 def build_anak():
-    c = Char("anak", scale=0.76, style=dict(energy=1.3, bob=1.35, stride=1.1),
+    c = Char("anak", scale=0.76, style=dict(energy=1.3, bob=1.35, stride=1.1, arm_out=4.0),
              head_r=(0.248, 0.23, 0.224), head_c=0.855)
     SK, DK = "M_Skin", "M_Dark"
     face(c, SK, eyes="big", mouth="grin", brows="soft", eye_yaw=25, eye_el=-7)
@@ -2671,7 +2874,7 @@ def build_anak():
     return c
 
 
-PREMAN_TORSO = [(0.0, 0.36), (0.16, 0.36), (0.19, 0.38), (0.2, 0.45), (0.212, 0.55), (0.218, 0.63), (0.207, 0.69),
+PREMAN_TORSO = [(0.0, 0.36), (0.16, 0.36), (0.19, 0.38), (0.196, 0.405), (0.199, 0.428), (0.2, 0.45), (0.212, 0.55), (0.218, 0.63), (0.207, 0.69),
                 (0.18, 0.735), (0.13, 0.77), (0.078, 0.79), (0.0, 0.8)]
 
 
@@ -2710,8 +2913,8 @@ def build_preman():
     c.add("torso_rigid", tube_vf(cp, cr, 6, closed=True), "M_Gold")
     c.add("torso_rigid", xf(ellipsoid_vf((0.022, 0.01, 0.026), 6, 4), T(surf(0.0, 0.68) + Vector((0, -0.02, 0)))),
           "M_Gold")
-    pelvis(c, "M_Army", [(0.0, 0.3), (0.1, 0.305), (0.16, 0.33), (0.18, 0.37), (0.184, 0.42), (0.0, 0.43)],
-           sx=1.05, sy=sy)
+    pelvis(c, "M_Army", [(0.0, 0.3), (0.1, 0.305), (0.16, 0.33), (0.18, 0.37), (0.183, 0.395), (0.15, 0.41),
+                         (0.0, 0.415)], sx=1.05, sy=sy)
     c.add("torso", lathe_vf([(0.19, 0.38), (0.198, 0.397), (0.19, 0.412)], 20, 1.05, sy), DK)
     arms(c, SK, sleeve=None)
     # tattoos: a band + patches on each upper arm
@@ -2731,7 +2934,7 @@ def build_preman():
 
 
 def build_calo():
-    c = Char("calo", style=dict(swagger=4.0, idle_arms="front", head_tilt=4.0, energy=1.0, rub=1.0))
+    c = Char("calo", style=dict(swagger=4.0, idle_arms="front", head_tilt=4.0, energy=1.0, rub=1.0, arm_out=12.0))
     SK, DK, TW = "M_Skin", "M_Dark", "M_Tweed"
     face(c, SK, eyes=None, mouth="smirk", brows=None)
     hair(c, DK, front=80, side=95, back=132, lift=0.014, seg=20, tmin=60, rings=4)
@@ -2758,7 +2961,7 @@ def build_calo():
     strap = surf_path(lathe_surf(TORSO, 1.0, BODY_SY), [(TAU * i / 28, 0.35 + 0.03 * math.cos(TAU * i / 28 + 0.9))
                                                         for i in range(28)], 0.006)
     c.add("torso", tube_vf(strap, (0.008, 0.014), 4, closed=True), DK)
-    bb = surf(rad(-10), 0.335) + Vector((0, -0.04, 0))
+    bb = surf(rad(6), 0.335) + Vector((0, -0.04, 0))      # (a little to his left: the right fist swings past)
     c.add("torso_rigid", xf(ellipsoid_vf((0.085, 0.043, 0.052), 12, 6), T(bb) @ R("Y", 12)), DK)
     c.add("torso_rigid", xf(tube_vf([(-0.066, -0.043, 0.012), (0.0, -0.048, 0.014), (0.066, -0.043, 0.012)],
                                     0.004, 4), T(bb) @ R("Y", 12)), "M_HawaiiBloom")
@@ -2768,7 +2971,7 @@ def build_calo():
 
 
 def build_petugas():
-    c = Char("petugas", style=dict(chest=-3.0, idle_arms="clip", energy=0.8))
+    c = Char("petugas", style=dict(chest=-3.0, idle_arms="clip", energy=0.8, arm_out=4.0, plant_lift_L=0.024))
     SK, DK, UN = "M_Skin", "M_Dark", "M_Uniform"
     face(c, SK, eyes="round", mouth="flat", brows="angry")
     hair(c, DK, front=80, side=95, back=132, lift=0.012, seg=20, tmin=58, rings=4)
@@ -2806,7 +3009,7 @@ def build_petugas():
 
 
 def build_buruh():
-    c = Char("buruh", style=dict(stoop=4.0, energy=0.8, stride=0.95))
+    c = Char("buruh", style=dict(stoop=4.0, energy=0.8, stride=0.95, arm_out=6.0))
     SK, DK = "M_SkinTan", "M_Dark"
     face(c, SK, eyes="round", mouth="flat", brows="worried")
     hair(c, DK, front=80, side=95, back=132, lift=0.012, seg=20, tmin=58, rings=4)
@@ -2920,10 +3123,58 @@ def _cleanup(objs):
                 bpy.data.meshes.remove(me)
 
 
-PROXY_TOOLS = {   # clip -> list of (z0, z1, (r_side, r_thick), colour) segments along hand_R local +Z
-    "harvest": [(-0.4, 2.2, (0.014, 0.014), "#b58a4c"), (2.2, 2.45, (0.03, 0.006), "#8c9aa0")],
-    "chop": [(-0.05, 0.07, (0.017, 0.017), "#5a3b24"), (0.07, 0.42, (0.028, 0.004), "#b9c3c6")],
+# clip -> (z0, z1, (r_side, r_thick), colour, y offset) segments along hand_R local +Z, in metres
+# like the game's tools (char_anim.gd tool_mesh: parang grip -0.07..0.08, blade 0.10..0.46 with its
+# edge towards the fingers, i.e. hand_R +Y)
+PROXY_TOOLS = {
+    "harvest": [(-0.4, 2.2, (0.014, 0.014), "#b58a4c", 0.0), (2.2, 2.45, (0.03, 0.006), "#8c9aa0", 0.0)],
+    "chop": [(-0.07, 0.1, (0.02, 0.02), "#5a3b24", 0.0), (0.1, 0.46, (0.036, 0.004), "#b9c3c6", 0.012)],
 }
+PARANG_BLADE = [(yy, z) for yy in (-0.026, 0.0, 0.025, 0.048) for z in [0.1 + 0.02 * k for k in range(19)]]
+
+
+def blade_check(c, rig, body, act, frames):
+    """Smallest distance (m) between the game's parang blade (in the right fist) and the body,
+    excluding the right arm and hand, per frame: {frame: (distance, nearest material, fist sink depth)}."""
+    from mathutils.bvhtree import BVHTree
+    me = body.data
+    skip = set()
+    for (a, b, rule, mname) in c.vranges:
+        if rule in (("arm", -1), ("hand", -1)):
+            skip.update(range(a, b))
+    polys = [tuple(p.vertices) for p in me.polygons if p.vertices[0] not in skip]
+    pmat = [me.materials[p.material_index].name for p in me.polygons if p.vertices[0] not in skip]
+    hand = [i for (a, b, rule, mname) in c.vranges if rule == ("hand", -1) for i in range(a, b)][::3]
+    g = 0.036 * c.S * c.d["hand_k"]
+    pb = rig.ob.pose.bones["hand_R"]
+    out = {}
+    for f in frames:
+        set_frame(rig, act, f)
+        dg = bpy.context.evaluated_depsgraph_get()
+        ev = body.evaluated_get(dg)
+        em = ev.to_mesh()
+        ev_co = [v.co.copy() for v in em.vertices]
+        tr = BVHTree.FromPolygons(ev_co, polys, all_triangles=False)
+        ev.to_mesh_clear()
+        M = pb.matrix
+        best = (9.0, "")
+        for (yy, z) in PARANG_BLADE:
+            hit = tr.find_nearest(M @ Vector((0.0, g + yy, z)))
+            if hit[0] is not None and hit[3] < best[0]:
+                best = (hit[3], pmat[hit[2]])
+        # and how deep the right fist sinks into the body (m, 0 = not at all)
+        sink = 0.0
+        for i in hand:
+            co = ev_co[i]
+            hit = tr.find_nearest(co, 0.05 * c.S)
+            if hit[0] is not None and hit[1].dot(co - hit[0]) < 0:
+                # inside only if every face about as near agrees (the nearest point on the rim of a
+                # thin plate or sash belongs to faces facing both ways)
+                near = tr.find_nearest_range(co, hit[3] + 0.001 * c.S)
+                if all(h[1].dot(co - h[0]) < 0 for h in near):
+                    sink = max(sink, hit[3])
+        out[f] = best + (sink,)
+    return out
 
 
 def attach_proxy(c, rig, clip):
@@ -2935,8 +3186,8 @@ def attach_proxy(c, rig, clip):
     ob = rig.ob
     bone = ob.data.bones["hand_R"]
     g = 0.036 * c.S * c.d["hand_k"]
-    for i, (z0, z1, rr, col) in enumerate(segs):
-        v, f = tube_vf([(0, 0, z0 * c.S), (0, 0, z1 * c.S)], rr, 8, up=(1, 0, 0))
+    for i, (z0, z1, rr, col, yo) in enumerate(segs):
+        v, f = tube_vf([(0, yo, z0), (0, yo, z1)], rr, 8, up=(1, 0, 0))
         me = bpy.data.meshes.new("_tool%d" % i)
         me.from_pydata([tuple(p) for p in v], [], f)
         me.materials.append(mat("_M_Tool%d_%s" % (i, col[1:]), col, 0.6))
@@ -3159,6 +3410,19 @@ def build_one(name, out=True, sheets=None):
     rig = Rig(rig_ob, c)
     acts = bake_actions(rig, st)
     bpy.context.view_layer.update()
+    # automated clip checks: cloth layers (hidden inner-layer vertices that come out in a pose, worst
+    # frame), parang blade clearance over the swing and how deep the right fist sinks into the body
+    lay = {}
+    for clip in ("plant", "walk", "run", "cheer"):
+        a = acts[clip]
+        res = layer_check(c, body, lambda f, a=a: set_frame(rig, a, f), range(0, int(a.frame_range[1]) + 1, 2))
+        lay[clip] = max(v[0] for v in res.values())
+    bl = blade_check(c, rig, body, acts["chop"], range(0, 25))
+    CHECKS.setdefault(name, {}).update(
+        layers=lay, blade_cm=round(min(v[0] for f, v in bl.items() if 2 <= f <= 20) * 100, 1),
+        fist_sink_mm=round(max(v[2] for v in bl.values()) * 1000, 1))
+    print(f"  [check] {name}: exposed cloth vertices (worst frame) {lay}, parang clearance "
+          f"{CHECKS[name]['blade_cm']} cm, fist sink {CHECKS[name]['fist_sink_mm']} mm")
     mn, mx = mesh_bounds(body)
     tris = count_tris(body)
     mats = sorted(m.name for m in body.data.materials)
@@ -3224,7 +3488,10 @@ def main(argv):
         lineup(order)
     print("\n==== summary ====")
     for i in infos:
-        print(f"{i['name']:8s} height={i['height']:.3f} tris={i['tris']:5d} mats={len(i['mats'])}")
+        ck = CHECKS.get(i["name"], {})
+        print(f"{i['name']:8s} height={i['height']:.3f} tris={i['tris']:5d} mats={len(i['mats'])}  "
+              f"walk/run thigh-step,side-knee={ck.get('walk')}/{ck.get('run')}  layers={ck.get('layers')}  "
+              f"parang={ck.get('blade_cm')}cm fist_sink={ck.get('fist_sink_mm')}mm")
 
 
 if __name__ == "__main__":

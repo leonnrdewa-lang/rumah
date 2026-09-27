@@ -8,7 +8,7 @@ extends RefCounted
 ## depend on how fast the machine renders.
 
 const DT := 1.0 / 60.0
-const SLIDE_MAX := 0.10          # planted foot speed / ground speed (1.25 and 5.2 m/s)
+const SLIDE_MAX := 0.10          # planted foot speed / ground speed (gated speeds)
 const POLE_CARRY_MAX_DEG := 4.0  # pole direction change per 1/60 s frame while carried
 const POLE_MOVE_MAX_DEG := 8.0   # ... while harvesting and when picking it up / shouldering it
 const LOCK_TOL := 0.05           # s
@@ -25,6 +25,8 @@ static func run(at: Node) -> Array:
 	var stage := _build_stage(at)
 	print("[bench] ---- planted-foot slide (identity-tracked lowest sole vertex; ankle for reference)")
 	_slide_tests(stage, fails)
+	print("[bench] ---- gait without the exported extras (fallback measurement)")
+	_noextras_tests(stage, fails)
 	print("[bench] ---- actions: lock time, tools")
 	_action_tests(stage, fails)
 	print("[bench] ---- harvesting pole")
@@ -108,15 +110,14 @@ static func _free(r: Dictionary) -> void:
 
 # ------------------------------------------------------------------ slide
 static func _slide_tests(stage: Node3D, fails: Array) -> void:
-	# [model, speeds, acceleration like the game (player 30 m/s^2, villagers 3.5)]
-	var cases := [
-		["char_player", [1.25, 2.0, 3.0, 5.2, 7.8], 30.0],
-		["char_kakek", [0.94, 1.25, 2.0], 3.5],
-		["char_anak", [1.25, 2.0], 3.5],
-		["char_nenek", [0.94, 1.25], 3.5],
-		["char_preman", [1.25, 2.0], 3.5],
-		["char_ibu", [1.25], 3.5],
-	]
+	# the player at stick speeds (normal 5.2, sprint 7.8; acceleration 30 m/s^2),
+	# villagers at their own stroll and hurry-home speeds (Npc.gait_speeds, 3.5)
+	var cases := [["char_player", [1.25, 2.0, 3.0, 5.2, 7.8], 30.0, [1.25, 5.2, 7.8]]]
+	for nm in ["char_kakek", "char_nenek", "char_anak", "char_ibu", "char_kades", "char_preman"]:
+		var r0 := _rig(stage, nm)
+		var gs := Npc.gait_speeds(r0["anim"], nm)
+		_free(r0)
+		cases.append([nm, [gs.x, gs.y], 3.5, [gs.x, gs.y]])
 	for c in cases:
 		for v in c[1]:
 			var r := _rig(stage, c[0])
@@ -130,15 +131,52 @@ static func _slide_tests(stage: Node3D, fails: Array) -> void:
 				_step(r, DT, v)
 				probe.sample(DT, v, 0.0)
 			var res := probe.result()
-			var gate: bool = v == 1.25 or (v == 5.2 and c[0] == "char_player")
+			var gate: bool = v in c[3]
 			var bad: bool = gate and float(res["mean"]) > SLIDE_MAX
-			print("[bench] slide %-12s %.2f m/s  clip=%-4s rate=%.2f stride=%.2f  stance mean=%4.1f%% p90=%4.1f%% (n=%d)  incl. touchdown=%4.1f%%  ankle=%4.1f%%  src=%s%s" % [
-				c[0], v, anim._cur_kind, anim._rate, anim._stride_k, 100.0 * float(res["mean"]),
-				100.0 * float(res["p90"]), res["n"], 100.0 * float(res["loose"]), 100.0 * float(res["ankle"]),
-				anim._gait_src, "  <-- FAIL" if bad else ""])
+			var what := ""
+			if c[0] != "char_player":
+				what = "stroll" if v == c[1][0] else "hurry"
+			print("[bench] slide %-12s %.2f m/s %-6s clip=%-4s rate=%.2f (%.1f steps/s) stride=%.2f  stance mean=%4.1f%% p90=%4.1f%% (n=%d)  incl. touchdown=%4.1f%%  ankle=%4.1f%%  src=%s%s" % [
+				c[0], v, what, anim._cur_kind, anim._rate, 2.0 * anim._rate / maxf(anim.ap.current_animation_length, 0.01),
+				anim._stride_k, 100.0 * float(res["mean"]), 100.0 * float(res["p90"]), res["n"], 100.0 * float(res["loose"]),
+				100.0 * float(res["ankle"]), anim._gait_src, "  <-- FAIL" if bad else ""])
 			if bad:
 				fails.append("slide %s %.2f" % [c[0], v])
 			_free(r)
+
+
+static func _noextras_tests(stage: Node3D, fails: Array) -> void:
+	## The fallback gait measurement (a GLB exported without walk_speed/run_speed):
+	## strip the extras and check the feet still stay planted.
+	for c in [["char_player", [0.9, 5.2]], ["char_kakek", [0.82, 1.22]], ["char_preman", [0.95, 2.0]]]:
+		var model := ModelLib.instance(c[0], false)
+		model.rotation.y = PI * 0.5
+		stage.add_child(model)
+		var ref := CharAnim.new(model).walk_run_speeds()
+		for n in model.find_children("*", "", true, false) + [model]:
+			if n.has_meta("extras"):
+				n.remove_meta("extras")
+		model.scene_file_path = ""   # bypass the per-file gait cache
+		var anim := CharAnim.new(model)
+		var r := {"model": model, "anim": anim, "t": 0.0}
+		var got := anim.walk_run_speeds()
+		for v in c[1]:
+			var sp := 0.0
+			for i in 120:
+				sp = move_toward(sp, v, 30.0 * DT)
+				_step(r, DT, sp)
+			var probe := FootProbe.new(model)
+			for i in 240:
+				_step(r, DT, v)
+				probe.sample(DT, v, 0.0)
+			var res := probe.result()
+			var bad: bool = float(res["mean"]) > SLIDE_MAX
+			print("[bench] no extras %-12s src=%s walk %.3f run %.3f m/s (exported %.3f / %.3f)  %.2f m/s clip=%s rate=%.2f slide=%4.1f%% p90=%4.1f%% %s" % [
+				c[0], anim._gait_src, got.x, got.y, ref.x, ref.y, v, anim._cur_kind, anim._rate,
+				100.0 * float(res["mean"]), 100.0 * float(res["p90"]), "<-- FAIL" if bad else "ok"])
+			if bad:
+				fails.append("no extras %s %.2f" % [c[0], v])
+		model.free()
 
 
 # ------------------------------------------------------------------ actions
@@ -206,12 +244,20 @@ static func _pole_tests(stage: Node3D, fails: Array) -> void:
 			["sprint 7.8", 1.5, 7.8], ["stop", 0.8, 0.0], ["harvest", -1.0, 0.0], ["after", 0.8, 0.0]]
 		var sp := 0.0
 		var prev := Vector3.ZERO
+		var prev_step := -1.0
+		# the pole's angular speed may only build up gradually: its per-frame
+		# change grows by at most POLE_ACCEL * dt^2 (plus slack for body motion)
+		var ramp_lim := rad_to_deg(CharAnim.POLE_ACCEL * dt * dt) * 1.3 + 0.3
 		for ph in plan:
 			var worst := 0.0
 			var hand_worst := 0.0
 			var prev_hand := Vector3.ZERO
 			var low := INF
 			var t := 0.0
+			var speedup := 0.0
+			var lag := 0.0
+			var lag_n := 0
+			var steps := []
 			if ph[0] == "harvest":
 				anim.play_action("harvest")
 			while (ph[1] < 0.0 and (anim.is_busy() or t < 0.1)) or t < ph[1]:
@@ -220,8 +266,17 @@ static func _pole_tests(stage: Node3D, fails: Array) -> void:
 				t += dt
 				var d := _pole_dir(anim)
 				if d != Vector3.ZERO and prev != Vector3.ZERO:
-					worst = maxf(worst, rad_to_deg(prev.angle_to(d)))
+					var step := rad_to_deg(prev.angle_to(d))
+					worst = maxf(worst, step)
+					if prev_step >= 0.0:
+						speedup = maxf(speedup, step - prev_step)
+					prev_step = step
+					if steps.size() < 8:
+						steps.append("%.1f" % step)
 				prev = d
+				if ph[0] == "harvest" and anim.pole_working():
+					lag += rad_to_deg(anim._pole_dir.angle_to(anim._pole_target))
+					lag_n += 1
 				var gw := anim.skel.global_transform * anim.skel.get_bone_global_pose(anim._hand_idx) * anim._grip_root.transform
 				var hd := gw.basis.y.normalized()
 				if prev_hand != Vector3.ZERO:
@@ -232,9 +287,14 @@ static func _pole_tests(stage: Node3D, fails: Array) -> void:
 					low = minf(low, (_tool_world(anim, tn) * Vector3(0, -0.5, 0)).y)
 			var lim := POLE_MOVE_MAX_DEG if ph[0] in ["harvest", "after"] else POLE_CARRY_MAX_DEG
 			lim *= 60.0 / fps
-			var ok := worst <= lim
-			print("[bench] pole %d fps %-10s max change %5.1f deg/frame (limit %.0f; the hand's own grip axis %5.1f)  pole butt lowest %.2f m %s" % [
-				fps, ph[0], worst, lim, hand_worst, low, "ok" if ok else "<-- FAIL"])
+			var ok := worst <= lim and speedup <= ramp_lim
+			var extra := ""
+			if lag_n > 0:
+				extra = "  lag behind the grip %.1f deg mean" % (lag / lag_n)
+			if ph[0] == "after":
+				extra = "  first frames %s" % " ".join(steps)
+			print("[bench] pole %d fps %-10s max change %5.1f deg/frame (limit %.0f; the hand's own grip axis %5.1f)  speed-up %4.2f deg/frame^2 (limit %.2f)  pole butt lowest %.2f m%s %s" % [
+				fps, ph[0], worst, lim, hand_worst, speedup, ramp_lim, low, extra, "ok" if ok else "<-- FAIL"])
 			if not ok:
 				fails.append("pole %d fps %s" % [fps, ph[0]])
 		_free(r)
@@ -251,6 +311,86 @@ static func _pole_tests(stage: Node3D, fails: Array) -> void:
 		elev.append("-" if d == Vector3.ZERO else "%.0f" % rad_to_deg(asin(clampf(d.y, -1.0, 1.0))))
 	print("[bench] pole elevation during a harvest (deg, 30 fps): ", " ".join(elev))
 	_free(r2)
+	_grow_test(stage, fails)
+	_basket_test(stage, fails)
+
+
+static func _tip(anim: CharAnim, kind: String, local: Vector3) -> Vector3:
+	var tn: Node3D = anim._tools.get(kind)
+	if tn == null or not tn.visible:
+		return Vector3.INF
+	return _tool_world(anim, tn) * local
+
+
+static func _grow_test(stage: Node3D, fails: Array) -> void:
+	## Tools ease in and out of the fist: the pole's tip (2.4 m out) must not jump.
+	var r := _rig(stage, "char_player")
+	var anim: CharAnim = r["anim"]
+	for i in 20:
+		_step(r, DT, 0.0)
+	for phase in ["grow", "shrink"]:
+		anim.hold_tool("harvest" if phase == "grow" else "")
+		var prev := _tip(anim, "egrek", Vector3(0, 2.4, 0))
+		if phase == "grow":
+			prev = anim._grip_root.global_position   # it grows out of the fist
+		var moves := []
+		var worst := 0.0
+		for i in 24:
+			_step(r, DT, 0.0)
+			var p := _tip(anim, "egrek", Vector3(0, 2.4, 0))
+			if p == Vector3.INF or prev == Vector3.INF:
+				prev = p
+				continue
+			var m := p.distance_to(prev)
+			worst = maxf(worst, m)
+			moves.append("%.2f" % m)
+			prev = p
+		var ok := worst <= 0.35
+		print("[bench] pole %s: tip moves per 1/60 s frame %s (max %.2f m, limit 0.35) %s" % [phase, " ".join(moves), worst, "ok" if ok else "<-- FAIL"])
+		if not ok:
+			fails.append("pole " + phase)
+	_free(r)
+
+
+static func _basket_test(stage: Node3D, fails: Array) -> void:
+	## A pole carried on the shoulder must pass beside the harvest basket on the
+	## back (Player: chest bone, 0.27 m back; open rim r 0.155 m, bunches peek out).
+	for loaded in [false, true]:
+		var r := _rig(stage, "char_player")
+		var anim: CharAnim = r["anim"]
+		var basket := Node3D.new()
+		if not anim.attach_to_bone("chest", basket, Vector3(0, 0.02, -0.27)):
+			_free(r)
+			return
+		anim.back_load = loaded
+		anim.hold_tool("harvest")
+		var sp := 0.0
+		var clear := INF
+		for ph in [[0.8, 0.0], [1.5, 1.25], [1.5, 5.2], [1.0, 7.8], [1.0, 0.0]]:
+			var t := 0.0
+			while t < ph[0]:
+				sp = move_toward(sp, ph[1], 30.0 * DT)
+				_step(r, DT, sp)
+				t += DT
+				var tn: Node3D = anim._tools.get("egrek")
+				if tn == null or not tn.visible:
+					continue
+				var pole := _tool_world(anim, tn)
+				var ba := basket.get_parent() as BoneAttachment3D
+				var bxf := anim.skel.global_transform * anim.skel.get_bone_global_pose(anim.skel.find_bone(ba.bone_name)) * basket.transform
+				var inv := bxf.affine_inverse()
+				for k in 25:
+					var q := inv * (pole * Vector3(0, lerpf(-0.5, 2.3, k / 24.0) + 0.0, 0))
+					if q.y < -0.22 or q.y > 0.22:
+						continue
+					var rad := lerpf(0.12, 0.155, clampf((q.y + 0.2) / 0.27, 0.0, 1.0))
+					clear = minf(clear, Vector2(q.x, q.z).length() - rad)
+		var ok: bool = not loaded or clear >= 0.02
+		print("[bench] pole beside the back basket (back_load=%s): closest %.3f m from the basket wall %s" % [loaded, clear,
+			("ok" if ok else "<-- FAIL") if loaded else "(reference)"])
+		if not ok:
+			fails.append("pole basket")
+		_free(r)
 
 
 # ------------------------------------------------------------------ fades
@@ -330,7 +470,7 @@ static func _pop_tests(stage: Node3D, fails: Array) -> void:
 				var cur := {}
 				for b in sk.get_bone_count():
 					var bn := sk.get_bone_name(b)
-					if bn in skip or (anim._stride_k > 1.005 and (b in anim._stride_bones or b in anim._swing_bones)):
+					if bn in skip or (anim._stride_k > 1.005 and (b in anim._stride_bones or b in anim._swing_bones or b in anim._feet)):
 						continue
 					var qd := sk.get_bone_pose_rotation(b)
 					var qa := _clip_rot(anim, from, bn, f["from_t"])
@@ -364,6 +504,7 @@ static func _pop_tests(stage: Node3D, fails: Array) -> void:
 static func _tick_test(stage: Node3D, fails: Array) -> void:
 	var r := _rig(stage, "char_buruh")
 	var anim: CharAnim = r["anim"]
+	var m: Node3D = r["model"]
 	anim.play_action("harvest")
 	_step(r, DT, 0.0)
 	var t := 0.0
@@ -378,6 +519,42 @@ static func _tick_test(stage: Node3D, fails: Array) -> void:
 	for i in 30:
 		_step(r, DT, 0.0)
 	print("[bench] tick: back to %s" % anim._cur)
+	# off screen the villager keeps turning toward where it walks, and comes back
+	# on screen on the right clip at the right time, not fading from a stale pose
+	var yaw0 := anim._yaw
+	for i in 90:
+		anim.turn_towards(yaw0 + PI * 0.75, DT, 6.0)
+		m.position += Vector3(sin(anim._yaw), 0.0, cos(anim._yaw)) * 0.8 * DT
+		anim.tick(DT, 0.8)
+	var yaw_err := rad_to_deg(absf(wrapf(m.rotation.y - anim._yaw, -PI, PI)))
+	var turned := rad_to_deg(absf(wrapf(anim._yaw - yaw0, -PI, PI)))
+	_step(r, DT, 0.8)
+	var res_ok: bool = anim._cur_kind == "walk" and anim.fade.is_empty() and yaw_err < 0.01 and turned > 120.0
+	var worst := 0.0
+	for bn in ["thigh_L", "shin_R", "upperarm_L", "spine"]:
+		var bi := anim.skel.find_bone(bn)
+		if bi < 0:
+			continue
+		var q := anim.skel.get_bone_pose_rotation(bi)
+		worst = maxf(worst, rad_to_deg(q.angle_to(_clip_rot(anim, anim._cur, bn, anim.ap.current_animation_position))))
+	res_ok = res_ok and worst < 0.5
+	print("[bench] tick: turned %.0f deg while off screen, model yaw off by %.3f deg; back on screen: clip=%s fade=%s pose off the clip by %.2f deg %s" % [
+		turned, yaw_err, anim._cur_kind, "none" if anim.fade.is_empty() else "yes", worst, "ok" if res_ok else "<-- FAIL"])
+	if not res_ok:
+		fails.append("tick resume")
+	# an action started on screen, off screen for a while, back mid-action
+	for i in 30:
+		_step(r, DT, 0.0)
+	anim.play_action("harvest")
+	_step(r, DT, 0.0)
+	for i in 24:
+		anim.tick(DT)
+	_step(r, DT, 0.0)
+	var pos := anim.ap.current_animation_position
+	var mid_ok: bool = anim._cur_kind == "action" and absf(pos - 26.0 * DT) < 0.02 and anim.fade.is_empty()
+	print("[bench] tick: back mid-action at clip time %.3f s (expected %.3f) %s" % [pos, 26.0 * DT, "ok" if mid_ok else "<-- FAIL"])
+	if not mid_ok:
+		fails.append("tick mid-action")
 	_free(r)
 
 

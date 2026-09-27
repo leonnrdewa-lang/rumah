@@ -61,11 +61,14 @@ var target: Dictionary = {}
 var _ring: MeshInstance3D
 var _title_t := 0.0
 var _t := 0.0
-var cam_distance := 16.0
-var cam_pitch := 45.0
+## ~52 deg / 17 m: close to the target's framing, and the whole crown of a palm
+## right next to the player stays in frame (at 45 deg / 16 m it left the top edge)
+var cam_distance := 17.0
+var cam_pitch := 52.0
 var quality_high := true
 var undergrowth: Undergrowth
 var ambient: Node3D
+var terrain_mat: ShaderMaterial
 var _plant_mask := PackedByteArray()
 var _pm_n := 0
 const PM_RES := 0.5
@@ -175,7 +178,7 @@ func _build_environment() -> void:
 	env.background_color = Color("3a8f94")
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = AMBIENT_DAY
-	env.ambient_light_energy = 0.56
+	env.ambient_light_energy = 0.64
 	env.tonemap_mode = Environment.TONE_MAPPER_LINEAR
 	# soft painterly post: a subtle glow on highlights, a little more saturation/contrast
 	env.glow_enabled = true
@@ -193,7 +196,7 @@ func _build_environment() -> void:
 	add_child(we)
 	sun = DirectionalLight3D.new()
 	sun.shadow_enabled = true
-	sun.shadow_opacity = 0.68
+	sun.shadow_opacity = 0.74
 	sun.shadow_blur = 2.2
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
 	sun.directional_shadow_max_distance = 27.0
@@ -221,6 +224,9 @@ func _apply_quality() -> void:
 	# the additive glow brightens the frame a little; keep "Hemat baterai" as bright
 	env.tonemap_exposure = 1.0 if quality_high else 1.07
 	# "Hemat baterai" halves the undergrowth and drops its shadows
+	# "Hemat baterai" also drops the terrain's extra texture samples
+	if terrain_mat:
+		terrain_mat.set_shader_parameter("hq", 1.0 if quality_high else 0.0)
 	if undergrowth:
 		undergrowth.set_density(1.0 if quality_high else 0.5)
 		undergrowth.set_shadows(quality_high)
@@ -235,6 +241,7 @@ func set_quality(high: bool) -> void:
 
 func _build_terrain() -> void:
 	var mat := ShaderMaterial.new()
+	terrain_mat = mat
 	mat.shader = TERRAIN_SHADER
 	mat.set_shader_parameter("data_tex", DATA_TEX)
 	mat.set_shader_parameter("noise_tex", NOISE_TEX)
@@ -247,6 +254,8 @@ func _build_terrain() -> void:
 		if tex:
 			mat.set_shader_parameter(n + "_tex", tex)
 			mat.set_shader_parameter("has_" + n, 1.0)
+			if n == "grass":
+				mat.set_shader_parameter("grass_avg", GroundFx.average_linear(tex))
 	if ResourceLoader.exists(SHADE_TEX_PATH):
 		mat.set_shader_parameter("shade_tex", load(SHADE_TEX_PATH))
 		mat.set_shader_parameter("has_shade", 1.0)
@@ -387,10 +396,12 @@ func _build_plant_mask() -> void:
 		_mask_rect(r[0] - 0.15, r[1] - 0.15, r[2] + 0.15, r[3] + 0.15)
 	for id in door_points:
 		var d: Vector3 = door_points[id]
-		_mask_circle(d.x, d.z, 1.9)
+		_mask_circle(d.x, d.z, 1.4)
+	# (terrain.py keeps taller plants 1.95 m from planting spots; low grass may reach
+	# the piringan's edge)
 	for key in tile_views:
 		var tp: Vector3 = tile_views[key].position
-		_mask_circle(tp.x, tp.z, 1.9)
+		_mask_circle(tp.x, tp.z, 1.4)
 	for it in interactables:
 		if it.has("pos"):
 			var ip: Vector3 = it["pos"]
@@ -979,9 +990,9 @@ func _update_daylight() -> void:
 	var night_col := Color(0.55, 0.62, 1.0)
 	var col := day_col.lerp(dusk_col, clampf(dusk, 0.0, 1.0)).lerp(night_col, night)
 	sun.light_color = col
-	sun.light_energy = lerpf(1.08, 0.32, night) * lerpf(0.88, 1.0, day_k)
+	sun.light_energy = lerpf(1.02, 0.32, night) * lerpf(0.88, 1.0, day_k)
 	env.ambient_light_color = AMBIENT_DAY.lerp(Color("5b6fa8"), night).lerp(Color("e0b090"), clampf(dusk, 0.0, 1.0) * 0.4)
-	env.ambient_light_energy = lerpf(0.56, 0.46, night)
+	env.ambient_light_energy = lerpf(0.64, 0.48, night)
 	env.background_color = Color("3a8f94").lerp(Color("14304a"), night)
 	RenderingServer.global_shader_parameter_set("night", night)
 	for l in lamps:

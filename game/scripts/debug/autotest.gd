@@ -388,6 +388,20 @@ func _run() -> void:
 			tp(-17, 32.5, Vector3(0, 0, -1))
 			await shot("vis_parcel_low", 30)
 			world.set_quality(true)
+		"pitch":
+			# camera tuning: the hero spot at a few pitch / distance pairs
+			world.start_game(false)
+			world.ui.close()
+			world.ui.visible = false
+			for pd in [[45.0, 16.0], [50.0, 16.5], [52.0, 17.0], [55.0, 17.0]]:
+				world.cam_pitch = pd[0]
+				world.cam_distance = pd[1]
+				GS.hour = 8.5
+				tp(-17.4, 25.4, Vector3(-0.5, 0, -1).normalized())
+				await shot("pitch_%d_%d" % [pd[0], pd[1] * 10], 30)
+				tp(-3.5, 37.5, Vector3(0, 0, -1))
+				await shot("spawn_%d_%d" % [pd[0], pd[1] * 10], 30)
+			world.ui.visible = true
 		"lush":
 			# render tuning: UI-free frames at 08:30 (tour spots + curated views) for
 			# measuring brightness / shade coverage against the target screenshot
