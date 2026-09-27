@@ -8,6 +8,12 @@ Flags: --no-render  skip previews/icons (fast tri check)
 The generic helpers here (bx, rod, beam, ...) are also imported by buildings.py.
 Every asset: root Empty named after the asset, meshes parented to it, front facing -Y,
 origin at the ground centre. Reserved materials: M_Glass (windows), M_Lamp (lamp bulb).
+
+v2: every exported mesh carries an active colour attribute `Col` (glTF COLOR_0) = ray-traced
+ambient occlusion x cheap weathering (per-part / per-plank shade, dark plank grooves, rust and moss
+streaks, a dirt band at the base), see weather_bake(). The game multiplies albedo by it (linear).
+New props: karung_tumpuk (sack stack on a pallet), drum (rusty oil drum), pagar_bambu (2 m bamboo
+fence along X); pagar is now a rustic post-and-rail fence.
 """
 import math
 import os
@@ -530,66 +536,60 @@ def sack(name, m_body, m_band, loc=(0, 0, 0), rotz=0.0, L=0.74, W=0.48, T=0.2, l
     return o
 
 
-def bunch(name, mats, loc=(0, 0, 0), size=1.0, seed=0, rot=(0, 0, 0), nspk=8):
-    """Palm fruit bunch (TBS) as in the target: an ovoid packed with round fruitlets - a checker of
-    orange / red fruitlet faces over a near-black core, bumped outward - with a few short dark spines.
-    mats = (red, orange, dark). ~104 tris. Origin at the bottom of the bunch."""
+def bunch(name, mats, loc=(0, 0, 0), size=1.0, seed=0, rot=(0, 0, 0), n=14):
+    """Palm fruit bunch (TBS) in the style of vegetation.fruit_bunch but cheaper (~150 tris): a dark
+    ovoid core packed with chunky 3-sided fruitlets (mostly orange, red toward the top) with near-black tips.
+    mats = (red, orange, dark). Origin at the bottom of the bunch."""
     rnd = random.Random(seed)
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=8, ring_count=6, radius=1.0)
-    o = C._active()
-    o.name = name
-    me = o.data
     rx, rz = 0.2 * size, 0.26 * size
-    shape = lambda d: Vector((d.x * rx * (1.0 - 0.2 * max(0.0, d.z)), d.y * rx * (1.0 - 0.2 * max(0.0, d.z)), d.z * rz))
-    for v in me.vertices:
-        d = v.co.normalized()
-        v.co = shape(d) * rnd.uniform(0.92, 1.08)
-    me.update()
-    for m in mats:
-        me.materials.append(m)
-    segs = 8
-    for p in me.polygons:
-        cz = p.center.z / rz
-        ang = math.atan2(p.center.y, p.center.x)
-        ring = int((cz + 1.0) * 3.0)
-        seg = int(((ang + math.pi) / (2 * math.pi)) * segs) % segs
-        if (ring + seg) % 2 == 0:
-            p.material_index = 1 if cz < 0.15 else 0          # fruitlet: orange low, red high
-        else:
-            p.material_index = 2 if cz > -0.55 else 1          # dark gaps (orange at the stalk end)
-    # push the fruitlet faces out a little so they read as round bumps
+    GOLD = math.radians(137.508)
+
+    def surf(c):
+        egg = 1.0 - 0.15 * c.z
+        return Vector((c.x * rx * egg, c.y * rx * egg, c.z * rz))
     bm = bmesh.new()
-    bm.from_mesh(me)
-    for f in bm.faces:
-        if f.material_index != 2:
-            f.normal_update()
-            n = f.normal.copy()
-            for v in f.verts:
-                v.co += n * 0.012 * size
-    bm.to_mesh(me)
+    bmesh.ops.create_icosphere(bm, subdivisions=1, radius=1.0)
+    vs = [surf(v.co.normalized()) * 0.84 for v in bm.verts]
+    fs = [tuple(v.index for v in f.verts) for f in bm.faces]
     bm.free()
-    shade_smooth(o)
-    verts, faces = [], []
-    for k in range(nspk):
-        zz = max(-0.4, min(0.8, 0.8 - (k + 0.5) / nspk * 1.2))
-        a = k * 2.39996 + rnd.uniform(-0.3, 0.3)
-        rr = math.sqrt(max(0.0, 1 - zz * zz))
-        d = Vector((rr * math.cos(a), rr * math.sin(a), zz))
-        c = shape(d) * 0.95
-        n = Vector((d.x / rx, d.y / rx, d.z / rz)).normalized()
-        t1 = n.cross(Vector((0, 0, 1)) if abs(n.z) < 0.9 else Vector((1, 0, 0))).normalized()
-        t2 = n.cross(t1)
-        w = 0.03 * size
+    verts, faces, fmat = list(vs), list(fs), [0] * len(fs)
+    shade = [-0.6] * len(fs)                           # core: deep red-brown once the AO / tint is baked
+    for k in range(n):
+        zc = 0.9 - 1.6 * (k + 0.5) / n + rnd.uniform(-0.04, 0.04)
+        ang = k * GOLD + rnd.uniform(-0.25, 0.25)
+        rc = math.sqrt(max(0.0, 1 - zc * zc))
+        c = Vector((rc * math.cos(ang), rc * math.sin(ang), zc))
+        p = surf(c) * 0.86
+        nrm = Vector((c.x / rx, c.y / rx, c.z / rz)).normalized()
+        apex = Vector((0, 0, 1)) - nrm * nrm.z
+        apex = apex.normalized() if apex.length > 1e-3 else Vector((1, 0, 0))
+        tilt = math.radians(rnd.uniform(25, 45) * (0.4 + 0.6 * rc))
+        D = (nrm * math.cos(tilt) + apex * math.sin(tilt)).normalized()
+        sz = 0.13 * size * rnd.uniform(0.9, 1.1) * (0.75 + 0.25 * rc)
+        rw = sz * 0.72
+        U = D.cross(Vector((0.31, 0.83, 0.47))).normalized()
+        V = D.cross(U)
+        ph = rnd.uniform(0, 6.28)
+        ring = lambda off, r: [p + D * off + (U * math.cos(q) + V * math.sin(q)) * r
+                               for q in (ph + 2 * math.pi * s_ / 3 for s_ in range(3))]
+        r0, r1 = ring(-sz * 0.3, rw * 0.85), ring(sz * 0.42, rw * 0.62)
+        tip = p + D * sz * 0.6
         b0 = len(verts)
-        for j in range(3):
-            ang = j * 2 * math.pi / 3 + rnd.uniform(0, 1)
-            verts.append(c + (t1 * math.cos(ang) + t2 * math.sin(ang)) * w)
-        verts.append(c + n * (0.05 * size + rnd.uniform(0, 0.015)))
-        faces += [(b0, b0 + 1, b0 + 3), (b0 + 1, b0 + 2, b0 + 3), (b0 + 2, b0, b0 + 3)]
-    sp = mesh_from_data(name + "_tips", verts, faces, mats[2])
-    fix_normals(sp)
-    o = join([o, sp], name)
-    o.location = Vector(loc) + Vector((0, 0, rz * 0.92))
+        verts += r0 + r1 + [tip]
+        body = 0 if zc + rnd.uniform(-0.3, 0.3) > 0.45 else 1
+        fsh = rnd.uniform(-0.12, 0.06)
+        for s_ in range(3):
+            t_ = (s_ + 1) % 3
+            faces.append((b0 + s_, b0 + t_, b0 + 3 + t_, b0 + 3 + s_))
+            fmat.append(body)
+            faces.append((b0 + 3 + s_, b0 + 3 + t_, b0 + 6))
+            fmat.append(2)
+            shade += [fsh, 0.0]
+    o = mk_multi(name, verts, faces, list(mats), fmat)
+    wattr(o, "w_shade", shade)
+    fix_normals(o)
+    shade_smooth(o)
+    o.location = Vector(loc) + Vector((0, 0, rz * 0.85))
     o.rotation_euler = rot
     return o
 
@@ -710,21 +710,21 @@ def picket(name, x, y, w, h, t, m, z0=0.0):
 
 
 def build_pagar():
-    """Wooden picket fence segment, 2 m along X (posts sit exactly on the segment ends so segments tile)."""
+    """Rustic post-and-rail wooden fence segment (like the target's), 2 m along X; the posts sit exactly
+    on the segment ends so segments tile. Rails are nailed to the front (-Y) of the posts, one rail
+    board per 1 m bay (ending on the post centres, so neighbouring segments never overlap), each slightly
+    skewed so a long fence looks hand-built."""
     name = "pagar"
     root = prop_root(name)
-    M = dict(w=mat("M_Wood", "wood_light"), d=mat("M_WoodDark", "wood"))
+    M = dict(w=mat("M_Wood", "#94724c"), d=mat("M_WoodDark", "#6f5439"))
     P = []
+    rnd = random.Random(6)
     for x in (-1.0, 0.0, 1.0):
-        P.append(bx("post", (0.12, 0.12, 1.0), (x, 0.02, 0.5), M['d'], 0.025, 1))
-        P.append(bx("post_cap", (0.16, 0.16, 0.05), (x, 0.02, 1.02), M['d'], 0.015, 1))
-    for z in (0.3, 0.72):
-        P.append(bx("rail", (2.0, 0.06, 0.09), (0, 0.06, z), M['d'], 0.02, 1))
-    for i in range(8):
-        x = -0.875 + i * 0.25
-        if abs(x) < 0.08:
-            continue
-        P.append(picket("picket", x, -0.0, 0.14, 0.92 + (0.04 if i % 2 else 0.0), 0.03, M['w'], z0=0.04))
+        P.append(bx("post", (0.15, 0.15, 1.08), (x, 0.0, 0.54), M['d'], 0.03, 1))
+    for z in (0.5, 0.88):
+        for xa, xb in ((-1.0, -0.004), (0.004, 1.0)):
+            dz = rnd.uniform(-0.025, 0.025)
+            P.append(beam("rail", (xa, -0.105, z - dz), (xb, -0.105, z + dz), 0.06, 0.13, Z, M['w'], 0.015))
     finish(root, P, name)
     return root
 

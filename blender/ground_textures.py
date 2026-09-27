@@ -372,7 +372,7 @@ def srgb_arr(h):
     return np.array([int(h[i:i + 2], 16) / 255.0 for i in (0, 2, 4)])
 
 
-def paint(n, base_hexes, noise, stops):
+def paint(n, noise, stops):
     """Map a noise field to a colour ramp: stops = [(value, hex), ...] (sRGB, linear interpolation)."""
     vals = [s for s, _ in stops]
     cols = np.array([srgb_arr(h) for _, h in stops])
@@ -521,10 +521,10 @@ def build_grass(dry=False):
     # --- ground under the grass: dark olive earth with a hint of green
     tone = fbm(n, 10, seed + 4, 3)
     if dry:
-        alb = paint(n, None, tone, [(-2, "#6f6236"), (0, "#8c7c48"), (2, "#a89a5e")])
+        alb = paint(n, tone, [(-2, "#6f6236"), (0, "#8c7c48"), (2, "#a89a5e")])
     else:
-        alb = paint(n, None, tone, [(-2, "#3c4a22"), (0, "#4d5e2a"), (2, "#62743a")])
-    plane = ground_plane(height, save_albedo(alb, name))
+        alb = paint(n, tone, [(-2, "#3c4a22"), (0, "#4d5e2a"), (2, "#62743a")])
+    ground_plane(height, save_albedo(alb, name))
     B = Batch()
     if dry:
         dark = [lin("#7f8a44"), lin("#74823f"), lin("#8e8a4c")]
@@ -608,12 +608,12 @@ def build_dirt():
     height = Field(h)
     # --- albedo: packed earth #97865c .. #b7a96e, darker compacted track, light dusty patches, grain speckle
     tone = 0.75 * fbm(n, 7, seed + 6, 3) + 0.35 * pnoise(n, 1.6, seed + 7)
-    alb = paint(n, None, tone, [(-2.2, "#94805a"), (-0.8, "#a58f63"), (0.2, "#b39c6c"), (1.2, "#c2ab7a"),
+    alb = paint(n, tone, [(-2.2, "#94805a"), (-0.8, "#a58f63"), (0.2, "#b39c6c"), (1.2, "#c2ab7a"),
                                  (2.4, "#cdb888")])
     speck = pnoise(n, 0.7, seed + 8)
     alb *= (1 + 0.06 * np.clip(speck, -2, 2))[..., None]
     alb *= (1 - 0.025 * np.clip(track, 0, 1.3))[..., None]
-    plane = ground_plane(height, save_albedo(alb, name))
+    ground_plane(height, save_albedo(alb, name))
     B = Batch()
     pcols = [lin("#b3aea0"), lin("#c9bd98"), lin("#a88f68"), lin("#9a8a72"), lin("#d4c49a"), lin("#8e877a")]
     clusters = [uniform_xy(rnd) for _ in range(7)]
@@ -658,11 +658,11 @@ def build_sand():
     h = rip * 0.002 + fbm(n, 16, seed + 2, 3) * 0.003 + pnoise(n, 1.0, seed + 3) * 0.0005
     height = Field(h)
     tone = fbm(n, 10, seed + 4, 3)
-    alb = paint(n, None, tone, [(-2, "#dccb9e"), (0, "#e6d6aa"), (2, "#efe1b9")])
+    alb = paint(n, tone, [(-2, "#dccb9e"), (0, "#e6d6aa"), (2, "#efe1b9")])
     speck = pnoise(n, 0.6, seed + 5)
     alb *= (1 + 0.045 * np.clip(speck, -2.5, 2.5))[..., None]
     alb *= (1 - 0.03 * rip)[..., None]
-    plane = ground_plane(height, save_albedo(alb, name))
+    ground_plane(height, save_albedo(alb, name))
     B = Batch()
     for _ in range(60):
         x, y = uniform_xy(rnd)
@@ -697,8 +697,8 @@ def build_mulch():
     h = fbm(n, 30, seed, 3) * 0.01 + pnoise(n, 3, seed + 1) * 0.002
     height = Field(h)
     tone = fbm(n, 14, seed + 2, 4)
-    alb = paint(n, None, tone, [(-2, "#4a3222"), (0, "#5e412b"), (2, "#735237")])
-    plane = ground_plane(height, save_albedo(alb, name))
+    alb = paint(n, tone, [(-2, "#4a3222"), (0, "#5e412b"), (2, "#735237")])
+    ground_plane(height, save_albedo(alb, name))
     B = Batch()
     frond_cols = [lin("#8a6a45"), lin("#9a7a4f"), lin("#74563a"), lin("#a88a5a"), lin("#6f5a42"), lin("#8c7058"),
                   lin("#7d6650"), lin("#946a44")]
@@ -733,7 +733,7 @@ def build_mulch():
         B.add(v, f, cc, x, y, rr, z=height(x, y) + 0.01)
     for _ in range(18):       # a little green: tiny sprouts
         x, y = uniform_xy(rnd)
-        for k in range(rnd.randint(2, 4)):
+        for _k in range(rnd.randint(2, 4)):
             v, f, cc, r = blade(rnd, rnd.uniform(0.03, 0.06), 0.008, rnd.uniform(0.3, 0.9), 0.4, rnd.uniform(0, 6.28),
                                 lin("#5b7536"), lin("#98ac4d"))
             B.add(v, f, cc, x, y, r, z=height(x, y) + 0.01)

@@ -25,6 +25,7 @@ var slots := {}        # id -> {"card", "count", "icon", "def", "n"}
 var labels := {}       # item key -> count Label (ui.inv_labels)
 var active := ""
 var _counts := {}
+var _sig := ""
 var _slot := 66.0
 
 
@@ -126,6 +127,10 @@ func id_for_number(n: int) -> String:
 
 
 func update_counts() -> void:
+	var sig := "%s|%s|%s" % [GS.inv, GS.capacity(), GS.upgrades.get("mesin", false)]
+	if sig == _sig:
+		return
+	_sig = sig
 	for id in slots:
 		var s: Dictionary = slots[id]
 		var def: Dictionary = s["def"]
@@ -188,3 +193,12 @@ func pop(id: String) -> void:
 
 func flash(id: String) -> void:
 	pop(id)
+
+
+func _process(_delta: float) -> void:
+	# the tool for the current action bobs gently in its slot
+	var t := Time.get_ticks_msec() / 1000.0
+	for id in slots:
+		var ic: TextureRect = slots[id]["icon"]
+		var base := (ic.get_parent() as Control).size.y * 0.5 - ic.size.y * 0.5
+		ic.position.y = base + (sin(t * 4.0) * 2.5 - 1.5 if id == active else 0.0)

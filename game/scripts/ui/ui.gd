@@ -79,6 +79,7 @@ var _stage_owner: Control
 var _last_money := -1
 var _bar_tweens := {}
 var _bottom_shown := true
+var _layout_sig := ""
 
 
 func _ready() -> void:
@@ -639,13 +640,20 @@ func _refresh_hud() -> void:
 	clock_label.text = _clock_text()
 	var e: float = GS.energy / GS.max_energy * 100.0
 	_set_bar(energy_bar, e)
-	(energy_bar.get_theme_stylebox("fill") as StyleBoxFlat).bg_color = BAR_RED if e < 25.0 else BAR_GOLD
+	var fill := energy_bar.get_theme_stylebox("fill") as StyleBoxFlat
+	var ecol := BAR_RED if e < 25.0 else BAR_GOLD
+	if fill.bg_color != ecol:
+		fill.bg_color = ecol
 	_set_bar(rep_bar, (GS.rep + 100.0) * 0.5)
 	_set_bar(heat_bar, GS.heat)
 	quest_label.text = "Misi: " + GS.current_quest()
 	hotbar.update_counts()
-	_prompt_cache = ""
-	call_deferred("_layout")
+	# stats_changed fires every frame while the clock runs: only re-layout
+	# when something that changes pill sizes actually changed
+	var sig := "%s|%s|%s" % [money_label.text, quest_label.text, hotbar.get_combined_minimum_size()]
+	if sig != _layout_sig:
+		_layout_sig = sig
+		call_deferred("_layout")
 
 
 # ------------------------------------------------------------------ context prompt + hotbar
@@ -1038,6 +1046,11 @@ func _process(delta: float) -> void:
 			portrait_stage.talking = false
 	if hud.visible and world and world.state == "play":
 		clock_label.text = _clock_text()
+		# the key badge breathes while an action is available
+		var kb: Control = prompt_key.get_parent()
+		kb.pivot_offset = kb.size * 0.5
+		var k := 1.0 + (0.06 * sin(Time.get_ticks_msec() / 1000.0 * 5.0) if prompt_pill.visible and _prompt_ok else 0.0)
+		kb.scale = Vector2(k, k)
 
 
 func _input(event: InputEvent) -> void:

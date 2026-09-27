@@ -197,7 +197,8 @@ func _queue_relayout() -> void:
 
 func _do_relayout() -> void:
 	_queued = false
-	if is_inside_tree():
+	# a dialog closed this frame must not re-summon its portrait
+	if is_inside_tree() and not is_queued_for_deletion() and ui.modal == self:
 		relayout(get_viewport_rect().size)
 
 
@@ -290,6 +291,8 @@ func relayout(vp: Vector2) -> void:
 		else:
 			r = Rect2(panel.position.x + 16.0, ptop - pw * 0.72, pw, pw)
 	var stage: Control = ui.portrait_stage
+	if ui.modal != self:
+		return
 	if art or badge_tex:
 		stage.present(key, art if art else badge_tex, art != null, r, not chained)
 	else:

@@ -338,7 +338,7 @@ func _run() -> void:
 			world.start_game(false)
 			world.ui.close()
 			GS.hour = 8.5
-			for s in [[-17, 32.5, "parcel"], [-9, 10, "road"]]:
+			for s in [[-17, 28.0, "parcel"], [-9, 10, "road"]]:
 				tp(s[0], s[1], Vector3(0, 0, -1))
 				await shot("look_" + s[2], 30)
 		"vis":
@@ -346,7 +346,7 @@ func _run() -> void:
 			world.start_game(false)
 			world.ui.close()
 			GS.hour = 8.5
-			for s in [[-17, 32.5, "parcel"], [-9, 10, "road"], [-44, 36, "garden"], [-3, 36, "kantor"], [49, 2, "pabrik"], [-30, -20, "field"]]:
+			for s in [[-17, 28.0, "parcel"], [-9, 10, "road"], [-44, 36, "garden"], [-3, 36, "kantor"], [49, 2, "pabrik"], [-30, -20, "field"]]:
 				tp(s[0], s[1], Vector3(0, 0, -1))
 				await shot("vis_" + s[2], 40)
 			# running along the road: dust puffs

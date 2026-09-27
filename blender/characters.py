@@ -1804,12 +1804,12 @@ def clip_chop(rig, st):
                  (15, (-4, 24, 6, 28)), (20, (4, 14, 6, 22))],
         "hips_off": [(0, b["hips_off"]), (6, (-0.01, 0.006, -0.012)), (9, (-0.011, 0.007, -0.014)),
                      (12, (0.01, -0.008, -0.032)), (14, (0.011, -0.009, -0.034)), (19, (0.003, -0.002, -0.012))],
-        "hips": [(0, b["hips"]), (6, (-1, -9, 1)), (9, (-1, -10, 1)), (12, (4, 9, -1)), (14, (5, 11, -1)),
+        "hips": [(0, b["hips"]), (6, (-1, -9, 1)), (9, (-1, -10, 1)), (12, (3, 9, -1)), (14, (3, 11, -1)),
                  (19, (1, 3, 0))],
         "spine": [(0, b["spine"]), (7, (b["spine"][0], -6, 0)), (10, (b["spine"][0], -7, 0)),
                   (13, (b["spine"][0] + 2, 7, 0)), (15, (b["spine"][0] + 3, 8, 0)), (20, (b["spine"][0], 2, 0))],
-        "chest": [(0, b["chest"]), (7, (hc - 3, -16, 3)), (10, (hc - 3, -17, 3)), (13, (hc + 6, 16, -3)),
-                  (15, (hc + 7, 20, -3)), (20, (hc + 1, 4, 0))],
+        "chest": [(0, b["chest"]), (7, (hc - 3, -16, 3)), (10, (hc - 3, -17, 3)), (13, (hc + 4, 16, -3)),
+                  (15, (hc + 5, 20, -3)), (20, (hc + 1, 4, 0))],
         "head": [(0, b["head"]), (8, (hh + 3, 9, 0)), (10, (hh + 3, 9, 0)), (14, (hh + 3, -6, 0)),
                  (17, (hh + 3, -8, 0)), (21, (hh + 1, -2, 0))],
         "legL": [(0, b["legL"]), (5, (0.012, -0.03, 0, 0, 12)), (19, (0.012, -0.03, 0, 0, 12))],
@@ -1957,7 +1957,7 @@ def build_player():
     c = Char("player", style=dict(energy=1.0, bob=1.05))
     SK, DK = "M_Skin", "M_Dark"
     face(c, SK, eyes="smug", mouth="smirk", brows="smug")
-    hair(c, DK, front=70, side=96, back=116, part=8, tmin=48, rings=2)
+    hair(c, DK, front=70, side=89, back=106, part=8, tmin=48, rings=2)
     # straw safari hat, tipped back, thick rolled brim + batik band
     H = hat_xf(c, tilt=-13, roll=3, lift=0.004)
     crown = [(0.214, 0.066), (0.33, 0.047), (0.35, 0.052), (0.357, 0.066), (0.347, 0.078), (0.3, 0.078),
@@ -1995,7 +1995,7 @@ def build_kakek():
              head_r=(0.226, 0.212, 0.204))
     SK, DK, PALE = "M_SkinTan", "M_Dark", "M_FadedShirt"
     face(c, SK, eyes="happy", mouth=None, brows="bushy", brow_mat=PALE)
-    hair(c, PALE, front=80, side=97, back=116, seg=20, tmin=60, rings=2)
+    hair(c, PALE, front=80, side=90, back=108, seg=20, tmin=60, rings=2)
     moustache(c, PALE, thick=1.1, droop=5.0)
     # wide conical caping (woven bamboo) with a thick rim and two woven rings
     H = hat_xf(c, tilt=-10)
@@ -2056,7 +2056,7 @@ def build_kades():
     c = Char("kades", style=dict(chest=-5.0, idle_arms="behind", swagger=2.0, energy=0.85))
     SK, DK = "M_Skin", "M_Dark"
     face(c, SK, eyes="round", mouth="smile", brows="normal")
-    hair(c, DK, front=74, side=94, back=114, lift=0.012, seg=20, tmin=40, rings=2)
+    hair(c, DK, front=74, side=90, back=108, lift=0.012, seg=20, tmin=40, rings=2)
     moustache(c, DK, thick=1.2, droop=3.0, width=14)
     # black peci (velvet cap)
     H = hat_xf(c, tilt=-4)
@@ -2164,7 +2164,7 @@ def build_petani():
     c = Char("petani", style=dict(energy=0.95))
     SK, DK = "M_SkinTan", "M_Dark"
     face(c, SK, eyes="round", mouth="smile", brows="normal")
-    hair(c, DK, front=78, side=97, back=116, seg=20, tmin=58, rings=2)
+    hair(c, DK, front=78, side=89, back=106, seg=20, tmin=58, rings=2)
     # olive bucket hat with a thick rolled brim
     H = hat_xf(c, tilt=-9)
     bucket = [(0.212, 0.074), (0.3, 0.024), (0.318, 0.022), (0.326, 0.034), (0.318, 0.048), (0.3, 0.052),
@@ -2284,7 +2284,7 @@ def build_calo():
     c = Char("calo", style=dict(swagger=4.0, idle_arms="front", head_tilt=4.0, energy=1.0, rub=1.0))
     SK, DK, TW = "M_Skin", "M_Dark", "M_Tweed"
     face(c, SK, eyes=None, mouth="smirk", brows=None)
-    hair(c, DK, front=80, side=96, back=114, lift=0.014, seg=20, tmin=60, rings=2)
+    hair(c, DK, front=80, side=89, back=106, lift=0.014, seg=20, tmin=60, rings=2)
     sunglasses_on_face(c, DK)
     for s in (1, -1):   # pencil moustache
         pts = [(s * 2.5, -15.8), (s * 7, -16.2), (s * 11.5, -15.2), (s * 14, -13.2)]
@@ -2319,7 +2319,7 @@ def build_petugas():
     c = Char("petugas", style=dict(chest=-3.0, idle_arms="clip", energy=0.8))
     SK, DK, UN = "M_Skin", "M_Dark", "M_Uniform"
     face(c, SK, eyes="round", mouth="flat", brows="angry")
-    hair(c, DK, front=80, side=95, back=114, lift=0.012, seg=20, tmin=58, rings=2)
+    hair(c, DK, front=80, side=89, back=106, lift=0.012, seg=20, tmin=58, rings=2)
     # peaked uniform cap with a dark band, visor and a gold badge
     H = hat_xf(c, tilt=-3)
     cap = [(0.205, 0.086), (0.212, 0.146), (0.245, 0.194), (0.254, 0.2), (0.255, 0.212), (0.236, 0.222),
@@ -2357,7 +2357,7 @@ def build_buruh():
     c = Char("buruh", style=dict(stoop=4.0, energy=0.8, stride=0.95))
     SK, DK = "M_SkinTan", "M_Dark"
     face(c, SK, eyes="round", mouth="flat", brows="worried")
-    hair(c, DK, front=80, side=96, back=114, lift=0.012, seg=20, tmin=58, rings=2)
+    hair(c, DK, front=80, side=89, back=106, lift=0.012, seg=20, tmin=58, rings=2)
     # yellow hard hat with a short front peak and a ridge over the top
     H = hat_xf(c, tilt=-5)
 
@@ -2558,8 +2558,8 @@ def render_preview_posed(c, rig, body, acts, name):
     sn = snapshot(body, "snapP", (0, 0, 0), 20.0)
     body.hide_render = True
     tmp = _scene_setup(512, 512, samples=20, ground="#8fb35c")
-    tmp.append(_camera((0, 0, 0.55 * c.S * (1.15 if c.name == "preman" else 1.0)), 38.0, 0.0, 10,
-                       ortho=1.75 * c.S * (1.15 if c.name == "preman" else 1.0)))
+    k = c.S * (1.12 if c.name == "preman" else 1.0)
+    tmp.append(_camera((0, 0, 0.5 * k), 38.0, 0.0, 10, ortho=1.32 * k))
     bpy.context.scene.render.filepath = os.path.join(PREVIEW_DIR, name + ".png")
     bpy.ops.render.render(write_still=True)
     _cleanup([sn] + tmp)

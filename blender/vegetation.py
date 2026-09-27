@@ -5,7 +5,9 @@ Run:  python3 blender/vegetation.py                 # textures (if missing) + ev
       python3 blender/vegetation.py sawit_3 fern_a  # only the named assets
       python3 blender/vegetation.py textures        # re-render every foliage texture
       python3 blender/vegetation.py tex:frond       # re-render one texture
-      python3 blender/vegetation.py scene           # composite test render (reads the exported GLBs)
+      python3 blender/vegetation.py scene           # composite test render at the game camera (reads the GLBs)
+      python3 blender/vegetation.py scene_close     # same plantation corner from 8 m (detail check)
+                                                    # -> blender/previews/veg_scene*.png (+ _vs_target)
 
 Look (see ART_DIRECTION_V2.md and art/reference/07_target_gameplay.png): lush, layered,
 broad-leaved.  Leaves are alpha-textured cards.  Every texture is made here: a high
@@ -35,6 +37,7 @@ Material contract (the game relies on it):
     M_CocoFrond=frond_coco, M_Fern=fern, M_Leaf / M_Bush / M_Canopy=leaves,
     M_Grass=grass, M_Flower=flowers, M_Piringan=piringan (single-sided ground decal).
   * sawit_3: root Empty -> `sawit_3_body` + child Empty `Fruits` -> `Fruit_0..n`.
+  * game/assets/textures/foliage/materials.json lists material -> texture for the game side.
 
 Set VEG_SCRATCH=<dir> to also write extra close-up debug renders there.
 Set VEG_ICONS=1 to also re-render the item icons icon_bibit / icon_tbs.

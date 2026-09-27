@@ -29,7 +29,7 @@ uniform float world_size = 200.0;
 uniform float water_level = -0.3;
 uniform float shade_strength = 1.0;
 uniform float tex_saturation = 0.9;
-uniform vec3 grass_tint = vec3(1.08, 0.97, 1.25);   // linear multiplier: lime texture -> target olive
+uniform vec3 grass_tint = vec3(0.98, 1.0, 1.3);   // linear multiplier: lime texture -> target olive
 // v1 procedural palette (fallbacks) + tints anchored to the target palette
 uniform vec3 grass_dark : source_color = vec3(0.30, 0.45, 0.235);
 uniform vec3 grass_mid : source_color = vec3(0.43, 0.57, 0.28);
@@ -95,7 +95,7 @@ void fragment() {
 		gd = dry_col * (0.88 + 0.16 * n3 + 0.06 * n4);
 	}
 	float dry = sh.g + (n2.r - 0.5) * 0.55 + (n3 - 0.5) * 0.2;
-	vec3 col = mix(g, gd, smoothstep(0.5, 0.8, dry) * 0.8);
+	vec3 col = mix(g, gd, smoothstep(0.58, 0.88, dry) * 0.75);
 
 	// ---------------------------------------------------------------- forest-floor litter
 	if (sh.b > 0.01) {
@@ -146,7 +146,7 @@ void fragment() {
 
 	// ---------------------------------------------------------------- contact shade
 	float shade = clamp(sh.r * shade_strength, 0.0, 1.0);
-	col = mix(col, col * shade_tint * 0.52, shade);
+	col = mix(col, col * shade_tint * 0.42, shade);
 
 	ALBEDO = col;
 	ROUGHNESS = 1.0;

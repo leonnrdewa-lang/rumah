@@ -16,6 +16,7 @@ static func run(at: Node) -> void:
 	var world: Node = at.world
 	world.start_game(false)
 	world.ui.close()
+	GS.hour = 9.0   # villagers are up and about
 	var pl: Player = world.player
 	var tree: SceneTree = at.get_tree()
 	var cam := Camera3D.new()
@@ -94,11 +95,13 @@ static func run(at: Node) -> void:
 				Vector2(pl.global_position.x - x0.x, pl.global_position.z - x0.z).length()])
 			pl.touch_vec = Vector2.ZERO
 			await at.wait(0.5)
-			at.tp(tv.global_position.x - 1.2, tv.global_position.z + 0.6, Vector3(1, 0, -0.5).normalized())
-			await at.wait(0.5)
-			pl.do_action_anim("harvest")
-			await seq.call("harvest", 12)
-			await at.wait(0.4)
+		# the rest on open ground, seen from the side (the player faces +X)
+		at.tp(-3, 22, Vector3(1, 0, 0))
+		cam_state["off"] = Vector3(0.6, 1.4, 4.2)
+		await at.wait(0.5)
+		pl.do_action_anim("harvest")
+		await seq.call("harvest", 12)
+		await at.wait(0.4)
 		cam_state["off"] = Vector3(2.4, 1.7, 3.4)
 		for kind in ["clear", "plant", "fert"]:
 			pl.do_action_anim(kind)

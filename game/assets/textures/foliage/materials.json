@@ -1,0 +1,62 @@
+{
+ "M_Frond": {
+  "texture": "res://assets/textures/foliage/frond.png",
+  "alpha_scissor": 0.5,
+  "double_sided": true,
+  "note": "palm frond: sways above ~1 m"
+ },
+ "M_FrondDry": {
+  "texture": "res://assets/textures/foliage/frond_dry.png",
+  "alpha_scissor": 0.5,
+  "double_sided": true,
+  "note": "dead frond lying on the ground: no sway"
+ },
+ "M_CocoFrond": {
+  "texture": "res://assets/textures/foliage/frond_coco.png",
+  "alpha_scissor": 0.5,
+  "double_sided": true,
+  "note": "coconut frond"
+ },
+ "M_Fern": {
+  "texture": "res://assets/textures/foliage/fern.png",
+  "alpha_scissor": 0.5,
+  "double_sided": true,
+  "note": "fern frond, low"
+ },
+ "M_Leaf": {
+  "texture": "res://assets/textures/foliage/leaves.png",
+  "alpha_scissor": 0.5,
+  "double_sided": true,
+  "note": "broad leaves (keladi, shrub_b, vine_log ivy)"
+ },
+ "M_Bush": {
+  "texture": "res://assets/textures/foliage/leaves.png",
+  "alpha_scissor": 0.5,
+  "double_sided": true,
+  "note": "bushes / shrub_a: leaf-cluster cards + leafy core"
+ },
+ "M_Canopy": {
+  "texture": "res://assets/textures/foliage/leaves.png",
+  "alpha_scissor": 0.5,
+  "double_sided": true,
+  "note": "tree_big canopy (core blobs + cluster cards)"
+ },
+ "M_Grass": {
+  "texture": "res://assets/textures/foliage/grass.png",
+  "alpha_scissor": 0.5,
+  "double_sided": true,
+  "note": "grass clump cards"
+ },
+ "M_Flower": {
+  "texture": "res://assets/textures/foliage/flowers.png",
+  "alpha_scissor": 0.5,
+  "double_sided": true,
+  "note": "flower clump cards"
+ },
+ "M_Piringan": {
+  "texture": "res://assets/textures/foliage/piringan.png",
+  "alpha_scissor": 0.5,
+  "double_sided": false,
+  "note": "flat ground decal (single-sided), keep above terrain"
+ }
+}

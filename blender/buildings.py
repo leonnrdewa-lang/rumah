@@ -679,7 +679,7 @@ def build_gudang():
     for x in (px_ - 0.5, px_ + 0.5):
         P.append(bx("pallet_run", (0.12, 0.78, 0.08), (x, py_, FZ + 0.04), M['trim'], 0))
     k = 0
-    for layer, (n, zz) in enumerate(((2, FZ + 0.12), (2, FZ + 0.12 + 0.2), (1, FZ + 0.12 + 0.4))):
+    for n, zz in ((2, FZ + 0.12), (2, FZ + 0.12 + 0.2), (1, FZ + 0.12 + 0.4)):
         for i in range(n):
             xx = px_ + (i - (n - 1) / 2) * 0.5
             P.append(PR.sack("sack", M['board'], M['green'], loc=(xx, py_, zz),
@@ -1275,7 +1275,7 @@ def build_truck():
     name = "truck"
     root = empty(name)
     M = dict(paint=mat("M_Paint", "#efeadf"), dark=mat("M_Dark", "#3a3431"), win=mat("M_Window", "#a9c9d2", 0.4),
-             wood=mat("M_Wood", "#8f6b45"), fruit=mat("M_Fruit", "#d9542a"))
+             wood=mat("M_Wood", "#8f6b45"), fruit=mat("M_Fruit", "#e2682c"))
     P = []
     W = 1.78
     # chassis rails, bumpers, fuel tank, mud flaps
@@ -1335,19 +1335,38 @@ def build_truck():
     # --- cargo: heap of palm fruit bunches in the bed (separate child, game toggles it)
     rnd = random.Random(11)
     CP = []
+    # low mound of loose fruit under the bunches so no bed floor shows between them
+    nx_, ny_ = 5, 7
+    mv, mf = [], []
+    for j in range(ny_ + 1):
+        for i in range(nx_ + 1):
+            u, v = i / nx_, j / ny_
+            x = -0.8 + 1.6 * u
+            y = by0 + 0.1 + (by1 - by0 - 0.2) * v
+            h = 0.28 * math.sin(math.pi * u) ** 0.6 * math.sin(math.pi * v) ** 0.4 + rnd.uniform(-0.03, 0.03)
+            mv.append((x, y, bz + 0.02 + max(0.0, h)))
+    for j in range(ny_):
+        for i in range(nx_):
+            q = j * (nx_ + 1) + i
+            mf.append((q, q + 1, q + nx_ + 2, q + nx_ + 1))
+    mound = mesh_from_data("mound", mv, mf, M['fruit'])
+    shade_smooth(mound)
+    wattr(mound, "w_shade", -0.5)
+    CP.append(mound)
     spots = []
-    for j, y in enumerate((-0.35, 0.3, 0.95, 1.6)):
+    for y in (-0.3, 0.55, 1.4):
         for x in (-0.5, 0.0, 0.5):
-            spots.append((x + rnd.uniform(-0.06, 0.06), y + rnd.uniform(-0.06, 0.06), 0))
-    spots += [(-0.25, -0.05, 1), (0.25, 0.1, 1), (-0.25, 0.75, 1), (0.25, 0.65, 1), (-0.1, 1.3, 1), (0.3, 1.35, 1),
-              (0.0, 0.4, 1.7)]
+            spots.append((x + rnd.uniform(-0.06, 0.06), y + rnd.uniform(-0.08, 0.08), 0))
+    spots += [(-0.25, 0.1, 1), (0.25, 0.95, 1), (-0.15, 1.7, 0.8)]
     for i, (x, y, layer) in enumerate(spots):
-        z = bz + layer * 0.3
+        z = bz + 0.08 + layer * 0.34
         CP.append(PR.bunch("tbs", (M['fruit'], M['fruit'], M['dark']), loc=(x, y, z - 0.03),
-                           size=1.0 + rnd.uniform(-0.08, 0.08), seed=i,
+                           size=1.22 + rnd.uniform(-0.08, 0.08), seed=i,
                            rot=(rnd.uniform(-0.5, 0.5), rnd.uniform(-0.5, 0.5), rnd.uniform(0, 6.28))))
     cargo = join(CP, "Cargo")
     cargo.data.name = "Cargo"
+    if not cargo.data.uv_layers:
+        cargo.data.uv_layers.new(name="UVMap")    # same vertex format as the body (shared M_Fruit surface)
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     cargo.parent = root
     center_root(root)

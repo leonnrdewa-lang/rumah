@@ -35,8 +35,12 @@ const RUN_ON := 2.9     # m/s: switch walk -> run
 const RUN_OFF := 2.4    # m/s: switch run -> walk (hysteresis)
 const STANCE := {"walk": 0.55, "run": 0.4}   # share of the cycle a foot is on the ground
 ## Chibi legs are short for the game's speeds: beyond these playback rates the
-## cadence looks frantic, so the feet are allowed to slide a little instead.
+## cadence looks frantic, so the stride is lengthened instead (leg swing scaled
+## up to STRIDE_MAX) and whatever is left over slides.
 const MAX_RATE := {"walk": 2.6, "run": 2.3}
+const STRIDE_MAX := 1.7
+const STRIDE_BONES := ["thigh_L", "shin_L", "thigh_R", "shin_R"]
+const SWING_BONES := ["upperarm_L", "upperarm_R", "forearm_L", "forearm_R"]
 
 static var _stride_cache := {}
 static var _tool_meshes := {}
@@ -67,6 +71,9 @@ var _head := -1
 var _neck := -1
 var _override_bones: Array[int] = []
 var _rest_rot := {}
+var _stride_bones: Array[int] = []
+var _swing_bones: Array[int] = []
+var _stride_k := 1.0
 var _sk_xf := Transform3D.IDENTITY   # skeleton -> model space
 var _sk_up := Vector3.UP
 var _sk_fwd := Vector3.BACK
@@ -287,7 +294,13 @@ func _init_v2() -> void:
 	for bi in [_neck, _head]:
 		if bi >= 0:
 			_override_bones.append(bi)
-			_rest_rot[bi] = skel.get_bone_rest(bi).basis.get_rotation_quaternion()
+	for n in STRIDE_BONES + SWING_BONES:
+		var bi := skel.find_bone(n)
+		if bi >= 0:
+			(_stride_bones if n in STRIDE_BONES else _swing_bones).append(bi)
+			_override_bones.append(bi)
+	for bi in _override_bones:
+		_rest_rot[bi] = skel.get_bone_rest(bi).basis.get_rotation_quaternion()
 	_hand_idx = skel.find_bone("hand_R")
 	if _hand_idx >= 0:
 		hand_r = _attachment("hand_R")
@@ -342,7 +355,26 @@ func _update_v2(delta: float, speed: float, t: float) -> void:
 	for bi in _override_bones:
 		skel.set_bone_pose_rotation(bi, _rest_rot[bi])
 	ap.advance(delta * _rate)
+	# stride warping: when even the fastest sensible cadence can't keep up with
+	# the ground speed, swing the legs (and arms) further instead of sliding
+	var need := 1.0
+	if moving and _cur_kind in ["walk", "run"]:
+		need = speed / (float(_nat[_cur_kind]) * float(MAX_RATE[_cur_kind]))
+	_stride_k = lerpf(_stride_k, clampf(need, 1.0, STRIDE_MAX), clampf(delta * 6.0, 0.0, 1.0))
+	if _stride_k > 1.01:
+		_scale_swing(_stride_bones, _stride_k)
+		_scale_swing(_swing_bones, 1.0 + (_stride_k - 1.0) * 0.6)
 	_apply_look(delta, moving)
+
+
+func _scale_swing(bones: Array[int], k: float) -> void:
+	for bi in bones:
+		var r: Quaternion = _rest_rot[bi]
+		var d := r.inverse() * skel.get_bone_pose_rotation(bi)
+		var ang := d.get_angle()
+		if ang < 0.0001 or ang > PI * 0.9:
+			continue
+		skel.set_bone_pose_rotation(bi, r * Quaternion(d.get_axis(), minf(ang * k, PI * 0.8)))
 
 
 func _switch(kind: String, rate: float, blend: float) -> void:

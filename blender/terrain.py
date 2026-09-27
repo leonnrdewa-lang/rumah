@@ -194,6 +194,26 @@ placed = []  # (x, z, r) for spacing
 prng = random.Random(42)
 
 
+# v2: the camera looks north from 11 m up, so a tall tree just south (+z) of a parcel or
+# building fills the bottom of the screen; keep tall decor out of those strips
+TALL = ("tree_big", "sawit_wild", "banana", "coconut")
+
+
+def tall_block(x, z):
+    # not beside a road, and not in the strip just south of one (it would hide the road)
+    for dz, m in ((0.0, 5.0), (4.0, 3.5), (8.0, 3.5), (11.0, 3.0)):
+        if sample(road_d, x, z - dz) < L.ROAD_WIDTH / 2 + m:
+            return True
+    for (x0, z0, x1, z1) in parcel_rects:
+        if x0 - 2.5 < x < x1 + 2.5 and z0 < z < z1 + 11.0:
+            return True
+    for b in L.BUILDINGS:
+        bx, bz = b["pos"]
+        if abs(x - bx) < 9.0 and bz - 3.0 < z < bz + 13.0:
+            return True
+    return False
+
+
 def try_place(model, count, r_self, sd_min, sd_max, region=None, scale=(0.85, 1.2), tries=4000, pad=0.0,
               min_gap=None):
     n = 0
@@ -210,6 +230,8 @@ def try_place(model, count, r_self, sd_min, sd_max, region=None, scale=(0.85, 1.
             continue
         if blocked(x, z, pad):
             continue
+        if model in TALL and tall_block(x, z):
+            continue
         if any((x - px) ** 2 + (z - pz) ** 2 < (gap + pr) ** 2 for px, pz, pr in placed):
             continue
         y = (sample(enc_h, x, z) * 7.0) - 5.0
@@ -224,6 +246,10 @@ def try_place(model, count, r_self, sd_min, sd_max, region=None, scale=(0.85, 1.
 north = lambda x, z: z < -30 or abs(x) > 50
 try_place("tree_big", 22, 3.5, 12, 999, region=north, pad=1.5)
 try_place("tree_big", 10, 3.5, 12, 999, pad=2.0)
+# v2: more big trees so forest patches have edges, and old wild oil palms
+# ("sawit_wild" = sawit_3 without its fruit bunches) in groves between the roads
+try_place("tree_big", 14, 3.2, 14, 999, pad=1.5, tries=12000)
+try_place("sawit_wild", 26, 2.6, 11, 999, scale=(0.9, 1.15), pad=1.2, tries=20000)
 try_place("coconut", 34, 2.0, 4.0, 10.0, scale=(0.85, 1.15), pad=0.5)
 try_place("banana", 16, 1.4, 10, 999, pad=0.8)
 try_place("bush_a", 34, 1.2, 9, 999, pad=0.4)
@@ -231,10 +257,6 @@ try_place("bush_b", 34, 1.2, 9, 999, pad=0.4)
 try_place("rock_b", 14, 1.0, 6, 999, pad=0.3)
 try_place("rock_a", 26, 0.5, 2, 999, pad=0.2)
 try_place("rock_c", 4, 1.8, 3, 12, pad=0.5)
-# v2: more big trees so forest patches have edges, and old wild oil palms
-# ("sawit_wild" = sawit_3 without its fruit bunches) in groves between the roads
-try_place("tree_big", 12, 3.2, 14, 999, pad=1.5)
-try_place("sawit_wild", 26, 2.6, 11, 999, scale=(0.9, 1.15), pad=1.2)
 try_place("banana", 10, 1.4, 10, 999, pad=0.8)
 # (v1 grass_tuft / flowers decor is replaced by the dense undergrowth below)
 
@@ -365,7 +387,7 @@ ZONES = [
 ]
 UG_SCALE = {"grass_a": (0.8, 1.3), "grass_b": (0.8, 1.3), "fern_a": (0.8, 1.25), "fern_b": (0.8, 1.25),
             "keladi": (0.8, 1.2), "shrub_a": (0.8, 1.25), "shrub_b": (0.8, 1.25), "flowers_white": (0.8, 1.2),
-            "flowers_yellow": (0.8, 1.2), "frond_fallen": (0.85, 1.1), "vine_log": (0.8, 1.05),
+            "flowers_yellow": (0.8, 1.2), "frond_fallen": (0.65, 0.9), "vine_log": (0.8, 1.05),
             "pile_fronds": (0.9, 1.1), "rock_a": (0.45, 0.9)}
 UG_GAP = {"grass_a": 0.35, "grass_b": 0.35, "flowers_white": 0.35, "flowers_yellow": 0.35, "fern_a": 0.6, "fern_b": 0.6,
           "keladi": 0.55, "shrub_a": 0.85, "shrub_b": 0.85, "frond_fallen": 0.9, "vine_log": 1.3, "pile_fronds": 1.1,
@@ -373,11 +395,17 @@ UG_GAP = {"grass_a": 0.35, "grass_b": 0.35, "flowers_white": 0.35, "flowers_yell
 UG_PAD = {"shrub_a": 0.5, "shrub_b": 0.5, "vine_log": 0.8, "pile_fronds": 0.6, "frond_fallen": 0.5}
 DENSITY = float(os.environ.get("UG_DENSITY", "1.0"))
 
+# plants grow in clumps (thickets of shrubs/ferns with open grass between), like the target
+clump = smoothstep(0.42, 0.72, fractal_noise(N, (10, 90), 1.4, seed=51))
+CLUMPINESS = {"verge": 0.6, "bld": 0.35, "parcel": 0.5, "forest": 0.8, "inner": 0.3, "open": 1.0, "beach": 0.5}
+BIG = ("shrub_a", "shrub_b", "keladi", "fern_a", "fern_b", "vine_log", "pile_fronds")
+SMALL = ("grass_a", "grass_b", "flowers_white", "flowers_yellow")
 density = np.zeros_like(X)
 zone_id = np.full(X.shape, -1)
 for zi in range(len(ZONES) - 1, -1, -1):   # earlier (denser) zones override later ones
     name, mask, dens, _ = ZONES[zi]
-    dn = dens * (0.75 + 0.5 * n_mid)          # patchy
+    k = CLUMPINESS[name]
+    dn = dens * (0.8 + 0.4 * n_mid) * ((1 - k) + k * (0.2 + 2.3 * clump))
     upd = mask & (dn >= density * 0.999)
     density[upd] = dn[upd]
     zone_id[upd] = zi
@@ -406,7 +434,13 @@ for i, j in zip(*np.nonzero(counts)):
     zi = zone_id[i, j]
     if zi < 0:
         continue
-    weights = ZONES[zi][3]
+    weights = dict(ZONES[zi][3])
+    thicket = clump[i, j] > 0.55
+    for nm in weights:
+        if nm in BIG:
+            weights[nm] *= 2.2 if thicket else 0.8
+        elif nm in SMALL:
+            weights[nm] *= 0.7 if thicket else 1.4
     names = list(weights.keys())
     wsum = sum(weights.values())
     for _ in range(counts[i, j]):
@@ -478,7 +512,7 @@ for (m, x, z, sc) in ug_list:
 for (x, z) in tile_pts:
     splat(shade_acc, x, z, 1.4, 0.15)
     splat(litter, x, z, 1.1, 0.12)
-shade_r = 1.0 - np.exp(-shade_acc * 0.9)
+shade_r = 1.0 - np.exp(-shade_acc * 1.25)
 shade_r = ndimage.gaussian_filter(shade_r, 0.7)
 
 dry = 0.2 + (fractal_noise(N, (4, 40), 2.0, seed=41) - 0.5) * 0.45

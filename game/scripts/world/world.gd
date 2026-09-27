@@ -13,7 +13,7 @@ const SHADE_TEX_PATH := "res://assets/textures/world_shade.png"
 const GROUND_DIR := "res://assets/textures/ground/"
 const GROUND_TEX := ["grass", "grass_dry", "dirt", "sand", "mulch"]
 ## soft green-grey sky bounce; keeps shadows olive like the target instead of grey
-const AMBIENT_DAY := Color("c4d0c8")
+const AMBIENT_DAY := Color("b8c4c0")
 
 const DECOR_COLLIDE := {"tree_big": 0.55, "coconut": 0.35, "banana": 0.3, "rock_b": -1.0, "rock_c": -1.0,
 	"cliff_a": -1.0, "bush_a": 0.45, "bush_b": 0.45, "sawit_wild": 0.45}
@@ -178,11 +178,12 @@ func _build_environment() -> void:
 	env.tonemap_mode = Environment.TONE_MAPPER_LINEAR
 	# soft painterly post: a subtle glow on highlights, a little more saturation/contrast
 	env.glow_enabled = true
-	env.glow_intensity = 0.3
+	env.glow_intensity = 0.4
 	env.glow_strength = 1.0
 	env.glow_bloom = 0.0
-	env.glow_hdr_threshold = 0.9
-	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_SOFTLIGHT
+	env.glow_hdr_threshold = 0.85
+	env.glow_hdr_scale = 1.5
+	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_ADDITIVE
 	env.adjustment_enabled = true
 	env.adjustment_brightness = 1.0
 	env.adjustment_contrast = 1.05
@@ -191,7 +192,7 @@ func _build_environment() -> void:
 	add_child(we)
 	sun = DirectionalLight3D.new()
 	sun.shadow_enabled = true
-	sun.shadow_opacity = 0.58
+	sun.shadow_opacity = 0.68
 	sun.shadow_blur = 2.2
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
 	sun.directional_shadow_max_distance = 32.0
@@ -937,12 +938,12 @@ func _update_daylight() -> void:
 	var elev := lerpf(30.0, 60.0, day_k)
 	# warm sun from the upper left of the screen: shadows fall down-right
 	sun.rotation = Vector3(deg_to_rad(-elev), deg_to_rad(-122.0 + (h - 12.0) * 2.5), 0)
-	var day_col := Color(1.0, 0.97, 0.91)
+	var day_col := Color(1.0, 0.94, 0.8)
 	var dusk_col := Color(1.0, 0.68, 0.42)
 	var night_col := Color(0.55, 0.62, 1.0)
 	var col := day_col.lerp(dusk_col, clampf(dusk, 0.0, 1.0)).lerp(night_col, night)
 	sun.light_color = col
-	sun.light_energy = lerpf(0.98, 0.32, night) * lerpf(0.88, 1.0, day_k)
+	sun.light_energy = lerpf(1.08, 0.32, night) * lerpf(0.88, 1.0, day_k)
 	env.ambient_light_color = AMBIENT_DAY.lerp(Color("5b6fa8"), night).lerp(Color("e0b090"), clampf(dusk, 0.0, 1.0) * 0.4)
 	env.ambient_light_energy = lerpf(0.52, 0.46, night)
 	env.background_color = Color("3a8f94").lerp(Color("14304a"), night)

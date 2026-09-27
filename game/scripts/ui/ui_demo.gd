@@ -21,6 +21,7 @@ func _ready() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	await _run()
+	await wait(0.6)  # let closing tweens finish before quitting
 	get_tree().quit()
 
 
