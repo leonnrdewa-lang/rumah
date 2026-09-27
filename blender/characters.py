@@ -1740,9 +1740,9 @@ GAIT = {
 # height. Heel kick up behind, foot tucked high under the hip while the knee drives forward, reach
 # just past the touchdown spot with the foot still well off the ground, then a short drop onto it
 # (with a little paw-back).
-RUN_SWING = ((0.14, "fk", -14.0, 92.0, 72.0, 0.25), (0.34, "fk", 6.0, 124.0, 60.0, 0.6),
-             (0.55, "fk", 44.0, 118.0, 30.0, 0.4), (0.74, "fk", 64.0, 84.0, 12.0, 0.4),
-             (0.88, "ik", 1.06, 0.2, None, 0.0))
+RUN_SWING = ((0.16, "fk", -14.0, 90.0, 72.0, 0.25), (0.36, "fk", 6.0, 122.0, 60.0, 0.55),
+             (0.56, "fk", 44.0, 116.0, 30.0, 0.4), (0.73, "fk", 64.0, 80.0, 12.0, 0.34),
+             (0.88, "ik", 1.06, 0.24, None, 0.0))
 
 
 def gait_dims(c, st, kind):
@@ -2254,28 +2254,6 @@ def clip_harvest(rig, st):
         "brow": [(0, (0, 0)), (10, (0, 0.004)), (21, (0, 0.004)), (23, (8, -0.003)), (29, (0, 0))],
     })
     return N, False, tr
-
-
-def stand_hand(rig, st, side, arm=None, hand=None):
-    """Fist centre, blade axis (hand local +Z) and elbow pole direction of the neutral stance (or of
-    the FK arm / hand angles given), in the chest's rest frame (unscaled): IK arm clips start and end
-    exactly on the FK stance and can pass through FK-designed poses."""
-    b = dict(stand(st))
-    x = sfx(side)
-    if arm is not None:
-        b["arm" + x] = arm
-    if hand is not None:
-        b["hand" + x] = hand
-    rig.solve(spec_from(lambda ch, f: b[ch], 0))
-    W = rig.W
-    Ci = rig.rest["chest"] @ W["chest"].inverted()
-    Mh = W["hand_" + x]
-    fist = Ci @ (Mh @ Vector((0.0, 0.036 * rig.S * rig.c.d["hand_k"], 0.0)))
-    G = Ci.to_3x3() @ (Mh.to_3x3() @ Vector((0.0, 0.0, 1.0)))
-    Sh, El, Wr = (Ci @ W[n + x].translation for n in ("upperarm_", "forearm_", "hand_"))
-    u = (Wr - Sh).normalized()
-    pole = (El - Sh) - u * (El - Sh).dot(u)
-    return tuple(fist / rig.S), tuple(G.normalized()), tuple(pole.normalized())
 
 
 def clip_chop(rig, st):
@@ -2905,22 +2883,66 @@ def motion_checks(c, st, rig, body, acts):
     return out
 
 
-def glb_anim_check(path, name):
-    """The exported rotation keys as the game reads them: largest turn per 1/60 s (linear slerp
-    between keys), quaternion hemisphere flips between consecutive keys, loop first key == last key."""
+def _glb_read(path):
+    """(bytes, json dict, BIN chunk offset, BIN chunk length) of a .glb file."""
     import json
     import struct
     data = open(path, "rb").read()
     length = struct.unpack_from("<III", data, 0)[2]
-    off, js, blob = 12, None, None
+    off, js, bin_at = 12, None, None
     while off < length:
         clen, ctype = struct.unpack_from("<II", data, off)
-        chunk = data[off + 8: off + 8 + clen]
-        off += 8 + clen
         if ctype == 0x4E4F534A:
-            js = json.loads(chunk)
+            js = json.loads(data[off + 8: off + 8 + clen])
         elif ctype == 0x004E4942:
-            blob = chunk
+            bin_at = (off + 8, clen)
+        off += 8 + clen
+    return data, js, bin_at
+
+
+def glb_quat_continuity(path):
+    """Keep every rotation channel of the exported GLB in one quaternion hemisphere (q and -q are the
+    same rotation; the exporter picks the sign per key, so a bone whose rest turn from its parent is
+    ~180 deg - the thighs under the hips - flips sign whenever w crosses 0). Lossless: only the signs
+    of whole keys change, in place. Returns the number of keys negated."""
+    import struct
+    data, js, (b0, _blen) = _glb_read(path)
+    buf = bytearray(data)
+    done, flipped = set(), 0
+    for an in js.get("animations", []):
+        for ch in an["channels"]:
+            if ch["target"]["path"] != "rotation":
+                continue
+            ai = an["samplers"][ch["sampler"]]["output"]
+            if ai in done:
+                continue
+            done.add(ai)
+            a = js["accessors"][ai]
+            bv = js["bufferViews"][a["bufferView"]]
+            # (plain float keys without min/max, as the exporter writes them: then only the BIN changes)
+            assert a["componentType"] == 5126 and a["type"] == "VEC4" and not a.get("sparse") and \
+                "min" not in a and "max" not in a, "unexpected rotation accessor layout"
+            o = b0 + bv.get("byteOffset", 0) + a.get("byteOffset", 0)
+            stride = bv.get("byteStride", 16)
+            prev = None
+            for j in range(a["count"]):
+                q = struct.unpack_from("<4f", buf, o + j * stride)
+                if prev is not None and sum(x * y for x, y in zip(prev, q)) < 0.0:
+                    q = tuple(-x for x in q)
+                    struct.pack_into("<4f", buf, o + j * stride, *q)
+                    flipped += 1
+                prev = q
+    if flipped:
+        open(path, "wb").write(bytes(buf))
+    return flipped
+
+
+def glb_anim_check(path, name):
+    """The exported rotation keys as the game reads them: largest turn per 1/60 s (linear slerp
+    between keys), quaternion hemisphere flips between consecutive keys, loop first key == last key."""
+    import struct
+    data, js, (b0, blen) = _glb_read(path)
+    blob = data[b0: b0 + blen]
 
     def acc(i):
         a = js["accessors"][i]
@@ -2951,8 +2973,7 @@ def glb_anim_check(path, name):
         if seam > SEAM_DEG:
             fail(name, f"GLB {an['name']}: loop's last rotation key differs from the first by {seam:.1f} deg")
         if flips:
-            print(f"  [check] {name}: GLB {an['name']} has {flips} quaternion hemisphere flips between keys "
-                  f"(harmless for slerp, reported)")
+            fail(name, f"GLB {an['name']}: {flips} quaternion hemisphere flips between consecutive rotation keys")
     print(f"  [check] {name}: GLB most turn per 1/60 s {{{', '.join(f'{k}: {v[0]}' for k, v in out.items())}}}")
     CHECKS.setdefault(name, {}).update(glb=out)
     return out
@@ -3814,6 +3835,8 @@ def build_one(name, out=True, sheets=None, bake=True, allow_fail=False, views=("
         rig_ob.animation_data.action = acts["idle"]
         bpy.context.scene.frame_set(0)
         path = export_char(rig_ob, "char_" + name, gait_extras(c, st))
+        print(f"  [export] {name}: {glb_quat_continuity(path)} rotation keys put back in their channel's "
+              f"quaternion hemisphere")
         glb_anim_check(path, name)
         mark_loops_in_import("char_" + name)
         preview_materials(True)
