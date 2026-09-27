@@ -1267,8 +1267,9 @@ class Rig:
             put(b, conj(b, rotw(*P[b])))
         Qc = W["chest"].to_3x3() @ self.r3("chest").inverted()
 
-        # --- arms
-        for side in (1, -1):
+        # --- arms (right first: a two-handed pole grip puts the left hand on the right hand's pole)
+        g = 0.036 * S * self.c.d["hand_k"]
+        for side in (-1, 1):
             x = sfx(side)
             up, fo, ha = "upperarm_" + x, "forearm_" + x, "hand_" + x
             base = W["chest"] @ self.rel[up]
@@ -1283,17 +1284,40 @@ class Rig:
             fk2 = cols(d1.cross(w), d2, d1.cross(w).cross(d2))
             ikw = P.get("ik" + x, 0.0)
             f1, f2 = fk1, fk2
+            L1, L2 = self.len[up], self.len[fo]
+            grip = P.get("grip" + x)
+            grip_world = False
+            tgt = None
             if ikw > 1e-4:
                 tgt = Vector(P["ikt" + x]) * S
-                grip = P.get("grip" + x)
                 if P.get("iksp", 0.0) > 0.5:     # target + grip axis given in the chest's rest frame
                     tgt = W["chest"] @ (self.rest["chest"].inverted() @ tgt)
                     grip = Qc @ Vector(grip) if grip is not None else None
+                    grip_world = True
+                if P.get("ikgnd", 0.0) > 0.5:    # (inward, forward offset from the shoulder, height)
+                    o = Vector(P["ikt" + x]) * S
+                    tgt = Vector((Sw.x - side * o.x, Sw.y + o.y, o.z))
+                if side > 0 and P.get("polefollow", 0.0) > 0.5 and "hand_R" in W:
+                    # left hand on the pole axis through the right fist (hand_R local +Z), sliding
+                    # along it (within +-5 cm of the wanted spacing) to stay inside the arm's reach
+                    MR = W["hand_R"]
+                    ax = (MR.to_3x3() @ Vector((0.0, 0.0, 1.0))).normalized()
+                    gR = MR @ Vector((0.0, g, 0.0))
+                    t0 = P.get("poled", 0.11) * S
+                    ok = 0.86 * (L1 + L2) + 0.8 * g
+                    tf = (Sw - gR).dot(ax)
+                    perp2 = (Sw - (gR + ax * tf)).length_squared
+                    t = t0
+                    if (gR + ax * t0 - Sw).length > ok and perp2 < ok * ok:
+                        h = math.sqrt(ok * ok - perp2)
+                        t = min((tf - h, tf + h), key=lambda v: abs(v - t0))
+                    t = clamp(t, t0 - 0.05 * S, t0 + 0.05 * S)
+                    tgt = gR + ax * t
+                    grip, grip_world = ax, True
+            if tgt is not None:
                 pole = Qc @ Vector(P.get("ikp" + x, (side * 0.7, 0.5, -0.5)))
-                L1, L2 = self.len[up], self.len[fo]
-                g = 0.036 * S * self.c.d["hand_k"]
                 wr = tgt.copy()
-                for _ in range(3):   # solve for the wrist so that the fist (not the wrist) lands on the target
+                for _ in range(4):   # solve for the wrist so that the fist (not the wrist) lands on the target
                     E, reached = two_bone(Sw, wr, L1, L2, pole, soft=0.88)
                     D1 = (E - Sw).normalized()
                     D2 = (reached - E).normalized()
@@ -1303,10 +1327,10 @@ class Rig:
                     else:
                         yh = D2
                     wr = tgt - yh * g
-                short = (tgt - Sw).length - (L1 + L2 + g)
-                if short > 0.006 * S and ikw > 0.5:
+                miss = (reached + yh * g - tgt).length
+                if miss > 0.006 * S and ikw > 0.5:
                     self.warn += 1
-                    self.log.append(("arm" + x, round(short / S, 3)))
+                    self.log.append(("arm" + x, round(miss / S, 3)))
                 Wf = D2 - D1 * D1.dot(D2)
                 Wf = Wf.normalized() if Wf.length > 1e-4 else -(pole - D1 * pole.dot(D1)).normalized()
                 ik1 = cols(D1.cross(Wf), D1, Wf)
@@ -1319,11 +1343,10 @@ class Rig:
             hx, hy, hz = P["hand" + x]
             fk_h = Matrix.Rotation(rad(hx), 3, "X") @ Matrix.Rotation(rad(side * hy), 3, "Y") @ \
                 Matrix.Rotation(rad(side * hz), 3, "Z")
-            grip = P.get("grip" + x)
             gw = P.get("gripw" + x, 0.0)
             if grip is not None and gw > 1e-4:
                 G = Vector(grip).normalized()
-                if P.get("iksp", 0.0) > 0.5:
+                if P.get("iksp", 0.0) > 0.5 and not grip_world:
                     G = Qc @ G
                 Y2 = f2.col[1]
                 yh = (Y2 - G * Y2.dot(G)).normalized()
@@ -1341,7 +1364,7 @@ class Rig:
             A0 = self.rest[ft].translation
             tgt = A0 + Vector((dx, dy, dz)) * S
             fwd = Matrix.Rotation(rad(yaw), 3, "Z") @ FRONT
-            pole = fwd + Vector((side * P.get("knee_out", 0.12), 0, 0.35))
+            pole = fwd + Vector((side * P["kneeout"][0 if side > 0 else 1], 0, 0.35))
             E, reached = two_bone(J, tgt, self.len[th], self.len[sh], pole, soft=0.975)
             if (reached - tgt).length > 0.004 * S:
                 self.warn += 1
@@ -1392,7 +1415,7 @@ def stand(st):
         "eyes": (1.0, 1.0), "brow": (0.0, 0.0), "mouth": (1.0,), "jaw": (1.0,),
         "ikL": (0.0,), "ikR": (0.0,), "iktL": (0.1, -0.2, 0.3), "iktR": (-0.1, -0.2, 0.3),
         "gripL": (0.0, -1.0, 0.0), "gripR": (0.0, -1.0, 0.0), "gripwL": (0.0,), "gripwR": (0.0,),
-        "iksp": (0.0,),
+        "iksp": (0.0,), "ikgnd": (0.0,), "polefollow": (0.0,), "poled": (0.11,), "kneeout": (0.12, 0.12),
     }
 
 
@@ -1407,7 +1430,9 @@ def spec_from(get, f):
         P["ikt" + x] = get("ikt" + x, f)
         P["grip" + x] = get("grip" + x, f)
         P["gripw" + x] = get("gripw" + x, f)[0]
-    P["iksp"] = get("iksp", f)[0]
+    for k in ("iksp", "ikgnd", "polefollow", "poled"):
+        P[k] = get(k, f)[0]
+    P["kneeout"] = get("kneeout", f)
     return P
 
 
@@ -1844,13 +1869,14 @@ def clip_harvest(rig, st):
     N = 36
     b = stand(st)
     d = rig.c.d
-    k = d["sh_z"] / DEF["sh_z"]
-    kx = d["sh_x"] / DEF["sh_x"]
+    # grips are laid out relative to the right shoulder and scaled by arm length (preman's long arms
+    # and wide shoulders); the pole leans a little to the left so it passes near the left shoulder
+    k = (d["l_up"] + d["l_fore"]) / (DEF["l_up"] + DEF["l_fore"])
 
     def grips(x, y, z, el):
         e = rad(el)
-        D = Vector((0.1, -math.cos(e), math.sin(e))).normalized()
-        gR = Vector((x * kx, y * k, z * k))
+        D = Vector((0.24, -math.cos(e), math.sin(e))).normalized()
+        gR = Vector((-d["sh_x"] + (x + DEF["sh_x"] + 0.035) * k, (y + 0.015) * k, d["sh_z"] - (DEF["sh_z"] - z) * k))
         gL = gR + D * 0.11 * k
         return tuple(gR), tuple(gL), tuple(D)
     ready = (-0.035, -0.13, 0.4, 44)
@@ -1869,6 +1895,7 @@ def clip_harvest(rig, st):
         "ikR": [(0, (1,)), (36, (1,))], "ikL": [(0, (1,)), (36, (1,))],
         "gripwR": [(0, (1,)), (36, (1,))], "gripwL": [(0, (1,)), (36, (1,))],
         "iktR": ktR, "iktL": ktL, "gripR": kg, "gripL": kg,
+        "polefollow": [(0, (1,)), (36, (1,))], "poled": [(0, (0.11 * k,)), (36, (0.11 * k,))],
         "hips_off": [(0, b["hips_off"]), (6, (0, 0.008, -0.012)), (10, (0, 0.01, -0.032)), (15, (0, 0.0, 0.012)),
                      (19, (0, 0.0, 0.013)), (23, (0, 0.014, -0.042)), (26, (0, 0.016, -0.046)),
                      (31, (0, 0.008, -0.014))],
@@ -1926,48 +1953,108 @@ def clip_chop(rig, st):
     return N, False, tr
 
 
+def plant_lean(d, st, drop, fist_z, reach_xy):
+    """Torso lean scale so the shoulders come down to where the fists reach the soil."""
+    segs = (d["spine_z"] - d["pelvis_z"], d["chest_z"] - d["spine_z"], d["sh_z"] - d["chest_z"])
+    base = (0.0, st["stoop"] * 0.4, st["stoop"] * 0.6 + st["chest"])
+    reach = 0.86 * (d["l_up"] + d["l_fore"]) + 0.036 * d["hand_k"]
+    want = fist_z + math.sqrt(max(1e-4, reach * reach - reach_xy * reach_xy))
+
+    def sh_z(k):
+        z, a = d["pelvis_z"] + drop, 0.0
+        for L, b0, p in zip(segs, base, PLANT_LEAN):
+            a += b0 + k * p
+            z += L * math.cos(rad(a))
+        return z
+    lo, hi = 0.4, 1.7
+    for _ in range(30):
+        mid = (lo + hi) / 2
+        if sh_z(mid) > want:
+            lo = mid
+        else:
+            hi = mid
+    return hi
+
+
+PLANT_LEAN = (26.0, 19.0, 17.0)   # hips, spine, chest pitch (deg) of the default character's dig pose
+PLANT_FIST = 0.058                # fist centre height when the knuckles touch the soil (x hand size)
+
+
 def clip_plant(rig, st):
-    """Step, kneel on the right knee, dig twice with the right hand, set the seedling down with the
-    left hand, pat the soil, stand back up (with a little stretch)."""
+    """Step the left foot out, kneel on the right knee sitting back towards the heel, bend forward
+    from the hips, dig twice with the right hand, set the seedling in with the left, pat the soil with
+    both hands, stand back up with a little stretch. The fists really reach the soil (the arm targets
+    are placed relative to the shoulders at a fixed height above the ground) and the head stays
+    fairly upright, so the arms show past a wide hat brim from the 45 deg game camera."""
     N = 36
     b = stand(st)
-    d = rig.c.d
-    kz = d["hip_z"] / DEF["hip_z"]
-    g = 0.12 * kz                     # fist height over the soil (chibi arms are short)
-    drop = -0.158 * kz
-    dig = (-0.055, -0.19, g)
-    kneel_r = (-0.008, 0.115 * kz, 0.022 * kz, 52, -8)
-    foot_l = (0.02, -0.075 * kz, 0.0, 0, 12)
+    c = rig.c
+    d = c.d
+    kz = (d["hip_z"] - d["ankle_z"]) / (DEF["hip_z"] - DEF["ankle_z"])
+    hk = d["hand_k"]
+    G = PLANT_FIST * hk
+    drop = -0.2 * kz
+    back = 0.03 * kz
+    lam = plant_lean(d, st, drop, G, 0.035)
+    lh, ls, lc = (lam * v for v in PLANT_LEAN)
+    # kneeling right leg: knee on the ground, shin back to a toe-down foot under the hip
+    tab = foot_table(c)
+    toe_k = 55.0
+    z_hip = d["hip_z"] + drop
+    z_knee = d["knee_r"] * 1.0
+    Lt, Ls = d["hip_z"] - d["knee_z"], d["knee_z"] - d["ankle_z"]
+    y_knee = back - math.sqrt(max(1e-6, Lt * Lt - (z_hip - z_knee) ** 2))
+    z_ank = d["ankle_z"] + tab[int(toe_k)][1]
+    y_ank = y_knee + math.sqrt(max(1e-6, Ls * Ls - (z_ank - z_knee) ** 2))
+    kneel_r = (-0.012 * kz, y_ank, tab[int(toe_k)][1], toe_k, -10.0)
+    foot_l = (0.035 * kz, -0.085 * kz, 0.0, 0.0, 26.0)
+    hc, hs, hh, hn = b["chest"][0], b["spine"][0], b["head"][0], b["neck"][0]
+    # the head keeps ~34 deg net pitch whatever the torso does
+    tot = lh + ls + lc + (hs + hc)
+    head_p = 34.0 - tot - (hn - 4.0)
+    bob = 0.006 * kz
+
+    def dz(z):
+        return (0.0, back, drop + z)
     tr = one_shot(N, b, {
-        "hips_off": [(0, b["hips_off"]), (4, (0.004, -0.01, -0.05)), (8, (0.0, -0.005, drop)),
-                     (24, (0.0, -0.005, drop)), (28, (0.004, -0.012, drop * 0.55)), (32, (0, 0.0, 0.006)),
-                     (35, (0, 0, -0.008))],
-        "hips": [(0, b["hips"]), (4, (4, 3, 0)), (8, (12, 3, 0)), (24, (12, 3, 0)), (28, (8, 2, 0)),
-                 (32, (-3, 0, 0))],
-        "spine": [(0, b["spine"]), (9, (b["spine"][0] + 7, 0, 0)), (25, (b["spine"][0] + 7, 0, 0)),
-                  (33, (b["spine"][0] - 2, 0, 0))],
-        "chest": [(0, b["chest"]), (9, (b["chest"][0] + 12, -4, 0)), (13, (b["chest"][0] + 14, -7, 0)),
-                  (19, (b["chest"][0] + 13, 5, 0)), (25, (b["chest"][0] + 11, 0, 0)), (33, (b["chest"][0] - 6, 0, 0))],
-        "neck": [(0, b["neck"]), (10, (b["neck"][0] + 3, 0, 0)), (26, (b["neck"][0] + 3, 0, 0)), (33, b["neck"])],
-        "head": [(0, b["head"]), (10, (b["head"][0] + 4, -6, 2)), (16, (b["head"][0] + 6, -9, 3)),
-                 (22, (b["head"][0] + 6, 6, -2)), (27, (b["head"][0] + 2, 0, 0)), (32, (b["head"][0] - 8, 0, 0))],
-        "legL": [(0, b["legL"]), (3, (0.02, -0.04 * kz, 0.03 * kz, 0, 12)), (6, foot_l), (26, foot_l),
-                 (31, (0.012, -0.02, 0.0, 0, 9))],
-        "legR": [(0, b["legR"]), (5, (-0.01, 0.05 * kz, 0.01, 20, -8)), (8, kneel_r), (24, kneel_r),
-                 (28, (-0.01, 0.07 * kz, 0.015, 30, -8)), (31, (-0.01, 0.01, 0.0, 4, -7))],
-        "ikR": [(0, (0,)), (8, (1,)), (19, (1,)), (26, (0.0,))],
-        "iktR": [(0, (-0.08, -0.12, 0.25)), (7, (-0.06, -0.2, g + 0.05)), (9, dig),
-                 (11, (-0.05, -0.14, g + 0.015)), (13, (-0.065, -0.21, g + 0.05)), (15, dig),
-                 (17, (-0.05, -0.14, g + 0.015)), (20, (-0.08, -0.16, g + 0.08))],
-        "ikL": [(0, (0,)), (8, (1,)), (26, (1,)), (30, (0,))],
-        "iktL": [(0, (0.1, -0.1, 0.25)), (8, (0.075, -0.13, g + 0.1)), (16, (0.075, -0.13, g + 0.1)),
-                 (19, (0.035, -0.17, g + 0.05)), (21, (0.01, -0.19, g + 0.004)), (23, (0.01, -0.19, g + 0.03)),
-                 (24, (0.01, -0.19, g)), (26, (0.03, -0.17, g + 0.06))],
-        "armR": [(0, b["armR"]), (7, (50, 16, 10, 40)), (19, (50, 16, 10, 40)), (26, (40, 14, 10, 40))],
+        "hips_off": [(0, b["hips_off"]), (3, (0.012, -0.004, -0.02)), (6, (0.006, back * 0.6, drop * 0.75)),
+                     (9, dz(-0.004)), (10, dz(-bob)), (12, dz(0.0)), (14, dz(-bob)), (16, dz(0.0)),
+                     (20, dz(-bob * 0.5)), (22, dz(-bob)), (24, dz(-bob)), (26, dz(0.0)),
+                     (29, (0.004, back * 0.4, drop * 0.45)), (32, (0.0, 0.0, 0.008)), (35, (0, 0, -0.007))],
+        "hips": [(0, b["hips"]), (3, (3, 4, -2)), (6, (lh * 0.7, -4, 0)), (9, (lh, -8, 0)), (24, (lh, -8, 0)),
+                 (28, (lh * 0.5, -4, 0)), (32, (-4, 0, 0))],
+        "spine": [(0, b["spine"]), (7, (hs + ls * 0.6, -2, 0)), (10, (hs + ls, -3, 0)), (25, (hs + ls, -3, 0)),
+                  (29, (hs + ls * 0.4, -1, 0)), (33, (hs - 3, 0, 0))],
+        "chest": [(0, b["chest"]), (7, (hc + lc * 0.5, -2, 0)), (10, (hc + lc, -5, -2)), (12, (hc + lc - 3, -3, -2)),
+                  (14, (hc + lc, -6, -2)), (16, (hc + lc - 3, -2, 0)), (19, (hc + lc, 6, 3)),
+                  (22, (hc + lc + 1, 0, 0)), (24, (hc + lc + 1, 0, 0)), (27, (hc + lc * 0.5, 0, 0)),
+                  (31, (hc - 8, 0, 0)), (34, (hc + 1, 0, 0))],
+        "neck": [(0, b["neck"]), (8, (hn - 2, 0, 0)), (11, (hn - 4, -2, 0)), (25, (hn - 4, 2, 0)),
+                 (30, (hn, 0, 0)), (33, (hn + 2, 0, 0))],
+        "head": [(0, b["head"]), (4, (hh + 4, 0, 0)), (9, (head_p + 4, -6, 3)), (12, (head_p, -9, 4)),
+                 (16, (head_p + 2, -7, 3)), (20, (head_p, 7, -3)), (24, (head_p + 2, 2, 0)),
+                 (28, (hh + 2, 0, 0)), (32, (hh - 10, 0, 0))],
+        "kneeout": [(0, (0.12, 0.12)), (4, (0.9, 0.12)), (28, (0.9, 0.12))],
+        "legL": [(0, b["legL"]), (3, (0.02 * kz, -0.045 * kz, 0.035 * kz, -6, 16)), (6, foot_l), (26, foot_l),
+                 (29, (0.02 * kz, -0.05 * kz, 0.012, 0, 16)), (31, (0.012, -0.015, 0.0, 0, 9))],
+        "legR": [(0, b["legR"]), (4, (-0.01, 0.04 * kz, 0.012, 20, -8)), (8, kneel_r), (25, kneel_r),
+                 (28, (-0.01, y_ank * 0.6, 0.02, 34, -8)), (31, (-0.01, 0.01, 0.0, 4, -7))],
+        "ikgnd": [(0, (1,)), (36, (1,))],
+        "ikR": [(0, (0,)), (4, (0,)), (9, (1,)), (25, (1,)), (29, (0.0,))],
+        "iktR": [(0, (0.0, -0.06, 0.3)), (7, (0.0, -0.05, G + 0.06)), (10, (0.0, -0.035, G)),
+                 (12, (-0.005, 0.0, G + 0.035)), (14, (0.0, -0.04, G)), (16, (-0.005, 0.0, G + 0.04)),
+                 (19, (-0.01, -0.02, G + 0.05)), (22, (0.015, -0.035, G)), (23, (0.015, -0.035, G + 0.025)),
+                 (24, (0.015, -0.035, G)), (26, (0.0, -0.02, G + 0.06))],
+        "ikL": [(0, (0,)), (4, (0,)), (9, (1,)), (26, (1,)), (30, (0,))],
+        "iktL": [(0, (0.0, -0.06, 0.3)), (8, (0.02, -0.06, G + 0.09)), (15, (0.02, -0.06, G + 0.08)),
+                 (18, (0.035, -0.04, G + 0.03)), (20, (0.035, -0.035, G + 0.002)), (21, (0.035, -0.035, G)),
+                 (22, (0.03, -0.035, G + 0.02)), (23, (0.03, -0.035, G)), (24, (0.03, -0.035, G + 0.02)),
+                 (25, (0.03, -0.035, G)), (27, (0.02, -0.03, G + 0.06))],
+        "armR": [(0, b["armR"]), (7, (40, 16, 10, 40)), (25, (40, 16, 10, 40))],
         "armL": [(0, b["armL"]), (7, (40, 16, 10, 40)), (26, (40, 16, 10, 40))],
-        "handR": [(0, b["handR"]), (9, (30, 0, 0)), (11, (-10, 0, 0)), (15, (30, 0, 0)), (17, (-10, 0, 0)),
-                  (22, (0, 0, 0))],
-        "handL": [(0, b["handL"]), (21, (20, 0, 0)), (24, (30, 0, 0)), (28, b["handL"])],
+        "handR": [(0, b["handR"]), (10, (35, 0, 0)), (12, (-5, 0, 0)), (14, (35, 0, 0)), (16, (-5, 0, 0)),
+                  (22, (25, 0, 0)), (26, (0, 0, 0))],
+        "handL": [(0, b["handL"]), (18, (10, 0, 0)), (21, (30, 0, 0)), (25, (30, 0, 0)), (28, b["handL"])],
         "eyes": [(0, (1, 1)), (26, (1, 1)), (29, (0.4, 0.4)), (33, (0.8, 0.8))],
         "mouth": [(0, (1,)), (26, (1,)), (30, (1.3,))],
     })
