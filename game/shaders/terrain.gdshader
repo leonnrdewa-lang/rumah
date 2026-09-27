@@ -37,8 +37,9 @@ uniform float world_size = 200.0;
 uniform float water_level = -0.3;
 uniform float shade_strength = 1.0;
 uniform float tex_saturation = 0.85;
-// linear multiplier: texture -> the target's warm yellow-green lawn (sunlit ~#c2b86c)
-uniform vec3 grass_tint = vec3(1.55, 1.18, 1.9);
+// linear multiplier: texture -> the target's warm yellow-green lawn (sunlit V ~0.75,
+// hue ~66: #b3bb62; tan patches come from the dry-grass layer)
+uniform vec3 grass_tint = vec3(1.28, 1.05, 1.6);
 // average colour of grass_tex (linear), set by world.gd; detail is scaled around it
 uniform vec3 grass_avg = vec3(0.27, 0.39, 0.065);
 // < 1 flattens the texture's fine blade noise into a smoother, painterly ground
@@ -55,9 +56,10 @@ uniform vec3 road_col : source_color = vec3(0.79, 0.69, 0.50);
 uniform vec3 dry_col : source_color = vec3(0.78, 0.73, 0.42);
 uniform vec3 mulch_col : source_color = vec3(0.45, 0.35, 0.24);
 uniform vec3 shade_tint : source_color = vec3(0.78, 0.95, 0.82);
-// macro variation: shady olive <-> sunlit yellow-green (linear multipliers)
-uniform vec3 macro_shady = vec3(0.6, 0.64, 0.6);
-uniform vec3 macro_sunny = vec3(1.16, 1.12, 0.96);
+// macro variation: shady olive <-> sunlit yellow-green (linear multipliers; a narrow
+// range, the v2 1.9x spread made open fields glare next to dull parcels)
+uniform vec3 macro_shady = vec3(0.78, 0.82, 0.76);
+uniform vec3 macro_sunny = vec3(1.0, 0.99, 0.88);
 uniform float shade_depth = 0.45;
 // contact-shade response: the baked mask is remapped so faint shade (the grass carpet)
 // barely darkens the lawn and the shade pools under the thickets

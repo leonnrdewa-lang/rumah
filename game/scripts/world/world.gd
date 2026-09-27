@@ -219,7 +219,7 @@ func _build_environment() -> void:
 	add_child(we)
 	sun = DirectionalLight3D.new()
 	sun.shadow_enabled = true
-	sun.shadow_opacity = 0.74
+	sun.shadow_opacity = 0.8
 	sun.shadow_blur = 2.2
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
 	sun.directional_shadow_max_distance = 31.0   # set per frame in _place_camera
@@ -1010,15 +1010,15 @@ func _update_daylight() -> void:
 	var night := smoothstep(17.8, 19.6, h) + (1.0 - smoothstep(4.3, 5.7, h))
 	night = clampf(night, 0.0, 1.0)
 	night_k = night
-	var dusk := clampf(1.0 - absf(h - 18.0) / 1.6, 0.0, 1.0) + clampf(1.0 - absf(h - 6.0) / 1.6, 0.0, 1.0) * 0.5
-	dusk = clampf(dusk, 0.0, 1.0)
-	var elev := lerpf(30.0, 60.0, day_k)
+	var morning := clampf(1.0 - absf(h - 6.0) / 1.6, 0.0, 1.0)
+	var dusk := clampf(clampf(1.0 - absf(h - 18.0) / 1.6, 0.0, 1.0) + morning * 0.38, 0.0, 1.0)
+	var elev := lerpf(33.0, 60.0, day_k)
 	# warm sun from the upper left of the screen: shadows fall down-right
 	sun.rotation = Vector3(deg_to_rad(-elev), deg_to_rad(-122.0 + (h - 12.0) * 2.5), 0)
 	var dusk_col := Color(1.0, 0.7, 0.45)
 	var night_col := Color(0.55, 0.62, 1.0)
 	var col := SUN_DAY.lerp(dusk_col, dusk).lerp(night_col, night)
-	var energy := lerpf(SUN_ENERGY, 0.36, night) * lerpf(0.9, 1.0, day_k)
+	var energy := lerpf(SUN_ENERGY, 0.36, night) * lerpf(0.9, 1.0, day_k) * (1.0 + 0.12 * morning)
 	var amb := AMBIENT_DAY.lerp(Color("5b6fa8"), night).lerp(Color("e0b090"), dusk * 0.4)
 	var amb_energy := lerpf(AMBIENT_ENERGY, 0.5, night)
 	if not sun.shadow_enabled:
@@ -1084,7 +1084,9 @@ func _place_camera(dist: float, pitch_deg: float) -> void:
 	var half := deg_to_rad(camera.fov * 0.5)
 	var h := sin(pitch) * dist + 1.0
 	var depth := h / sin(maxf(pitch - half, 0.2)) * cos(half)
-	sun.directional_shadow_max_distance = clampf(depth / 0.8, 20.0, 70.0)
+	var sd := clampf(depth / 0.8, 20.0, 70.0)
+	if absf(sd - sun.directional_shadow_max_distance) > 0.05:
+		sun.directional_shadow_max_distance = sd
 
 
 func _update_target() -> void:

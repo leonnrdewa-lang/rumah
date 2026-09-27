@@ -563,7 +563,8 @@ func _run() -> void:
 				elif a.begins_with("--spots="):
 					only = a.get_slice("=", 1)
 			var sets: Array = JSON.parse_string(FileAccess.get_file_as_string(path))
-			var spots := {"hero": [-17.4, 25.4], "road": [-9, 10], "kantor": [-3, 36], "field": [-30, -20], "pabrik": [49, -3]}
+			var spots := {"hero": [-17.4, 25.4], "road": [-9, 10], "kantor": [-3, 36], "field": [-30, -20], "pabrik": [49, -3],
+				"garden": [-44, 36], "parcel": [-17, 30]}
 			for st in sets:
 				_tune = st
 				for k in st.get("terrain", {}):
