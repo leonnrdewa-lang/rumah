@@ -29,6 +29,17 @@ Ten actions per character (30 fps, in place):
 Poses are authored as eased key curves (monotone cubic = auto-clamped Bezier) driving
 an FK/IK pose solver (planted feet, two-handed pole grips), with overlapping action
 (head/torso lag the hips, arms trail), then baked to Bezier keyframes on the armature.
+
+Locomotion is sized for the game's speeds: a planted foot rolls over its own (rounded) sole
+without slipping while the ground slides back at a constant speed, and walk/run strides are long
+enough that the NPC stroll (1.25 m/s) and the player's run (~5 m/s) need only ~2x playback.
+The numbers the game needs are exported as glTF extras on the armature node (Godot: the
+`extras` metadata of node `char_<name>`): walk_speed / run_speed = ground speed in m/s at 1x,
+walk_stance / run_stance = share of the cycle a foot is planted, *_stance_ankle = the same
+measured on the ankle (use it if you estimate speed from the foot bone's travel), grip_offset
+= fist centre along hand_R +Y (tool shafts run along hand_R local +Z).
+
+The .glb.import sidecars get loop flags for the looping clips (balanced, idempotent rewrite).
 """
 import math
 import os

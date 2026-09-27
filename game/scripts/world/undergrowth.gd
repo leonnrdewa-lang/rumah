@@ -2,11 +2,15 @@ class_name Undergrowth
 extends Node3D
 ## Dense small plants (ferns, keladi, shrubs, grass clumps, flowers, fallen
 ## fronds, logs, pebbles) from layout.json "undergrowth" ({model: [x, y, z,
-## rot_deg, scale, ...]}), drawn as MultiMeshes chunked on a 24 m grid so the
+## rot_deg, scale, ...]}), drawn as MultiMeshes chunked on a grid so the
 ## renderer can frustum-cull them. Instances are shuffled inside each chunk so
 ## the "Hemat baterai" quality can simply show the first half of every chunk.
-
-const CHUNK := 24.0
+##
+## Chunk size: the camera sees a ~28 x 16 m patch of ground, so 24 m chunks drew
+## ~5x more undergrowth than was on screen. Measured at the busiest spot (perf
+## autotest, Lahan Kantor): 24 m = 336 draw calls / 325k primitives, 16 m = 336 /
+## 263k, 12 m = 345 / 241k. 16 m gives the same draw calls with 20% fewer triangles.
+const CHUNK := 16.0
 ## v1 models used when a v2 asset has not been exported (model, scale factor)
 const FALLBACK := {
 	"grass_a": ["grass_tuft", 1.2], "grass_b": ["grass_tuft", 1.5], "flowers_white": ["flowers", 1.0],

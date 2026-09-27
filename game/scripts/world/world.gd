@@ -709,6 +709,7 @@ func _ensure_tent(i: int, pos: Vector3) -> void:
 	mi.position = pos
 	mi.rotation.y = randf_range(-0.4, 0.4)
 	add_child(mi)
+	mi.add_child(GroundFx.rect_blob(mi.mesh.get_aabb(), 0.6, 0.45))
 	tents.append([i, mi])
 
 

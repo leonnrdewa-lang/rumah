@@ -25,7 +25,7 @@ var _bird_timer := 5.0
 var _bird_offsets: Array[Vector3] = []
 
 var _flies: MultiMeshInstance3D
-var _fly_state: Array = []     # [base: Vector3, phase: float, speed: float]
+var _fly_state: Array = []     # [base: Vector3, phase: float, speed: float, goal: Vector3]
 var _flowers := {}             # Vector2i(8 m cell) -> PackedVector3Array
 
 var _smoke: Array[CPUParticles3D] = []
@@ -263,7 +263,7 @@ func _build_butterflies() -> void:
 	mm.instance_count = N_BUTTERFLIES
 	for i in N_BUTTERFLIES:
 		mm.set_instance_color(i, BUTTERFLY_COLORS[i % BUTTERFLY_COLORS.size()])
-		_fly_state.append([Vector3(1e6, 0, 1e6), _rng.randf() * TAU, _rng.randf_range(0.7, 1.3)])
+		_fly_state.append([Vector3(1e6, 0, 1e6), _rng.randf() * TAU, _rng.randf_range(0.7, 1.3), Vector3(1e6, 0, 1e6)])
 	_flies = MultiMeshInstance3D.new()
 	_flies.name = "Butterflies"
 	_flies.multimesh = mm
@@ -284,8 +284,13 @@ func _update_butterflies(delta: float) -> void:
 		var s: Array = _fly_state[i]
 		var base: Vector3 = s[0]
 		if Vector2(base.x - c.x, base.z - c.z).length() > 15.0:
+			# left behind (off screen): jump to a flower near the player
 			base = _flower_near(c)
-			s[0] = base
+			s[3] = base
+		else:
+			# otherwise drift over to the flower it picked
+			base = base.move_toward(s[3], delta * 1.6)
+		s[0] = base
 		var ph: float = s[1]
 		var sp: float = s[2]
 		var tt := _t * sp + ph
@@ -296,9 +301,9 @@ func _update_butterflies(delta: float) -> void:
 		var yaw := atan2(vel.x, vel.z)
 		var b := Basis(Vector3.UP, yaw).scaled(Vector3.ONE * 1.6)
 		mm.set_instance_transform(i, Transform3D(b, p))
-		# every now and then fly off to another flower
-		if _rng.randf() < delta * 0.04:
-			s[0] = _flower_near(c)
+		# every now and then fly off to another flower nearby
+		if _rng.randf() < delta * 0.05:
+			s[3] = _flower_near(base)
 
 
 # ------------------------------------------------------------------ smoke

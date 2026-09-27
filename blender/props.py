@@ -1594,6 +1594,7 @@ WEATHER = {
     "drum": dict(dirt=0.3, dirt_h=0.2, distance=0.6),
     "pagar_bambu": dict(dirt=0.45, dirt_h=0.3, distance=0.6),
     "pagar": dict(dirt=0.45, dirt_h=0.3, distance=0.6),
+    "tumpukan_tbs": dict(dirt=0.0, distance=0.3),     # fresh fruit: no dirt band, only short contact AO
 }
 # icons rendered from the finished prop
 PROP_ICONS = {
