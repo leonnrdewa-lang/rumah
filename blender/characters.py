@@ -4,10 +4,15 @@
 Run:  python3 blender/characters.py                  all 12 characters + lineup preview
       python3 blender/characters.py kakek ibu        only these (no lineup)
       python3 blender/characters.py --lineup         only the lineup preview
+      python3 blender/characters.py --check-only     build + animate + run the checks only (fast,
+                                                     no AO bake / export / renders; exit status 1
+                                                     when a check fails)
       options: --sheets        also render per-clip contact sheets (game camera + side view)
                                to blender/previews/char_<name>_<clip>.png
                --sheets=walk,harvest   only these clips
+               --views=side,back       sheet rows (game, side, back, front); --sheet-n=9 frames
                --no-out        build only (no export / renders)
+               --allow-fail    export a character even when one of its checks failed
 
 Each character is ONE smooth mesh (all parts joined) skinned to an armature with the
 contract bone names (ART_DIRECTION_V2.md):
@@ -23,7 +28,12 @@ Cloth layers around the hips (shirt over trousers / skirt over the tops of the l
 skin-weight field there (Char.hip_field), and geometry hidden under a layer is trimmed, so kneeling
 and high knees don't push one layer through another; decals take the weights of the cloth point under
 them. Every build runs automated checks and prints them (walk/run knee flare and thigh turn per frame,
-cloth layer exposure, parang clearance over the chop, fist sinking into the body).
+cloth layer exposure, parang clearance over the chop, fist sinking into the body) plus the motion
+checks (motion_checks / glb_anim_check), evaluated like the game plays the clips (per-frame keys,
+slerped): any bone turning more than 30 deg in 1/60 s in any clip, loop seams, the walk/run planted
+foot sliding more than 10% of the ground speed, the swinging foot touching the ground before the last
+10% of its swing, and the exported GLB's rotation keys (turn per 1/60 s, hemisphere flips, loop seam).
+A failed check prints "!! FAIL", the character is not exported and the run exits with status 1.
 
 Bone axes: every limb/spine bone points along its local +Y; local +Z points to the
 character's front (feet: local +Z points up). So +X rotation swings any arm/leg/spine
@@ -2269,37 +2279,33 @@ def stand_hand(rig, st, side, arm=None, hand=None):
 
 
 def clip_chop(rig, st):
-    """Parang (machete) chop with the right hand: cock it high out over the right shoulder with the
-    blade pointing up and back (clear of the head, the widest hat brims and the back), then a fast
-    swing down the right side and forward, the blade slicing forward-down at the bushes in front,
-    follow through, recover. The right arm is IK all through (fist + blade direction = hand_R
-    local +Z, where the game puts the blade, in the chest frame so the torso twist adds to the
-    swing); it starts and ends exactly on the neutral stance."""
+    """Parang (machete) chop with the right hand: swing the fist up and out beside the head, the
+    blade cocked back and up over the right shoulder (clear of the head, the widest hat brims and the
+    back), then a fast swing down the right side and forward, the blade slicing forward-down at the
+    bushes in front, follow through, recover. The blade runs along hand_R's local +Z (the thumb side
+    of the fist), where the game puts it.
+    The right arm is forward kinematics all through: every key is a set of joint angles (shoulder
+    swing / abduction / twist, elbow, wrist) and the curves between keys are eased per angle, so the
+    fist, the elbow and the blade follow continuous arcs and no bone can flip or snap between two
+    frames (an IK wind-up with a keyed blade direction and elbow pole flipped the hand ~180 deg where
+    the blade crossed the forearm's line, and whipped the elbow round where the pole passed the
+    shoulder-wrist axis). The wind-up is designed out to the side (elbow at shoulder height, forearm
+    up, blade back), so the strike only has to turn the upper arm ~70 deg in its 3 frames."""
     N = 24
     b = stand(st)
-    d = rig.c.d
     hc, hh = b["chest"][0], b["head"][0]
-    k = (d["l_up"] + d["l_fore"]) / (DEF["l_up"] + DEF["l_fore"])
-    shR = Vector((-d["sh_x"], 0.0, d["sh_z"]))
-    f0, g0, p0 = stand_hand(rig, st, -1)
-    fk = {f: stand_hand(rig, st, -1, arm, hand) for f, arm, hand in
-          ((12, (72, 6, 18, 22), (-42, 0, 0)), (14, (64, -16, 24, 26), (-52, 0, 0)), (18, (30, 8, 10, 36), (-10, 0, 0)))}
-
-    def fist(x, y, z):      # offset from the right shoulder (x < 0 = outward), scaled by arm length
-        return tuple(shR + Vector((x, y, z)) * k)
     tr = one_shot(N, b, {
-        # IK all through the swing: the wind-up poses are designed as fist + blade direction, the
-        # strike and follow-through are the fist / blade of keyed FK arm poses
-        "iksp": [(0, (1,)), (24, (1,))], "iksoft": [(0, (0.985,)), (24, (0.985,))],
-        "ikR": [(0, (0,)), (3, (1,)), (19, (1,)), (23, (0,))], "gripwR": [(0, (0,)), (3, (1,)), (19, (1,)), (23, (0,))],
-        # (the fist leaves and comes back out to the side, clear of hip bags and sashes)
-        "iktR": [(0, f0), (2, fist(-0.1, -0.03, -0.12)), (3, fist(-0.11, -0.02, 0.0)), (6, fist(-0.135, 0.02, 0.085)),
-                 (9, fist(-0.135, 0.035, 0.095)), (11, fist(-0.1, -0.1, 0.02))] + [(f, fk[f][0]) for f in (12, 14, 18)] +
-                [(20, fist(-0.09, -0.07, -0.17)), (22, f0)],
-        "gripR": [(0, g0), (3, (-0.75, -0.35, 0.55)), (6, (-0.68, 0.42, 0.6)), (9, (-0.64, 0.52, 0.56)),
-                  (11, (-0.68, -0.22, 0.7))] + [(f, fk[f][1]) for f in (12, 14, 18)] + [(22, g0)],
-        "ikpR": [(0, p0), (4, (-0.6, -0.2, -0.8)), (9, (-0.6, -0.1, -0.8))] + [(f, fk[f][2]) for f in (12, 14, 18)] +
-                [(22, p0)],
+        # (swing forward, abduction, twist, elbow) / wrist (flex, roll, deviation). Lift: the arm rises
+        # out to the side while the wrist rolls the blade round to point out and back (under the
+        # widest hat brims); cock: elbow out at shoulder height, forearm up, fist beside the head,
+        # blade back and a little down over the shoulder, clear of the back; strike (3 frames): the
+        # arm swings down and forward while the wrist unrolls, the blade sweeping round the outside
+        # to point straight ahead at the fist's belly height; cut through, forward and out (clear
+        # of round bellies); recover to the stance.
+        "armR": [(0, b["armR"]), (4, (20, 45, -35, 55)), (6, (37, 74, -63, 84)), (9, (38, 76, -64, 87)),
+                 (12, (40, 10, 10, 22)), (14, (40, 20, 0, 18)), (18, (26, 18, 4, 26))],
+        "handR": [(0, b["handR"]), (4, (30, -95, -5)), (6, (16, -104, -5)), (9, (2, -96, -1)),
+                  (12, (-50, -14, 0)), (14, (-62, 0, 0)), (18, (-35, 0, 0))],
         "armL": [(0, b["armL"]), (6, (12, 30, 6, 42)), (9, (14, 32, 6, 44)), (12, (-6, 26, 6, 30)),
                  (15, (-4, 24, 6, 28)), (20, (4, 14, 6, 22))],
         "hips_off": [(0, b["hips_off"]), (6, (-0.01, 0.006, -0.012)), (9, (-0.011, 0.007, -0.014)),
@@ -2883,8 +2889,10 @@ def motion_checks(c, st, rig, body, acts):
               f"{r['stance_h'] * 1000:.1f} mm), swing lift min {r['lift'] * 1000:.0f} mm "
               f"(w {SWING_EARLY}..{SWING_LATE}), down at {100 * r['down']:.0f}% of swing, "
               f"ankle in stance band {100 * r['band']:.0f}% of mid-swing")
-        if r["slide"] > SLIDE_MAX:
-            fail(name, f"{kind}: planted foot slides {100 * r['slide']:.0f}% of the ground speed (max {100 * SLIDE_MAX:.0f}%)")
+        if r["slide"] > SLIDE_MAX or r["slide_p90"] > 2 * SLIDE_MAX:
+            fail(name, f"{kind}: planted foot slides {100 * r['slide']:.0f}% of the ground speed on average, "
+                       f"{100 * r['slide_p90']:.0f}% at the 90th percentile (max {100 * SLIDE_MAX:.0f}% / "
+                       f"{200 * SLIDE_MAX:.0f}%)")
         if r["lift"] < CLEAR:
             fail(name, f"{kind}: swinging foot touches the ground at {100 * r['down']:.0f}% of its swing "
                        f"(lowest {r['lift'] * 1000:.0f} mm before {100 * SWING_LATE:.0f}%)")
@@ -3559,9 +3567,12 @@ def attach_proxy(c, rig, clip):
     return out
 
 
-def render_sheet(c, rig, body, acts, clip, path, n=8):
-    """Contact sheet: n evenly spaced frames of one clip, from the game camera (45 deg pitch, 3/4)
-    on the top row and from the character's right side on the bottom row."""
+SHEET_VIEWS = {"game": (25.0, 45.0), "side": (90.0, 4.0), "back": (180.0, 8.0), "front": (0.0, 8.0)}   # yaw, pitch
+
+
+def render_sheet(c, rig, body, acts, clip, path, n=8, views=("game", "side")):
+    """Contact sheet: n evenly spaced frames of one clip, one row per view: the game camera (45 deg
+    pitch, 3/4), the character's right side, its back or its front (SHEET_VIEWS)."""
     from PIL import Image, ImageDraw
     act = acts[clip]
     N = int(act.frame_range[1])
@@ -3570,12 +3581,12 @@ def render_sheet(c, rig, body, acts, clip, path, n=8):
     rows = []
     body.hide_render = False
     tools = attach_proxy(c, rig, clip)
-    for view in ("game", "side"):
+    for view in views:
         snaps = []
         for i, f in enumerate(frames):
             set_frame(rig, act, f)
             x = (i - (n - 1) / 2) * cell
-            yaw = 25.0 if view == "game" else 90.0
+            yaw = SHEET_VIEWS[view][0]
             snaps.append(snapshot(body, "snap%d" % i, (x, 0, 0), yaw))
             for j, t in enumerate(tools):
                 tw = t.matrix_world.copy()
@@ -3587,10 +3598,8 @@ def render_sheet(c, rig, body, acts, clip, path, n=8):
             t.hide_render = True
         tmp = _scene_setup(n * 150, 300, samples=12)
         H = 1.25 * c.S * (1.25 if c.name == "preman" else 1.0)
-        if view == "game":
-            cam = _camera((0, 0, H * 0.42), 45.0, 0.0, 14, ortho=n * cell)
-        else:
-            cam = _camera((0, 0, H * 0.5), 4.0, 0.0, 14, ortho=n * cell)
+        pitch = SHEET_VIEWS[view][1]
+        cam = _camera((0, 0, H * (0.42 if pitch > 20 else 0.5)), pitch, 0.0, 14, ortho=n * cell)
         tmp.append(cam)
         out = path.replace(".png", "_%s.png" % view)
         bpy.context.scene.render.filepath = out
@@ -3602,7 +3611,8 @@ def render_sheet(c, rig, body, acts, clip, path, n=8):
     ims = [Image.open(p).convert("RGB") for p in rows]
     sheet = Image.new("RGB", (ims[0].width, sum(i.height for i in ims) + 18), (40, 40, 40))
     dr = ImageDraw.Draw(sheet)
-    dr.text((6, 3), "%s / %s  (%d frames @30fps)  frames: %s" % (c.name, clip, N, frames), fill=(255, 255, 255))
+    dr.text((6, 3), "%s / %s  (%d frames @30fps)  frames: %s  rows: %s" % (c.name, clip, N, frames, ", ".join(views)),
+            fill=(255, 255, 255))
     y = 18
     for im in ims:
         sheet.paste(im, (0, y))
@@ -3760,7 +3770,7 @@ def mesh_bounds(ob):
             Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts))))
 
 
-def build_one(name, out=True, sheets=None, bake=True, allow_fail=False):
+def build_one(name, out=True, sheets=None, bake=True, allow_fail=False, views=("game", "side"), sheet_n=8):
     """Build, animate, check and (out=True) export one character. bake=False skips the AO bake (fast
     check-only runs). A character failing a check is not exported unless allow_fail."""
     nfail = len(FAILS)
@@ -3812,7 +3822,8 @@ def build_one(name, out=True, sheets=None, bake=True, allow_fail=False):
     if sheets:
         preview_materials(True)
         for clip in sheets:
-            render_sheet(c, rig, body, acts, clip, os.path.join(PREVIEW_DIR, "char_%s_%s.png" % (name, clip)))
+            render_sheet(c, rig, body, acts, clip, os.path.join(PREVIEW_DIR, "char_%s_%s.png" % (name, clip)),
+                         n=sheet_n, views=views)
     return c, rig, body, info
 
 
@@ -3839,24 +3850,31 @@ def lineup(names):
 
 
 def main(argv):
-    """python3 blender/characters.py [names...] [--sheets[=clip,..]] [--no-out] [--lineup]
-    [--check-only] [--allow-fail]. --check-only = no AO bake, no export, no renders: just build,
-    animate and run the checks (fast). Exit status 1 when any check failed."""
+    """python3 blender/characters.py [names...] [--sheets[=clip,..]] [--views=game,side,back,front]
+    [--sheet-n=8] [--no-out] [--lineup] [--check-only] [--allow-fail]. --check-only = no AO bake, no
+    export, no renders: just build, animate and run the checks (fast). Exit status 1 when any check
+    failed (a failing character is not exported unless --allow-fail)."""
     names = [a for a in argv if not a.startswith("--")]
     only_lineup = "--lineup" in argv
     check_only = "--check-only" in argv
     no_out = "--no-out" in argv or check_only
     allow_fail = "--allow-fail" in argv
     sheets = None
+    views, sheet_n = ("game", "side"), 8
     for a in argv:
         if a.startswith("--sheets"):
             sheets = a.split("=", 1)[1].split(",") if "=" in a else list(CLIPS)
+        if a.startswith("--views="):
+            views = tuple(a.split("=", 1)[1].split(","))
+        if a.startswith("--sheet-n="):
+            sheet_n = int(a.split("=", 1)[1])
     order = list(BUILDERS)
     todo = names or ([] if only_lineup else order)
     infos = []
     for n in todo:
         reset_scene()
-        _, _, _, info = build_one(n, out=not no_out, sheets=sheets, bake=not check_only, allow_fail=allow_fail)
+        _, _, _, info = build_one(n, out=not no_out, sheets=sheets, bake=not check_only, allow_fail=allow_fail,
+                                  views=views, sheet_n=sheet_n)
         infos.append(info)
     if (not names or only_lineup) and not no_out and not FAILS:
         lineup(order)
