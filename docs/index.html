@@ -137,8 +137,8 @@
 <script src="index.js"></script>
 <script>
 (function () {
-  const GODOT_CONFIG = {"args": [], "canvasResizePolicy": 2, "emscriptenPoolSize": 8, "ensureCrossOriginIsolationHeaders": true, "executable": "index", "experimentalVK": false, "fileSizes": {"index.pck": 15570672, "index.wasm": 38034280}, "focusCanvas": true, "gdextensionLibs": [], "godotPoolSize": 4};
-  const PACKED = {"index.wasm": {"src": "index.wasm.gz", "size": 9237412, "b64": false}, "index.pck": {"src": "index.pck.gz", "size": 11752018, "b64": false}};  // file -> {src, size, b64}
+  const GODOT_CONFIG = {"args": [], "canvasResizePolicy": 2, "emscriptenPoolSize": 8, "ensureCrossOriginIsolationHeaders": true, "executable": "index", "experimentalVK": false, "fileSizes": {"index.pck": 20754392, "index.wasm": 38034280}, "focusCanvas": true, "gdextensionLibs": [], "godotPoolSize": 4};
+  const PACKED = {"index.wasm": {"src": "index.wasm.gz", "size": 9237412, "b64": false}, "index.pck": {"src": "index.pck.gz", "size": 16480190, "b64": false}};  // file -> {src, size, b64}
 
   const fill = document.getElementById("fill");
   const status = document.getElementById("status");
@@ -160,17 +160,21 @@
   }
 
   async function download(name, info) {
-    const res = await nativeFetch(info.src);
-    if (!res.ok) throw new Error("Gagal mengunduh " + info.src + " (" + res.status + ")");
-    const reader = res.body.getReader();
+    // src is one file, or a list of parts (big packs are split for the host) joined in order
+    const parts = Array.isArray(info.src) ? info.src : [info.src];
     const chunks = [];
     got[name] = 0;
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      chunks.push(value);
-      got[name] += value.length;
-      showProgress();
+    for (const src of parts) {
+      const res = await nativeFetch(src);
+      if (!res.ok) throw new Error("Gagal mengunduh " + src + " (" + res.status + ")");
+      const reader = res.body.getReader();
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        got[name] += value.length;
+        showProgress();
+      }
     }
     got[name] = info.size;
     showProgress();

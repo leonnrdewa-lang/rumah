@@ -7,6 +7,8 @@ extends Node
 ## It only reads the scene tree; nothing is registered outside the web build.
 
 var _cb: JavaScriptObject
+var _cb_audio: JavaScriptObject
+var _cb_talk: JavaScriptObject
 var _dpr := 1.0
 
 
@@ -17,10 +19,72 @@ func _ready() -> void:
 	var win := JavaScriptBridge.get_interface("window")
 	if win:
 		win.sawitProbe = _cb
+		# window.sawitAudio() -> window.sawitAudioState: JSON {bus: [playing stream names]}
+		_cb_audio = JavaScriptBridge.create_callback(_audio)
+		win.sawitAudio = _cb_audio
+		# window.sawitTalk() opens a talk dialog with the first land-owning villager
+		_cb_talk = JavaScriptBridge.create_callback(_talk)
+		win.sawitTalk = _cb_talk
 
 
 func _exit_tree() -> void:
 	_cb = null
+	_cb_audio = null
+	_cb_talk = null
+
+
+func _audio(_args: Array) -> void:
+	var st := {}
+	_collect_audio(get_tree().root, st)
+	st["voice_stats"] = Voice.stats
+	var win := JavaScriptBridge.get_interface("window")
+	if win:
+		win.sawitAudioState = JSON.stringify(st)
+
+
+func _collect_audio(n: Node, st: Dictionary) -> void:
+	var playing := false
+	var bus := ""
+	var sname := ""
+	if n is AudioStreamPlayer:
+		playing = (n as AudioStreamPlayer).playing
+		bus = str((n as AudioStreamPlayer).bus)
+		sname = (n as AudioStreamPlayer).stream.resource_path.get_file() if (n as AudioStreamPlayer).stream else ""
+	elif n is AudioStreamPlayer3D:
+		playing = (n as AudioStreamPlayer3D).playing
+		bus = str((n as AudioStreamPlayer3D).bus)
+		sname = (n as AudioStreamPlayer3D).stream.resource_path.get_file() if (n as AudioStreamPlayer3D).stream else ""
+	if playing:
+		if not st.has(bus):
+			st[bus] = []
+		st[bus].append(sname if sname != "" else str(n.name))
+	for c in n.get_children():
+		_collect_audio(c, st)
+
+
+func _talk(_args: Array) -> void:
+	var w := _find_world(get_tree().root)
+	var win := JavaScriptBridge.get_interface("window")
+	if w == null or w.get("deals") == null:
+		if win:
+			win.sawitTalked = ""
+		return
+	for vid in GS.villagers:
+		if w.npcs.has(vid):
+			w.deals.talk(vid)
+			if win:
+				win.sawitTalked = str(vid)
+			return
+
+
+func _find_world(n: Node) -> Node:
+	if n.has_method("try_action") and n.has_method("start_game"):
+		return n
+	for c in n.get_children():
+		var r := _find_world(c)
+		if r:
+			return r
+	return null
 
 
 func _probe(_args: Array) -> void:

@@ -67,6 +67,42 @@ async function skipIntro(page, name, touch, lanjutAt, siapAt) {
   return false;
 }
 
+async function audioState(page) {
+  return page.evaluate(() => {
+    if (typeof window.sawitAudio !== "function") return null;
+    window.sawitAudio();
+    try { return JSON.parse(window.sawitAudioState || "{}"); } catch (e) { return {}; }
+  });
+}
+
+// Desktop only: music + ambience play, the voice index is loaded, and talking to a
+// villager fetches that villager's voice bank and plays a line on the Voice bus.
+async function checkAudio(page) {
+  const st = await audioState(page);
+  if (!st) { console.log("desktop: FAIL - no sawitAudio probe"); failures++; return; }
+  console.log(`desktop: audio playing ${JSON.stringify(st)}`);
+  for (const bus of ["Music", "Ambience"]) {
+    if (!(st[bus] || []).length) { console.log(`desktop: FAIL - nothing playing on ${bus}`); failures++; }
+  }
+  const banks = [];
+  const onResp = (r) => { if (r.url().includes("/voices/")) banks.push(r.url().split("/voices/")[1]); };
+  page.on("response", onResp);
+  const vid = await page.evaluate(() => { window.sawitTalk(); return window.sawitTalked || ""; });
+  console.log(`desktop: talking to ${vid || "(nobody)"}`);
+  let voiced = false;
+  for (let i = 0; i < 20 && !voiced; i++) {
+    await page.waitForTimeout(500);
+    const s = await audioState(page);
+    voiced = !!(s && (s.Voice || []).length);
+  }
+  await page.screenshot({ path: `${out}/web_desktop_talk.png` });
+  console.log(`desktop: audio after talk ${JSON.stringify(await audioState(page))}`);
+  page.off("response", onResp);
+  console.log(`desktop: banks fetched while talking: ${banks.join(", ") || "none (cached)"}; voice playing: ${voiced}`);
+  if (!vid) { console.log("desktop: FAIL - could not open a talk dialog"); failures++; }
+  if (!voiced) { console.log("desktop: FAIL - villager line did not play on the Voice bus"); failures++; }
+}
+
 async function run(name, contextOpts, steps) {
   const browser = await chromium.launch({
     args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist", "--autoplay-policy=no-user-gesture-required"],
@@ -78,6 +114,8 @@ async function run(name, contextOpts, steps) {
   page.on("pageerror", (e) => logs.push(`[pageerror] ${e.message}`));
   // voice acting banks are fetched from voices/ on demand (voice.gd)
   const voices = [];
+  const bad = [];
+  page.on("response", (r) => { if (r.status() >= 400) bad.push(`${r.status()} ${r.url()}`); });
   page.on("response", (r) => { if (r.url().includes("/voices/")) voices.push(`${r.status()} ${r.url().split("/voices/")[1]}`); });
   const t0 = Date.now();
   await page.goto(url, { waitUntil: "load" });
@@ -94,6 +132,7 @@ async function run(name, contextOpts, steps) {
     console.log(`${name}: FAIL - the intro phone call's voice bank (voices/hq.ogg) was not loaded`);
     failures++;
   }
+  if (bad.length) { console.log(`${name}: FAIL - HTTP errors: ${bad.join(", ")}`); failures++; }
   const errs = logs.filter((l) => /\[(error|pageerror)\]/.test(l));
   if (errs.length) console.log(`${name}: ${errs.length} console errors`);
   console.log(logs.filter((l) => !l.includes("[verbose]")).slice(-25).join("\n"));
@@ -116,6 +155,7 @@ async function run(name, contextOpts, steps) {
     await page.keyboard.up("KeyA");
     await page.waitForTimeout(1000);
     await page.screenshot({ path: `${out}/web_desktop_walk.png` });
+    await checkAudio(page);
   });
   const phone = devices["Pixel 7"];
   await run("android", { ...phone, viewport: { width: 915, height: 412 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true }, async (page) => {
