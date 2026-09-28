@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cdb4qdanqoe16"
-path="res://.godot/imported/ikan_bawal.png-616ec1a13f76001bfa1cd3286520ce45.ctex"
+uid="uid://clbdkunf1v7fk"
+path="res://.godot/imported/ikan_raja_sawit.png-9ca0d406017993419c619c1206207157.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/ikan_bawal.png"
-dest_files=["res://.godot/imported/ikan_bawal.png-616ec1a13f76001bfa1cd3286520ce45.ctex"]
+source_file="res://assets/icons/ikan_raja_sawit.png"
+dest_files=["res://.godot/imported/ikan_raja_sawit.png-9ca0d406017993419c619c1206207157.ctex"]
 
 [params]
 

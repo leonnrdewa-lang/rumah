@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://da2udx2pap6c2"
-path="res://.godot/imported/ikan_teri.png-581339ca022a4b3296cd9242c01f161e.ctex"
+uid="uid://dlvnbsek756ar"
+path="res://.godot/imported/ikan_hiu.png-db9c320666bfc8ee6972164192200dd5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/ikan_teri.png"
-dest_files=["res://.godot/imported/ikan_teri.png-581339ca022a4b3296cd9242c01f161e.ctex"]
+source_file="res://assets/icons/ikan_hiu.png"
+dest_files=["res://.godot/imported/ikan_hiu.png-db9c320666bfc8ee6972164192200dd5.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

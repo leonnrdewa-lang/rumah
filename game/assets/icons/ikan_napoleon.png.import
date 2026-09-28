@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bkr82eitexuym"
-path="res://.godot/imported/lele_sawit.png-3e1efec1b645e2ffe6241cbabd8dac1c.ctex"
+uid="uid://8mjo8v1q6cxa"
+path="res://.godot/imported/ikan_napoleon.png-0ca287bc095b56c023e90d978dc8ecf3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/lele_sawit.png"
-dest_files=["res://.godot/imported/lele_sawit.png-3e1efec1b645e2ffe6241cbabd8dac1c.ctex"]
+source_file="res://assets/icons/ikan_napoleon.png"
+dest_files=["res://.godot/imported/ikan_napoleon.png-0ca287bc095b56c023e90d978dc8ecf3.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

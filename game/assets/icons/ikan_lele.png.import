@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/ikan_lele.png-7825a40ea3b4ddc5c5e33c2b3a84475
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -2,22 +2,22 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cyr3f2sgk614k"
-path="res://.godot/imported/ikan_kembung.png-2bff13f33ed24875b973485c24e4e244.ctex"
+uid="uid://qfvki3utw4op"
+path="res://.godot/imported/anak.png-ee2cad9826cbe13989e819861574c3a9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/ikan_kembung.png"
-dest_files=["res://.godot/imported/ikan_kembung.png-2bff13f33ed24875b973485c24e4e244.ctex"]
+source_file="res://assets/portraits/anak.png"
+dest_files=["res://.godot/imported/anak.png-ee2cad9826cbe13989e819861574c3a9.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
-compress/lossy_quality=0.7
+compress/lossy_quality=0.85
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1

@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/udang_galah.png-a81e85e12a2e0d2cf0b6cde0f7f10
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

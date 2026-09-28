@@ -2,22 +2,22 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cquh2u5yk7utk"
-path="res://.godot/imported/ikan_sepat.png-bb03c85895b75d94cb4d9773a912ce75.ctex"
+uid="uid://dlyts1lmulk6q"
+path="res://.godot/imported/pemuda.png-9e6469941aef0d69b06701baf8da4ad7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/ikan_sepat.png"
-dest_files=["res://.godot/imported/ikan_sepat.png-bb03c85895b75d94cb4d9773a912ce75.ctex"]
+source_file="res://assets/portraits/pemuda.png"
+dest_files=["res://.godot/imported/pemuda.png-9e6469941aef0d69b06701baf8da4ad7.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
-compress/lossy_quality=0.7
+compress/lossy_quality=0.85
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1

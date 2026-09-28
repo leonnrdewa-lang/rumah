@@ -1123,8 +1123,8 @@ func _logic_fish_and_rooms() -> void:
 	var hits := {"N": 0, "R": 0, "SR": 0, "SSR": 0}
 	GS.rng.seed = 42
 	for i in 6000:
-		hits[GS.fish_rarity(GS.roll_fish("river", 18.5))] += 1
-	print("rarity hits (river 18:30, 6000 rolls): ", hits)
+		hits[GS.fish_rarity(GS.roll_fish("sea", 18.5))] += 1
+	print("rarity hits (sea 18:30, 6000 rolls): ", hits)
 	check(hits["N"] > hits["R"] and hits["R"] > hits["SR"] and hits["SR"] > hits["SSR"] and hits["SSR"] > 0, "rarity weights N > R > SR > SSR > 0")
 	check(float(hits["SSR"]) / 6000.0 < 0.03, "SSR stays rare")
 	var price_ok := true
@@ -1139,15 +1139,15 @@ func _logic_fish_and_rooms() -> void:
 				hard_ok = false
 	check(price_ok, "every rarer tier sells for more")
 	check(hard_ok, "SR / SSR are harder than lower tiers")
-	check("ikan_berdasi" in GS.fish_available("river", 23.5) and not "ikan_berdasi" in GS.fish_available("river", 12.0), "Ikan Mas Berdasi only at midnight")
+	check("ikan_raja_sawit" in GS.fish_available("river", 23.5) and not "ikan_raja_sawit" in GS.fish_available("river", 12.0), "Ikan Raja Sawit only at midnight")
 	# a forced SSR catch through the minigame
 	var br: Array = world.bridges[0]
 	find_fish_spot(Vector3(br[0], 0, br[1]), "river", 30.0)
-	world.fishing.force_fish = "ikan_berdasi"
-	var before := int(GS.fish_log.get("ikan_berdasi", 0))
+	world.fishing.force_fish = "ikan_raja_sawit"
+	var before := int(GS.fish_log.get("ikan_raja_sawit", 0))
 	var res: String = await _fish_once(true)
-	check(res == "caught:ikan_berdasi", "forced SSR catch (%s)" % res)
-	check(int(GS.fish_log.get("ikan_berdasi", 0)) == before + 1, "collection logs the catch")
+	check(res == "caught:ikan_raja_sawit", "forced SSR catch (%s)" % res)
+	check(int(GS.fish_log.get("ikan_raja_sawit", 0)) == before + 1, "collection logs the catch")
 	check(ui.root.get_node_or_null("CatchCard") != null and ui.root.get_node("CatchCard").find_child("Rarity_SSR", true, false) != null, "catch card with SSR badge")
 	# --- the collection panel
 	ui.show_bag()
@@ -1157,9 +1157,9 @@ func _logic_fish_and_rooms() -> void:
 	await get_tree().process_frame
 	check(ui.is_fish_collection_open(), "collection opens from the bag")
 	check(ui.modal.find_children("dex_*", "Button", true, false).size() == 20, "collection shows 20 species")
-	ui.show_fish_collection("ikan_toman")
+	ui.show_fish_collection("ikan_napoleon")
 	await get_tree().process_frame
-	check(ui.is_fish_collection_open() and ui.modal.get_meta("dex_select") == "ikan_toman", "collection selection")
+	check(ui.is_fish_collection_open() and ui.modal.get_meta("dex_select") == "ikan_napoleon", "collection selection")
 	ui.close()
 	var n_sp: int = GS.fish_caught_species()
 	GS.save_game()
@@ -1301,7 +1301,7 @@ func _features_shots() -> void:
 	GS.hour = 23.0
 	find_fish_spot(j, "sea")
 	fi.fast = true
-	fi.force_fish = "ikan_berdasi"
+	fi.force_fish = "ikan_raja_sawit"
 	world.start_fishing()
 	var tw := 0.0
 	while fi.phase != "bite" and tw < 4.0:
@@ -1313,13 +1313,13 @@ func _features_shots() -> void:
 	await wait(0.5)
 	await shot("fish_catch_ssr", 2)
 	GS.hour = 9.0
-	for id in ["ikan_nila", "ikan_toman", "ikan_patin", "lele_sawit", "ikan_kembung"]:
+	for id in ["ikan_nila", "ikan_napoleon", "ikan_patin", "ikan_todak", "ikan_bandeng"]:
 		GS.catch_fish(id)
 	await wait(3.5)
-	world.ui.show_bag("ikan_berdasi")
+	world.ui.show_bag("ikan_raja_sawit")
 	await shot("bag_rarity", 20)
 	world.ui.close()
-	world.ui.show_fish_collection("ikan_berdasi")
+	world.ui.show_fish_collection("ikan_raja_sawit")
 	await shot("fish_collection", 20)
 	world.ui.show_fish_collection("ikan_kerapu")
 	await shot("fish_collection_unknown", 10)

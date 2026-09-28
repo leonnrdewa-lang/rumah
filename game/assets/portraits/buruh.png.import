@@ -2,22 +2,22 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cdb4qdanqoe16"
-path="res://.godot/imported/ikan_bawal.png-616ec1a13f76001bfa1cd3286520ce45.ctex"
+uid="uid://b2yb3jyak6jp1"
+path="res://.godot/imported/buruh.png-764aaff3cf22f26c08db68165893b15f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/ikan_bawal.png"
-dest_files=["res://.godot/imported/ikan_bawal.png-616ec1a13f76001bfa1cd3286520ce45.ctex"]
+source_file="res://assets/portraits/buruh.png"
+dest_files=["res://.godot/imported/buruh.png-764aaff3cf22f26c08db68165893b15f.ctex"]
 
 [params]
 
 compress/mode=1
 compress/high_quality=false
-compress/lossy_quality=0.7
+compress/lossy_quality=0.85
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1

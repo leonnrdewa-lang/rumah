@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cdb4qdanqoe16"
-path="res://.godot/imported/ikan_bawal.png-616ec1a13f76001bfa1cd3286520ce45.ctex"
+uid="uid://tu4dyebibgxw"
+path="res://.godot/imported/ikan_bandeng.png-9e71d97162f0313c345e9004af46afcd.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/ikan_bawal.png"
-dest_files=["res://.godot/imported/ikan_bawal.png-616ec1a13f76001bfa1cd3286520ce45.ctex"]
+source_file="res://assets/icons/ikan_bandeng.png"
+dest_files=["res://.godot/imported/ikan_bandeng.png-9e71d97162f0313c345e9004af46afcd.ctex"]
 
 [params]
 

@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://djqt6q4m7fvd4"
-path="res://.godot/imported/ikan_baung.png-9a5ac542804ee59ee36e009691192377.ctex"
+uid="uid://diei4amm1mjd5"
+path="res://.godot/imported/ikan_todak.png-4ce706fca69102166cf0f97ef1d04270.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/ikan_baung.png"
-dest_files=["res://.godot/imported/ikan_baung.png-9a5ac542804ee59ee36e009691192377.ctex"]
+source_file="res://assets/icons/ikan_todak.png"
+dest_files=["res://.godot/imported/ikan_todak.png-4ce706fca69102166cf0f97ef1d04270.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

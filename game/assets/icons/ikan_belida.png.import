@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/ikan_belida.png-7643fb8355637f00124b818984da6
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
