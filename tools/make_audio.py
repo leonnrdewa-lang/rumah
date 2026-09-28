@@ -1,5 +1,8 @@
 """Synthesises the game's sound effects, a looping island tune and a beach
 ambience with numpy, written as 16-bit mono WAV into game/assets/audio/.
+The two long loops (music, ambient) are written as Ogg Vorbis instead (needs
+`pip install soundfile`): as QOA-compressed WAV they cost ~500 KB of the web
+download, as Vorbis ~240 KB.
 
 python3 tools/make_audio.py
 """
@@ -56,10 +59,22 @@ def pad(x, sec_before):
     return np.concatenate([np.zeros(int(SR * sec_before)), x])
 
 
-def save(name, y, peak=0.8):
+def save(name, y, peak=0.8, vorbis=None):
+    """vorbis: soundfile compression level (0 = best quality, 1 = smallest) to write
+    <name>.ogg instead of <name>.wav."""
     y = np.asarray(y, dtype=np.float64)
     m = np.max(np.abs(y)) or 1.0
     y = y / m * peak
+    if vorbis is not None:
+        import soundfile
+        soundfile.write(os.path.join(OUT, name + ".ogg"), y, SR, format="OGG", subtype="VORBIS",
+                        compression_level=vorbis)
+        stale = os.path.join(OUT, name + ".wav")
+        for f in (stale, stale + ".import"):
+            if os.path.exists(f):
+                os.remove(f)
+        print(name, f"{len(y) / SR:.2f}s (ogg)")
+        return
     data = (y * 32767).astype(np.int16)
     with wave.open(os.path.join(OUT, name + ".wav"), "wb") as w:
         w.setnchannels(1)
@@ -144,7 +159,7 @@ for bar in range(bars):
     for k in range(8):
         s = lowpass(noise(0.05), 0.7) * env(int(SR * 0.05), 0.001, 0.012) * (0.07 if k % 2 else 0.04)
         place(music, s, t0 + k * beat * 0.5)
-save("music", music, 0.55)
+save("music", music, 0.55, vorbis=0.45)
 
 # ---------------------------------------------------------------- ambience: waves + birds
 amb_sec = 16.0
@@ -161,4 +176,4 @@ for i in range(7):
         ct = t_axis(0.09)
         chirp = np.sin(2 * np.pi * (f0 + 2500 * ct) * ct) * env(len(ct), 0.005, 0.03)
         place(amb, chirp * 0.05, at + k * 0.13)
-save("ambient", amb, 0.5)
+save("ambient", amb, 0.5, vorbis=0.6)

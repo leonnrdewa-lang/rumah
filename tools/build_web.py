@@ -7,7 +7,16 @@
 Large binaries (index.wasm, index.pck) are gzip-compressed; the page inflates them
 in the browser with DecompressionStream, so any static host works.
 
-python3 tools/build_web.py [--skip-export]
+python3 tools/build_web.py [--skip-export] [--game=DIR] [--out=DIR] [--only=pages|artifact]
+
+  --game=DIR   export this copy of the project instead of game/ (e.g. a test copy)
+  --out=DIR    write build/, dist/artifact/ and docs/ under DIR instead of the repo
+               (test builds then do not touch the committed docs/)
+  --only=X     package only one target
+
+Note: docs/index.pck.gz and docs/index.wasm.gz are committed for GitHub Pages, so
+every committed rebuild adds their full size (~10 + 9 MB) to the git history.
+Commit docs/ only for releases, and use --out for test builds.
 """
 import base64
 import gzip
@@ -19,10 +28,22 @@ import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-GAME = os.path.join(ROOT, "game")
-BUILD = os.path.join(ROOT, "build", "web")
+
+
+def _arg(name, default):
+    for a in sys.argv[1:]:
+        if a.startswith("--" + name + "="):
+            return os.path.abspath(a.split("=", 1)[1]) if name != "only" else a.split("=", 1)[1]
+    return default
+
+
+GAME = _arg("game", os.path.join(ROOT, "game"))
+OUT = _arg("out", ROOT)
+BUILD = os.path.join(OUT, "build", "web")
 SHELL = os.path.join(ROOT, "web", "shell.html")
-TARGETS = {"artifact": os.path.join(ROOT, "dist", "artifact"), "pages": os.path.join(ROOT, "docs")}
+TARGETS = {"artifact": os.path.join(OUT, "dist", "artifact"), "pages": os.path.join(OUT, "docs")}
+if _arg("only", ""):
+    TARGETS = {k: v for k, v in TARGETS.items() if k == _arg("only", "")}
 GODOT = os.environ.get("GODOT", "godot")
 COPY = ["index.js", "index.audio.worklet.js", "index.audio.position.worklet.js"]
 GZIP = ["index.wasm", "index.pck"]
@@ -55,6 +76,7 @@ def godot_config():
 def package():
     cfg = godot_config()
     shell = open(SHELL, encoding="utf-8").read()
+    total = {}
     for name, out in TARGETS.items():
         if os.path.isdir(out):
             shutil.rmtree(out)
@@ -91,6 +113,9 @@ def package():
         open(os.path.join(out, "index.html"), "w", encoding="utf-8").write(page)
         sizes = {f: os.path.getsize(os.path.join(out, f)) for f in os.listdir(out)}
         print(name, {k: f"{v / 1e6:.2f}MB" for k, v in sorted(sizes.items())})
+        total[name] = sum(sizes.values())
+    for name, t in total.items():
+        print(f"{name}: {t / 1e6:.2f} MB to download ({TARGETS[name]})")
 
 
 if __name__ == "__main__":

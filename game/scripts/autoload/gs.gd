@@ -92,6 +92,9 @@ func _ready() -> void:
 	rng.randomize()
 	new_game()
 	game_active = false
+	if OS.has_feature("web"):
+		# lets tools/web_test.js find buttons on the canvas by label
+		add_child(preload("res://scripts/debug/web_probe.gd").new())
 
 
 # ------------------------------------------------------------------ setup

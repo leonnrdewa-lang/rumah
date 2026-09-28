@@ -29,10 +29,21 @@ func _ready() -> void:
 	_ambient = AudioStreamPlayer.new()
 	_ambient.volume_db = -14.0
 	add_child(_ambient)
-	if ResourceLoader.exists("res://assets/audio/music.wav"):
-		_music.stream = load("res://assets/audio/music.wav")
-	if ResourceLoader.exists("res://assets/audio/ambient.wav"):
-		_ambient.stream = load("res://assets/audio/ambient.wav")
+	_music.stream = _loop_stream("music")
+	_ambient.stream = _loop_stream("ambient")
+
+
+## The long loops ship as Ogg Vorbis (less than half the size of QOA WAV in the web
+## download); a WAV of the same name is still accepted.
+func _loop_stream(name: String) -> AudioStream:
+	for ext in ["ogg", "wav"]:
+		var path := "res://assets/audio/%s.%s" % [name, ext]
+		if ResourceLoader.exists(path):
+			var s: AudioStream = load(path)
+			if s is AudioStreamOggVorbis:
+				(s as AudioStreamOggVorbis).loop = true
+			return s
+	return null
 
 
 func play(name: String, pitch := 1.0, volume_db := 0.0) -> void:
@@ -60,3 +71,14 @@ func set_music(on: bool) -> void:
 		start_music()
 	else:
 		_music.stop()
+
+
+func _exit_tree() -> void:
+	# a stream still playing when the game quits is held by the AudioServer past the
+	# autoload's own teardown ("ObjectDB instances leaked" / "resources still in use"
+	# at every exit, hiding real leaks): stop and drop everything first
+	for p: AudioStreamPlayer in _players + [_music, _ambient]:
+		if p:
+			p.stop()
+			p.stream = null
+	_streams.clear()
