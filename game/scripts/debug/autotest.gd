@@ -763,8 +763,10 @@ func _run() -> void:
 			tp(-17, 25.5, Vector3(0, 0, -1))
 			await shot("m3_dense_palms_in", 20)
 			for b in world.layout.get("bridges", []):
-				tp(float(b["pos"][0]) - 3.0, float(b["pos"][2]) + 5.0, Vector3(0, 0, -1))
+				tp(float(b["pos"][0]) + 1.5, float(b["pos"][2]), Vector3(0, 0, 1))
 				await shot("m3_bridge_%d_%d" % [b["pos"][0], b["pos"][2]], 25)
+			tp(70, 16, Vector3(1, 0, 0))
+			await shot("m3_lagoon_jetty", 25)
 			var br: Array = world.layout["bridges"][0]["pos"]
 			var pl: Player = world.player
 			tp(float(br[0]) - 9.0, float(br[2]), Vector3(1, 0, 0))
