@@ -16,6 +16,7 @@ var model_info := {}   # id -> manifest entry
 var textures := {}     # key -> Texture2D ("portrait/<id>", "floor/<biome>")
 var _pending := 0
 var _total := 0
+var _logged := {}
 
 
 func _ready() -> void:
@@ -195,6 +196,9 @@ func instance(id: String) -> Node3D:
 	inner.position = Vector3(-(aabb.position.x + aabb.size.x * 0.5) * s, -aabb.position.y * s + float(info.get("lift", 0.0)),
 		-(aabb.position.z + aabb.size.z * 0.5) * s)
 	inner.rotation.y += deg_to_rad(float(info.get("yaw", 0.0)))
+	if not _logged.has(id):
+		_logged[id] = true
+		print("HF instance %s: size=%s scale=%.3f" % [id, str(aabb.size * s), s])
 	holder.set_meta("hf", true)
 	holder.set_meta("hf_info", info)
 	return holder
@@ -206,7 +210,7 @@ func _bounds(n: Node3D) -> AABB:
 	for mi in Art.meshes(n):
 		if mi.mesh == null:
 			continue
-		var b: AABB = mi.global_transform * mi.mesh.get_aabb() if mi.is_inside_tree() else _local_xform(mi, n) * mi.mesh.get_aabb()
+		var b: AABB = _mesh_xform(mi, n) * mi.mesh.get_aabb()
 		out = b if first else out.merge(b)
 		first = false
 	return out
@@ -218,7 +222,7 @@ func _vertex_centroid(n: Node3D) -> Vector3:
 	for mi in Art.meshes(n):
 		if mi.mesh == null:
 			continue
-		var xf := _local_xform(mi, n)
+		var xf := _mesh_xform(mi, n)
 		for sidx in mi.mesh.get_surface_count():
 			var arr := mi.mesh.surface_get_arrays(sidx)
 			var verts: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
@@ -232,6 +236,26 @@ func _vertex_centroid(n: Node3D) -> Vector3:
 func _bounds_rotated(inner: Node3D, yaw: float) -> AABB:
 	var r := Transform3D(Basis(Vector3.UP, yaw), Vector3.ZERO)
 	return r * _bounds(inner)
+
+
+## Where a mesh's vertices actually render. A skinned mesh is drawn through its
+## bones (bone pose * inverse bind), not its node chain: Meshy/auto-rig GLBs put
+## the skeleton under an Armature scaled 0.01 with bones in centimetres, so the
+## node chain alone would make a 1.7 m character look 1.7 cm tall.
+func _mesh_xform(mi: MeshInstance3D, root: Node3D) -> Transform3D:
+	var base := _local_xform(mi, root)
+	if mi.skin == null or mi.skin.get_bind_count() == 0:
+		return base
+	var skel := mi.get_node_or_null(mi.skeleton) as Skeleton3D
+	if skel == null:
+		return base
+	var bone := mi.skin.get_bind_bone(0)
+	if bone < 0:
+		bone = skel.find_bone(mi.skin.get_bind_name(0))
+	if bone < 0:
+		return base
+	# the skinned mesh is placed in its skeleton's space: mesh xform * bone * bind
+	return base * skel.get_bone_global_rest(bone) * mi.skin.get_bind_pose(0)
 
 
 func _local_xform(node: Node3D, root: Node3D) -> Transform3D:
