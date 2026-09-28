@@ -73,6 +73,13 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
 #brakeBtn.on{transform:translateY(4px);box-shadow:0 1px 0 #2a1a0a;background:#b8231a;}
 #musicBtn{position:absolute;right:34px;bottom:calc(176px + env(safe-area-inset-bottom,0px));pointer-events:auto;width:44px;height:44px;border-radius:12px;border:0;background:rgba(15,12,10,.6);color:#fff;font:700 22px var(--body);cursor:pointer;}
 #musicBtn.off{opacity:.45;text-decoration:line-through;}
+@media (orientation:landscape) and (max-height:520px){
+  #topbar{padding-top:4px;} .stat b{font-size:26px;} #card{max-width:380px;margin-top:4px;} #notify{max-width:380px;}
+  #brakeBtn{width:70px;height:70px;font-size:19px;bottom:calc(70px + env(safe-area-inset-bottom,0px));right:calc(14px + env(safe-area-inset-right,0px));}
+  #pauseBtn{right:calc(14px + env(safe-area-inset-right,0px));} #musicBtn{bottom:calc(150px + env(safe-area-inset-bottom,0px));right:calc(27px + env(safe-area-inset-right,0px));}
+  #helmets{left:calc(14px + env(safe-area-inset-left,0px));} #helmets svg{width:40px;height:40px;}
+  #big b{font-size:46px;} .screen{gap:8px;} .screen h1,.screen .logo{transform:scale(.8);}
+}
 #stick{position:absolute;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;border:3px solid rgba(255,255,255,.55);left:0;top:0;}
 #knob{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;background:rgba(255,255,255,.6);}
 #crack{position:absolute;left:50%;top:44%;width:180px;height:180px;margin:-90px 0 0 -90px;}
@@ -1223,7 +1230,8 @@ const cam={
   },
   place(raw){
     const asp=Math.max(.3,camera.aspect), hf=2*Math.atan(Math.tan(camera.fov*DEG/2)*asp);
-    let dist=clamp(this.half/Math.tan(hf/2),18,70); this.kick=mt(this.kick,0,raw*3); dist*=1-this.kick*.06;
+    // landscape: fitting the width alone would zoom in too far, so also keep enough road visible ahead
+    let dist=clamp(Math.max(this.half/Math.tan(hf/2),camera.aspect>1?this.half*2.3:0),18,70); this.kick=mt(this.kick,0,raw*3); dist*=1-this.kick*.06;
     const p=58*DEG; let x=this.fx, y=Math.sin(p)*dist, z=-this.fy+Math.cos(p)*dist;
     this.shake=mt(this.shake,0,raw*2.2);
     if(this.shake>0){ const s=this.shake*this.shake*.9; x+=(Math.random()-.5)*s; y+=(Math.random()-.5)*s; z+=(Math.random()-.5)*s; }
@@ -1576,6 +1584,11 @@ document.addEventListener('visibilitychange',()=>{ if(document.hidden&&game.stat
 // ---------------------------------------------------------------- boot & loop
 function resize(){ const w=gameEl.clientWidth||innerWidth, h=gameEl.clientHeight||innerHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
 window.addEventListener('resize',resize);
+// rotating a phone: some browsers report the new size a moment after the event
+const reorient=()=>{ resize(); setTimeout(resize,120); setTimeout(resize,400); };
+window.addEventListener('orientationchange',reorient);
+if(window.visualViewport) visualViewport.addEventListener('resize',reorient);
+if(screen.orientation&&screen.orientation.addEventListener) screen.orientation.addEventListener('change',reorient);
 let last=performance.now();
 { const sb=$('startBtn'), label=sb.textContent; sb.disabled=true; sb.textContent='MEMUAT 3D…';
   const prog=[0,1,0,1], show=()=>{ sb.textContent='MEMUAT 3D '+Math.round(100*(prog[0]+prog[2])/(prog[1]+prog[3]))+'%'; };
