@@ -254,12 +254,18 @@ namespace OjolRush
         {
             float w = x1 - x0;
             float depth = z1 - z0;
-            // North-row buildings stay low so they never hide the street behind them from the camera.
-            float h = facesSouth ? R(4f, 8f) : R(3.2f, 5.2f);
+            // North-row buildings stay low at the street front so they do not hide the sidewalk behind them from the camera.
+            float h = facesSouth ? R(4f, 8f) : R(2.4f, 3.2f);
             Color wall = Walls[rng.Next(Walls.Length)];
             Vector3 c = new Vector3((x0 + x1) * 0.5f, 0f, (z0 + z1) * 0.5f);
             MeshBatcher mb = Chunk(c);
             mb.BoxBottom(c, new Vector3(w, h, depth), wall);
+            if (!facesSouth && depth > 8f)
+            {
+                // Taller back part, set back from the street so the sidewalk stays visible.
+                float back = depth * 0.5f;
+                mb.BoxBottom(new Vector3(c.x, 0f, z0 + back * 0.5f), new Vector3(w, h + R(1.5f, 3.5f), back), Palette.Shade(wall, 0.95f));
+            }
             // Roof slab and bits.
             Color roof = Roofs[rng.Next(Roofs.Length)];
             mb.BoxBottom(c + new Vector3(0, h, 0), new Vector3(w + 0.3f, 0.25f, depth + 0.3f), roof);

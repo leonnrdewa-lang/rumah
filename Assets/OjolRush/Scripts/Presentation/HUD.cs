@@ -133,7 +133,7 @@ namespace OjolRush
         Rect PauseRect()
         {
             float s = 110f * U();
-            return new Rect(Screen.width - s - 30f * U(), Screen.height - s - 40f * U(), s, s);
+            return new Rect(Screen.width - s - 30f * U(), Screen.height - s - 40f * U() - BottomInset, s, s);
         }
 
         float U() { return Mathf.Min(Screen.width / 1080f, Screen.height / 1200f); }
@@ -161,14 +161,21 @@ namespace OjolRush
             }
         }
 
+        /// <summary>Pixels hidden by a notch / status bar at the top, and by the home indicator at the bottom.</summary>
+        static float TopInset { get { return Mathf.Max(0f, Screen.height - Screen.safeArea.yMax); } }
+        static float BottomInset { get { return Mathf.Max(0f, Screen.safeArea.y); } }
+
         void DrawPlaying()
         {
             DrawSpeedLines();
             DrawTarget();
             DrawWorldPopups();
+            // Top UI shifts down below the notch; its background still reaches the screen edge.
+            GUI.matrix = Matrix4x4.TRS(new Vector3(0f, TopInset, 0f), Quaternion.identity, Vector3.one);
             DrawTopBar();
             DrawOrderCard();
             DrawCombo();
+            GUI.matrix = Matrix4x4.identity;
             DrawHelmets();
             DrawJoystick();
             DrawBanners();
@@ -183,7 +190,7 @@ namespace OjolRush
         void DrawTopBar()
         {
             float w = Screen.width;
-            Rect bar = new Rect(0, 0, w, 170f * u);
+            Rect bar = new Rect(0, -TopInset, w, 170f * u + TopInset);
             GUI.color = new Color(0.05f, 0.08f, 0.1f, 0.62f);
             GUI.DrawTexture(bar, white);
             GUI.color = Color.white;
@@ -299,7 +306,7 @@ namespace OjolRush
             Vector3 world = Geo.X0Z(tp.Value, 6f);
             Vector3 sp = gm.cameraManager.WorldToScreen(world);
             float w = Screen.width, h = Screen.height;
-            float top = 420f * u, bottom = 230f * u, side = 70f * u;
+            float top = 420f * u + TopInset, bottom = 230f * u + BottomInset, side = 70f * u;
             Vector2 gp = new Vector2(sp.x, h - sp.y);
             bool behind = sp.z < 0f;
             bool onScreen = !behind && gp.x > side && gp.x < w - side && gp.y > top && gp.y < h - bottom;
@@ -355,7 +362,7 @@ namespace OjolRush
         void DrawHelmets()
         {
             float s = 110f * u;
-            float y = Screen.height - s - 40f * u;
+            float y = Screen.height - s - 40f * u - BottomInset;
             int max = gm.config.helmets;
             for (int i = 0; i < max; i++)
             {
@@ -494,8 +501,8 @@ namespace OjolRush
             GUI.DrawTexture(new Rect(0, 0, w, h), white);
             GUI.color = Color.white;
             float bob = Mathf.Sin(time * 2f) * 8f * u;
-            Label(new Rect(0, h * 0.14f + bob, w, 200 * u), "OJOL", 170, Palette.OjolGreen, TextAnchor.MiddleCenter);
-            Label(new Rect(0, h * 0.14f + 170 * u + bob, w, 200 * u), "RUSH", 170, new Color(1f, 0.82f, 0.15f), TextAnchor.MiddleCenter);
+            Label(new Rect(0, h * 0.14f + bob + TopInset, w, 200 * u), "OJOL", 170, Palette.OjolGreen, TextAnchor.MiddleCenter);
+            Label(new Rect(0, h * 0.14f + 170 * u + bob + TopInset, w, 200 * u), "RUSH", 170, new Color(1f, 0.82f, 0.15f), TextAnchor.MiddleCenter);
             Label(new Rect(60 * u, h * 0.14f + 380 * u, w - 120 * u, 120 * u), "Kamu bukan yang tercepat.\nKamu jagonya nyelip.", 40, Color.white, TextAnchor.MiddleCenter);
 
             Rect b = new Rect(w * 0.5f - 300 * u, h * 0.6f, 600 * u, 150 * u);
@@ -532,7 +539,7 @@ namespace OjolRush
             GUI.color = new Color(0.03f, 0.03f, 0.05f, 0.72f);
             GUI.DrawTexture(new Rect(0, 0, w, h), white);
             GUI.color = Color.white;
-            float y = h * 0.1f;
+            float y = h * 0.1f + TopInset;
             Label(new Rect(0, y, w, 150 * u), "SHIFT SELESAI", 100, new Color(1f, 0.82f, 0.15f), TextAnchor.MiddleCenter);
             Label(new Rect(40 * u, y + 140 * u, w - 80 * u, 70 * u), gm.GameOverReason, 38, new Color(1f, 0.5f, 0.4f), TextAnchor.MiddleCenter);
             Label(new Rect(0, y + 240 * u, w, 60 * u), "SKOR", 36, new Color(1f, 1f, 1f, 0.7f), TextAnchor.MiddleCenter);

@@ -21,6 +21,10 @@ Tidak ada scene, prefab, model, tekstur, atau file audio yang perlu disiapkan.
 lalu Build. Orientasi otomatis dikunci portrait saat runtime (sebaiknya set juga *Player Settings → Default
 Orientation → Portrait*).
 
+Saat proyek pertama kali dibuka, skrip editor `OjolRushProjectSetup` otomatis mengatur orientasi portrait,
+menyimpan varian shader (instancing, fog linear), dan membuat material dasar di `Assets/OjolRush/Resources` supaya
+build di HP tampil sama seperti di Editor. Bisa dijalankan ulang lewat menu **Ojol Rush → Apply Project Settings**.
+
 Built-in render pipeline dan URP sama-sama didukung (material di-clone dari material default pipeline aktif).
 
 ## Kontrol

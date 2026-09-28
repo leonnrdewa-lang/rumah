@@ -144,6 +144,8 @@ namespace OjolRush
                     float a = (float)i / fade;
                     d[i] = d[i] * a + d[n - fade + i] * (1f - a);
                 }
+                // Drop the tail that was blended into the head so the wrap point is continuous.
+                System.Array.Resize(ref d, n - fade);
             }
             return Make("noise", d);
         }

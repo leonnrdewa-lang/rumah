@@ -40,6 +40,8 @@ namespace OjolRush
                 if (along <= 0f) continue;
                 // Breaking a deadlock only ignores crossing traffic, never the queue in front of us.
                 if (ghost && Vector2.Dot(o.fwd, f) < 0.7f) continue;
+                // Merging side by side, both can see the other "ahead": whoever is further ahead goes first.
+                if (Vector2.Dot(o.fwd, f) > 0.3f && Vector2.Dot(-rel, o.fwd) > along) continue;
                 // Project the other box onto our lateral / forward axes.
                 Vector2 ol = Geo.Left(o.fwd);
                 float oHalfSide = Mathf.Abs(Vector2.Dot(o.fwd, l)) * o.HalfLength + Mathf.Abs(Vector2.Dot(ol, l)) * o.HalfWidth;

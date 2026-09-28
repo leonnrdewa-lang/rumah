@@ -138,6 +138,13 @@ namespace OjolRush
 
         void BeginTurn()
         {
+            // Never carry a half-finished lane change into the junction.
+            if (laneChangeTo >= 0)
+            {
+                laneChangeTo = -1;
+                lat = 0f;
+                latVel = 0f;
+            }
             int ex, ez;
             CityMap.Step(ni, nj, dir, out ex, out ez);
             Vector2 a2, b2;
@@ -195,7 +202,9 @@ namespace OjolRush
 
         public bool CanChangeLane()
         {
-            return !turning && laneChangeTo < 0 && s < pathLen - 16f && s > 3f && spec.laneChangeRate > 0f;
+            // Blinker + sideways move take ~2 s: only start if it finishes well before the junction.
+            float needed = speed * 2.4f + 6f;
+            return !turning && laneChangeTo < 0 && s < pathLen - CityMap.StopBack - needed && s > 3f && spec.laneChangeRate > 0f;
         }
 
         public void StartLaneChange(int toLane)
@@ -251,7 +260,7 @@ namespace OjolRush
         void UpdateLateral(float dt, float time)
         {
             float latTarget = 0f;
-            if (laneChangeTo >= 0)
+            if (laneChangeTo >= 0 && !turning)
             {
                 blinkSide = laneChangeTo > lane ? -1 : 1;
                 if (laneChangeBlink > 0f)

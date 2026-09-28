@@ -206,7 +206,7 @@ namespace OjolRush
             transform.position = Geo.X0Z(Pos, y);
             // Show the drift: the body points between heading and actual travel direction when sliding.
             float yaw = Heading;
-            if (Velocity.sqrMagnitude > 1f && slide > 0f) yaw = Mathf.LerpAngle(Heading, Geo.Heading(Velocity), -0.4f);
+            if (Velocity.sqrMagnitude > 1f && slide > 0f) yaw = Heading + Mathf.DeltaAngle(Geo.Heading(Velocity), Heading) * 0.4f;
             transform.rotation = Quaternion.Euler(0f, yaw, 0f);
             leanPivot.localRotation = Quaternion.Euler(pitch, 0f, lean + wobble);
         }
@@ -280,6 +280,8 @@ namespace OjolRush
         public void Park()
         {
             Active = false;
+            Invulnerable = 0f;
+            SetVisible(true);
             Speed = 0f;
             Velocity = Vector2.zero;
         }

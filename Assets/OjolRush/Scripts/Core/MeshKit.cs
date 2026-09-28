@@ -10,7 +10,7 @@ namespace OjolRush
     /// </summary>
     public static class Mats
     {
-        static Material baseMat;
+        static Material baseMat, baseEmissive, textMat;
         static readonly Dictionary<long, Material> cache = new Dictionary<long, Material>();
         static Font font;
 
@@ -18,6 +18,9 @@ namespace OjolRush
         {
             get
             {
+                // Prefer the material assets created by the editor setup (Ojol Rush > Apply Project Settings):
+                // being real assets in Resources, their shader variants (instancing, emission) survive build stripping.
+                if (baseMat == null) baseMat = Resources.Load<Material>("OjolRushBase");
                 if (baseMat == null)
                 {
                     GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -35,13 +38,20 @@ namespace OjolRush
             long key = ((long)k.r << 24) | ((long)k.g << 16) | ((long)k.b << 8) | k.a | (emissive ? (1L << 40) : 0L);
             Material m;
             if (cache.TryGetValue(key, out m) && m != null) return m;
-            m = new Material(Base);
+            Material src = Base;
+            if (emissive)
+            {
+                if (baseEmissive == null) baseEmissive = Resources.Load<Material>("OjolRushBaseEmissive");
+                if (baseEmissive != null) src = baseEmissive;
+            }
+            m = new Material(src);
             m.name = "OR_" + ColorUtility.ToHtmlStringRGB(c) + (emissive ? "_E" : "");
             if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", c);
             if (m.HasProperty("_Color")) m.SetColor("_Color", c);
             if (m.HasProperty("_Glossiness")) m.SetFloat("_Glossiness", 0.08f);
             if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", 0.08f);
             if (m.HasProperty("_Metallic")) m.SetFloat("_Metallic", 0f);
+            if (!emissive) m.DisableKeyword("_EMISSION");
             if (emissive && m.HasProperty("_EmissionColor"))
             {
                 m.EnableKeyword("_EMISSION");
@@ -51,6 +61,29 @@ namespace OjolRush
             m.enableInstancing = true;
             cache[key] = m;
             return m;
+        }
+
+        /// <summary>Depth-tested material for 3D sign text (falls back to the font's own material).</summary>
+        public static Material TextMaterial
+        {
+            get
+            {
+                if (textMat != null) return textMat;
+                Font f = Font;
+                Shader sh = Resources.Load<Shader>("OjolRushText");
+                if (sh == null) sh = Shader.Find("OjolRush/Text3D");
+                if (f == null) return null;
+                if (sh == null || !sh.isSupported) return f.material;
+                textMat = new Material(sh);
+                textMat.mainTexture = f.material.mainTexture;
+                Font.textureRebuilt += OnFontRebuilt;
+                return textMat;
+            }
+        }
+
+        static void OnFontRebuilt(Font f)
+        {
+            if (textMat != null && f == font) textMat.mainTexture = f.material.mainTexture;
         }
 
         public static Font Font
@@ -267,7 +300,8 @@ namespace OjolRush
             tm.color = color;
             tm.text = text;
             MeshRenderer mr = go.GetComponent<MeshRenderer>();
-            if (tm.font != null) mr.sharedMaterial = tm.font.material;
+            Material textMaterial = Mats.TextMaterial;
+            if (textMaterial != null) mr.sharedMaterial = textMaterial;
             mr.shadowCastingMode = ShadowCastingMode.Off;
             return tm;
         }
