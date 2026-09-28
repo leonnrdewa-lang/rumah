@@ -1,0 +1,48 @@
+<!doctype html><meta charset="utf-8"><body style="margin:0;background:#222">
+<script src=".vendor/three.min.js"></script><script src=".vendor/GLTFLoader.js"></script>
+<script>
+// Renders building GLBs the way the game does: 3-band toon shading, the game's lights/sky, ink edges.
+const T=THREE, V=360, H=270;
+const R=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true}); R.setSize(V,H); R.setPixelRatio(1);
+const GRAD=(()=>{ const d=new Uint8Array([105,105,105,255,185,185,185,255,255,255,255,255]); const t=new T.DataTexture(d,3,1,T.RGBAFormat); t.minFilter=t.magFilter=T.NearestFilter; t.generateMipmaps=false; t.needsUpdate=true; return t; })();
+const INK=new T.LineBasicMaterial({color:0x2b1e16});
+function scene(){ const s=new T.Scene(); s.background=new T.Color(0xf6b877);
+  s.add(new T.HemisphereLight(0xffe2c0,0x5a4638,0.78)); const sun=new T.DirectionalLight(0xffcf94,0.95); sun.position.set(-60,80,40); s.add(sun); return s; }
+function load(url){ return new Promise((res,rej)=>new T.GLTFLoader().load(url,g=>res(g.scene),undefined,rej)); }
+function toon(root){ const out=new T.Group(); root.updateMatrixWorld(true);
+  root.traverse(o=>{ if(!o.isMesh) return; const c=o.material.color.clone().convertLinearToSRGB();
+    const g=o.geometry.clone(); g.applyMatrix4(o.matrixWorld);
+    out.add(new T.Mesh(g,new T.MeshToonMaterial({color:c,gradientMap:GRAD})));
+    out.add(new T.LineSegments(new T.EdgesGeometry(g,25),INK)); });
+  return out; }
+function ground(s,w,d){ const side=new T.Mesh(new T.PlaneGeometry(w+60,d+60).rotateX(-Math.PI/2),new T.MeshLambertMaterial({color:0xbdb5a8})); side.position.y=-0.01; s.add(side);
+  const road=new T.Mesh(new T.PlaneGeometry(w+60,14).rotateX(-Math.PI/2),new T.MeshLambertMaterial({color:0x42424a})); road.position.set(0,0.005,d/2+3+7); s.add(road);
+  const ojol=new T.Mesh(new T.BoxGeometry(0.8,1.7,1.9),new T.MeshToonMaterial({color:0x2fbf4a,gradientMap:GRAD})); ojol.position.set(-w/2+1,0.85,d/2+4.5); s.add(ojol); }
+function shot(s,cam){ R.render(s,cam); const c=document.createElement('canvas'); c.width=V; c.height=H; c.getContext('2d').drawImage(R.domElement,0,0); return c; }
+function camAt(target,rad,pitchDeg,yawDeg,aspect){ const cam=new T.PerspectiveCamera(55,aspect,0.5,800);
+  const dist=rad/Math.sin(55*Math.PI/360)*1.05, p=pitchDeg*Math.PI/180, y=yawDeg*Math.PI/180;
+  cam.position.set(target.x+Math.sin(y)*Math.cos(p)*dist, target.y+Math.sin(p)*dist, target.z+Math.cos(y)*Math.cos(p)*dist); cam.lookAt(target); return cam; }
+// individual sheet: rows = models, cols = [game front, game back, street 3/4]
+window.sheet=async(files)=>{ const cols=3, rows=files.length, sh=document.createElement('canvas'); sh.width=V*cols; sh.height=(H+22)*rows;
+  const x=sh.getContext('2d'); x.fillStyle='#222'; x.fillRect(0,0,sh.width,sh.height);
+  for(let i=0;i<rows;i++){ const f=files[i]; const s=scene(); const m=toon(await load(f.url)); s.add(m);
+    const bb=new T.Box3().setFromObject(m), sz=bb.getSize(new T.Vector3()), ctr=bb.getCenter(new T.Vector3()); ground(s,sz.x,sz.z);
+    const rad=Math.max(sz.x,sz.y,sz.z)*0.62+1;
+    const views=[camAt(ctr,rad,58,0,V/H),camAt(ctr,rad,58,180,V/H),camAt(new T.Vector3(ctr.x,sz.y*0.4,ctr.z),rad,16,35,V/H)];
+    views.forEach((cam,k)=>x.drawImage(shot(s,cam),k*V,i*(H+22)+22));
+    x.fillStyle='#fff'; x.font='bold 14px sans-serif'; x.fillText(f.label,6,i*(H+22)+16); }
+  return sh.toDataURL('image/png'); };
+// street strip: the given models side by side like a game block row, seen from the game camera
+window.street=async(files,back)=>{ const s=scene(); let xo=0; const ms=[];
+  for(const f of files){ const m=toon(await load(f.url)); const bb=new T.Box3().setFromObject(m); const w=bb.max.x-bb.min.x;
+    m.position.x=xo-bb.min.x; m.position.z=-bb.max.z; if(back){ m.rotation.y=Math.PI; m.position.x=xo+bb.max.x; m.position.z=bb.max.z; } s.add(m); xo+=w+0.3; }
+  const W=xo, cx=W/2; const g=new T.Mesh(new T.PlaneGeometry(W+80,80).rotateX(-Math.PI/2),new T.MeshLambertMaterial({color:0xbdb5a8})); g.position.set(cx,-0.01,-10); s.add(g);
+  const road=new T.Mesh(new T.PlaneGeometry(W+80,14).rotateX(-Math.PI/2),new T.MeshLambertMaterial({color:0x42424a})); road.position.set(cx,0.005,10); s.add(road);
+  for(let i=0;i<W;i+=9){ const o=new T.Mesh(new T.BoxGeometry(0.8,1.7,1.9),new T.MeshToonMaterial({color:0x2fbf4a,gradientMap:GRAD})); o.position.set(i+2,0.85,6); s.add(o); }
+  const segs=Math.ceil(W/34), sh=document.createElement('canvas'); sh.width=V*2; sh.height=H*2*segs; const x=sh.getContext('2d');
+  R.setSize(V*2,H*2);
+  for(let k=0;k<segs;k++){ const tx=Math.min(W,17+k*34); const cam=new T.PerspectiveCamera(55,V/H,0.5,800); const d=34, p=58*Math.PI/180;
+    cam.position.set(tx,Math.sin(p)*d,-4+Math.cos(p)*d); cam.lookAt(tx,0,-4); R.render(s,cam); x.drawImage(R.domElement,0,k*H*2); }
+  R.setSize(V,H); return sh.toDataURL('image/png'); };
+window.ready=true;
+</script>

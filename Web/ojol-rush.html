@@ -370,9 +370,9 @@ function syncShadow(g,rotY){
 }
 // ---------------------------------------------------------------- 3D models (Meshy image-to-3D of GPT Image 2.5 art), cel shaded
 // Loaded from models/<name>.glb; anything missing falls back to the flat sprite above.
-// yaw (deg) turns each model so vehicles face -Z (forward) and buildings face +Z (their street side).
-const MODEL_DEF={ojol:-90,bike:-90,mpv:-90,sedan:-90,angkot:-90,bajaj:-90,bus:-90,gerobak:-90,policecar:-90,tree:0,house:0,ruko:0,tower:0};
-const BUILDINGS=new Set(['house','ruko','tower']), MDL={};
+// yaw (deg) turns each model so it faces -Z (forward).
+const MODEL_DEF={ojol:-90,bike:-90,mpv:-90,sedan:-90,angkot:-90,bajaj:-90,bus:-90,gerobak:-90,policecar:-90,tree:0};
+const MDL={};
 // sprite name -> [model, tint]
 const VARIANT={ojol:['ojol'],bike1:['bike'],bike2:['bike',0xa9c8ff],mpv:['mpv'],hatch:['sedan',0xb5dcff],sedan:['sedan'],angkot:['angkot'],bajaj:['bajaj'],
   bus:['bus'],gerobak:['gerobak'],policecar:['policecar'],tree:['tree']};
@@ -396,8 +396,8 @@ function prepModel(n,root){
     if(map){ map.encoding=T.LinearEncoding; map.anisotropy=4; }
     parts.push({g,mat:new T.MeshToonMaterial({map,color:map?0xffffff:src.color,gradientMap:GRAD})}); });
   if(!parts.length) return;
-  const size=box.getSize(new T.Vector3()), c=box.getCenter(new T.Vector3()), bld=BUILDINGS.has(n);
-  const m=(bld?new T.Matrix4().makeScale(1/size.x,1/size.y,1/size.z):new T.Matrix4().makeScale(1/size.z,1/size.z,1/size.z)).multiply(new T.Matrix4().makeTranslation(-c.x,-box.min.y,-c.z));
+  const size=box.getSize(new T.Vector3()), c=box.getCenter(new T.Vector3());
+  const m=new T.Matrix4().makeScale(1/size.z,1/size.z,1/size.z).multiply(new T.Matrix4().makeTranslation(-c.x,-box.min.y,-c.z));
   for(const p of parts){ p.g.applyMatrix4(m); p.g.computeBoundingSphere(); }
   MDL[n]={parts,sx:size.x/size.z,sy:size.y/size.z,asp:size.z/size.x};
 }
@@ -427,31 +427,82 @@ function cone3d(len){
   const band=new T.Mesh(new T.CylinderGeometry(len*0.17,len*0.21,len*0.16,10),M_CONE_W); band.position.y=len*0.55; g.add(band);
   g.userData.body=g; g.userData.w=len*0.8; g.userData.len=len*0.8; g.userData.h=len; g.userData.is3d=true; return g;
 }
-// Buildings: street-facing models collected into instanced meshes (one draw per model + one for its ink).
-const BI={house:[],ruko:[],tower:[]}, _bm=new T.Matrix4(), _bq=new T.Quaternion(), _bp=new T.Vector3(), _bs=new T.Vector3(), _Y=new T.Vector3(0,1,0);
+// ---------------------------------------------------------------- buildings (modelled in Blender, see Tools/blender)
+// models/bld/manifest.json lists every building GLB with its real footprint (w x d, metres), height and roles:
+// 'front' = street row facing the camera, 'low' = row seen from behind (<= 4.8 m), 'fill' = back lots,
+// 'tall' = skyline. Each lot gets a variant close to its width; everything placed is merged per 60 m chunk into
+// one cel-shaded vertex-colour mesh plus one ink-line mesh, so the whole city is a handful of draw calls.
+const BLD={list:[],byRole:{}}, BCH=new Map(), _Y=new T.Vector3(0,1,0);
 const FACE_YAW=[0,Math.PI,Math.PI/2,-Math.PI/2]; // facing south(+Z), north(-Z), east(+X), west(-X)
-function bInst(type,cx,cy,W,H,D,face,ink){ _bq.setFromAxisAngle(_Y,FACE_YAW[face]); const m=_bm.compose(_bp.set(cx,0,-cy),_bq,_bs.set(W,H,D)).clone(); m.ink=ink; BI[type].push(m); }
-// Fill a lot: a building on the street edge (natural-ish depth) plus a back-lot house when there's room.
-function lot3d(x0,x1,y0,y1,face,type,h){
-  const ew=face>=2, W=ew?y1-y0:x1-x0, D=ew?x1-x0:y1-y0, a=MDL[type].asp;
-  let dF=Math.min(D,Math.max(4,W*a*R(1,1.3))), rest=D-dF-0.3; if(rest<5){ dF=D; rest=0; }
-  const put=(t,off,dep,hh,ink)=>{ const mid=off+dep/2; let cx=(x0+x1)/2, cy=(y0+y1)/2;
-    if(face===0) cy=y0+mid; else if(face===1) cy=y1-mid; else if(face===2) cx=x1-mid; else cx=x0+mid;
-    bInst(t,cx,cy,W-0.25,hh,dep,face,ink); };
-  put(type,0,dF,h,true);
-  // back-lot fill skips the ink pass: it is mostly seen as roofs and halves the triangle count
-  if(rest>3.5) put(Math.random()<.35&&MDL.ruko?'ruko':'house',dF+0.3,rest,Math.max(3,h*R(0.6,1.1)),false);
+const TYPE_W={ruko:3,rumah:3,rumah2:1.4,warung:1.7,kos:1,toko:1.3,kantor:0.8,gedung:1};
+function prepBld(e,root){
+  root.updateMatrixWorld(true); const pos=[],nrm=[],col=[],idx=[], c=new T.Color(), nm=new T.Matrix3(), v=new T.Vector3();
+  root.traverse(o=>{ if(!o.isMesh) return; const g=o.geometry, P=g.attributes.position, N=g.attributes.normal, base=pos.length/3;
+    c.copy((Array.isArray(o.material)?o.material[0]:o.material).color).convertLinearToSRGB(); nm.getNormalMatrix(o.matrixWorld);
+    for(let i=0;i<P.count;i++){ v.fromBufferAttribute(P,i).applyMatrix4(o.matrixWorld); pos.push(v.x,v.y,v.z);
+      v.fromBufferAttribute(N,i).applyMatrix3(nm).normalize(); nrm.push(v.x,v.y,v.z); col.push(c.r,c.g,c.b); }
+    if(g.index) for(let i=0;i<g.index.count;i++) idx.push(base+g.index.getX(i)); else for(let i=0;i<P.count;i++) idx.push(base+i); });
+  if(!idx.length) return;
+  const geo=new T.BufferGeometry(); geo.setAttribute('position',new T.Float32BufferAttribute(pos,3)); geo.setIndex(idx);
+  Object.assign(e,{pos:new Float32Array(pos),nrm:new Float32Array(nrm),col:new Float32Array(col),idx:new Uint32Array(idx),edges:new T.EdgesGeometry(geo,25).attributes.position.array});
+  BLD.list.push(e); for(const r of e.roles) (BLD.byRole[r]||(BLD.byRole[r]=[])).push(e);
 }
-// Instances are grouped per 60 m chunk; each chunk shares the model's buffers but gets its own bounding
-// sphere so off-screen chunks are frustum-culled.
-function flushBuildings(){
-  const e=new T.Vector3();
-  for(const t in BI){ if(!MDL[t]) continue; const groups=new Map();
-    for(const m of BI[t]){ e.setFromMatrixPosition(m); const k=Math.floor(e.x/60)+','+Math.floor(e.z/60); let L=groups.get(k); if(!L) groups.set(k,L=[]); L.push(m); }
-    for(const [k,L] of groups){ const [gx,gz]=k.split(',').map(Number), sphere=new T.Sphere(new T.Vector3(gx*60+30,8,gz*60+30),62);
-      for(const p of MDL[t].parts){ const g=new T.BufferGeometry(); for(const a in p.g.attributes) g.setAttribute(a,p.g.attributes[a]); g.setIndex(p.g.index); g.boundingSphere=sphere;
-        const add=(mat,list)=>{ if(!list.length) return; const im=new T.InstancedMesh(g,mat,list.length); list.forEach((m,i)=>im.setMatrixAt(i,m)); cityGroup.add(im); };
-        add(p.mat,L); if(!lowEnd) add(M_INK,L.filter(m=>m.ink)); } } }
+function loadBuildings(onProgress){
+  if(!T.GLTFLoader) return Promise.resolve();
+  const L=new T.GLTFLoader();
+  return fetch('models/bld/manifest.json').then(r=>r.ok?r.json():[]).then(list=>{ let done=0;
+    return Promise.all(list.map(e=>new Promise(res=>{ const fin=()=>{ done++; if(onProgress) onProgress(done,list.length); res(); };
+      L.load('models/bld/'+e.file,g=>{ try{ prepBld(e,g.scene); }catch(err){ console.warn('bld',e.file,err); } fin(); },undefined,fin); }))); }).catch(()=>{});
+}
+// Variant for a lot `W` wide: stretched at most ~15%, never the same model twice in a row, type-weighted.
+let lastBld=null;
+function pickBld(role,W,maxH,maxD){
+  const L=BLD.byRole[role]||[], ok=[]; let tot=0;
+  for(const e of L){ const s=W/e.w; if(s<0.86||s>1.17||(maxH&&e.h>maxH)||(maxD&&e.d*0.72>maxD)) continue;
+    const wt=(TYPE_W[e.type]||1)*(e===lastBld?0.03:(lastBld&&lastBld.type===e.type?0.45:1)); ok.push([e,wt]); tot+=wt; }
+  if(!ok.length) return null;
+  let r=Math.random()*tot; for(const [e,wt] of ok){ r-=wt; if(r<=0) return lastBld=e; } return lastBld=ok[ok.length-1][0];
+}
+// Put `e` on the lot with its front on the street edge (`off` metres back from it). Returns the depth used.
+function placeBld(e,x0,x1,y0,y1,face,off,sy){
+  const ew=face>=2, W=ew?y1-y0:x1-x0, D=(ew?x1-x0:y1-y0)-off, sx=W/e.w, sz=Math.min(sy||1,D/e.d);
+  if(sz<0.72) return 0;
+  const dep=e.d*sz, mid=off+dep/2; let cx=(x0+x1)/2, cy=(y0+y1)/2;
+  if(face===0) cy=y0+mid; else if(face===1) cy=y1-mid; else if(face===2) cx=x1-mid; else cx=x0+mid;
+  const m=new T.Matrix4().compose(new T.Vector3(cx,0,-cy),new T.Quaternion().setFromAxisAngle(_Y,FACE_YAW[face]),new T.Vector3(sx,sy||1,sz));
+  const k=Math.floor(cx/60)+','+Math.floor(cy/60); let ch=BCH.get(k); if(!ch) BCH.set(k,ch=[]); ch.push([e,m]);
+  return dep;
+}
+// Fill a lot: a street building (split the lot when no variant is that wide) plus a back-lot building if there is room.
+function lot3d(x0,x1,y0,y1,face,role,maxH){
+  const ew=face>=2, W=ew?y1-y0:x1-x0, D=ew?x1-x0:y1-y0;
+  const e=pickBld(role,W,maxH,D)||(role!=='front'&&role!=='low'?null:pickBld('front',W,maxH,D));
+  if(!e){
+    if(W>8){ const m=W*R(0.42,0.58);
+      if(ew){ lot3d(x0,x1,y0,y0+m-0.08,face,role,maxH); lot3d(x0,x1,y0+m+0.08,y1,face,role,maxH); }
+      else { lot3d(x0,x0+m-0.08,y0,y1,face,role,maxH); lot3d(x0+m+0.08,x1,y0,y1,face,role,maxH); } }
+    return;
+  }
+  const dep=placeBld(e,x0,x1,y0,y1,face,0), rest=D-dep-0.5;
+  if(rest>5){ const f=pickBld('fill',W,9,rest); if(f) placeBld(f,x0,x1,y0,y1,face,dep+0.5); }
+}
+function flushBld(){
+  const v=new T.Vector3(), nm=new T.Matrix3();
+  for(const ch of BCH.values()){
+    let nv=0, ni=0, ne=0; for(const [e] of ch){ nv+=e.pos.length; ni+=e.idx.length; ne+=e.edges.length; }
+    const P=new Float32Array(nv), N=new Float32Array(nv), C=new Float32Array(nv), I=new Uint32Array(ni), E=new Float32Array(ne);
+    let ov=0, oi=0, oe=0;
+    for(const [e,m] of ch){ nm.getNormalMatrix(m); const base=ov/3, p=e.pos, n=e.nrm, ed=e.edges;
+      for(let i=0;i<p.length;i+=3){ v.set(p[i],p[i+1],p[i+2]).applyMatrix4(m); P[ov+i]=v.x; P[ov+i+1]=v.y; P[ov+i+2]=v.z;
+        v.set(n[i],n[i+1],n[i+2]).applyMatrix3(nm).normalize(); N[ov+i]=v.x; N[ov+i+1]=v.y; N[ov+i+2]=v.z; }
+      C.set(e.col,ov); for(let i=0;i<e.idx.length;i++) I[oi+i]=e.idx[i]+base;
+      for(let i=0;i<ed.length;i+=3){ v.set(ed[i],ed[i+1],ed[i+2]).applyMatrix4(m); E[oe+i]=v.x; E[oe+i+1]=v.y; E[oe+i+2]=v.z; }
+      ov+=p.length; oi+=e.idx.length; oe+=ed.length; }
+    const g=new T.BufferGeometry(); g.setAttribute('position',new T.BufferAttribute(P,3)); g.setAttribute('normal',new T.BufferAttribute(N,3));
+    g.setAttribute('color',new T.BufferAttribute(C,3)); g.setIndex(new T.BufferAttribute(I,1)); g.computeBoundingSphere(); cityGroup.add(new T.Mesh(g,M_VC));
+    const lg=new T.BufferGeometry(); lg.setAttribute('position',new T.BufferAttribute(E,3)); lg.computeBoundingSphere(); cityGroup.add(new T.LineSegments(lg,M_OUTLINE));
+  }
+  BCH.clear();
 }
 
 function glowTex(r,g,b){ const c=document.createElement('canvas'); c.width=c.height=64; const x=c.getContext('2d'), gr=x.createRadialGradient(32,32,0,32,32,32);
@@ -545,7 +596,7 @@ function buildCity(){
   for(const g of chunks.values()) if(!g.empty) cityGroup.add(g.mesh());
   // Buildings get ink outlines for the cel-shaded look.
   for(const g of bchunks.values()) if(!g.empty){ const m=g.mesh(); cityGroup.add(m); cityGroup.add(new T.LineSegments(new T.EdgesGeometry(m.geometry,25),M_OUTLINE)); }
-  flushQuads(); flushBuildings();
+  flushQuads(); flushBld();
 }
 function buildBlock(bi,bj){
   const b=blockRect(bi,bj); let gx=NaN, gz=NaN;
@@ -558,14 +609,7 @@ function buildBlock(bi,bj){
 function lots(x0,x1,y0,y1,south){ let x=x0; while(x<x1-0.5){ let w=R(6,11); if(x1-(x+w)<5) w=x1-x; building(x+0.15,x+w-0.15,y0,y1,south); x+=w; } }
 function building(x0,x1,y0,y1,south){
   // South-row buildings face the camera: textured ruko facades. North-row ones stay low at the street so they never hide it.
-  if(MDL.house&&MDL.ruko){
-    const w=x1-x0, face=south?0:1;
-    const nat=t=>w*MDL[t].sy/MDL[t].sx; // natural height for this frontage
-    if(south&&y0>MAXY&&MDL.tower&&Math.random()<.55) lot3d(x0,x1,y0,y1,face,'tower',R(14,26));
-    else if(south){ const t=w>7.5&&Math.random()<.75?'ruko':'house'; lot3d(x0,x1,y0,y1,face,t,clamp(nat(t)*R(.8,.95),4.5,9)); }
-    else lot3d(x0,x1,y0,y1,face,'house',clamp(nat('house')*.6,3,4.6));
-    return;
-  }
+  if(BLD.list.length){ if(south) lot3d(x0,x1,y0,y1,0,'front',18); else lot3d(x0,x1,y0,y1,1,'low',4.9); return; }
   const w=x1-x0, d=y1-y0, h=south?R(4.6,8.5):R(2.4,3.2), cx=(x0+x1)/2, cy=(y0+y1)/2, g=bchunk(cx,cy), wall=pick(WALLS);
   wbb(g,cx,cy,0,w,h,d,wall); roofQuad(x0,x1,y0,y1,h+0.02);
   if(!south&&d>8){ const back=d*0.5, hb=h+R(1.5,3.5); wbb(g,cx,y0+back/2,0,w,hb,back,wall); roofQuad(x0,x1,y0,y0+back,hb+0.02); }
@@ -573,6 +617,11 @@ function building(x0,x1,y0,y1,south){
 }
 function skyline(){
   // Jakarta CBD towers on the northern horizon (seen through the golden haze).
+  const TALL=BLD.byRole.tall||[];
+  if(TALL.length){ let x=MINX-40, prev=null;
+    while(x<MAXX+40){ let e=pick(TALL); if(e===prev&&TALL.length>1) e=pick(TALL); prev=e; const s=R(0.9,1.25), y=MAXY+R(50,95);
+      placeBld(e,x,x+e.w*s,y,y+e.d*s,0,0,s); x+=e.w*s+R(3,12); }
+    return; }
   const G=[0x6f9cc2,0x86b2d3,0xa4c3db,0x5d86a8,0xc8d7e2,0xe0c9a6];
   let x=MINX-40;
   while(x<MAXX+40){ const w=R(14,26), dpt=R(14,22), h=R(35,95), y=MAXY+R(55,95), g=bchunk(x,y), c=pick(G);
@@ -583,7 +632,7 @@ function skyline(){
 }
 function Palette_dark(c){ const col=new T.Color(c); col.multiplyScalar(0.72); return col.getHex(); }
 function ringCol(x0,x1){ let y=MINY; while(y<MAXY-0.5){ let d=R(8,14); if(MAXY-(y+d)<6) d=MAXY-y; const h=R(3.5,7), cx=(x0+x1)/2, cy=y+d/2, g=bchunk(cx,cy);
-  if(MDL.house&&MDL.ruko){ lot3d(x0,x1,y+0.15,y+d-0.15,x1<MINX?2:3,Math.random()<.5?'ruko':'house',h); y+=d; continue; } wbb(g,cx,cy,0,x1-x0,h,d-0.3,pick(WALLS)); roofQuad(x0,x1,y+0.15,y+d-0.15,h+0.02); y+=d; } }
+  if(BLD.list.length){ lot3d(x0,x1,y+0.15,y+d-0.15,x1<MINX?2:3,'front',12); y+=d; continue; } wbb(g,cx,cy,0,x1-x0,h,d-0.3,pick(WALLS)); roofQuad(x0,x1,y+0.15,y+d-0.15,h+0.02); y+=d; } }
 function pole(x,y){
   const h=R(6.6,7.4), g=chunk(x,y); wbb(g,x,y,SW_H,0.22,h,0.22,POLE); wbox(g,x,y,h-0.4,1.4,0.1,0.1,POLE);
   if(Math.random()<0.35){ for(let k=0;k<4;k++) g.beam(x+R(-.8,.8),h-R(.3,1.3),-(y+R(-.8,.8)),x+R(-.8,.8),h-R(.3,1.3),-(y+R(-.8,.8)),0.05,CABLE); wbox(g,x,y,h-1,0.45,0.4,0.45,CABLE); }
@@ -1484,7 +1533,8 @@ function resize(){ const w=gameEl.clientWidth||innerWidth, h=gameEl.clientHeight
 window.addEventListener('resize',resize);
 let last=performance.now();
 { const sb=$('startBtn'), label=sb.textContent; sb.disabled=true; sb.textContent='MEMUAT 3D…';
-  loadModels((d,n)=>{ sb.textContent='MEMUAT 3D '+d+'/'+n; }).then(()=>{
+  const prog=[0,1,0,1], show=()=>{ sb.textContent='MEMUAT 3D '+Math.round(100*(prog[0]+prog[2])/(prog[1]+prog[3]))+'%'; };
+  Promise.all([loadModels((d,n)=>{ prog[0]=d; prog[1]=n; show(); }),loadBuildings((d,n)=>{ prog[2]=d; prog[3]=n; show(); })]).then(()=>{
     buildCity(); buildSignals(); player.build(); orders.init(); fx.init(); hud.init(); rating.reset(); resize(); game.title();
     sb.disabled=false; sb.textContent=label; last=performance.now(); requestAnimationFrame(frame);
   }); }
