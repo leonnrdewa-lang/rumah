@@ -161,7 +161,7 @@ PROPS = [
     ("karung_pupuk", (-18.5, 3.2), 20), ("karung_pupuk", (-17.6, 3.6), -10), ("crate", (-9.5, 3.4), 10),
     ("gerobak", (3, 34), 30), ("tumpukan_tbs", (45, 0.5), 0), ("tumpukan_tbs", (48.5, 0.2), 40),
     ("truck", (57, 1), -20), ("crate", (60, 21), 0), ("crate", (60.8, 20.2), 25), ("meja", (5, 5), 0),
-    ("perahu", (90, 18.5), 80), ("perahu", (90, -8), 10), ("perahu", (99, 58), 5), ("perahu", (-101, 20), 0),
+    ("perahu", (90, 18.5), 80), ("perahu", (90, -8), 10), ("perahu", (99.5, 53), 5), ("perahu", (-101, 20), 0),
     ("jerigen", (11.5, 4.6), 0), ("jerigen", (12.1, 4.9), 30),
     ("pagar", (-27.1, 16.4), 90), ("pagar", (-27.1, 14.4), 90),
     # the gudang yard: a loaded truck, drums and a pile of fresh bunches by the track

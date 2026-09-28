@@ -1611,7 +1611,7 @@ func show_status() -> void:
 		return
 	var lines: Array = []
 	lines.append("Uang: %s   •   Harga TBS: %s/tandan" % [GS.fmt_rp(GS.money), GS.fmt_rp(GS.tbs_price)])
-	lines.append("Lahan dikuasai: %d/7 (milikmu %d)   •   Pohon sawit: %d" % [GS.controlled_parcels(), GS.owned_parcels(), GS.palm_count()])
+	lines.append("Lahan dikuasai: %d/%d (milikmu %d)   •   Pohon sawit: %d" % [GS.controlled_parcels(), GS.LICENSE_NEED, GS.owned_parcels(), GS.palm_count()])
 	lines.append("Buruh: %d   •   Kapasitas angkut: %d TBS   •   Harga minyak: %s" % [GS.workers.size(), GS.capacity(), GS.OIL_PRICE_NAMES[GS.oil_price_level]])
 	lines.append("Reputasi: %d   •   Kecurigaan: %d/100   •   Sidak: %d/3" % [int(GS.rep), int(GS.heat), GS.stats["sidak"]])
 	lines.append("— Warga —")

@@ -38,7 +38,11 @@ cd docs && python3 -m http.server 8060
 
 1. Panen 3 pohon sawit yang sudah berbuah di samping Kantor, jual TBS ke Pabrik (timur desa).
 2. Tanam bibit, beri pupuk, tidur di Kantor untuk ganti hari (sawit ±6 hari sampai berbuah).
-3. Kuasai kebun 6 warga. Tiap warga punya sifat berbeda (lugu, teliti, korup, aktivis...):
+3. Kuasai kebun warga. Pulau kini ~5x lebih luas (450 m): Desa Sukamakmur di tengah dikelilingi
+   enam dusun (Seberang, Muara, Barat, Bukit, Utara, Selatan) dengan ~70 rumah beragam (rumah panggung,
+   limas, bata, pondok; warna dinding/atap berbeda-beda), dua sungai dengan 5 jembatan (kayu & beton),
+   20 kebun (20 petak sawit berselang-seling per kebun) milik 19 warga, plus warga tanpa lahan dan
+   pejalan kaki antar-dusun. Tiap warga punya sifat berbeda (lugu, teliti, korup, aktivis...):
    - **Beli harga wajar** — mahal, reputasi naik.
    - **Tawar murah** — peluang tergantung kepercayaan & sifat warga.
    - **Tipu pakai surat palsu** — beli suratnya dari Bang Jeki (calo) di dermaga.
@@ -48,7 +52,7 @@ cd docs && python3 -m http.server 8060
    - Pak Kades bisa disogok amplop.
 4. Beli Mesin Olah Minyak, olah TBS jadi minyak goreng, jual ke warga (harga Normal / Mahal / Gila-gilaan). Warga tanpa lahan terpaksa beli, kalau perlu ngutang.
 5. Awasi **Kecurigaan**: kalau penuh, Satgas menyidak dan mendenda. Sidak ke-3 = tamat.
-6. Kuasai ke-7 lahan dan beli **Lisensi Sawit The Franchise™** (Rp 20 juta) → ending Raja Sawit.
+6. Kuasai 7 lahan dan beli **Lisensi Sawit The Franchise™** (Rp 20 juta) → ending Raja Sawit.
 
 ## Struktur repo
 
@@ -73,7 +77,7 @@ Butuh Python 3.11 dengan `pip install bpy==4.5.* numpy scipy pillow`, dan Godot 
 ```bash
 python3 blender/terrain.py        # pulau, masker tanah, layout, peta mini
 python3 blender/vegetation.py     # sawit (4 tahap), semak, pohon, batu
-python3 blender/buildings.py      # rumah, kantor, warung, koperasi, pabrik, dermaga, truk
+python3 blender/buildings.py      # rumah (a-g), kantor, warung, koperasi, pabrik, dermaga, jembatan, truk
 python3 blender/props.py          # props + ikon item
 python3 blender/characters.py     # 12 karakter chibi + potret dialog
 python3 tools/make_ui_icons.py

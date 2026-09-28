@@ -216,6 +216,19 @@ func _run() -> void:
 			world.ui.close()
 			d._sign_franchise("petani")
 			world.ui.close()
+			# map v3: a hamlet villager's land deal, the landless villagers and a passer-by
+			d.talk("somad")
+			world.ui.close()
+			d.land_menu("rt")
+			world.ui.close()
+			for eid in d.EXTRAS:
+				d.talk_extra(eid)
+				world.ui.close()
+			d.talk_walker(0)
+			world.ui.close()
+			print("map v3: parcels=%d tiles/parcel=%d villagers=%d extras=%d walkers=%d bridges=%d houses=%d" % [GS.parcels.size(),
+				GS.tile_count(), GS.VILLAGERS.size(), d.EXTRAS.size(), world.walkers.size(), world.bridges.size(),
+				world.building_nodes.keys().filter(func(k): return String(k).begins_with("rumah")).size()])
 			print("owners: ", GS.parcels.map(func(p): return "%s%s" % [p["owner"], "*" if p["plasma"] else ""]))
 			print("controlled=", GS.controlled_parcels(), " heat=", GS.heat, " rep=", GS.rep, " stats=", GS.stats)
 			# work the land for a few days
