@@ -151,6 +151,8 @@ var inside := ""               # house id the player is in ("" = outdoors)
 var _inside_vid := ""
 var _fish_spot := {}           # {"pos", "water"} in front of the player, or {}
 var _fish_probe_t := 0.0
+var _bed_item := {}
+var _cup_item := {}
 var _house_items: Array = []   # interactables that only exist inside
 var _fading := false
 
@@ -1540,9 +1542,9 @@ func _update_camera(delta: float) -> void:
 	var pitch := cam_pitch
 	if inside != "":
 		# the room: closer and steeper, centred on the room more than on the player
-		dist = 13.0
+		dist = interior.cam_dist()
 		pitch = 57.0
-		var room: Vector3 = interior.ORIGIN + Vector3(0, 0.3, 0.25)
+		var room: Vector3 = interior.cam_center()
 		cam_rig.global_position = cam_rig.global_position.lerp(room.lerp(target_pos, 0.2), k)
 	if aspect < 1.0:
 		# portrait phones: the camera keeps the vertical field of view, so the narrow
@@ -1751,12 +1753,15 @@ func _build_interior_items() -> void:
 	## interaction spots inside the room (shared by every house)
 	interactables.append({"pos": interior.door_pos() + Vector3(0, 0, 0.3), "r": 1.6, "door": true,
 		"prompt": func(): return "Keluar rumah", "act": func(): exit_house()})
-	interactables.append({"pos": interior.to_world(interior.BED_LOCAL), "r": 2.1,
+	# (every house has its own room layout: interior.setup_for moves these two spots)
+	_bed_item = {"pos": interior.to_world(interior.bed_local), "r": 2.1,
 		"prompt": func(): return bed_prompt(), "ok": func(): return inside == "rumah_juragan",
-		"act": func(): use_bed()})
-	interactables.append({"pos": interior.to_world(interior.CUPBOARD_LOCAL) + Vector3(0, 0, 0.5), "r": 1.5,
+		"act": func(): use_bed()}
+	interactables.append(_bed_item)
+	_cup_item = {"pos": interior.to_world(interior.cupboard_local) + Vector3(0, 0, 0.5), "r": 1.5,
 		"prompt": func(): return "Buka lemari (Tas)" if inside == "rumah_juragan" else "Lemari milik tuan rumah",
-		"ok": func(): return inside == "rumah_juragan", "act": func(): ui.show_bag()})
+		"ok": func(): return inside == "rumah_juragan", "act": func(): ui.show_bag()}
+	interactables.append(_cup_item)
 
 
 func bed_prompt() -> String:
@@ -1786,6 +1791,8 @@ func enter_house(hid: String, instant := false) -> void:
 		inside = hid
 		_inside_vid = vid if _owner_home(vid) else ""
 		interior.setup_for(hid, _inside_vid)
+		_bed_item["pos"] = interior.bed_world()
+		_cup_item["pos"] = interior.cupboard_world()
 		if _inside_vid != "":
 			var on: Node3D = interior.owner_node()
 			var ovid := _inside_vid

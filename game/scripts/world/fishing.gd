@@ -19,6 +19,7 @@ var water := "river"
 var spot := Vector3.ZERO
 var fish_id := ""
 var fast := false          # autotest: short waits
+var force_fish := ""       # autotest: the next bite is this species
 var last_result := ""      # "caught:<id>" / "early" / "missed" / "escaped" / "cancel"
 var cursor := 0.0          # 0..1 on the timing bar
 var zone_c := 0.5
@@ -281,16 +282,21 @@ func press() -> void:
 		"wait":
 			_finish("early", "Terlalu cepat! Umpannya kamu tarik sendiri.")
 		"bite":
-			fish_id = GS.roll_fish(water, GS.hour)
+			fish_id = GS.roll_fish(water, GS.hour) if force_fish == "" else force_fish
+			force_fish = ""
 			var hard: float = float(GS.FISH[fish_id]["hard"])
-			zone_w = lerpf(0.34, 0.13, hard)
+			var rar := GS.fish_rarity(fish_id)
+			# rarer tiers: a narrower green zone and a faster cursor on top of the species'
+			# own difficulty
+			var tier: int = GS.RARITY[rar]["order"]
+			zone_w = lerpf(0.34, 0.13, hard) * [1.0, 0.95, 0.88, 0.8][tier]
 			zone_c = randf_range(0.2 + zone_w * 0.5, 0.8 - zone_w * 0.5)
-			_speed = lerpf(0.75, 1.7, hard)
+			_speed = lerpf(0.75, 1.7, hard) * [1.0, 1.0, 1.08, 1.15][tier]
 			cursor = 0.0
 			_dir = 1.0
 			_emote.visible = false
 			_set_phase("reel")
-			_bar_label.text = "Tarik saat di hijau!" if hard < 0.8 else "Ikan besar! Tarik saat di hijau!"
+			_bar_label.text = ["Tarik saat di hijau!", "Tarik saat di hijau!", "Ikan besar! Tarik saat di hijau!", "IKAN LEGENDA! Tarik saat di hijau!"][tier]
 			_bar.visible = true
 			_layout_bar()
 			Sfx.play("click", 0.8, -4.0)
@@ -316,15 +322,22 @@ func _set_phase(p: String) -> void:
 func _catch(perfect: bool) -> void:
 	var id := fish_id
 	var f: Dictionary = GS.FISH[id]
+	var rar := GS.fish_rarity(id)
+	var first := int(GS.fish_log.get(id, 0)) == 0
 	GS.catch_fish(id)
-	var rare := float(f["w"]) < 5.0
+	var rare := rar == "SR" or rar == "SSR"
 	Sfx.play("quest" if rare else "harvest")
 	var pl: Player = world.player
-	world.float_text(pl.global_position + Vector3(0, 0.4, 0), "+" + str(f["name"]), Color("2f6d2a") if not rare else Color("b8401f"))
-	var msg := "Dapat %s! (laku %s di warung)" % [f["name"], GS.fmt_short(int(f["price"]))]
+	world.float_text(pl.global_position + Vector3(0, 0.4, 0), "+" + str(f["name"]), Color(GS.RARITY[rar]["col"]).darkened(0.25) if rar != "N" else Color("2f6d2a"))
+	var msg := "Dapat %s [%s]! (laku %s di warung)" % [f["name"], rar, GS.fmt_short(int(f["price"]))]
 	if perfect:
 		msg = "Tarikan sempurna! " + msg
+	if first:
+		msg += " Spesies baru di Koleksi Ikan!"
 	ui.toast(msg, "quest" if rare else "good")
+	ui.show_catch_card(id, first)
+	if rare:
+		world.burst(pl.global_position + Vector3(0, 1.6, 0), Color(GS.RARITY[rar]["col"]), 18)
 	_show_catch(id)
 	pl.anim.play_action("cheer", 1.0)
 	_finish("caught:" + id, "")

@@ -1093,8 +1093,141 @@ func _features_logic() -> void:
 	GS.save_game()
 	GS.load_game()
 	check(int(GS.inv.get("pancing", 0)) == 1 and int(GS.inv.get("ikan_arwana", 0)) == 1, "save keeps rod and fish")
+	await _logic_fish_and_rooms()
 	print("features logic: %s (%d failed)" % ["OK" if _fails == 0 else "FAIL", _fails])
 	GS.hour = 8.0
+
+
+func _house_of_type(t: String) -> String:
+	for hid in world.door_points:
+		var h := String(hid)
+		if h.begins_with("rumah") and h != "rumah_juragan" and world.interior.room_type(h) == t:
+			var vid: String = world.house_owner(h)
+			if vid == "" or not GS.villagers.get(vid, {}).get("evicted", false):
+				return h
+	return ""
+
+
+func _logic_fish_and_rooms() -> void:
+	var ui: Node = world.ui
+	# --- 20 species in four rarity tiers
+	check(GS.FISH.size() == 20, "20 fish species (%d)" % GS.FISH.size())
+	var tiers := {"N": 0, "R": 0, "SR": 0, "SSR": 0}
+	for id in GS.FISH:
+		tiers[GS.fish_rarity(id)] += 1
+		check(ResourceLoader.exists("res://assets/icons/%s.png" % id), "icon for " + id)
+	check(tiers["N"] == 8 and tiers["R"] == 6 and tiers["SR"] == 4 and tiers["SSR"] == 2, "tiers 8/6/4/2: " + str(tiers))
+	for w in ["river", "sea"]:
+		for h in [3.0, 7.0, 12.0, 18.5, 23.0]:
+			check(not GS.fish_available(w, h).is_empty(), "something bites in %s at %.1f" % [w, h])
+	var hits := {"N": 0, "R": 0, "SR": 0, "SSR": 0}
+	GS.rng.seed = 42
+	for i in 6000:
+		hits[GS.fish_rarity(GS.roll_fish("river", 18.5))] += 1
+	print("rarity hits (river 18:30, 6000 rolls): ", hits)
+	check(hits["N"] > hits["R"] and hits["R"] > hits["SR"] and hits["SR"] > hits["SSR"] and hits["SSR"] > 0, "rarity weights N > R > SR > SSR > 0")
+	check(float(hits["SSR"]) / 6000.0 < 0.03, "SSR stays rare")
+	var price_ok := true
+	var hard_ok := true
+	for id in GS.FISH:
+		var t: int = GS.RARITY[GS.fish_rarity(id)]["order"]
+		for id2 in GS.FISH:
+			var t2: int = GS.RARITY[GS.fish_rarity(id2)]["order"]
+			if t2 > t and int(GS.FISH[id2]["price"]) <= int(GS.FISH[id]["price"]):
+				price_ok = false
+			if t2 > t and float(GS.FISH[id2]["hard"]) <= float(GS.FISH[id]["hard"]) and t2 >= 2:
+				hard_ok = false
+	check(price_ok, "every rarer tier sells for more")
+	check(hard_ok, "SR / SSR are harder than lower tiers")
+	check("ikan_berdasi" in GS.fish_available("river", 23.5) and not "ikan_berdasi" in GS.fish_available("river", 12.0), "Ikan Mas Berdasi only at midnight")
+	# a forced SSR catch through the minigame
+	var br: Array = world.bridges[0]
+	find_fish_spot(Vector3(br[0], 0, br[1]), "river", 30.0)
+	world.fishing.force_fish = "ikan_berdasi"
+	var before := int(GS.fish_log.get("ikan_berdasi", 0))
+	var res: String = await _fish_once(true)
+	check(res == "caught:ikan_berdasi", "forced SSR catch (%s)" % res)
+	check(int(GS.fish_log.get("ikan_berdasi", 0)) == before + 1, "collection logs the catch")
+	check(ui.root.get_node_or_null("CatchCard") != null and ui.root.get_node("CatchCard").find_child("Rarity_SSR", true, false) != null, "catch card with SSR badge")
+	# --- the collection panel
+	ui.show_bag()
+	var dexb: Button = ui.modal.find_child("FishDexButton", true, false)
+	check(dexb != null and dexb.text.contains("/20"), "bag has the Koleksi Ikan button")
+	dexb.pressed.emit()
+	await get_tree().process_frame
+	check(ui.is_fish_collection_open(), "collection opens from the bag")
+	check(ui.modal.find_children("dex_*", "Button", true, false).size() == 20, "collection shows 20 species")
+	ui.show_fish_collection("ikan_toman")
+	await get_tree().process_frame
+	check(ui.is_fish_collection_open() and ui.modal.get_meta("dex_select") == "ikan_toman", "collection selection")
+	ui.close()
+	var n_sp: int = GS.fish_caught_species()
+	GS.save_game()
+	GS.fish_log = {}
+	GS.load_game()
+	check(GS.fish_caught_species() == n_sp and n_sp >= 2, "save keeps the collection (%d species)" % n_sp)
+	# an old save without fish_log still loads (collection seeded from the bag)
+	var f := FileAccess.open(GS.SAVE_PATH, FileAccess.READ)
+	var data: Dictionary = JSON.parse_string(f.get_as_text())
+	f.close()
+	data.erase("fish_log")
+	f = FileAccess.open(GS.SAVE_PATH, FileAccess.WRITE)
+	f.store_string(JSON.stringify(data))
+	f.close()
+	check(GS.load_game() and GS.fish_log.has("ikan_arwana"), "old save loads, collection from the bag")
+	# --- every room type builds its own interior, the door and bed work in each
+	var sigs := {}
+	for t in ["kayu", "jahit", "dapur", "panggung", "limas", "bata", "pondok"]:
+		var hid := _house_of_type(t)
+		check(hid != "", "a house of type " + t)
+		if hid == "":
+			continue
+		world.enter_house(hid, true)
+		var it: Node3D = world.interior
+		check(world.inside == hid and it.kind == t, "entered %s (%s)" % [hid, it.kind])
+		var dp: Vector3 = it.door_pos()
+		check(world.is_walkable(dp.x, dp.z), t + ": door spot walkable")
+		var bp: Vector3 = it.bed_pos()
+		check(world.is_walkable(bp.x, bp.z), t + ": bed side walkable")
+		var room: Node = it.get_node_or_null("Room")
+		check(room != null and room.get_child_count() > 40, "%s: room built (%d parts)" % [t, room.get_child_count() if room else 0])
+		sigs[t] = "%s|%d" % [it.half, room.get_child_count() if room else 0]
+		tp(dp.x, dp.z + 0.2, Vector3(0, 0, 1))
+		world._update_target()
+		check(str(world.target.get("prompt", func(): return "").call()) == "Keluar rumah", t + ": exit prompt")
+		world.exit_house(true)
+		check(world.interior.get_node_or_null("Room") == null, t + ": room freed on exit")
+	var uniq := {}
+	for k in sigs:
+		uniq[sigs[k]] = true
+	check(uniq.size() == sigs.size(), "room types differ: " + str(sigs))
+	# two houses of the same type differ (seeded variation)
+	var same: Array = []
+	for hid in world.door_points:
+		if String(hid).begins_with("rumah") and hid != "rumah_juragan" and world.interior.room_type(hid) == "limas":
+			same.append(hid)
+	if same.size() >= 2:
+		var a := _room_sig(same[0])
+		var b := _room_sig(same[1])
+		check(a != b, "two limas houses look different")
+	world.enter_house("rumah_juragan", true)
+	check(world.interior.kind == "juragan", "own house is the juragan room")
+	var bp2: Vector3 = world.interior.bed_pos()
+	tp(bp2.x, bp2.z, Vector3(1, 0, -0.5))
+	world._update_target()
+	check(str(world.target.get("prompt", func(): return "").call()) == "Tidur di kasur", "juragan room: bed prompt")
+	world.exit_house(true)
+
+
+func _room_sig(hid: String) -> String:
+	world.enter_house(hid, true)
+	var room: Node = world.interior.get_node("Room")
+	var parts: Array = []
+	for c in room.get_children():
+		if c is MeshInstance3D:
+			parts.append("%.1f,%.1f" % [c.position.x, c.position.z])
+	world.exit_house(true)
+	return ";".join(parts)
 
 
 func _features_shots() -> void:
@@ -1152,5 +1285,42 @@ func _features_shots() -> void:
 		tp(on.global_position.x + 0.3, on.global_position.z + 1.4, Vector3(0, 0, -1))
 	await shot("house_villager", 40)
 	world.exit_house(true)
+	# more room types
 	GS.hour = 10.0
+	for t in ["panggung", "limas", "bata", "pondok", "jahit", "dapur"]:
+		var hid := _house_of_type(t)
+		if hid == "":
+			continue
+		world.enter_house(hid, true)
+		var ip: Vector3 = world.interior.door_pos()
+		tp(ip.x + 0.4, ip.z - 0.6, Vector3(0, 0, -1))
+		await shot("interior_" + t, 40)
+		world.exit_house(true)
 	await shot("after_exit", 30)
+	# a rare catch with its rarity card, then the collection
+	GS.hour = 23.0
+	find_fish_spot(j, "sea")
+	fi.fast = true
+	fi.force_fish = "ikan_berdasi"
+	world.start_fishing()
+	var tw := 0.0
+	while fi.phase != "bite" and tw < 4.0:
+		await get_tree().process_frame
+		tw += get_process_delta_time()
+	fi.press()
+	fi.cursor = fi.zone_c
+	fi.press()
+	await wait(0.5)
+	await shot("fish_catch_ssr", 2)
+	GS.hour = 9.0
+	for id in ["ikan_nila", "ikan_toman", "ikan_patin", "lele_sawit", "ikan_kembung"]:
+		GS.catch_fish(id)
+	await wait(3.5)
+	world.ui.show_bag("ikan_berdasi")
+	await shot("bag_rarity", 20)
+	world.ui.close()
+	world.ui.show_fish_collection("ikan_berdasi")
+	await shot("fish_collection", 20)
+	world.ui.show_fish_collection("ikan_kerapu")
+	await shot("fish_collection_unknown", 10)
+	world.ui.close()

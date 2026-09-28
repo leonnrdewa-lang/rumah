@@ -1218,6 +1218,7 @@ func _center_modal() -> void:
 
 func _close_modal() -> void:
 	if modal:
+		Voice.stop()
 		modal.queue_free()
 		modal = null
 		_closed_frame = Engine.get_process_frames()
@@ -1273,6 +1274,8 @@ func dialog(portrait: String, speaker: String, text: String, choices: Array = []
 	_typing_full = text
 	_typing_t = 0.0
 	portrait_stage.talking = true
+	# every villager line is spoken (Bahasa Indonesia TTS, a stable voice per person)
+	Voice.speak(key, speaker, text)
 
 
 func is_typing() -> bool:
@@ -1676,6 +1679,11 @@ func toggle_pause() -> void:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED if fs else DisplayServer.WINDOW_MODE_FULLSCREEN)
 		_paused = false
 		_close_modal(), true, 320))
+	col.add_child(button("Suara warga: " + ("Nyala" if Voice.enabled else "Mati"), func():
+		Voice.enabled = not Voice.enabled
+		_paused = false
+		_close_modal()
+		toggle_pause(), true, 320))
 	col.add_child(button("Cara main", func(): _paused = false; _close_modal(); show_help(), true, 320))
 	col.add_child(button("Dibuat oleh", func(): _paused = false; _close_modal(); show_credits(), true, 320))
 	col.add_child(button("Keluar ke judul", func():
@@ -1728,7 +1736,7 @@ func bag_entries() -> Array:
 	## [{"key", "name", "icon", "desc", "count" (-1 = tool), "price"}] in display order
 	var out: Array = []
 	var keys: Array = BAG_ORDER.duplicate()
-	for id in GS.FISH:
+	for id in GS.fish_ids_sorted():
 		keys.append(id)
 	for k in keys:
 		var n := int(GS.inv.get(k, 0))
@@ -1738,7 +1746,7 @@ func bag_entries() -> Array:
 		if info.is_empty():
 			continue
 		out.append({"key": k, "name": info["name"], "icon": info["icon"], "desc": info["desc"], "count": n,
-			"price": int(info.get("price", 0))})
+			"price": int(info.get("price", 0)), "rar": str(info.get("rar", ""))})
 	for t in GS.TOOLS:
 		out.append({"key": t["icon"], "name": t["name"], "icon": t["icon"], "desc": t["desc"], "count": -1, "price": 0})
 	for u in [["gerobak", "Gerobak dorong", "icon_gerobak", "Kapasitas angkut TBS 25."], ["truk", "Truk pickup", "icon_truk", "Kapasitas angkut TBS 80."],
@@ -1816,6 +1824,10 @@ func show_bag(select := "") -> void:
 		if int(e["count"]) == 0:
 			ic.modulate.a = 0.4
 		b.add_child(ic)
+		if str(e.get("rar", "")) != "":
+			var rb := rarity_badge(str(e["rar"]), 13)
+			rb.position = Vector2(5, 4)
+			b.add_child(rb)
 		if int(e["count"]) >= 0:
 			var cl := _label(str(e["count"]), 17, BROWN, true)
 			cl.add_theme_color_override("font_outline_color", CREAM_LIGHT)
@@ -1847,7 +1859,11 @@ func show_bag(select := "") -> void:
 		var nm := str(sel["name"])
 		if int(sel["count"]) > 0:
 			nm += "  x%d" % int(sel["count"])
-		tcol.add_child(_label(nm, 21, BROWN, true))
+		if str(sel.get("rar", "")) != "":
+			var rr := str(sel["rar"])
+			tcol.add_child(_hrow([_label(nm, 21, BROWN, true), rarity_badge(rr, 15), _label(str(GS.RARITY[rr]["long"]), 15, Color(GS.RARITY[rr]["col"]).darkened(0.2), true)], 8))
+		else:
+			tcol.add_child(_label(nm, 21, BROWN, true))
 		var dl := _label(str(sel["desc"]), 17, BROWN_SOFT)
 		dl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		dl.custom_minimum_size = Vector2(dw, 0)
@@ -1862,9 +1878,14 @@ func show_bag(select := "") -> void:
 	var foot := _label(("Ikan: %d ekor • nilai %s (jual di Warung / Koperasi)" % [nf, GS.fmt_short(GS.fish_value())]) if nf > 0 else "Bawaan TBS: %d/%d" % [int(GS.inv.get("tbs", 0)), GS.capacity()], 16, BROWN_SOFT)
 	foot.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(foot)
+	var dex_b := button("Koleksi Ikan (%d/%d)" % [GS.fish_caught_species(), GS.FISH.size()], func():
+		_close_modal()
+		show_fish_collection(), true, 200)
+	dex_b.name = "FishDexButton"
 	var close_b := button("Tutup" + ("" if _touch_mode else "  (B / Esc)"), _close_modal, true, 180)
-	close_b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	col.add_child(close_b)
+	var brow := _hrow([dex_b, close_b], 12)
+	brow.alignment = BoxContainer.ALIGNMENT_CENTER
+	col.add_child(brow)
 	_open_modal(panel, true)
 	panel.set_meta("bag_select", select)
 
@@ -1872,6 +1893,233 @@ func show_bag(select := "") -> void:
 func show_bag_select(key: String) -> void:
 	## re-open the bag with another item selected (keeps the panel in place)
 	show_bag(key)
+
+
+# ------------------------------------------------------------------ fish rarity / koleksi ikan
+func rarity_badge(rar: String, size := 14) -> Control:
+	## a small coloured pill: N grey, R blue, SR purple, SSR gold with a moving shine
+	var info: Dictionary = GS.RARITY.get(rar, GS.RARITY["N"])
+	var col := Color(info["col"])
+	var p := PanelContainer.new()
+	p.name = "Rarity_" + rar
+	var st := _box(col, 8, col.darkened(0.35), 2)
+	_margins(st, 6, 0, 6, 1)
+	p.add_theme_stylebox_override("panel", st)
+	p.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	p.clip_contents = true
+	p.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	p.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	var l := _label(rar, size, Color.WHITE, true)
+	l.add_theme_color_override("font_outline_color", col.darkened(0.45))
+	l.add_theme_constant_override("outline_size", 4)
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	p.add_child(l)
+	if rar == "SSR":
+		# a diagonal glint sweeping across every 1.6 s
+		var holder := Control.new()
+		holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		holder.set_anchors_preset(Control.PRESET_FULL_RECT)
+		var shine := ColorRect.new()
+		shine.color = Color(1, 1, 0.9, 0.7)
+		shine.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		shine.size = Vector2(7, size * 3.0)
+		shine.rotation = 0.5
+		shine.position = Vector2(-20, -size)
+		holder.add_child(shine)
+		p.add_child(holder)
+		var w := size * 3.2
+		var tw := shine.create_tween().set_loops()
+		tw.tween_property(shine, "position:x", w + 10.0, 0.55).from(-20.0)
+		tw.tween_interval(1.05)
+	return p
+
+
+func show_catch_card(id: String, first := false) -> void:
+	## the catch popup: fish icon, name, rarity badge (and "BARU!" for a new species)
+	if not GS.FISH.has(id):
+		return
+	var f: Dictionary = GS.FISH[id]
+	var rar := GS.fish_rarity(id)
+	var rcol := Color(GS.RARITY[rar]["col"])
+	var old := root.get_node_or_null("CatchCard")
+	if old:
+		old.queue_free()
+		root.remove_child(old)
+	var card := PanelContainer.new()
+	card.name = "CatchCard"
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var st := _box(CREAM_LIGHT, 20, rcol if rar != "N" else LINE_DARK, 4 if rar != "N" else 2, true)
+	_margins(st, 14, 8, 18, 10)
+	card.add_theme_stylebox_override("panel", st)
+	var tcol := VBoxContainer.new()
+	tcol.add_theme_constant_override("separation", 2)
+	tcol.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var top: Array = [rarity_badge(rar, 18), _label(str(GS.RARITY[rar]["long"]), 16, rcol.darkened(0.2), true)]
+	if first:
+		var nb := _label("BARU!", 15, Color("c0392b"), true)
+		top.append(nb)
+	tcol.add_child(_hrow(top, 8))
+	tcol.add_child(_label(str(f["name"]), 24, BROWN, true))
+	tcol.add_child(_label("Laku %s" % GS.fmt_short(int(f["price"])), 16, BROWN_SOFT))
+	card.add_child(_hrow([_icon_rect(id, 76), tcol], 12))
+	root.add_child(card)
+	var vp := root.get_viewport_rect().size
+	card.size = card.get_combined_minimum_size()
+	card.position = Vector2(roundf(vp.x * 0.5 - card.size.x * 0.5), roundf(vp.y * 0.2))
+	card.pivot_offset = card.size * 0.5
+	card.scale = Vector2(0.6, 0.6)
+	card.modulate.a = 0.0
+	var tw := card.create_tween()
+	tw.tween_property(card, "scale", Vector2.ONE, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(card, "modulate:a", 1.0, 0.15)
+	tw.tween_interval(2.4 if rar in ["N", "R"] else 3.4)
+	tw.tween_property(card, "modulate:a", 0.0, 0.4)
+	tw.tween_callback(card.queue_free)
+
+
+func is_fish_collection_open() -> bool:
+	return modal != null and modal.has_meta("fishdex")
+
+
+func show_fish_collection(select := "") -> void:
+	## Koleksi Ikan: all 20 species, caught ones in colour, the rest as silhouettes
+	if modal and not is_fish_collection_open():
+		return
+	var ids: Array = GS.fish_ids_sorted()
+	if select == "":
+		select = ids[0]
+	var panel := PanelContainer.new()
+	panel.name = "FishDex"
+	panel.set_meta("fishdex", true)
+	panel.set_meta("closable", true)
+	panel.set_meta("dex_select", select)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 8)
+	panel.add_child(col)
+	var vp := root.get_viewport_rect().size
+	var wide := vp.x >= vp.y
+	var title := _title_label("Koleksi Ikan", TITLE_BROWN, 30)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var cnt := _chip("ui_bag", "%d / %d spesies" % [GS.fish_caught_species(), ids.size()])
+	cnt.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	col.add_child(_hrow([_icon_rect("ikan_arwana", 44), title, cnt], 12))
+	col.add_child(_divider())
+	var cols := 5 if wide else 4
+	var cell := 86.0 if wide else 72.0
+	cell = minf(cell, floorf((vp.x - 80.0) / cols) - 6.0)
+	var rows := int(ceil(ids.size() / float(cols)))
+	var grid := GridContainer.new()
+	grid.columns = cols
+	grid.add_theme_constant_override("h_separation", 6)
+	grid.add_theme_constant_override("v_separation", 6)
+	# the fish sheet as faded art behind the grid
+	var stack := Control.new()
+	var gsz := Vector2(cols * (cell + 6.0), rows * (cell + 6.0))
+	var max_h := maxf(cell * 2.0, vp.y - 330.0)
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.custom_minimum_size = Vector2(gsz.x, minf(gsz.y, max_h))
+	scroll.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	stack.custom_minimum_size = gsz
+	if ResourceLoader.exists("res://assets/ui/fish_sheet.png"):
+		var bg := TextureRect.new()
+		bg.name = "SheetArt"
+		bg.texture = load("res://assets/ui/fish_sheet.png")
+		bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		bg.stretch_mode = TextureRect.STRETCH_SCALE
+		bg.size = gsz
+		bg.modulate = Color(1, 1, 1, 0.16)
+		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		stack.add_child(bg)
+	stack.add_child(grid)
+	scroll.add_child(stack)
+	col.add_child(scroll)
+	for id in ids:
+		var got := int(GS.fish_log.get(id, 0)) > 0
+		var rar := GS.fish_rarity(id)
+		var b := Button.new()
+		b.name = "dex_" + str(id)
+		b.custom_minimum_size = Vector2(cell, cell)
+		b.focus_mode = Control.FOCUS_ALL
+		var on: bool = id == select
+		var bgc := CREAM_LIGHT if on else (CREAM if got else Color("e9dcc2"))
+		bgc.a = 0.9
+		b.add_theme_stylebox_override("normal", _box(bgc, 14, ACCENT if on else (Color(GS.RARITY[rar]["col"]) if got and rar != "N" else LINE), 3 if on else 2))
+		b.add_theme_stylebox_override("hover", _box(CREAM_LIGHT, 14, ACCENT, 2))
+		b.add_theme_stylebox_override("pressed", _box(CREAM_DARK, 14, ACCENT, 3))
+		b.add_theme_stylebox_override("focus", _box(Color(0, 0, 0, 0), 14, ACCENT, 3))
+		var ic := TextureRect.new()
+		ic.texture = icon(str(id))
+		ic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		ic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		ic.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		ic.position = Vector2(cell * 0.12, cell * 0.14)
+		ic.size = Vector2(cell * 0.76, cell * 0.76)
+		if not got:
+			ic.modulate = Color(0.22, 0.16, 0.12, 0.75)   # silhouette
+		b.add_child(ic)
+		var rb := rarity_badge(rar, 12)
+		rb.position = Vector2(4, 3)
+		b.add_child(rb)
+		if not got:
+			var q := _label("?", 22, CREAM_LIGHT, true)
+			q.position = Vector2(cell * 0.5 - 6, cell * 0.36)
+			b.add_child(q)
+		var fid: String = id
+		b.pressed.connect(func():
+			Sfx.play("click", 1.1, -8.0)
+			show_fish_collection(fid))
+		grid.add_child(b)
+	# info about the selected species
+	var f: Dictionary = GS.FISH[select]
+	var got_sel := int(GS.fish_log.get(select, 0)) > 0
+	var rr := GS.fish_rarity(select)
+	var info := PanelContainer.new()
+	var ist := _box(CREAM_LIGHT, 18, LINE, 2)
+	_margins(ist, 12, 8, 14, 10)
+	info.add_theme_stylebox_override("panel", ist)
+	var ih := HBoxContainer.new()
+	ih.add_theme_constant_override("separation", 12)
+	info.add_child(ih)
+	var ir := _icon_rect(select, 56)
+	if not got_sel:
+		ir.modulate = Color(0.22, 0.16, 0.12, 0.8)
+	ih.add_child(ir)
+	var tcol := VBoxContainer.new()
+	tcol.add_theme_constant_override("separation", 0)
+	tcol.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	tcol.add_child(_hrow([_label(str(f["name"]) if got_sel else "???", 21, BROWN, true), rarity_badge(rr, 15),
+		_label(str(GS.RARITY[rr]["long"]), 15, Color(GS.RARITY[rr]["col"]).darkened(0.2), true)], 8))
+	var where: String = " & ".join(f["water"].map(func(w): return "sungai" if w == "river" else "laut"))
+	var hs: Array = f.get("hours", [])
+	var when := "kapan saja"
+	if not hs.is_empty():
+		var parts: Array = []
+		for i in range(0, hs.size(), 2):
+			var a := float(hs[i])
+			var z := float(hs[i + 1])
+			parts.append("%02d.%02d-%02d.%02d" % [int(a), int(fmod(a, 1.0) * 60.0), int(z), int(fmod(z, 1.0) * 60.0)])
+		when = ", ".join(parts)
+	var txt := str(f["desc"]) if got_sel else "Belum pernah tertangkap. Petunjuk: coba mancing di %s, %s." % [where, when]
+	var dl := _label(txt, 16, BROWN_SOFT)
+	dl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	dl.custom_minimum_size = Vector2(maxf(200.0, gsz.x - 90.0), 0)
+	tcol.add_child(dl)
+	if got_sel:
+		tcol.add_child(_label("Tertangkap %dx • %s, %s • laku %s" % [int(GS.fish_log[select]), where, when, GS.fmt_short(int(f["price"]))], 15, Color("7a4a12"), true))
+	ih.add_child(tcol)
+	col.add_child(info)
+	var back := button("Kembali ke Tas", func():
+		_close_modal()
+		show_bag(), true, 180)
+	var close_b := button("Tutup", _close_modal, true, 140)
+	var brow := _hrow([back, close_b], 12)
+	brow.alignment = BoxContainer.ALIGNMENT_CENTER
+	col.add_child(brow)
+	var chained := modal != null
+	if chained:
+		_on_modal_close = Callable()
+	_open_modal(panel, true)
 
 
 func on_inside_changed() -> void:

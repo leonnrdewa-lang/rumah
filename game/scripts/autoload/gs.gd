@@ -27,24 +27,60 @@ const PRICE := {
 }
 ## Fish (mancing): where they bite ("sea" = the coast, the lagoon and the jetty;
 ## "river" = the rivers and under the bridges), how often (weight), when (hours, empty =
-## all day), sell price (warung / koperasi) and how hard the timing bar is (0..1).
+## all day), sell price (warung / koperasi), how hard the timing bar is (0..1) and the
+## rarity tier (N / R / SR / SSR, see RARITY). 20 species: 8 N, 6 R, 4 SR, 2 SSR.
 const FISH := {
-	"ikan_nila": {"name": "Ikan Nila", "water": ["river"], "w": 30, "price": 25000, "hard": 0.15,
+	# --- N (normal)
+	"ikan_nila": {"name": "Ikan Nila", "rar": "N", "water": ["river"], "w": 30, "price": 25000, "hard": 0.15,
 		"desc": "Ikan sungai sejuta umat. Enak dibakar."},
-	"ikan_lele": {"name": "Ikan Lele", "water": ["river"], "w": 24, "price": 20000, "hard": 0.2,
+	"ikan_lele": {"name": "Ikan Lele", "rar": "N", "water": ["river"], "w": 24, "price": 20000, "hard": 0.2,
 		"hours": [17.0, 24.0], "desc": "Suka keluar sore dan malam. Kumisnya lebih rapi dari Pak RT."},
-	"ikan_patin": {"name": "Ikan Patin", "water": ["river"], "w": 14, "price": 45000, "hard": 0.35,
-		"desc": "Patin sungai, dagingnya lembut. Laku di warung."},
-	"ikan_gabus": {"name": "Ikan Gabus", "water": ["river"], "w": 10, "price": 60000, "hard": 0.5,
-		"desc": "Ikan buas penunggu rawa. Katanya bagus untuk luka operasi."},
-	"udang_galah": {"name": "Udang Galah", "water": ["river", "sea"], "w": 8, "price": 80000, "hard": 0.45,
-		"hours": [6.0, 11.0], "desc": "Capit birunya panjang. Muncul pagi-pagi di muara."},
-	"ikan_bawal": {"name": "Ikan Bawal", "water": ["sea"], "w": 28, "price": 35000, "hard": 0.2,
+	"ikan_mujair": {"name": "Ikan Mujair", "rar": "N", "water": ["river"], "w": 26, "price": 22000, "hard": 0.15,
+		"desc": "Sepupu nila yang kurang terkenal. Tetap enak digoreng kering."},
+	"ikan_sepat": {"name": "Ikan Sepat", "rar": "N", "water": ["river"], "w": 22, "price": 15000, "hard": 0.1,
+		"hours": [6.0, 18.0], "desc": "Kecil, pipih, banyak tulang. Biasanya jadi ikan asin."},
+	"ikan_bawal": {"name": "Ikan Bawal", "rar": "N", "water": ["sea"], "w": 28, "price": 35000, "hard": 0.2,
 		"desc": "Bawal laut, pipih dan gurih."},
-	"ikan_kakap": {"name": "Ikan Kakap Merah", "water": ["sea"], "w": 16, "price": 90000, "hard": 0.5,
+	"ikan_kembung": {"name": "Ikan Kembung", "rar": "N", "water": ["sea"], "w": 30, "price": 28000, "hard": 0.15,
+		"desc": "Ikan rakyat, murah dan bergizi. Kata iklan, bikin anak pintar."},
+	"ikan_tongkol": {"name": "Ikan Tongkol", "rar": "N", "water": ["sea"], "w": 24, "price": 32000, "hard": 0.25,
+		"hours": [5.0, 16.0], "desc": "Enak dibalado. Jangan lupa cabai rawitnya."},
+	"ikan_teri": {"name": "Ikan Teri", "rar": "N", "water": ["sea"], "w": 22, "price": 12000, "hard": 0.1,
+		"desc": "Kecil-kecil cabai rawit. Sekali tarik dapat segenggam."},
+	# --- R
+	"ikan_patin": {"name": "Ikan Patin", "rar": "R", "water": ["river"], "w": 10, "price": 45000, "hard": 0.4,
+		"desc": "Patin sungai, dagingnya lembut. Laku di warung."},
+	"ikan_gabus": {"name": "Ikan Gabus", "rar": "R", "water": ["river"], "w": 8, "price": 60000, "hard": 0.5,
+		"desc": "Ikan buas penunggu rawa. Katanya bagus untuk luka operasi."},
+	"ikan_baung": {"name": "Ikan Baung", "rar": "R", "water": ["river"], "w": 8, "price": 70000, "hard": 0.45,
+		"hours": [18.0, 24.0, 0.0, 5.0], "desc": "Keluar malam, sirip tajam. Mantap dimasak asam pedas."},
+	"udang_galah": {"name": "Udang Galah", "rar": "R", "water": ["river", "sea"], "w": 7, "price": 80000, "hard": 0.45,
+		"hours": [6.0, 11.0], "desc": "Capit birunya panjang. Muncul pagi-pagi di muara."},
+	"ikan_kakap": {"name": "Ikan Kakap Merah", "rar": "R", "water": ["sea"], "w": 9, "price": 90000, "hard": 0.5,
 		"desc": "Kakap merah dari dermaga. Harganya bikin juragan senyum."},
-	"ikan_arwana": {"name": "Ikan Arwana Emas", "water": ["river", "sea"], "w": 1.5, "price": 1500000, "hard": 0.85,
+	"ikan_baronang": {"name": "Ikan Baronang", "rar": "R", "water": ["sea"], "w": 9, "price": 65000, "hard": 0.4,
+		"desc": "Suka ngemil lumut karang. Durinya beracun, hati-hati."},
+	# --- SR
+	"ikan_toman": {"name": "Ikan Toman", "rar": "SR", "water": ["river"], "w": 2.4, "price": 280000, "hard": 0.68,
+		"desc": "Gabus raksasa bergaris merah. Tarikannya bikin pancing bambu menjerit."},
+	"ikan_belida": {"name": "Ikan Belida", "rar": "SR", "water": ["river"], "w": 2.0, "price": 400000, "hard": 0.72,
+		"hours": [16.0, 21.0], "desc": "Ikan pisau langka bahan pempek asli. Dilindungi... katanya."},
+	"lele_sawit": {"name": "Lele Sawit", "rar": "SR", "water": ["river"], "w": 2.2, "price": 350000, "hard": 0.66,
+		"hours": [19.0, 24.0, 0.0, 4.0], "desc": "Lele gendut berkilau minyak, besar karena limbah pabrik. Jangan tanya kenapa matanya tiga."},
+	"ikan_kerapu": {"name": "Ikan Kerapu Macan", "rar": "SR", "water": ["sea"], "w": 2.6, "price": 500000, "hard": 0.7,
+		"desc": "Kerapu belang dari balik karang dermaga. Restoran kota antre."},
+	# --- SSR
+	"ikan_arwana": {"name": "Ikan Arwana Emas", "rar": "SSR", "water": ["river", "sea"], "w": 0.7, "price": 1500000, "hard": 0.86,
 		"hours": [5.0, 8.0, 17.5, 20.0], "desc": "SANGAT LANGKA! Ikan hias pembawa hoki. Kolektor kota rela bayar mahal."},
+	"ikan_berdasi": {"name": "Ikan Mas Berdasi", "rar": "SSR", "water": ["river", "sea"], "w": 0.5, "price": 2500000, "hard": 0.92,
+		"hours": [22.0, 24.0, 0.0, 3.0], "desc": "LEGENDA! Ikan mas emas berdasi dan berpeci. Konon mantan pejabat yang dikutuk karena gusur lahan warga. Muncul tengah malam."},
+}
+## rarity tiers: display name, badge colour, sort order
+const RARITY := {
+	"N": {"name": "N", "long": "Normal", "col": "8a8a8a", "order": 0},
+	"R": {"name": "R", "long": "Rare", "col": "3a74c0", "order": 1},
+	"SR": {"name": "SR", "long": "Super Rare", "col": "8a4ac0", "order": 2},
+	"SSR": {"name": "SSR", "long": "Super Super Rare", "col": "e0a820", "order": 3},
 }
 ## Everything that can sit in the bag (Tas): name, icon, description. Fish come from FISH.
 const ITEMS := {
@@ -161,6 +197,9 @@ var villagers := {}
 var workers: Array = []          # entries: {"id": String, "wage": int, "vid": String}
 var quest_index: int = 0
 var stats := {}
+## Koleksi Ikan: species id -> how many ever caught (new in the fish update; old saves
+## start from the fish in the bag)
+var fish_log := {}
 var pending_events: Array = []
 var game_active := false
 ## true when the last new day started from a bed (not passing out at midnight)
@@ -199,6 +238,7 @@ func new_game() -> void:
 		"oil_sold": 0, "oil_villager": 0, "sidak": 0, "franchise": 0, "bribes": 0,
 		"fish_caught": 0, "fish_sold": 0}
 	parcels = []
+	fish_log = {}
 	var layout: Dictionary = load_layout()
 	var n := tile_count()
 	for p in layout.get("parcels", []):
@@ -621,7 +661,7 @@ func item_info(key: String) -> Dictionary:
 	## {"name", "icon", "desc", "price"} for a bag item ({} if unknown)
 	if FISH.has(key):
 		var f: Dictionary = FISH[key]
-		return {"name": f["name"], "icon": key, "desc": f["desc"], "price": int(f["price"]), "fish": true}
+		return {"name": f["name"], "icon": key, "desc": f["desc"], "price": int(f["price"]), "fish": true, "rar": str(f.get("rar", "N"))}
 	return ITEMS.get(key, {})
 
 
@@ -661,7 +701,33 @@ func roll_fish(water: String, h: float) -> String:
 
 func catch_fish(id: String) -> void:
 	add_item(id, 1)
+	fish_log[id] = int(fish_log.get(id, 0)) + 1
 	stats["fish_caught"] = int(stats.get("fish_caught", 0)) + 1
+
+
+func fish_rarity(id: String) -> String:
+	return str(FISH.get(id, {}).get("rar", "N"))
+
+
+func fish_caught_species() -> int:
+	var n := 0
+	for id in FISH:
+		if int(fish_log.get(id, 0)) > 0:
+			n += 1
+	return n
+
+
+func fish_ids_sorted() -> Array:
+	## collection order: by rarity, then by the FISH order
+	var ids: Array = FISH.keys()
+	var idx := {}
+	for i in ids.size():
+		idx[ids[i]] = i
+	ids.sort_custom(func(a, b):
+		var ra: int = RARITY[fish_rarity(a)]["order"]
+		var rb: int = RARITY[fish_rarity(b)]["order"]
+		return ra < rb if ra != rb else idx[a] < idx[b])
+	return ids
 
 
 func fish_count() -> int:
@@ -744,6 +810,7 @@ func save_game() -> void:
 		"v": SAVE_VERSION, "money": money, "day": day, "hour": hour, "energy": energy, "rep": rep, "heat": heat,
 		"inv": inv, "upgrades": upgrades, "oil": oil_price_level, "tbs_price": tbs_price, "parcels": parcels,
 		"villagers": villagers, "workers": workers, "quest": quest_index, "stats": stats,
+		"fish_log": fish_log,
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f:
@@ -795,6 +862,14 @@ func load_game() -> bool:
 	quest_index = int(data["quest"])
 	for k in data["stats"]:
 		stats[k] = int(data["stats"][k])
+	var fl = data.get("fish_log", {})
+	if typeof(fl) == TYPE_DICTIONARY:
+		for k in fl:
+			if FISH.has(k):
+				fish_log[k] = int(fl[k])
+	for k in FISH:   # saves from before the collection: count the fish in the bag
+		if int(inv.get(k, 0)) > 0 and not fish_log.has(k):
+			fish_log[k] = int(inv[k])
 	game_active = true
 	stats_changed.emit()
 	quest_changed.emit()
