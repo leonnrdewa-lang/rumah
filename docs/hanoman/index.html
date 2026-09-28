@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<link rel="icon" href="favicon.png">
+<title>Hanoman Duta</title>
+<meta name="description" content="Demo action roguelike ala Hades bertema Ramayana dan legenda Sura & Baya. Main di browser PC & HP.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Alegreya:wght@400;600&display=swap">
+<style>
+  :root {
+    --night: #0b0d13;
+    --night-2: #151a26;
+    --gold: #d9a93a;
+    --gold-soft: #a88434;
+    --cream: #f3e9d2;
+    --muted: #a59d8c;
+    --teal: #5fe0c8;
+    --ember: #e0508f;
+  }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--night);
+    color: var(--cream);
+    font-family: "Alegreya", Georgia, serif;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+  #canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    outline: none;
+    touch-action: none;
+    background: var(--night);
+  }
+  #loader {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding-inline: 16px;
+    background:
+      radial-gradient(60% 45% at 50% 38%, rgba(95, 224, 200, .12), transparent 70%),
+      radial-gradient(80% 60% at 50% 120%, rgba(224, 80, 143, .14), transparent 70%),
+      var(--night);
+    transition: opacity .45s ease;
+    z-index: 2;
+  }
+  #loader.gone { opacity: 0; pointer-events: none; }
+  .card { width: min(560px, 100%); text-align: center; display: grid; gap: 14px; justify-items: center; }
+  .logo {
+    font-family: "Cinzel Decorative", Georgia, serif;
+    font-weight: 700;
+    font-size: clamp(40px, 11vw, 84px);
+    line-height: 1;
+    color: var(--gold);
+    letter-spacing: .02em;
+    text-shadow: 0 0 24px rgba(217, 169, 58, .35), 0 3px 0 #000;
+  }
+  .sub { font-size: clamp(16px, 4vw, 22px); color: var(--cream); letter-spacing: .04em; }
+  .bar {
+    width: 100%;
+    height: 10px;
+    background: var(--night-2);
+    border: 1px solid var(--gold-soft);
+    overflow: hidden;
+    margin-top: 10px;
+  }
+  .bar > i {
+    display: block;
+    height: 100%;
+    width: 4%;
+    background: linear-gradient(90deg, var(--teal), var(--gold));
+    transition: width .25s ease;
+  }
+  #status { font-size: 17px; color: var(--muted); font-variant-numeric: tabular-nums; min-height: 1.4em; }
+  .tip { font-size: 17px; color: var(--cream); max-width: 100%; border-top: 1px solid rgba(217, 169, 58, .3); padding-top: 10px; }
+  .keys { font-size: 15px; color: var(--muted); max-width: 48ch; }
+  #error { display: none; color: var(--ember); font-weight: 600; }
+  #rotate {
+    display: none;
+    position: fixed;
+    left: 50%;
+    top: calc(10px + env(safe-area-inset-top, 0px));
+    transform: translateX(-50%);
+    z-index: 3;
+    font-size: 14px;
+    background: rgba(21, 26, 38, .92);
+    border: 1px solid var(--gold-soft);
+    padding: 6px 14px;
+    white-space: nowrap;
+  }
+  @media (orientation: portrait) and (max-width: 700px) { #rotate.show { display: block; } }
+  @media (prefers-reduced-motion: reduce) { .bar > i, #loader { transition: none; } }
+</style>
+
+</head>
+<body>
+<canvas id="canvas" tabindex="0">Browser kamu tidak mendukung canvas.</canvas>
+<div id="loader" role="status" aria-live="polite">
+  <div class="card">
+    <div class="logo">Hanoman Duta</div>
+    <div class="sub">Lakon Ramayana &amp; Legenda Sura dan Baya</div>
+    <div class="bar" aria-hidden="true"><i id="fill"></i></div>
+    <div id="status">Membuka gerbang Pancawati…</div>
+    <div class="tip" id="tip">Tip: Lesat (Spasi) membuat Hanoman kebal sesaat. Pakai untuk menembus serangan.</div>
+    <div class="keys">PC: WASD gerak, J/klik = Serang, K/klik kanan = Jurus, Q = Ajian, Spasi = Lesat, E = Interaksi. HP: jempol kiri gerak, tombol kanan untuk jurus.</div>
+    <div id="error"></div>
+  </div>
+</div>
+<div id="rotate">Putar HP ke mode landscape</div>
+
+<script src="index.js"></script>
+<script>
+(function () {
+  const GODOT_CONFIG = {"args": [], "canvasResizePolicy": 2, "emscriptenPoolSize": 8, "ensureCrossOriginIsolationHeaders": true, "executable": "index", "experimentalVK": false, "fileSizes": {"index.pck": 10939936, "index.wasm": 38034280}, "focusCanvas": true, "gdextensionLibs": [], "godotPoolSize": 4};
+  const PACKED = {"index.wasm": {"src": "index.wasm.gz", "size": 9237412, "b64": false}, "index.pck": {"src": "index.pck.gz", "size": 10410003, "b64": false}};  // file -> {src, size, b64}
+
+  const fill = document.getElementById("fill");
+  const status = document.getElementById("status");
+  const got = {};
+  const total = Object.values(PACKED).reduce((n, p) => n + p.size, 0);
+  function showProgress() {
+    const done = Object.values(got).reduce((n, v) => n + v, 0);
+    const pct = total ? Math.min(100, Math.round((done / total) * 100)) : 0;
+    fill.style.width = Math.max(4, pct) + "%";
+    status.textContent = pct < 100 ? "Mengunduh game… " + pct + "% (" + (done / 1048576).toFixed(1) + " / " + (total / 1048576).toFixed(1) + " MB)"
+                                   : "Membuka gerbang Pancawati…";
+  }
+
+  function decodeBase64(text) {
+    const bin = atob(text.replace(/\s+/g, ""));
+    const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+
+  async function download(name, info) {
+    // src is one file, or a list of parts (big packs are split for the host) joined in order
+    const parts = Array.isArray(info.src) ? info.src : [info.src];
+    const chunks = [];
+    got[name] = 0;
+    for (const src of parts) {
+      const res = await nativeFetch(src);
+      if (!res.ok) throw new Error("Gagal mengunduh " + src + " (" + res.status + ")");
+      const reader = res.body.getReader();
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        got[name] += value.length;
+        showProgress();
+      }
+    }
+    got[name] = info.size;
+    showProgress();
+    let blob = new Blob(chunks);
+    if (info.b64) blob = new Blob([decodeBase64(await blob.text())]);
+    return blob;
+  }
+
+  // Big files ship gzip-compressed (as base64 text where the host only serves text);
+  // Godot's loader asks for index.wasm / index.pck and gets the inflated bytes.
+  const nativeFetch = window.fetch.bind(window);
+  window.fetch = function (input, init) {
+    const url = typeof input === "string" ? input : (input && input.url) || "";
+    const clean = url.split("?")[0];
+    const name = Object.keys(PACKED).find((n) => clean.endsWith(n));
+    if (name && typeof DecompressionStream === "function") {
+      return download(name, PACKED[name]).then((blob) => new Response(
+        blob.stream().pipeThrough(new DecompressionStream("gzip")),
+        { status: 200, headers: { "Content-Type": name.endsWith(".wasm") ? "application/wasm" : "application/octet-stream" } }));
+    }
+    return nativeFetch(input, init);
+  };
+
+  const loader = document.getElementById("loader");
+  const errorBox = document.getElementById("error");
+  const tips = [
+    "Tip: Lesat (Spasi) membuat Hanoman kebal sesaat. Pakai untuk menembus serangan.",
+    "Tip: lingkaran merah di tanah = serangan raksasa. Menjauhlah sebelum penuh!",
+    "Tip: Yuyu Kangkang kebal dari depan. Ikat dengan Ajian atau pukul dari belakang.",
+    "Tip: serangan Sura bisa melukai Baya, dan sebaliknya. Adu mereka!",
+    "Tip: Kembang Wijayakusuma tetap kau bawa pulang walau gugur. Tukarkan pada Jembawan.",
+  ];
+  let tipIndex = 0;
+  const tipTimer = setInterval(() => {
+    tipIndex = (tipIndex + 1) % tips.length;
+    document.getElementById("tip").textContent = tips[tipIndex];
+  }, 3500);
+
+  function fail(msg) {
+    errorBox.style.display = "block";
+    errorBox.textContent = msg;
+    status.textContent = "Gagal memuat.";
+  }
+
+  if (!Engine.isWebGLAvailable(2)) {
+    fail("Browser ini belum mendukung WebGL 2. Coba Chrome atau Firefox versi terbaru.");
+    return;
+  }
+  if (typeof DecompressionStream !== "function") {
+    fail("Browser ini terlalu lama (tidak mendukung DecompressionStream). Coba Chrome/Firefox/Safari terbaru.");
+    return;
+  }
+
+  const engine = new Engine(GODOT_CONFIG);
+  engine.startGame({
+    onProgress: function () {},
+  }).then(() => {
+    clearInterval(tipTimer);
+    loader.classList.add("gone");
+    setTimeout(() => loader.remove(), 600);
+    document.getElementById("canvas").focus();
+  }, (err) => fail(String(err && err.message ? err.message : err)));
+
+  const rotate = document.getElementById("rotate");
+  if (matchMedia("(pointer: coarse)").matches) rotate.classList.add("show");
+})();
+</script>
+</body>
+</html>

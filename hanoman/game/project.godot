@@ -1,0 +1,50 @@
+; Engine configuration file.
+; Hanoman Duta — Godot 4.5 (Compatibility renderer for Web / Android browsers)
+
+config_version=5
+
+[application]
+
+config/name="Hanoman Duta"
+config/description="Action roguelike isometrik bertema Ramayana & legenda Sura-Baya."
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.5", "GL Compatibility")
+boot_splash/bg_color=Color(0.04, 0.05, 0.07, 1)
+boot_splash/show_image=false
+config/icon="res://assets/icons/app_icon.png"
+
+[autoload]
+
+G="*res://scripts/g.gd"
+Au="*res://scripts/audio.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=4
+
+[gui]
+
+theme/custom_font="res://assets/fonts/Alegreya.ttf"
+
+[input_devices]
+
+pointing/emulate_mouse_from_touch=true
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true
+lights_and_shadows/directional_shadow/size=2048
+lights_and_shadows/directional_shadow/size.mobile=2048
+lights_and_shadows/directional_shadow/soft_shadow_filter_quality=1
+anti_aliasing/quality/msaa_3d=1
+environment/defaults/default_clear_color=Color(0.03, 0.04, 0.06, 1)
+
+[physics]
+
+common/physics_interpolation=true
