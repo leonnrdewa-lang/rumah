@@ -71,6 +71,8 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
 #brakeBtn{position:absolute;right:14px;bottom:calc(78px + env(safe-area-inset-bottom,0px));pointer-events:auto;width:84px;height:84px;border-radius:50%;
   border:4px solid #2a1a0a;background:#e8352a;color:#fff;font:400 22px var(--display);letter-spacing:.04em;cursor:pointer;box-shadow:0 5px 0 #2a1a0a;touch-action:none;}
 #brakeBtn.on{transform:translateY(4px);box-shadow:0 1px 0 #2a1a0a;background:#b8231a;}
+#musicBtn{position:absolute;right:34px;bottom:calc(176px + env(safe-area-inset-bottom,0px));pointer-events:auto;width:44px;height:44px;border-radius:12px;border:0;background:rgba(15,12,10,.6);color:#fff;font:700 22px var(--body);cursor:pointer;}
+#musicBtn.off{opacity:.45;text-decoration:line-through;}
 #stick{position:absolute;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;border:3px solid rgba(255,255,255,.55);left:0;top:0;}
 #knob{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;background:rgba(255,255,255,.6);}
 #crack{position:absolute;left:50%;top:44%;width:180px;height:180px;margin:-90px 0 0 -90px;}
@@ -124,6 +126,7 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
     <div id="stick" hidden><div id="knob"></div></div>
     <svg id="crack" viewBox="0 0 64 64" style="display:none"><path d="M8 40 A24 24 0 0 1 56 40 L58 46 L6 46Z" fill="#ff4b3a" stroke="#2a1a0a" stroke-width="2"/><path d="M34 16 L28 26 L35 31 L27 45" fill="none" stroke="#1a1410" stroke-width="3"/></svg>
     <button id="brakeBtn" aria-label="Rem">REM</button>
+    <button id="musicBtn" aria-label="Musik">♪</button>
     <button id="pauseBtn" aria-label="Istirahat">II</button>
   </div>
 
@@ -1280,7 +1283,12 @@ const audio={
   init(){
     if(this.ctx){ if(this.ctx.state==='suspended') this.ctx.resume(); return; }
     try{ this.ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return; }
-    const c=this.ctx; this.master=c.createGain(); this.master.gain.value=.55; this.master.connect(c.destination);
+    const c=this.ctx;
+    // phones play WebAudio quietly: more gain there, with a compressor so loud moments don't clip
+    this.comp=c.createDynamicsCompressor(); this.comp.threshold.value=-18; this.comp.knee.value=12; this.comp.ratio.value=6; this.comp.attack.value=.003; this.comp.release.value=.2;
+    this.out=c.createGain(); this.out.gain.value=lowEnd?2.6:1.3; this.comp.connect(this.out); this.out.connect(c.destination);
+    this.master=c.createGain(); this.master.gain.value=.55; this.master.connect(this.comp);
+    this.musicG=c.createGain(); this.musicG.gain.value=store.get('ojol_music','1')==='1'?.34:0; this.musicG.connect(this.comp); this.startMusic();
     const b=c.createBuffer(1,c.sampleRate*2,c.sampleRate), d=b.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1; this.noise=b;
     this.eng=c.createOscillator(); this.eng.type='sawtooth'; this.eng.frequency.value=40;
     const lp=c.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=420; this.engG=c.createGain(); this.engG.gain.value=0;
@@ -1320,6 +1328,33 @@ const audio={
       case 'horn': this.hornTone(415,523,.35,.25); break;
     }
   },
+  // ---- background music: a synthesized dangdut koplo loop (kendang tak-dut, bass, suling, bonang), 132 BPM
+  startMusic(){
+    const c=this.ctx, spb=60/132/4; let step=0, next=c.currentTime+.1;
+    const N=n=>220*Math.pow(2,n/12); // semitones from A3; A harmonic minor gives the dangdut colour
+    const MEL=[12,null,15,14,12,null,11,12, 14,null,12,11,8,null,null,null, 7,8,11,12,14,12,11,8, 7,null,null,5,7,null,null,null,
+               12,null,15,17,15,null,14,12, 11,12,14,null,12,null,null,null, 8,null,7,5,7,8,11,8, 7,null,null,null,null,null,null,null];
+    const BASS=[0,0,7,0,-4,-4,3,-4,-5,-5,2,-5,-5,-1,2,-1];
+    const note=(f,t,d,type,v,dst,to)=>{ const o=c.createOscillator(), g=c.createGain(); o.type=type; o.frequency.setValueAtTime(f,t); if(to) o.frequency.exponentialRampToValueAtTime(to,t+d);
+      g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(v,t+.008); g.gain.exponentialRampToValueAtTime(.0001,t+d); o.connect(g); g.connect(dst); o.start(t); o.stop(t+d+.05); return o; };
+    const hit=(t,d,v,freq,type)=>{ const s=c.createBufferSource(), f=c.createBiquadFilter(), g=c.createGain(); s.buffer=this.noise; f.type=type; f.frequency.value=freq; f.Q.value=2;
+      g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(v,t+.003); g.gain.exponentialRampToValueAtTime(.0001,t+d); s.connect(f); f.connect(g); g.connect(this.musicG); s.start(t,Math.random()); s.stop(t+d+.05); };
+    const tick=()=>{
+      while(next<c.currentTime+.25){ const t=next, i=step%16, bar=Math.floor(step/16);
+        // kendang: "dut" (low, pitch drop) and "tak" (slap); koplo double-dut at the end of every bar
+        if(i===0||i===6||i===8||i===13||i===14) note(i===13?150:120,t,.22,'sine',.9,this.musicG,55);
+        if(i===4||i===12) { hit(t,.09,.7,2600,'bandpass'); note(380,t,.06,'triangle',.25,this.musicG); }
+        if(i%2===1) hit(t,.03,.12,7000,'highpass');                                   // tamborin
+        if(i===2||i===10) note(520,t,.05,'triangle',.18,this.musicG,420);            // ketipung ghost
+        if(i%4===0) note(N(BASS[(bar%4)*4+i/4]-12),t,spb*3.2,'triangle',.5,this.musicG); // bass
+        if(i%4===2) { const r=N(BASS[(bar%4)*4+(i-2)/4]+12); note(r,t,.25,'sine',.13,this.musicG); note(r*2.76,t,.12,'sine',.04,this.musicG); } // bonang
+        if(i%2===0){ const m=MEL[((bar%4)*8+i/2)%MEL.length+(bar%8>=4?32:0)] ; if(m!=null){ const o=note(N(m),t,spb*2.4,'triangle',.17,this.musicG);                // suling
+          const lfo=c.createOscillator(), lg=c.createGain(); lfo.frequency.value=5.5; lg.gain.value=N(m)*.012; lfo.connect(lg); lg.connect(o.frequency); lfo.start(t); lfo.stop(t+spb*2.5); } }
+        next+=spb; step++; }
+    };
+    tick(); setInterval(tick,60);
+  },
+  toggleMusic(){ const on=store.get('ojol_music','1')!=='1'; store.set('ojol_music',on?'1':'0'); if(this.musicG) this.musicG.gain.value=on?.34:0; return on; },
   hornTone(a,b,d,v){ this.tone(a,d,'square',v*.5); this.tone(b,d,'square',v*.5); },
   horn(veh){ if(!this.ctx) return; const d=Math.hypot(veh.px-player.x,veh.py-player.y), v=clamp(1-d/50,0,1)*.5; if(v<.03) return;
     const p=.9+Math.random()*.2; if(veh.type==='bus') this.hornTone(233*p,294*p,.5,v); else if(veh.type==='bike'||veh.type==='bajaj') this.hornTone(620*p,740*p,.22,v); else this.hornTone(415*p,523*p,.35,v); },
@@ -1533,6 +1568,8 @@ $('againBtn').onclick=()=>game.start();
 $('restartBtn').onclick=()=>game.start();
 $('resumeBtn').onclick=()=>game.togglePause();
 $('pauseBtn').onclick=()=>game.togglePause();
+$('musicBtn').onclick=()=>{ audio.init(); $('musicBtn').classList.toggle('off',!audio.toggleMusic()); };
+$('musicBtn').classList.toggle('off',store.get('ojol_music','1')!=='1');
 for(const b of document.querySelectorAll('.ctrlBtn')) b.onclick=()=>{ input.mode=input.mode==='drag'?'joy':'drag'; store.set('ojol_ctrl',input.mode); game.screens(); };
 document.addEventListener('visibilitychange',()=>{ if(document.hidden&&game.state==='play'&&!game.paused) game.togglePause(); });
 

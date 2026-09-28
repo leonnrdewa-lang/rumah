@@ -61,6 +61,22 @@ def shade(c, f):
     return '#%02x%02x%02x' % tuple(max(0, min(255, x)) for x in rgb)
 
 
+# The game lights (warm hemisphere 0.78 + warm sun 0.95, toon bands, no tone mapping) multiply a colour by about
+# (1.48, 1.22, 0.93) on a sunlit front wall and (1.70, 1.43, 1.11) on a sunlit roof slope, so light pastels clip to
+# the same cream/yellow. Wall and roof colours in variants() are therefore written as the colour the player should
+# SEE on the sunlit face, and lit() turns that into the material colour (shaded faces keep the same hue, darker).
+GAIN_WALL = (1.477, 1.224, 0.931)
+GAIN_ROOF = (1.695, 1.429, 1.109)
+WALL_KEYS = ('wall', 'accent', 'fwall', 'lwall', 'annex_wall', 'parapet', 'pillar', 'pgable', 'col')
+ROOF_KEYS = ('roof', 'proof', 'eroof', 'troof', 'lroof', 'croof', 'annex_roof', 'kanopi', 'dak', 'coat')
+
+
+def lit(c, gain=GAIN_WALL):
+    h = hexof(c).lstrip('#')
+    rgb = [int(h[i:i + 2], 16) for i in (0, 2, 4)]
+    return '#%02x%02x%02x' % tuple(max(0, min(255, int(round(x / g)))) for x, g in zip(rgb, gain))
+
+
 # ------------------------------------------------------------------------------------------ polygons
 def _ccw(pts):
     s = 0.0
@@ -206,26 +222,68 @@ def tree(b, x, y, h=3.4, r=1.1, color='plant', seg=7):
     b.face(pts[3], shade(color, 1.1))
 
 
-def pisang(b, x, y, h=2.4, r=0.85, color='#5ea64a', dry='#b8a258'):
-    """Pohon pisang (banana plant): slim trunk and a crown of five long arching leaves. Each leaf is two quads
-    (rising stalk half, drooping blade half), built two-sided so it reads from above and from the street."""
-    zt = h - 0.7
-    b.cyl(x, y, 0.0, zt + 0.06, 0.09, '#8d8a52', seg=5, top=False)
-    for k in range(5):
-        a = 2 * math.pi * (k / 5.0 + 0.07)
+def pisang(b, x, y, h=2.7, r=1.1, color='#5ea64a', dry='#a8914a', nl=6, phase=0.07):
+    """Pohon pisang (banana plant): thick pseudo-stem, a crown of nl long arching, drooping leaves (each two quads:
+    rising stalk half, drooping blade half, two-sided so it reads from above and from the street) and one dry
+    leaf hanging down along the stem."""
+    zt = h - 0.75
+    b.cyl(x, y, 0.0, zt + 0.12, 0.15, '#8d8a52', seg=6, top=True)
+    for k in range(nl):
+        a = 2 * math.pi * (k / float(nl) + phase)
         ca, sa = math.cos(a), math.sin(a)
         n = (-sa, ca)
-        spine = [(x, y, zt), (x + ca * 0.45 * r, y + sa * 0.45 * r, h), (x + ca * r, y + sa * r, h - 0.38)]
-        wid = [0.04, 0.21, 0.09]
-        col = dry if k == 3 else color
-        for i in range(2):
-            s0, s1, w0, w1 = spine[i], spine[i + 1], wid[i], wid[i + 1]
-            q = [(s0[0] + n[0] * w0, s0[1] + n[1] * w0, s0[2]), (s0[0] - n[0] * w0, s0[1] - n[1] * w0, s0[2]),
-                 (s1[0] - n[0] * w1, s1[1] - n[1] * w1, s1[2]), (s1[0] + n[0] * w1, s1[1] + n[1] * w1, s1[2])]
-            if _nz(q) < 0:
-                q = q[::-1]
-            b.face(q, col)
-            b.face([(p[0], p[1], p[2] - 0.012) for p in q[::-1]], shade(col, 0.85))
+        rr = r * (0.85 + 0.15 * ((k * 5) % 3) / 2.0)
+        z0 = zt + 0.1 + 0.12 * (k % 2)
+        spine = [(x + ca * 0.08, y + sa * 0.08, z0), (x + ca * 0.45 * rr, y + sa * 0.45 * rr, h - 0.05 * (k % 3)),
+                 (x + ca * rr, y + sa * rr, h - 0.6)]
+        wid = [0.04, 0.24, 0.1]
+        _leaf(b, spine, wid, n, color)
+    # dry leaf hanging down the stem
+    a = 2 * math.pi * (phase + 0.5 / nl)
+    ca, sa = math.cos(a), math.sin(a)
+    spine = [(x + ca * 0.16, y + sa * 0.16, zt + 0.05), (x + ca * 0.3, y + sa * 0.3, zt - 0.35), (x + ca * 0.24, y + sa * 0.24, zt - 1.0)]
+    _leaf(b, spine, [0.05, 0.16, 0.07], (-sa, ca), dry)
+
+
+def _leaf(b, spine, wid, n, col):
+    for i in range(2):
+        s0, s1, w0, w1 = spine[i], spine[i + 1], wid[i], wid[i + 1]
+        q = [(s0[0] + n[0] * w0, s0[1] + n[1] * w0, s0[2]), (s0[0] - n[0] * w0, s0[1] - n[1] * w0, s0[2]),
+             (s1[0] - n[0] * w1, s1[1] - n[1] * w1, s1[2]), (s1[0] + n[0] * w1, s1[1] + n[1] * w1, s1[2])]
+        if _nz(q) < 0:
+            q = q[::-1]
+        b.face(q, col)
+        b.face([(p[0], p[1], p[2] - 0.012) for p in q[::-1]], shade(col, 0.85))
+
+
+def jerigen(b, x, y, z0=0.0, color='#e8c02a'):
+    """Plastic jerry can with a cap."""
+    b.box(x - 0.15, y - 0.1, z0, x + 0.15, y + 0.1, z0 + 0.42, color)
+    b.box(x + 0.04, y - 0.03, z0 + 0.42, x + 0.1, y + 0.03, z0 + 0.48, shade(color, 0.7))
+
+
+def gate_slide(b, a, c, color, h=1.3, y0=0.0, step=0.22, style='v'):
+    """Cheap closed sliding gate (pagar geser) across a driveway: frame rails + two-sided vertical bars ('v'),
+    or a sheet panel with ribs ('panel')."""
+    if style == 'panel':
+        gate_panel(b, a, c, color, h=h, y0=y0)
+        return
+    for z in (0.05, h * 0.5, h - 0.06):
+        b.box(a, y0 + 0.08, z, c, y0 + 0.14, z + 0.06, color, skip=('bottom', 'left', 'right'))
+    k = max(2, int((c - a) / step))
+    for i in range(k + 1):
+        u = a + 0.03 + (c - a - 0.06) * i / k
+        b.box(u - 0.018, y0 + 0.095, 0.05, u + 0.018, y0 + 0.125, h, color, skip=('bottom', 'top', 'left', 'right'))
+    post(b, a + 0.3, y0 + 0.11, 0.0, 0.05, 'frame_black', r=0.05)       # wheels
+    post(b, c - 0.3, y0 + 0.11, 0.0, 0.05, 'frame_black', r=0.05)
+
+
+def hedge(b, a, c, y, colors=('plant', 'plant_dark'), r=0.4, h=0.8, z0=0.0):
+    """Hedge: a row of overlapping leafy blobs."""
+    n = max(1, int(round((c - a) / (1.5 * r))))
+    for i in range(n):
+        x = a + (c - a) * (i + 0.5) / n
+        bush(b, x, y, z0, r, h * (0.9 + 0.1 * (i % 2)), colors[i % len(colors)])
 
 
 def sumur(b, x, y):
@@ -295,7 +353,7 @@ def motor(b, x, y, color, face=-1, z0=0.0):
         return y + face * t
     dark = 'frame_black'
     for t in (0.6, -0.62):
-        xcyl(b, x, Y(t), z0 + 0.24, 0.24, x - 0.055, x + 0.055, dark, seg=7)
+        xcyl(b, x, Y(t), z0 + 0.24, 0.24, x - 0.055, x + 0.055, dark, seg=6)
     b.box(x - 0.12, Y(-0.35), z0 + 0.22, x + 0.12, Y(0.36), z0 + 0.34, 'trim_dark')            # floorboard
     b.box(x - 0.17, Y(-0.9), z0 + 0.34, x + 0.17, Y(-0.08), z0 + 0.7, color)                  # rear body
     b.box(x - 0.15, Y(-0.84), z0 + 0.7, x + 0.15, Y(-0.14), z0 + 0.79, dark)                  # seat
@@ -337,7 +395,7 @@ def coating(b, x0, x1, y0, y1, z, rng, color, n=2):
     patches on top of it (each quad lifted a little higher than the one below, so nothing flickers)."""
     b.face([(x0, y0, z + 0.006), (x1, y0, z + 0.006), (x1, y1, z + 0.006), (x0, y1, z + 0.006)], color)
     x0, x1, y0, y1 = x0 + 0.3, x1 - 0.3, y0 + 0.3, y1 - 0.3
-    color = shade(color, 0.86)
+    color = shade(color, 0.9)
     for k in range(n):
         w, d = 0.8 + rng.random() * 1.3, 0.6 + rng.random() * 1.0
         cx = x0 + w / 2 + rng.random() * max(0.0, x1 - x0 - w)
@@ -349,7 +407,7 @@ def coating(b, x0, x1, y0, y1, z, rng, color, n=2):
 
 # ------------------------------------------------------------------------------------------ fences
 def fence_besi(b, x0, x1, gaps=(), bars='rail_black', wallc='wall_white', pillar=None, h=1.2, hl=0.5, y0=0.0, step=0.2,
-               style='v'):
+               style='v', slat=0.17):
     """Low wall + steel bars (pagar besi) along the street edge, with openings `gaps` [(a, c), ...].
     style 'v' = vertical bars, 'h' = horizontal 'minimalis' slats. Short stubs (< 0.3 m, e.g. between a gate and
     the lot edge) still get a pillar, so a gate always has something to hang on."""
@@ -370,7 +428,7 @@ def fence_besi(b, x0, x1, gaps=(), bars='rail_black', wallc='wall_white', pillar
             if uc - ua < 0.12:
                 continue
             if style == 'h':
-                n = max(2, int((h - hl) / 0.17))
+                n = max(2, int((h - hl) / slat))
                 for i in range(n):
                     z = hl + 0.08 + (h - hl - 0.12) * i / (n - 1)
                     b.box(ua, y0 + 0.085, z - 0.035, uc, y0 + 0.135, z + 0.035, bars, skip=('bottom', 'left', 'right'))
@@ -451,13 +509,13 @@ def gate_panel(b, a, c, color, h=1.45, y0=0.0):
         b.decal('front', u - 0.025, u + 0.025, 0.1, h - 0.08, shade(color, 0.7), off=0.01, wall=y0 + 0.07)
 
 
-def front_fence(b, v, fa, fc, gap=None, h=1.2, hl=0.5, gate='besi'):
+def front_fence(b, v, fa, fc, gap=None, h=1.2, hl=0.5, gate='besi', more=()):
     """Pagar along the street edge with per-variant looks: low-wall colour (v['fwall']), pillars (v['pillar']),
     total and wall heights (v['fh'], v['fhl']), bar style (v['fstyle']) and gate type (v['gate']: 'besi' steel
     bars, 'panel' sheet steel, None = open)."""
     h, hl = v.get('fh', h), v.get('fhl', hl)
-    fence_besi(b, fa, fc, [gap] if gap else [], bars=v['fence'], wallc=v.get('fwall', 'wall_white'), pillar=v.get('pillar'),
-               h=h, hl=hl, style=v.get('fstyle', 'v'))
+    fence_besi(b, fa, fc, ([gap] if gap else []) + list(more), bars=v['fence'], wallc=v.get('fwall', 'wall_white'), pillar=v.get('pillar'),
+               h=h, hl=hl, style=v.get('fstyle', 'v'), step=v.get('fstep', 0.2), slat=v.get('fslat', 0.17))
     g = v.get('gate', gate)
     if gap and g == 'besi':
         gate_besi(b, gap[0], gap[1], v['fence'], h=h)
@@ -520,6 +578,7 @@ def hip(b, x0, x1, y0, y1, z0, rise, color, fascia, over=OV, thick=TH, cap=True,
         if abs(w - d) < 1e-6 and len(pts) == 4:
             pts = pts[:3]
         b.face(pts, color)
+        courses(b, pts, shade(color, 0.8), margin=0.1)
     for i in range(4):
         a, e = c[i], c[(i + 1) % 4]
         b.face([(a[0], a[1], ze - thick), (e[0], e[1], ze - thick), (e[0], e[1], ze), (a[0], a[1], ze)], fascia)
@@ -548,7 +607,7 @@ def hip(b, x0, x1, y0, y1, z0, rise, color, fascia, over=OV, thick=TH, cap=True,
 
 
 def gable(b, x0, x1, y0, y1, z0, rise, color, fascia, gable_color, ridge='x', over=OV, over_end=None, thick=TH,
-          cap=True, ends=(True, True), end_over=(None, None), soffit=True):
+          cap=True, ends=(True, True), end_over=(None, None), soffit=True, ncourses=None):
     """Pelana: two-slope roof over the wall rectangle (slab resting on the wall line at z0).
     ridge='x': slopes face front/back, gable triangles on the left/right walls.
     ridge='y': slopes face left/right, gable triangles on the front/back walls (gable end to the street).
@@ -564,8 +623,9 @@ def gable(b, x0, x1, y0, y1, z0, rise, color, fascia, gable_color, ridge='x', ov
         ym = (y0 + y1) / 2
         X0, X1, Y0, Y1 = x0 - ea, x1 + eb, y0 - over, y1 + over
         ze, zr = z0 - p * over + thick, z0 + rise + thick
-        slab(b, [(X0, Y0, ze), (X1, Y0, ze), (X1, ym, zr), (X0, ym, zr)], thick, color, fascia, (1, 1, 0, 1))
-        slab(b, [(X1, Y1, ze), (X0, Y1, ze), (X0, ym, zr), (X1, ym, zr)], thick, color, fascia, (1, 1, 0, 1))
+        for tp in ([(X0, Y0, ze), (X1, Y0, ze), (X1, ym, zr), (X0, ym, zr)], [(X1, Y1, ze), (X0, Y1, ze), (X0, ym, zr), (X1, ym, zr)]):
+            slab(b, tp, thick, color, fascia, (1, 1, 0, 1))
+            courses(b, tp, cc, n=ncourses)
         if ends[1]:
             b.face([(x1, y0, z0), (x1, y1, z0), (x1, ym, z0 + rise)], gable_color)
         if ends[0]:
@@ -584,8 +644,10 @@ def gable(b, x0, x1, y0, y1, z0, rise, color, fascia, gable_color, ridge='x', ov
         xm = (x0 + x1) / 2
         X0, X1, Y0, Y1 = x0 - over, x1 + over, y0 - ea, y1 + eb
         ze, zr = z0 - p * over + thick, z0 + rise + thick
-        slab(b, [(X0, Y0, ze), (xm, Y0, zr), (xm, Y1, zr), (X0, Y1, ze)], thick, color, fascia, (1, 0, 1, 1))
-        slab(b, [(xm, Y0, zr), (X1, Y0, ze), (X1, Y1, ze), (xm, Y1, zr)], thick, color, fascia, (1, 1, 1, 0))
+        for tp, ed in (([(X0, Y0, ze), (xm, Y0, zr), (xm, Y1, zr), (X0, Y1, ze)], (1, 0, 1, 1)),
+                       ([(xm, Y0, zr), (X1, Y0, ze), (X1, Y1, ze), (xm, Y1, zr)], (1, 1, 1, 0))):
+            slab(b, tp, thick, color, fascia, ed)
+            courses(b, tp, cc, n=ncourses)
         if ends[0]:
             b.face([(x0, y0, z0), (x1, y0, z0), (xm, y0, z0 + rise)], gable_color)
         if ends[1]:
@@ -632,8 +694,10 @@ def wing_gable(b, xw0, xw1, fy, ym0, hw, p, color, fascia, gable_color, ow=OV, o
     hr = p * ww / 2
     ze, zr = hw + TH - p * ow, hw + TH + hr
     yv, ys, Y0 = ym0 + ww / 2, ym0 - ow, fy - of
-    slab(b, [(xw0 - ow, Y0, ze), (xm, Y0, zr), (xm, yv, zr), (xw0 - ow, ys, ze)], TH, color, fascia, (1, 0, 0, 1))
-    slab(b, [(xm, Y0, zr), (xw1 + ow, Y0, ze), (xw1 + ow, ys, ze), (xm, yv, zr)], TH, color, fascia, (1, 1, 0, 0))
+    for tp, ed in (([(xw0 - ow, Y0, ze), (xm, Y0, zr), (xm, yv, zr), (xw0 - ow, ys, ze)], (1, 0, 0, 1)),
+                   ([(xm, Y0, zr), (xw1 + ow, Y0, ze), (xw1 + ow, ys, ze), (xm, yv, zr)], (1, 1, 0, 0))):
+        slab(b, tp, TH, color, fascia, ed)
+        courses(b, tp, shade(color, 0.8), margin=0.12)
     b.face([(xw0, fy, hw), (xw1, fy, hw), (xm, fy, hw + hr)], gable_color)
     zb0, zbm = ze - TH, zr - TH
     b.face(down([(xw0 - ow, Y0, zb0), (xm, Y0, zbm), (xm, fy, zbm), (xw0 - ow, fy, zb0)]), fascia)     # verge soffits
@@ -658,6 +722,8 @@ def wing_hip(b, xw0, xw1, fyw, ym0, hw, p, color, fascia, ow=OV):
     slab(b, [A, B, R], TH, color, fascia, (1, 0, 0))
     slab(b, [A, R, V, SL], TH, color, fascia, (0, 0, 0, 1))
     slab(b, [B, SR, V, R], TH, color, fascia, (1, 0, 0, 0))
+    for tp in ([A, B, R], [A, R, V, SL], [B, SR, V, R]):
+        courses(b, tp, shade(color, 0.8), margin=0.12)
     cc = shade(color, 0.8)
     _hip_strip(b, (A[0], A[1]), (R[0], R[1]), ze, zr, cc, False, True)
     _hip_strip(b, (B[0], B[1]), (R[0], R[1]), ze, zr, cc, False, True)
@@ -671,10 +737,17 @@ def under(y, y0, y1, zf, zb, thick, embed=0.03):
     return zf + (zb - zf) * (y - y0) / (y1 - y0) - thick + embed
 
 
-def shed(b, x0, x1, y0, y1, zf, zb, color, fascia=None, thick=0.08, edges=(1, 1, 1, 1)):
+def shed(b, x0, x1, y0, y1, zf, zb, color, fascia=None, thick=0.08, edges=(1, 1, 1, 1), bottom=True, ncourses=0):
     """Single-slope slab over [x0,x1] x [y0,y1] (overhangs included): top at zf along y0 and zb along y1.
-    edges = fascia on (front, right, back, left)."""
-    slab(b, [(x0, y0, zf), (x1, y0, zf), (x1, y1, zb), (x0, y1, zb)], thick, color, fascia or shade(color, 0.85), edges)
+    edges = fascia on (front, right, back, left); bottom closes the underside (one quad), so the overhangs do not
+    turn see-through when looked at from below."""
+    fc = fascia or shade(color, 0.85)
+    slab(b, [(x0, y0, zf), (x1, y0, zf), (x1, y1, zb), (x0, y1, zb)], thick, color, fc, edges)
+    if ncourses:
+        courses(b, [(x0, y0, zf), (x1, y0, zf), (x1, y1, zb), (x0, y1, zb)], shade(color, 0.8), n=ncourses)
+    if bottom:
+        t = thick
+        b.face(down([(x0, y0, zf - t), (x1, y0, zf - t), (x1, y1, zb - t), (x0, y1, zb - t)]), fc)
 
 
 def ribs(b, x0, x1, y0, y1, zf, zb, color, step=0.55):
@@ -697,6 +770,60 @@ def rib_decals(b, x0, x1, y0, y1, zf, zb, color, n=3, w=0.035, lift=0.02):
         za = zf + (zb - zf) * (ya - y0) / (y1 - y0) + lift
         zc = zf + (zb - zf) * (yc - y0) / (y1 - y0) + lift
         b.face([(x - w, ya, za), (x + w, ya, za), (x + w, yc, zc), (x - w, yc, zc)], color)
+
+
+COURSES = [5]        # tile course lines per genteng slope, set per variant in build()
+
+
+def _slice(poly, z):
+    """The two points where a convex planar polygon crosses the horizontal plane at height z."""
+    out = []
+    n = len(poly)
+    for i in range(n):
+        a, c = poly[i], poly[(i + 1) % n]
+        if (a[2] - z) * (c[2] - z) < 0:
+            t = (z - a[2]) / (c[2] - a[2])
+            out.append(tuple(a[k] + (c[k] - a[k]) * t for k in range(3)))
+    return out if len(out) == 2 else None
+
+
+def courses(b, poly, color, n=None, w=0.07, lift=0.012, margin=0.0):
+    """Genteng courses: n thin decal strips (2 tris each) parallel to the eave of a sloped roof face `poly` (its top
+    polygon), evenly spaced between the lowest and highest point. Lifted a little (less than the hip/valley strips,
+    which lie on top of them) so nothing flickers."""
+    n = COURSES[0] if n is None else n
+    if n <= 0:
+        return
+    zs = [p[2] for p in poly]
+    zlo, zhi = min(zs), max(zs)
+    if zhi - zlo < 0.1:
+        return
+    nx = ny = nz = 0.0
+    for i in range(len(poly)):
+        a, c = poly[i], poly[(i + 1) % len(poly)]
+        nx += (a[1] - c[1]) * (a[2] + c[2])
+        ny += (a[2] - c[2]) * (a[0] + c[0])
+        nz += (a[0] - c[0]) * (a[1] + c[1])
+    L = math.sqrt(nx * nx + ny * ny + nz * nz)
+    dz = w * math.sqrt(nx * nx + ny * ny) / L           # rise over a strip width w measured along the slope
+    along = (-ny, nx)                                    # horizontal direction of the course lines
+    for k in range(1, n + 1):
+        z = zlo + (zhi - zlo) * (k - 0.35) / (n + 0.3)
+        s1, s2 = _slice(poly, z), _slice(poly, z + dz)
+        if not s1 or not s2:
+            continue
+        s1 = sorted(s1, key=lambda p: p[0] * along[0] + p[1] * along[1])
+        s2 = sorted(s2, key=lambda p: p[0] * along[0] + p[1] * along[1])
+        if margin:
+            for s in (s1, s2):
+                d = [s[1][i] - s[0][i] for i in range(3)]
+                ln = math.sqrt(sum(x * x for x in d)) or 1.0
+                s[0] = tuple(s[0][i] + d[i] / ln * margin for i in range(3))
+                s[1] = tuple(s[1][i] - d[i] / ln * margin for i in range(3))
+        q = [s1[0], s1[1], s2[1], s2[0]]
+        if math.dist(q[0], q[1]) < 0.25:
+            continue
+        b.face(up([(p[0], p[1], p[2] + lift) for p in q]), color)
 
 
 # ------------------------------------------------------------------------------------------ house parts
@@ -733,6 +860,7 @@ def back_side(b, v, rng, x0, x1, yb, hw, eave_z, left=None, toren_ok=True, annex
     `keep` = extra width next to the annex that props must leave clear (e.g. for a ladder). Returns (ax0, ax1, ya)."""
     W, D = b.W, b.D
     bk = v.get('bk', {})
+    lay = bk.get('layout', 'annex')
     bd = D - yb
     ad = max(1.4, min(2.1, bd - 0.5))
     if left is None:
@@ -740,35 +868,77 @@ def back_side(b, v, rng, x0, x1, yb, hw, eave_z, left=None, toren_ok=True, annex
     aw = max(2.0, (x1 - x0) * annex_frac)
     ax0, ax1 = (x0, x0 + aw) if left else (x1 - aw, x1)
     ya = yb + ad
-    awall = v.get('annex_wall', 'wall_white' if v['wall'] != 'wall_white' else 'wall_cream')
+    awall = v.get('annex_wall') or lit('#ece6d8')
+    aroof = v.get('annex_roof') or lit('#8d949a', GAIN_ROOF)
     zt0 = min(hw - 0.25, eave_z - 0.1)             # lean-to top against the main wall (below the main eave)
     slope = 0.2
     zt1 = zt0 - slope * (ad + 0.25)
-    hb = zt0 - slope * ad - 0.08                    # annex back wall height (meets the slab underside)
-    hf = zt0 - 0.08
-    b.box(ax0, yb, 0, ax1, ya, hb, awall, skip=('bottom', 'top', 'front'))
-    b.face([(ax0, ya, hb), (ax0, yb, hb), (ax0, yb, hf)], awall)           # side gable of the lean-to (left)
-    b.face([(ax1, yb, hb), (ax1, ya, hb), (ax1, yb, hf)], awall)           # (right)
-    b.box(ax0 - 0.04, yb + 0.04, 0, ax1 + 0.04, ya + 0.04, 0.25, plinth, skip=('bottom', 'top', 'front'))
     rx0, rx1 = max(ax0 - 0.15, -W / 2 + 0.03), min(ax1 + 0.15, W / 2 - 0.03)
     ry0, ry1 = yb - 0.03, ya + 0.25
-    aroof = v.get('annex_roof', '#7d8489')
-    shed(b, rx0, rx1, ry0, ry1, zt0, zt1, aroof, edges=(0, 1, 1, 1))
-    rib_decals(b, rx0, rx1, ry0, ry1, zt0, zt1, shade(aroof, 0.72), n=max(3, min(4, int((rx1 - rx0) / 0.75))))
-    # back door + small kitchen window on the annex
     dx = ax0 + 0.75 if left else ax1 - 0.75
-    door(b, 'back', dx, 0.8, 1.95, 'door_dark', v['frame'], wall=ya, boven=0.0)
-    if ax1 - ax0 > 2.3:
-        wx = ax1 - 0.75 if left else ax0 + 0.75
-        window(b, 'back', wx, 1.2, 0.7, 0.6, v['frame'], wall=ya, bars=1, teralis='rail_black')
+    wx = ax1 - 0.75 if left else ax0 + 0.75
+    zd = None
+    if lay == 'teras':
+        # no annex: covered back terrace (lean-to on two posts) with the back door, a bench and pots
+        tf = 0.15
+        b.box(ax0, yb, 0, ax1, ya, tf, 'tile_floor', skip=('bottom', 'front'))
+        shed(b, rx0, rx1, ry0, ry1, zt0, zt1, aroof, edges=(0, 1, 1, 1), ncourses=bk.get('tcourses', 0))
+        if not bk.get('tcourses'):
+            rib_decals(b, rx0, rx1, ry0, ry1, zt0, zt1, shade(aroof, 0.72), n=max(3, min(4, int((rx1 - rx0) / 0.75))))
+        pc = bk.get('postc', 'frame_brown')
+        for px in (ax0 + 0.12, ax1 - 0.12):
+            post(b, px, ya - 0.12, tf, under(ya - 0.12, ry0, ry1, zt0, zt1, 0.08), pc, r=0.06)
+        door(b, 'back', dx, 0.85, 2.0, 'door_dark', v['frame'], wall=yb, z0=tf, boven=0.25)
+        if ax1 - ax0 > 2.3:
+            window(b, 'back', wx, 1.15, 0.8, 0.8, v['frame'], wall=yb, bars=2, teralis='rail_black')
+            b.box(wx - 0.6, yb, tf, wx + 0.6, yb + 0.4, 0.58, v.get('bench', 'door_wood'), skip=('bottom', 'front'))
+        npots = bk.get('tpots', 2)
+        for k in range(npots):
+            px = (ax0 + ax1) / 2 + (k - 0.5 * (npots - 1)) * 0.7
+            pot(b, px, ya - 0.3, tf, s=0.75 + 0.2 * k, plant='plant_dark' if k else 'plant')
+    elif lay == 'dak':
+        # flat cor-dak annex: concrete slab with a low parapet, the toren stands on it
+        zd = min(2.75, eave_z - 0.12)
+        b.box(ax0, yb, 0, ax1, ya, zd - 0.15, awall, skip=('bottom', 'top', 'front'))
+        b.box(ax0 - 0.04, yb + 0.04, 0, ax1 + 0.04, ya + 0.04, 0.25, plinth, skip=('bottom', 'top', 'front'))
+        dk = v.get('dakc', '#a8a39a')
+        b.box(ax0 - 0.06, yb, zd - 0.15, ax1 + 0.06, ya + 0.06, zd, dk, skip=('front',))
+        pa = v.get('annex_par', awall)
+        b.box(ax0 - 0.06, ya - 0.08, zd, ax1 + 0.06, ya + 0.06, zd + 0.4, pa, skip=('bottom',))
+        for xa, xc in ((ax0 - 0.06, ax0 + 0.06), (ax1 - 0.06, ax1 + 0.06)):
+            b.box(xa, yb + 0.6, zd, xc, ya - 0.08, zd + 0.4, pa, skip=('bottom', 'back'))
+        b.face([(ax0 + 0.06, yb + 0.03, zd + 0.006), (ax1 - 0.06, yb + 0.03, zd + 0.006), (ax1 - 0.06, ya - 0.08, zd + 0.006),
+                (ax0 + 0.06, ya - 0.08, zd + 0.006)], aroof)
+        b.box(ax1 - 0.35 if left else ax0 + 0.25, ya + 0.06, 0.3, ax1 - 0.25 if left else ax0 + 0.35, ya + 0.14, zd + 0.3, '#6f7680',
+              skip=('bottom', 'front'))                                      # downpipe
+        door(b, 'back', dx, 0.8, 1.95, 'door_dark', v['frame'], wall=ya, boven=0.0)
+        if ax1 - ax0 > 2.3:
+            window(b, 'back', wx, 1.2, 0.7, 0.6, v['frame'], wall=ya, bars=1, teralis='rail_black')
+    else:
+        hb = zt0 - slope * ad - 0.08                    # annex back wall height (meets the slab underside)
+        hf = zt0 - 0.08
+        b.box(ax0, yb, 0, ax1, ya, hb, awall, skip=('bottom', 'top', 'front'))
+        b.face([(ax0, ya, hb), (ax0, yb, hb), (ax0, yb, hf)], awall)           # side gable of the lean-to (left)
+        b.face([(ax1, yb, hb), (ax1, ya, hb), (ax1, yb, hf)], awall)           # (right)
+        b.box(ax0 - 0.04, yb + 0.04, 0, ax1 + 0.04, ya + 0.04, 0.25, plinth, skip=('bottom', 'top', 'front'))
+        tile = bk.get('tile', False)
+        shed(b, rx0, rx1, ry0, ry1, zt0, zt1, aroof, edges=(0, 1, 1, 1), ncourses=3 if tile else 0)
+        if not tile:
+            rib_decals(b, rx0, rx1, ry0, ry1, zt0, zt1, shade(aroof, 0.72), n=max(3, min(4, int((rx1 - rx0) / 0.75))))
+        # back door + small kitchen window on the annex
+        door(b, 'back', dx, 0.8, 1.95, 'door_dark', v['frame'], wall=ya, boven=0.0)
+        if ax1 - ax0 > 2.3:
+            window(b, 'back', wx, 1.2, 0.7, 0.6, v['frame'], wall=ya, bars=1, teralis='rail_black')
     # the free part of the main back wall and of the yard behind it
     fx0, fx1 = (ax1, x1) if left else (x0, ax0)
     F = fx1 - fx0
     sg = 1 if left else -1                          # direction from the annex (inner) towards the lot edge
     inner = fx0 if left else fx1
     lot_out = W / 2 if left else -W / 2
-    annex_ok = ad >= 1.75 and zt0 + 1.1 <= HMAX
+    annex_ok = lay == 'annex' and ad >= 1.75 and zt0 + 1.1 <= HMAX
     tmode = bk.get('toren', 'yard') if toren_ok else 'none'
+    if lay == 'dak' and tmode != 'none':
+        tmode = 'dak' if ad >= 1.72 and zd + 1.45 <= HMAX else 'yard'
     if tmode == 'annex' and not annex_ok:
         tmode = 'yard'
     if tmode == 'yard' and (bd <= 1.9 or F <= 1.25):
@@ -791,30 +961,54 @@ def back_side(b, v, rng, x0, x1, yb, hw, eave_z, left=None, toren_ok=True, annex
         else:
             ty = min(D - 0.62, yb + OV + 0.62)
     extra = bk.get('extra')
-    ex = slot({'pisang': 1.8, 'motor': 0.95, 'sumur': 1.15, 'pots': 1.6}[extra]) if extra else None
-    # bedroom window (+ AC only where both fit side by side)
-    if F > 1.3:
-        ww = min(1.2, F - 0.6)
-        wc = (fx0 + fx1) / 2
+    ex = None
+    if extra:
+        ex = slot({'pisang': 2.3, 'motor': 0.95, 'sumur': 1.15, 'pots': 1.6}[extra])
+    pr = 1.1                                                          # pisang crown radius
+    if extra == 'pisang' and ex is None:
+        pr, ex = 0.8, slot(1.7)                                       # a younger, smaller plant
+        if ex is None:
+            extra, ex = 'pots', slot(1.6)
+    # bedroom window (+ AC only where both fit side by side); it dodges the toren and the pisang crown
+    fin = inner + sg * keep                                          # the window also leaves the `keep` strip clear
+    Fw = F - keep
+    if Fw > 1.3:
+        ww = min(1.2, Fw - 0.6)
+        wc = fin + sg * Fw / 2
         acx = None
-        if ac and bk.get('ac') and F > 3.45:
-            acx = inner + sg * 0.6
+        if ac and bk.get('ac') and Fw > 3.45:
+            acx = fin + sg * 0.6
             wc += sg * 0.45
         half = ww / 2 + 0.12
+        lo = fin + sg * ((1.15 if acx is not None else 0.25) + half)
+        if (wc - lo) * sg < 0:
+            wc = lo
+
+        def overlap(edge):
+            return sg * ((wc + sg * half) - edge)                    # how far the window runs in behind a prop
         if tx is not None:
-            over_ = sg * ((wc + sg * half) - (tx - sg * 0.56))       # how far the window runs in behind the toren
+            over_ = overlap(tx - sg * 0.56)
             if over_ > 0:
-                lo = inner + sg * ((1.15 if acx is not None else 0.25) + half)
                 if (wc - lo) * sg >= over_ + 0.05:
                     wc -= sg * (over_ + 0.05)
                 elif bd >= 2.2:
                     ty = D - 0.62                                     # tank to the back fence instead
+        if extra == 'pisang':
+            over_ = overlap(ex - sg * pr)
+            if over_ > 0:
+                sh = min(over_ + 0.05, max(0.0, (wc - lo) * sg))
+                wc -= sg * sh
+                pr = max(0.75, pr - (over_ + 0.05 - sh))
         window(b, 'back', wc, 1.0, ww, 1.2, v['frame'], wall=yb, bars=2, teralis=v.get('teralis'))
         if acx is not None:
             b.ac_unit('back', acx, 2.0, wall=yb)
     tank = v.get('tank', 'tank_orange')
     if tmode == 'yard':
         toren(b, tx, ty, 0.03, 1.9, tank)
+    elif tmode == 'dak':
+        tax = (ax0 + ax1) / 2 + (-0.3 if left else 0.3)
+        tay = max(yb + OV + 0.62, ya - 0.7)
+        toren(b, tax, tay, zd, 0.3, tank)
     elif tmode == 'annex':
         tax, tay = ((ax0 + 0.72) if left else (ax1 - 0.72)), yb + 1.05
 
@@ -828,8 +1022,8 @@ def back_side(b, v, rng, x0, x1, yb, hw, eave_z, left=None, toren_ok=True, annex
         obst.append((tx - 0.62, tx + 0.62))
     if ex is not None:
         if extra == 'pisang':
-            pisang(b, ex, D - 0.95)
-            obst.append((ex - 0.95, ex + 0.95))
+            pisang(b, ex, D - 1.2, r=pr, phase=0.07 + 0.3 * rng.random())
+            obst.append((ex - pr, ex + pr))
         elif extra == 'motor':
             motor(b, ex, yb + 1.25, MOTORS[rng.randrange(len(MOTORS))], face=1, z0=0.03)
             obst.append((ex - 0.45, ex + 0.45))
@@ -1003,18 +1197,24 @@ def k_carport(b, v, rng):
     shed(b, cx0, cx1, 0.3, cy1, zf, zb, croof, fascia='rail_black', thick=0.06)
     rib_decals(b, cx0, cx1, 0.3, cy1, zf, zb, shade(croof, 0.72), n=max(3, int((cx1 - cx0) / 0.7)))
     mx = (cx0 + cx1) / 2
-    motor(b, mx - 0.45, 1.9, MOTORS[rng.randrange(len(MOTORS))], z0=0.06)
-    if cw > 2.9:
-        motor(b, mx + 0.5, 2.3, MOTORS[rng.randrange(len(MOTORS))], z0=0.06)
+    # carport contents per variant: [(dx, y, colour index or None)] scooters, plus jerigen / pots
+    for dxm, ym, ci in v.get('cmotors', [(-0.45, 1.9, None)]):
+        motor(b, mx + dxm, ym, MOTORS[rng.randrange(len(MOTORS))] if ci is None else MOTORS[ci], z0=0.06)
+    for kind, dxp, yp in v.get('cprops', ()):
+        if kind == 'jerigen':
+            jerigen(b, mx + dxp, yp, 0.06, v.get('jerc', '#e8c02a'))
+        else:
+            pot(b, mx + dxp, yp, 0.06, s=0.85, plant='plant_dark' if dxp > 0 else 'plant')
     back_side(b, v, rng, x0, x1, yb, hw, eave, left=not left)
     # strip behind the carport: clothesline and pots
     if yb - cy1 > 2.0:
         jemuran(b, cy1 + 0.4, yb - 0.1, mx, 'y', rng, z0=0.03, zl=1.7)
         for k in range(min(2, int((yb - cy1 - 0.6) / 0.7))):
             pot(b, cx0 + 0.3 if left else cx1 - 0.3, cy1 + 0.5 + k * 0.7, 0.03, s=0.8, plant='plant_dark' if k % 2 else 'plant')
-    # fence: open driveway at the carport, besi fence + small gate in front of the house
-    fa, fc = (x0 + 0.1, W / 2 - 0.03) if left else (-W / 2 + 0.03, x1 - 0.1)
-    front_fence(b, v, fa, fc, (du - 0.5, du + 0.5))
+    # fence over the full width: sliding gate across the carport, besi fence + small gate in front of the house
+    cg = (cx0 + 0.25, cx1 + 0.05) if left else (cx0 - 0.05, cx1 - 0.25)
+    front_fence(b, v, -W / 2 + 0.03, W / 2 - 0.03, (du - 0.5, du + 0.5), more=[cg])
+    gate_slide(b, cg[0], cg[1], v.get('cgatec', v['fence']), h=v.get('fh', 1.2) + 0.05, style=v.get('cgate', 'v'))
     for k in range(2):
         px = (x1 - 0.35 - k * 0.5) if left else (x0 + 0.35 + k * 0.5)
         pot(b, px, yf - 0.55, 0.12, s=0.9)
@@ -1095,7 +1295,7 @@ def k_loteng(b, v, rng):
     dak = v.get('dak', '#9e9a92')
     b.box(x0, ky, hw, x1, yb, zs, dak, skip=('bottom',))
     b.face([(x0, ky, hw), (x0, yf, hw), (x1, yf, hw), (x1, ky, hw)], shade(dak, 0.9))
-    coating(b, x0 + 0.14, x1 - 0.14, ky + 0.15, yb - 0.14, zs, rng, v.get('coat', '#8a9a8e'), n=2)
+    coating(b, x0 + 0.14, x1 - 0.14, ky + 0.15, yb - 0.14, zs, rng, v.get('coat', '#6f9d80'), n=v.get('patches', 1))
     du = facade(b, 'front', x0 + 0.05, x1 - 0.05, 0.15, v, rng, wall=yf, teralis=v.get('teralis', 'rail_black'), boven=0.25)
     side_windows(b, v, x0 + 0.05, x1 - 0.05, yf, yb, z=1.0)
     left = v.get('lleft', du > 0)
@@ -1204,7 +1404,7 @@ def k_siku(b, v, rng):
     ty0 = fy + 0.5
     ex0, ex1 = (xw1 - 0.03, x1 + 0.15) if left else (x0 - 0.15, xw0 + 0.03)
     shed(b, ex0, ex1, ty0, ym0 + 0.03, tz, zt, v.get('troof', v['roof']), fascia=v['fascia'],
-         edges=(1, 1, 0, 0) if left else (1, 0, 0, 1))
+         edges=(1, 1, 0, 0) if left else (1, 0, 0, 1), ncourses=2)
     for xc in ((tx1 - 0.15) if left else (tx0 + 0.15), (tx0 + 0.25) if left else (tx1 - 0.25)):
         post(b, xc, ty0 + 0.2, 0.2, under(ty0 + 0.2, ty0, ym0 + 0.03, tz, zt, 0.08), v.get('col', 'column'), r=0.11)
     back_side(b, v, rng, x0, x1, yb, hw, hw - p * OV)
@@ -1297,7 +1497,8 @@ def k_emper(b, v, rng):
     # emper roof: attached under the main eave, sloping down to the posts
     ez0 = eave - 0.12
     ez1 = 2.5
-    shed(b, x0 - 0.3, x1 + 0.3, fy - 0.3, yf + 0.03, ez1, ez0, v.get('eroof', v['roof']), fascia=v['fascia'], edges=(1, 1, 0, 1))
+    shed(b, x0 - 0.3, x1 + 0.3, fy - 0.3, yf + 0.03, ez1, ez0, v.get('eroof', v['roof']), fascia=v['fascia'], edges=(1, 1, 0, 1),
+         ncourses=3)
     wood = v.get('wood', 'frame_brown')
     n = 4 if x1 - x0 > 6.5 else 3
     xs = [x0 + 0.12 + (x1 - x0 - 0.24) * k / (n - 1) for k in range(n)]
@@ -1325,8 +1526,8 @@ def k_emper(b, v, rng):
         b.box(xm - 0.6, fy - 0.3 * (k + 1), 0, xm + 0.6, fy - 0.3 * k, fl * (2 - k) / 3, 'tile_floor')
     back_side(b, v, rng, x0, x1, yb, hw, eave, plinth='concrete_dark')
     # hedge instead of a fence, pots along the terrace
-    for a, c in ((-W / 2 + 0.1, xm - 0.7), (xm + 0.7, W / 2 - 0.1)):
-        b.box(a, 0.05, 0, c, 0.45, 0.75, 'plant_dark')
+    for a, c in ((-W / 2 + 0.45, xm - 0.95), (xm + 0.95, W / 2 - 0.45)):
+        hedge(b, a, c, 0.47, r=0.4, h=0.8)
     for k in range(rng.randint(3, 5)):
         pot(b, x0 + 0.5 + k * 0.6, fy + 0.45, fl, s=0.8, plant='plant' if k % 2 else 'plant_dark')
     bench(b, x1 - 1.7, x1 - 0.35, yf - 0.55, z0=fl, color=wood)
@@ -1358,7 +1559,7 @@ def k_gerbang(b, v, rng):
     for xs in (px0, px1 - 0.2):
         b.box(xs, py0 + 0.28, pz - 0.28, xs + 0.2, yf, pz, v.get('col', 'column'), skip=('bottom', 'top', 'front', 'back'))
     gable(b, px0, px1, py0, yf - 0.02, pz, 0.62, v['proof'], v['fascia'], v.get('pgable', 'trim_white'), ridge='y',
-          over=0.3, over_end=0.3, ends=(True, False), end_over=(0.3, 0.0))
+          over=0.3, over_end=0.3, ends=(True, False), end_over=(0.3, 0.0), ncourses=2)
     b.decal('front', pc - 0.3, pc + 0.3, pz + 0.12, pz + 0.36, v.get('accent', 'trim_dark'), off=0.02, wall=py0)
     facade(b, 'front', x0, x1, 0.18, v, rng, wall=yf, door_at=(pc - x0) / (x1 - x0), door_w=1.2, leaves=2,
            teralis=v.get('teralis'), maxwin=1.6)
@@ -1430,15 +1631,15 @@ def k_besar(b, v, rng):
     shed(b, cx0, cx1, 0.35, cy1, zf, zb, croof, fascia='rail_black', thick=0.06)
     rib_decals(b, cx0, cx1, 0.35, cy1, zf, zb, shade(croof, 0.72), n=max(3, int((cx1 - cx0) / 0.7)))
     mx = (cx0 + cx1) / 2
-    motor(b, mx - 0.5, 2.0, MOTORS[rng.randrange(len(MOTORS))], z0=0.06)
-    motor(b, mx + 0.5, 2.6, MOTORS[rng.randrange(len(MOTORS))], z0=0.06)
+    for dxm, ym, ci in v.get('cmotors', [(-0.5, 2.0, None), (0.5, 2.6, None)]):
+        motor(b, mx + dxm, ym, MOTORS[rng.randrange(len(MOTORS))] if ci is None else MOTORS[ci], z0=0.06)
     back_side(b, v, rng, x0, x1, yb, hw, eave, left=left, annex_frac=0.4)
     # garden in front of the wing with a tree; fence with a gap at the carport
     ga, gc = (-W / 2 + 0.25, cx0 - 0.3) if not left else (cx1 + 0.3, W / 2 - 0.25)
     b.box(ga, 0.3, 0, gc, fyw - 0.25, 0.07, GRASS)
     tree(b, ga + 1.0 if not left else gc - 1.0, 1.4, h=3.5, r=1.0, color=v.get('treec', 'plant'))
-    for k in range(int((gc - ga - 2.4) / 1.3)):
-        bush(b, (ga + 2.2 + k * 1.3) if not left else (gc - 2.2 - k * 1.3), 0.7, 0.07, 0.4, 0.65, 'plant_dark' if k % 2 else 'plant')
+    for k in range(int((gc - ga - 2.4) / 1.6)):
+        bush(b, (ga + 2.2 + k * 1.6) if not left else (gc - 2.2 - k * 1.6), 0.7, 0.07, 0.45, 0.7, 'plant_dark' if k % 2 else 'plant')
     fa, fc = (-W / 2 + 0.03, cx0 - 0.05) if not left else (cx1 + 0.05, W / 2 - 0.03)
     gap = (du - 0.5, du + 0.5) if fa < du < fc else None
     front_fence(b, v, fa, fc, gap, h=1.4, hl=0.7, gate=None)
@@ -1449,64 +1650,80 @@ KINDS = {'limasan': k_limasan, 'pelana': k_pelana, 'teras': k_teras, 'carport': 
 
 
 def variants():
+    """Wall / roof colours here are what the player sees on the sunlit face in game (build() runs them through lit()).
+    bk['layout'] picks the back: 'annex' (dapur lean-to), 'dak' (flat cor-dak annex with the toren on it) or
+    'teras' (no annex, covered back terrace on posts); bk['tile'] gives an annex a genteng roof."""
     V = [
-        dict(kind='petak', w=5.5, d=8.5, wall='wall_lime', roof='#4f7fb0', fascia='trim_white', frame='window_frame',
-             door='door_dark', tank='tank_orange', annex_roof='#8f8b84',
+        dict(kind='petak', w=5.5, d=8.5, wall='#c6dc68', roof='#6a9ccc', fascia='trim_white', frame='window_frame',
+             door='door_dark', tank='tank_orange', annex_roof='#a9b0b4', annex_wall='#e6dcc8',
              bk=dict(toren='yard', jem='full', zl=1.6, extra='pots')),
-        dict(kind='loteng', mode='room', roles=['front', 'fill'], w=6.0, d=10.0, wall='wall_peach', roof='roof_blue',
-             lroof='#5f8a6a', dish=True, frame='window_frame', fence='rail_black', fascia='trim_white', lwall='wall_cream',
-             tank='tank_blue', lleft=True, annex_roof='#9a6a4a', coat='#a0705c', fwall='wall_peach', pillar='trim_white',
-             fh=1.1, fhl=0.6,
-             bk=dict(jem='none', extra='pisang')),
-        dict(kind='pelana', w=6.5, d=10.0, wall='wall_sky', roof='#7a3f28', fascia='trim_white', accent='wall_white',
-             frame='frame_brown', fwall='wall_cream', gatec='#35523f', kanopi='#8fc8bf', teralis='rail_white',
-             annex_roof='#7d8489', tank='tank_white', bk=dict(toren='annex', jem='full', zl=1.85, ac=True)),
-        dict(kind='limasan', w=7.0, d=9.5, wall='wall_mint', roof='roof_terracotta', fascia='trim_white',
-             frame='window_frame', fence='rail_black', teralis='rail_white', annex_roof='#9a6a4a', tank='tank_orange',
-             fwall=STONE, pillar=STONE, fh=1.3, fhl=0.4, bk=dict(toren='yard', jem='short', zl=1.7, extra='sumur')),
-        dict(kind='jemuran', w=7.5, d=9.5, wall='wall_yellow', roof='roof_red', fascia='frame_brown', accent='wall_cream',
-             frame='frame_brown', fence='rail_green', sleft=False, yardc=SOIL, annex_roof='#8f8b84', tank='tank_blue',
-             fwall='wall_sand', pillar='wall_sand', fh=1.05, fhl=0.6,
+        dict(kind='loteng', mode='room', roles=['front', 'fill'], w=6.0, d=10.0, wall='#f0ad86', roof='roof_blue',
+             lroof='#5f8a6a', dish=True, frame='window_frame', fence='rail_black', fascia='trim_white', lwall='#f2e2b4',
+             tank='tank_blue', lleft=True, annex_roof='#b85a3e', coat='#a0705c', fwall='#f0ad86', pillar='#f6f2ea',
+             fh=1.1, fhl=0.6, fstep=0.26, bk=dict(jem='short', zl=1.6, tile=True)),
+        dict(kind='pelana', w=6.5, d=10.0, wall='#94bde6', roof='#6a3a2a', fascia='trim_white', accent='#f4f0e6',
+             frame='frame_brown', fwall='#eadcb2', pillar='#eadcb2', gatec='#35523f', kanopi='#8fc8bf', teralis='rail_white',
+             tank='tank_white', dakc='#a8a39a', bk=dict(layout='dak', jem='full', zl=1.85, ac=True)),
+        dict(kind='limasan', w=7.0, d=9.5, wall='#8fd4ac', roof='#cc6a3c', fascia='trim_white',
+             frame='window_frame', fence='rail_black', teralis='rail_white', annex_roof='#b4bbbf', tank='tank_orange',
+             fwall=STONE, pillar=STONE, fh=1.3, fhl=0.4,
+             bk=dict(layout='teras', toren='yard', jem='short', zl=1.7, extra='sumur', postc='column')),
+        dict(kind='jemuran', w=7.5, d=9.5, wall='#f0c850', roof='#b8352c', fascia='frame_brown', accent='#f2e4c0',
+             frame='frame_brown', fence='rail_green', sleft=False, yardc=SOIL, annex_roof='#5b82ae', tank='tank_blue',
+             fwall='#dcc39c', pillar='#dcc39c', fh=1.05, fhl=0.6,
              bk=dict(toren='annex', jem='none', extra='pisang', ac=True)),
-        dict(kind='emper', w=8.0, d=10.5, wall='wall_white', roof='#6b4a3e', eroof='#8a5a45', fascia='#3d6b4a',
-             frame='#3d6b4a', door='#4f7a55', wood='frame_brown', annex_roof='#9a6a4a', tank='#8a8f96',
-             bk=dict(toren='yard', jem='full', zl=1.55, extra='sumur')),
-        dict(kind='carport', w=8.5, d=10.0, wall='wall_pink', roof='roof_grey', fascia='trim_white', frame='window_frame',
-             fence='rail_black', cleft=True, croof='#5f9aa8', roofk='hip', fstyle='h', annex_roof='#5b7fa6',
-             tank='tank_orange', fwall='wall_pink', pillar='trim_white', fh=1.5, fhl=0.3,
-             bk=dict(toren='annex', jem='short', zl=1.8, ac=True, extra='pots')),
-        dict(kind='teras', w=9.0, d=10.5, wall='wall_lilac', roof='roof_green', fascia='trim_white', accent='wall_white',
-             frame='window_frame', fence='rail_white', fwall='wall_lilac', col='trim_white', annex_roof='#7d8489',
+        dict(kind='emper', w=8.0, d=10.5, wall='#eeebe3', roof='#a0684a', eroof='#8a5a45', fascia='#3d6b4a',
+             frame='#3d6b4a', door='#4f7a55', wood='frame_brown', annex_roof='#9c5a40', tank='#8a8f96',
+             annex_wall='#d8cfbe', bk=dict(toren='yard', jem='full', zl=1.55, extra='sumur', tile=True)),
+        dict(kind='carport', w=8.5, d=10.0, wall='#eb9cac', roof='#76808a', fascia='trim_white', frame='window_frame',
+             fence='rail_black', cleft=True, croof='#5f9aa8', roofk='hip', fstyle='h', tank='tank_orange',
+             fwall='#eb9cac', pillar='#f6f2ea', fh=1.5, fhl=0.3, cgate='panel', cgatec='#4a5d6b', dakc='#b0aba2',
+             cmotors=[(0.35, 2.1, 2)], cprops=[('pot', -0.75, 1.0), ('pot', -0.75, 2.6)],
+             bk=dict(layout='dak', jem='short', zl=1.8, ac=True, extra='pots')),
+        dict(kind='teras', w=9.0, d=10.5, wall='#b8a2e0', roof='roof_green', fascia='trim_white', accent='#f4f0e6',
+             frame='window_frame', fence='rail_white', fwall='#b8a2e0', col='trim_white', annex_roof='#5b82ae',
              tank='tank_blue', bk=dict(toren='yard', jem='full', zl=1.8, ac=True)),
-        dict(kind='siku', w=9.5, d=11.0, wall='wall_cream', roof='#b0452f', fascia='frame_brown', accent='wall_sand',
-             frame='frame_brown', fence='rail_black', wleft=True, fwall='wall_terracotta', pillar='wall_terracotta',
-             fh=1.25, fhl=0.8, annex_roof='#8f8b84', tank='tank_white',
-             bk=dict(toren='annex', jem='full', zl=1.75, extra='motor')),
-        dict(kind='loteng', mode='dak', w=10.0, d=10.0, wall='wall_teal', roof='roof_red', rstyle='h', fstyle='h',
-             frame='window_frame', fence='rail_white', fascia='trim_white', parapet='wall_white', tank='tank_orange',
-             lleft=False, dish=True, dak='#a39d93', coat='#86998c', annex_roof='#7d8489', fwall='wall_teal',
-             pillar='wall_white', fh=1.2, gate='panel', gatec='#4a5d6b', bk=dict(jem='none')),
-        dict(kind='gerbang', w=11.0, d=11.5, wall='wall_sand', roof='roof_blue', proof='roof_blue', fascia='trim_white',
-             frame='frame_black', fence='rail_black', fwall='wall_grey', pillar='wall_white', fh=1.5, pgable='trim_white',
-             accent='trim_dark', door='door_dark', fstyle='h', annex_roof='#9a6a4a', tank='tank_blue',
-             bk=dict(toren='annex', jem='short', zl=1.9, extra='pisang', ac=True)),
-        dict(kind='carport', w=12.0, d=11.0, wall='wall_orange', roof='#7b3a2c', fascia='trim_white', frame='window_frame',
-             fence='rail_green', cleft=False, cw=3.3, croof='#7d8489', roofk='gable', yard=2.2, annex_roof='#8f8b84',
-             teralis=None, tank='tank_white', fwall=STONE, pillar=STONE, fh=1.2, fhl=0.35, gate=None,
-             bk=dict(toren='yard', jem='full', zl=1.65)),
-        dict(kind='besar', w=14.0, d=12.0, wall='wall_white', roof='#6a6664', fascia='frame_brown',
-             frame='frame_brown', fence='rail_black', pillar='wall_terracotta', fwall='wall_terracotta', door='door_dark',
-             fstyle='h', annex_roof='#9a6a4a', tank='tank_orange', bk=dict(toren='yard', jem='short', zl=1.75, ac=True)),
-        dict(kind='petak', w=7.0, d=9.0, units=2, wall='wall_green', roof='#b0503a', fascia='trim_white',
-             frame='window_frame', door='door_dark', door2='#3f6b8a', tank='tank_blue', annex_roof='#7d8489',
-             teralis='rail_white', bk=dict(toren='yard', jem='full', zl=1.5, extra='sumur')),
-        dict(kind='jemuran', w=6.0, d=9.0, roofk='hip', sw=1.8, sleft=True, wall='wall_blue', roof='#9c4a3a',
-             fascia='trim_white', accent='wall_white', frame='window_frame', fence='rail_black', yardc='concrete',
-             annex_roof='#9a6a4a', tank='tank_orange', treec='plant_dark', fwall='wall_white', pillar='wall_blue',
-             fh=1.1, bk=dict(toren='yard', jem='none', extra='pots')),
+        dict(kind='siku', w=9.5, d=11.0, wall='#f0dcaa', roof='#86302a', fascia='frame_brown', accent='#d8bc90',
+             frame='frame_brown', fence='rail_black', wleft=True, fwall='#d98a6a', pillar='#d98a6a',
+             fh=1.25, fhl=0.8, annex_roof='#a9b0b4', tank='tank_white',
+             bk=dict(layout='teras', toren='yard', jem='full', zl=1.75, extra='motor')),
+        dict(kind='loteng', mode='dak', w=10.0, d=10.0, wall='#5aa8a0', roof='roof_red', rstyle='h', fstyle='h',
+             frame='window_frame', fence='rail_white', fascia='trim_white', parapet='#f0eee6', tank='tank_orange',
+             lleft=False, dish=True, dak='#a39d93', coat='#8a8f94', annex_roof='#b85a3e', fwall='#5aa8a0',
+             pillar='#f0eee6', fh=1.2, gate='panel', gatec='#4a5d6b', bk=dict(jem='none', tile=True)),
+        dict(kind='gerbang', w=11.0, d=11.5, wall='#d8b684', roof='roof_blue', proof='roof_blue', fascia='trim_white',
+             frame='frame_black', fence='rail_black', fwall='#c9c9c4', pillar='#f0eee6', fh=1.5, pgable='trim_white',
+             accent='trim_dark', door='door_dark', fstyle='h', fslat=0.3, tank='tank_blue', dakc='#a8a39a', courses=4,
+             bk=dict(layout='dak', jem='short', zl=1.9, extra='pisang', ac=True)),
+        dict(kind='carport', w=12.0, d=11.0, wall='#eb9a50', roof='#4a3a34', fascia='trim_white', frame='window_frame',
+             fence='rail_green', cleft=False, cw=3.3, croof='#a9b0b4', roofk='gable', yard=2.2, annex_roof='#b85a3e',
+             teralis=None, tank='tank_white', fwall=STONE, pillar=STONE, fh=1.2, fhl=0.35, courses=4,
+             cmotors=[(-0.55, 2.2, 3)], cprops=[('jerigen', 0.75, 1.2), ('jerigen', 0.9, 2.6)], fstep=0.25,
+             jerc='#3d7fc4',
+             bk=dict(toren='yard', jem='full', zl=1.65, tile=True)),
+        dict(kind='besar', w=14.0, d=12.0, wall='#cfcfca', roof='#5a5654', fascia='frame_brown',
+             frame='frame_brown', fence='rail_black', pillar='#d98a6a', fwall='#d98a6a', door='door_dark',
+             fstyle='h', annex_roof='#a9b0b4', tank='tank_orange', courses=4, cmotors=[(-0.55, 1.7, 5), (0.55, 2.9, 2)],
+             bk=dict(layout='teras', toren='yard', jem='short', zl=1.75, ac=True, postc='rail_black', tpots=1)),
+        dict(kind='petak', w=7.0, d=9.0, units=2, wall='#84bc70', roof='#bdbab2', fascia='trim_white',
+             frame='window_frame', door='door_dark', door2='#3f6b8a', tank='tank_blue', annex_roof='#5b82ae',
+             teralis='rail_white', bk=dict(layout='teras', toren='yard', jem='full', zl=1.5, extra='sumur')),
+        dict(kind='jemuran', w=6.0, d=9.0, roofk='hip', sw=1.8, sleft=True, wall='#7aa2dc', roof='#3d4a52',
+             fascia='trim_white', accent='#f4f0e6', frame='window_frame', fence='rail_black', yardc='concrete',
+             tank='tank_orange', treec='plant_dark', fwall='#f0eee6', pillar='#7aa2dc', dakc='#a8a39a',
+             fh=1.1, bk=dict(layout='dak', jem='none', extra='pots')),
     ]
     return V
 
 
 def build(b, v, rng):
+    v = dict(v)
+    for k in WALL_KEYS:
+        if v.get(k):
+            v[k] = lit(v[k], GAIN_WALL)
+    for k in ROOF_KEYS:
+        if v.get(k):
+            v[k] = lit(v[k], GAIN_ROOF)
+    v.setdefault('annex_wall', lit('#ece6d8'))
+    COURSES[0] = v.get('courses', 5)
     KINDS[v['kind']](b, v, rng)

@@ -18,7 +18,7 @@ import math
 from common import PALETTE
 
 TYPE = 'kos'
-ROLES = ['front']
+ROLES = ['front', 'fill']
 
 CLOTH = ['#e25d7a', '#5db0e2', '#f2d24a', '#f6f4ee', '#ef7d2d', '#8cc47e', '#b86bd6', '#d8433a',
          '#3d6fb6', '#f29ac0', '#46b3a0', '#ffffff']
@@ -60,19 +60,20 @@ def variants():
         floor='tile_floor', door='door_dark', frame='frame_brown', fy=1.3, ground='gate',
         tanks=['tank_blue'], grill=True, fence='rail_black', shade='cont', shadec='trim_white',
         strip='parapet', strip_near='ac', deck='#8f8b84')
-    # 2: wide, corridor to the street, steel pipe railings, terracotta hip roof, fenced yard
-    add(w=12.0, d=10.5, n=3, fh=3.0, corr='front', stair='left', roof='hip', roofc='roof_terracotta',
+    # 2: wide, corridor to the street, steel pipe railings, long terracotta gable roof with the ridge running
+    #    left-right (eaves to the street), railed dak strip with two clothes lines, fenced yard
+    add(w=12.0, d=10.5, n=3, fh=3.0, corr='front', stair='left', roof='gablex', roofc='roof_terracotta',
         rise=1.7, rail='pipe', wall='wall_peach', accent='trim_white', trim='column', railc='rail_black',
-        floor='tile_floor', door='#e9e4d8', frame='frame_brown', fy=1.5, fence='rail_black',
+        floor='tile_floor', door='#c9a57a', handles=True, frame='frame_brown', fy=1.5, fence='rail_black',
         tanks=['tank_orange'], strip='pipe', strip_near='line', deck='#8f8b84')
     # 3: tall + narrow, corridor to the street, half-wall + rail, flat roof: clothes lines across the deck,
     #    torens in the front corner, pots
     add(w=9.0, d=11.0, n=4, fh=2.75, corr='front', stair='right', roof='flat', hut=None,
         rail='half', wall='wall_sky', accent='#3f6fa8', trim='trim_white', railc='rail_green',
         floor='concrete', door='door_wood', frame='window_frame', deck='#6a86a6', parc='wall_sky', ph=0.7,
-        tanks=['tank_blue', 'tank_blue'], gfence=True,
-        items=[('tanks', 0.0, 0.0, 'low', 'x'), ('lines', 'y', 0.45, 0.55, 3.4, 2), ('ac', 1.0, 1.0, 1),
-               ('dish', 0.0, 0.93), ('pots', 1.0, 0.0, 3)])
+        tanks=['tank_blue', 'tank_blue'], gfence=True, hatch=True,
+        items=[('tanks', 0.0, 0.0, 'low', 'x'), ('lines', 'x', 0.45, 0.48, 3.4, 3), ('ac', 1.0, 1.0, 1),
+               ('dish', 0.0, 0.93), ('pots', 0.55, 0.0, 3)])
     # 4: windows to the street, warung at the ground floor, flat roof + gabled stair house, red-oxide deck,
     #    zinc laundry shed, torens along the side parapet
     add(w=11.0, d=12.0, n=3, fh=3.0, corr='back', stair='right', roof='flat', hut='gable', hutroof='roof_zinc',
@@ -91,23 +92,23 @@ def variants():
     #    polycarbonate canopy over the drying area, light concrete deck
     add(w=10.5, d=12.0, n=3, fh=3.1, corr='front', stair='left', roof='flat', hut=None,
         rail='wall', wall='wall_lilac', accent='#e0873a', trim='trim_white', railc='#e0873a', floor='concrete',
-        door='#e9e4d8', frame='frame_black', deck='#c9c5bd', parc='wall_lilac', ph=0.8,
-        tanks=['tank_orange', 'tank_blue'], gfence=True,
+        door='#b99a74', handles=True, frame='frame_black', deck='#c9c5bd', parc='wall_lilac', ph=0.8,
+        tanks=['tank_orange', 'tank_blue'], gfence=True, hatch=True,
         items=[('canopy', 0.02, 0.5, 0.25, 0.62, '#3f86b8'), ('tanks', 1.0, 1.0, 'low', 'x'), ('ac', 0.0, 1.0, 2),
-               ('lines', 'y', 0.8, 0.38, 3.4, 1), ('pots', 0.0, 0.0, 3), ('antenna', 0.5, 0.9)])
+               ('lines', 'x', 0.78, 0.4, 3.0, 2), ('pots', 0.35, 0.0, 3), ('antenna', 0.5, 0.9)])
     # 7: small, windows to the street, red gable roof, green accents, per-window hoods, gated front yard
     #    with a canopy over the street door, zinc lean-to over the toren
     add(w=8.5, d=9.0, n=3, fh=3.0, corr='back', stair='right', roof='gable', roofc='roof_red', rise=1.6,
         rail='pipe', wall='wall_white', accent='#4f9a58', trim='wall_white', railc='rail_green',
         floor='tile_floor', door='door_wood', frame='window_frame', fy=1.2, ground='gate', fence='rail_green',
         canopy_door='awning_green', tanks=['tank_orange'], grill=False, shade='win', shadec='#4f9a58',
-        strip='lean', strip_near='pots', deck='#a0493a')
+        strip='lean', strip_near='pots', deck='#8f8b84')
     # 8: mid-width, corridor to the street, cream balustrades, green gable roof, teal walls, gated corridor,
     #    parapeted dak strip
     add(w=9.5, d=10.5, n=3, fh=3.0, corr='front', stair='left', roof='gable', roofc='roof_green', rise=1.7,
         rail='wall', wall='wall_teal', accent='#f2e3bf', trim='#f2e3bf', railc='#f2e3bf', floor='tile_floor',
         door='#3d6fb6', frame='window_frame', tanks=['tank_blue'], laundry=0.7, gfence=True,
-        strip='parapet', strip_near='line', deck='#6f8796')
+        strip='parapet', strip_near='line', deck='#6f8796', ribs=True, strip_extra=True)
     return V
 
 
@@ -183,7 +184,8 @@ def shirt(b, axis, ac, c, ztop, col, dirs=(-1, 1), s=1.0):
 
 
 def clothes_line(b, axis, a0, a1, c, z0, lh, rng):
-    """Two posts, a wire and a row of shirts / towels (axis = direction the line runs)."""
+    """Two posts, a wire and a row of shirts / towels hung flat along the wire (axis = direction the line
+    runs). Items are packed from end to end so even a short line carries 2-3 pieces."""
     def bx(p0, p1, q0, q1, za, zb, col, skip):
         if axis == 'x':
             b.box(p0, q0, za, p1, q1, zb, col, skip=skip)
@@ -194,24 +196,35 @@ def clothes_line(b, axis, a0, a1, c, z0, lh, rng):
     ends = ('left', 'right') if axis == 'x' else ('front', 'back')
     bx(a0, a1, c - 0.015, c + 0.015, z0 + lh + 0.04, z0 + lh + 0.07, 'metal', ('bottom',) + ends)
     zt = z0 + lh + 0.05
-    if axis == 'y':
-        # a pipe running away from the street carries shirts on hangers, which hang across the pipe and so
-        # face the street (seen face-on from the game camera, one behind the other like a clothes rack)
-        a = a0 + 0.3
-        while a < a1 - 0.25:
-            shirt(b, 'x', c, a, zt - 0.06, rng.choice(CLOTH), s=0.85)
-            a += rng.choice([0.35, 0.45, 0.55])
-        return
-    x = a0 + 0.45
-    while x < a1 - 0.4:
-        col = rng.choice(CLOTH)
-        if rng.random() < 0.55:
-            shirt(b, axis, x, c, zt, col, s=0.9)
-            x += 0.75
+    # pack the pieces first, then centre the row between the posts
+    x, stop = 0.0, (a1 - 0.2) - (a0 + 0.22)
+    items, last = [], None
+    while True:
+        col = rng.choice([cc for cc in CLOTH if cc != last])
+        last = col
+        if rng.random() < 0.5:
+            s = rng.choice([0.8, 0.9])
+            wdt = 0.64 * s
+            item = ('shirt', s)
         else:
-            wdt = rng.choice([0.5, 0.7])
-            cloth(b, axis, x - wdt / 2, x + wdt / 2, c, zt - rng.choice([0.55, 0.75]), zt, col)
-            x += wdt + 0.25
+            wdt = rng.choice([0.45, 0.55, 0.7])
+            item = ('cloth', rng.choice([0.5, 0.6, 0.75]))
+        if x + wdt > stop:
+            if x + 0.4 > stop:
+                break
+            wdt, item = 0.4, ('cloth', 0.55)
+        items.append((x, wdt, item, col))
+        x += wdt + rng.choice([0.08, 0.12, 0.2])
+    if not items:
+        return
+    used = items[-1][0] + items[-1][1]
+    x0 = a0 + 0.22 + (stop - used) / 2
+    for (xi, wdt, item, col) in items:
+        xa = x0 + xi
+        if item[0] == 'shirt':
+            shirt(b, axis, xa + wdt / 2, c, zt, col, s=item[1])
+        else:
+            cloth(b, axis, xa, xa + wdt, c, zt - item[1], zt, col)
 
 
 def toren(b, cx, cy, z0, col, stand=0.3, r=0.5, h=1.05, stand_col='concrete'):
@@ -236,25 +249,25 @@ def tank_stand(b, x0, y0, x1, y1, z0, h, col='metal'):
     b.box(x0, y0, z0 + h - 0.08, x1, y1, z0 + h, col, skip=())
 
 
-def dish(b, cx, cy, z0, h=0.9, r=0.42, face=-1):
-    """Satellite dish on a short pole: a shallow cone (concave side up and towards `face` = +-y), its back in
-    light grey, and an LNB arm from the lower rim to a small head in front of the dish."""
+def dish(b, cx, cy, z0, h=0.9, r=0.5, face=-1):
+    """Satellite dish on a short pole: a shallow 8-sided bowl (concave side towards `face` = +-y and up), light
+    grey inside, a darker back, and an LNB arm from the lower rim to a small head in front of the dish."""
     b.box(cx - 0.03, cy - 0.03, z0, cx + 0.03, cy + 0.03, z0 + h, 'metal', skip=('bottom', 'top'))
-    n = (0.0, 0.55 * face, 0.835)
+    n = (0.0, 0.8 * face, 0.6)
     w = (0.0, n[2], -n[1])                                  # in-plane axis (n x u, u = +x)
     apex = (cx, cy, z0 + h)                                 # back centre of the dish, on the pole top
-    c = tuple(apex[k] + 0.16 * n[k] for k in range(3))      # centre of the rim
+    c = tuple(apex[k] + 0.14 * n[k] for k in range(3))      # centre of the rim
     rim = []
-    for i in range(6):
-        a = math.radians(30 + 60 * i)                       # i = 4 is the lowest rim point (270 deg)
+    for i in range(8):
+        a = math.radians(45 * i)                            # i = 6 is the lowest rim point (270 deg)
         rim.append(tuple(c[k] + r * (math.cos(a) * (1.0 if k == 0 else 0.0) + math.sin(a) * w[k]) for k in range(3)))
-    for i in range(6):
-        tri = [rim[i], rim[(i + 1) % 6], apex]
-        oface(b, tri, 'ac_white', n)
-        oface(b, tri, '#cfcfc8', (-n[0], -n[1], -n[2]))
-    lnb = tuple(c[k] + 0.35 * n[k] for k in range(3))
-    beam(b, rim[4], lnb, 0.03, 'metal')
-    b.box(lnb[0] - 0.04, lnb[1] - 0.04, lnb[2] - 0.04, lnb[0] + 0.04, lnb[1] + 0.04, lnb[2] + 0.04, 'metal', skip=())
+    for i in range(8):
+        tri = [rim[i], rim[(i + 1) % 8], apex]
+        oface(b, tri, '#d9d9d2', n)
+        oface(b, tri, '#8e9396', (-n[0], -n[1], -n[2]))
+    lnb = tuple(c[k] + 0.4 * n[k] for k in range(3))
+    beam(b, rim[6], lnb, 0.03, 'metal')
+    b.box(lnb[0] - 0.05, lnb[1] - 0.05, lnb[2] - 0.05, lnb[0] + 0.05, lnb[1] + 0.05, lnb[2] + 0.05, 'rail_black', skip=())
 
 
 def antenna(b, cx, cy, z0, h=2.4):
@@ -266,9 +279,22 @@ def antenna(b, cx, cy, z0, h=2.4):
 
 
 def pot(b, x, y, z0, leaf='plant'):
-    """Square planter with a leafy block (cheap rooftop / terrace greenery)."""
+    """Square planter with a bushy plant: a hexagonal leaf mass plus a smaller, lighter tuft set off-centre on
+    top, so the outline reads as foliage rather than a green block."""
+    top = {'plant': '#6cb452', 'plant_dark': '#4f9a48'}.get(leaf, shade(leaf, 1.25))
     b.box(x - 0.2, y - 0.2, z0, x + 0.2, y + 0.2, z0 + 0.35, 'pot')
-    b.box(x - 0.28, y - 0.28, z0 + 0.35, x + 0.28, y + 0.28, z0 + 0.85, leaf)
+    b.cyl(x, y, z0 + 0.35, z0 + 0.78, 0.3, leaf, seg=6)
+    b.cyl(x + 0.07, y - 0.05, z0 + 0.74, z0 + 1.0, 0.18, top, seg=5)
+
+
+def ac_box(b, side, uc, z0, wall=None):
+    """Outdoor AC condenser hanging on a wall: closed underside (seen from the street), no face against the
+    wall, plus the fan grille decal."""
+    m, _ = b._frame(side, wall)
+    (xa, ya), (xb, yb) = m(uc - 0.4, 0.02), m(uc + 0.4, 0.32)
+    back = {'front': 'back', 'back': 'front', 'left': 'right', 'right': 'left'}[side]
+    b.box(xa, ya, z0, xb, yb, z0 + 0.55, 'ac_white', skip=(back,))
+    b.decal(side, uc - 0.3, uc + 0.05, z0 + 0.1, z0 + 0.45, 'metal', off=0.33, wall=wall)
 
 
 ZINC = '#8f999f'
@@ -304,14 +330,15 @@ def lean_to(b, x0, x1, y0, y1, z0, z_y0, z_y1, col=ZINC, rib=ZINC_RIB, wall_y=No
             oface(b, [(xa, ye, z0), (xb, ye, z0), (xb, ye, ze), (xa, ye, ze)], wc, (0, sy, 0))
 
 
-def cap(b, p, q, col, w=0.09, h=0.05):
+def cap(b, p, q, col, w=0.09, h=0.05, slope=0.0):
     """Ridge / hip cap (bubungan): a shallow two-face ^ along the convex roof line p -> q. It makes low-pitch
     roofs read as roofs (the ink shader skips edges flatter than 25 deg) and hides dashed ridge lines."""
     d = _sub(q, p)
     e = _unit(_cross(d, (0.0, 0.0, 1.0)))
     up = (0.0, 0.0, h)
-    pa = tuple(p[k] - e[k] * w for k in range(3)); qa = tuple(q[k] - e[k] * w for k in range(3))
-    pb = tuple(p[k] + e[k] * w for k in range(3)); qb = tuple(q[k] + e[k] * w for k in range(3))
+    dz = (0.0, 0.0, w * slope + 0.005)   # lower edges sit on / just under the roof surface (no gap below)
+    pa = tuple(p[k] - e[k] * w - dz[k] for k in range(3)); qa = tuple(q[k] - e[k] * w - dz[k] for k in range(3))
+    pb = tuple(p[k] + e[k] * w - dz[k] for k in range(3)); qb = tuple(q[k] + e[k] * w - dz[k] for k in range(3))
     pt = tuple(p[k] + up[k] for k in range(3)); qt = tuple(q[k] + up[k] for k in range(3))
     oface(b, [pa, qa, qt, pt], col, (-e[0], -e[1], 1.0))
     oface(b, [pt, qt, qb, pb], col, (e[0], e[1], 1.0))
@@ -322,6 +349,7 @@ def hip_caps(b, x0, x1, y0, y1, z0, rise, col, thick=0.12):
     w, d = x1 - x0, y1 - y0
     ym, xm = (y0 + y1) / 2, (x0 + x1) / 2
     zt, ze = z0 + rise + thick, z0 + thick
+    sl = rise / (min(w, d) / 2)
     if w >= d:
         r0, r1 = (x0 + d / 2, ym, zt), (x1 - d / 2, ym, zt)
         ends = {(x0, y0): r0, (x0, y1): r0, (x1, y0): r1, (x1, y1): r1}
@@ -330,12 +358,12 @@ def hip_caps(b, x0, x1, y0, y1, z0, rise, col, thick=0.12):
         ends = {(x0, y0): r0, (x1, y0): r0, (x0, y1): r1, (x1, y1): r1}
     for (cx, cy), r in ends.items():
         f = 0.16 / math.hypot(r[0] - cx, r[1] - cy)      # start a little up the hip so the cap stays in the lot
-        cap(b, (cx + (r[0] - cx) * f, cy + (r[1] - cy) * f, ze + (r[2] - ze) * f), r, col)
+        cap(b, (cx + (r[0] - cx) * f, cy + (r[1] - cy) * f, ze + (r[2] - ze) * f), r, col, slope=sl)
     if abs(r1[0] - r0[0]) + abs(r1[1] - r0[1]) > 0.05:
-        cap(b, r0, r1, col)
+        cap(b, r0, r1, col, slope=sl)
 
 
-def gable_roof(b, x0, x1, ylo, yhi, z0, rise, col, gcol, thick=0.14, vent=None):
+def gable_roof(b, x0, x1, ylo, yhi, z0, rise, col, gcol, thick=0.14, vent=None, ribs=None):
     """Pitched roof with the ridge running front-to-back and the gable walls flush with the front and
     back facades (no overhang, so it stays inside the lot). Built as one closed shell: two slopes sharing
     the ridge, eave edges, and at each gable end a wall triangle plus the roof-thickness strips."""
@@ -353,6 +381,54 @@ def gable_roof(b, x0, x1, ylo, yhi, z0, rise, col, gcol, thick=0.14, vent=None):
             oface(b, [(xm - w, yy + 0.02 * s, z0 + rise * 0.3), (xm + w, yy + 0.02 * s, z0 + rise * 0.3),
                       (xm + w, yy + 0.02 * s, z0 + rise * 0.3 + 0.35), (xm - w, yy + 0.02 * s, z0 + rise * 0.3 + 0.35)],
                   vent, (0, s, 0))
+    if ribs:   # metal-sheet (spandek) battens running down each slope
+        hw = abs(xm - x0)
+        nr_ = max(3, int(round((yhi - ylo) / 0.9)))
+        for xe, sx in ((x0, -1), (x1, 1)):
+            xs = xm + (0.13 if xe > xm else -0.13)   # stop just short of the ridge cap
+            zs = zt - 0.13 * rise / hw
+            for i in range(1, nr_):
+                yr = ylo + (yhi - ylo) * i / nr_
+                oface(b, [(xe, yr - 0.035, z0 + thick + 0.015), (xs, yr - 0.035, zs + 0.015),
+                          (xs, yr + 0.035, zs + 0.015), (xe, yr + 0.035, z0 + thick + 0.015)], ribs, (sx * rise, 0, hw))
+
+
+def gable_x(b, x0, x1, y0, y1, z0, rise, col, gcol, ov0=0.0, ov1=0.0, thick=0.14, vent=None, courses=None):
+    """Pitched roof with the ridge running left-right (eaves to the street and to the back), gable walls at
+    x0 / x1 flush with the side walls; the slopes run on past the walls by ov0 (front, y0) and ov1 (back, y1).
+    One closed shell: two slopes, eave fascias, soffits, two gable triangles and the slab-end strips."""
+    ym = (y0 + y1) / 2
+    hd = (y1 - y0) / 2
+    sl = rise / hd
+    zt = z0 + rise + thick
+    for yw, ov, s in ((y0, ov0, -1), (y1, ov1, 1)):
+        ye, ze = yw + s * ov, z0 - ov * sl
+        oface(b, [(x0, ye, ze + thick), (x1, ye, ze + thick), (x1, ym, zt), (x0, ym, zt)], col, (0, s * rise, hd))
+        oface(b, [(x0, ye, ze), (x1, ye, ze), (x1, ye, ze + thick), (x0, ye, ze + thick)], col, (0, s, 0))
+        if ov > 0:
+            oface(b, [(x0, ye, ze), (x1, ye, ze), (x1, yw, z0), (x0, yw, z0)], col, (0, 0, -1))
+        for xe, sx in ((x0, -1), (x1, 1)):
+            oface(b, [(xe, ye, ze), (xe, ym, z0 + rise), (xe, ym, zt), (xe, ye, ze + thick)], col, (sx, 0, 0))
+    if courses:   # darker tile-course lines parallel to the ridge on both slopes
+        for yw, ov, s in ((y0, ov0, -1), (y1, ov1, 1)):
+            ye = yw + s * ov
+            L = abs(ym - ye)
+            nc = max(2, int(round(L / 1.1)))
+            for i in range(1, nc):
+                f = i / nc
+                yc = ye + (ym - ye) * f
+                zc = z0 - ov * sl + (rise + ov * sl) * f + thick + 0.012
+                dy = 0.035
+                oface(b, [(x0, yc - dy, zc + s * dy * sl), (x1, yc - dy, zc + s * dy * sl),
+                          (x1, yc + dy, zc - s * dy * sl), (x0, yc + dy, zc - s * dy * sl)], courses, (0, s * rise, hd))
+    for xe, sx in ((x0, -1), (x1, 1)):
+        oface(b, [(xe, y0, z0), (xe, y1, z0), (xe, ym, z0 + rise)], gcol, (sx, 0, 0))
+        if vent:
+            w = min(0.5, (y1 - y0) * 0.06)
+            xx = xe + 0.02 * sx
+            oface(b, [(xx, ym - w, z0 + rise * 0.3), (xx, ym + w, z0 + rise * 0.3),
+                      (xx, ym + w, z0 + rise * 0.3 + 0.3), (xx, ym - w, z0 + rise * 0.3 + 0.3)], vent, (sx, 0, 0))
+    return zt, sl
 
 
 # ------------------------------------------------------------------------------------------- build
@@ -487,7 +563,7 @@ def build(b, v, rng):
         if rt == 'half':      # low wall + steel rail on short posts
             box(x0, 0.08, z, x1, 0.2, z + 0.5, wall, skip=('bottom', 'left', 'right'))
             box(x0, 0.1, z + h - 0.06, x1, 0.18, z + h, railc, skip=('bottom', 'left', 'right'))
-            box(x0, 0.11, z + 0.72, x1, 0.17, z + 0.76, railc, skip=('bottom', 'left', 'right', 'top'))
+            box(x0, 0.11, z + 0.72, x1, 0.17, z + 0.76, railc, skip=('bottom', 'left', 'right'))
             npost = max(1, int(round((x1 - x0) / 1.4)))
             for i in range(1, npost):
                 xp = x0 + (x1 - x0) * i / npost
@@ -497,7 +573,7 @@ def build(b, v, rng):
         # 'pipe': three horizontal steel tubes on posts
         box(x0, 0.1, z + h - 0.06, x1, 0.18, z + h, railc, skip=('bottom', 'left', 'right'))
         for zz in (0.62, 0.3):
-            box(x0, 0.11, z + zz, x1, 0.17, z + zz + 0.04, railc, skip=('bottom', 'left', 'right', 'top'))
+            box(x0, 0.11, z + zz, x1, 0.17, z + zz + 0.04, railc, skip=('bottom', 'left', 'right'))
         npost = max(1, int(round((x1 - x0) / 1.2)))
         for i in range(0, npost + 1):
             xp = x0 + (x1 - x0) * i / npost
@@ -550,6 +626,12 @@ def build(b, v, rng):
             wx = dx + 1.25 if dleft else dx - 1.25
             cs_dec(dx - 0.48, dx + 0.48, zf, zf + 2.18, frame, CD, off=0.02)
             cs_dec(dx - 0.4, dx + 0.4, zf, zf + 2.1, doorc, CD, off=0.035)
+            if v.get('handles'):      # two raised panels + a dark handle on the lock side
+                pc_ = shade(doorc, 0.86)
+                for (za_, zb_) in ((zf + 0.2, zf + 0.9), (zf + 1.2, zf + 1.9)):
+                    cs_dec(dx - 0.28, dx + 0.28, za_, zb_, pc_, CD, off=0.042)
+                hxd = dx + (0.32 if dleft else -0.32)
+                cs_dec(hxd - 0.03, hxd + 0.03, zf + 0.98, zf + 1.1, '#2d2a28', CD, off=0.048)
             cs_dec(wx - 0.5, wx + 0.5, zf + 1.0, zf + 2.05, frame, CD, off=0.02)
             cs_dec(wx - 0.42, wx + 0.42, zf + 1.08, zf + 1.97, 'glass', CD, off=0.035)
 
@@ -561,18 +643,37 @@ def build(b, v, rng):
         side_dec(side, 0.0, FW, 0, 0.35, 'plinth')
         for k in range(1, n):
             side_dec(side, 0.0, FW, k * fh - BH, k * fh, acc)
-    # the kos towers over its 1-2 storey neighbours: give both party walls a lived-in look above ~4.5 m
-    patch = shade(wall, 0.9)
+    # the kos towers over its 1-2 storey neighbours: give both party walls a lived-in look above ~4.5 m,
+    # different on every variant and on each side (patch / vent blocks / pipes / small bathroom windows)
+    patch = shade(wall, 0.95)
     for si, side in enumerate(('left', 'right')):
         fwd = (si == 0) == (rng.random() < 0.5)
-        tp = FW * (0.18 if fwd else 0.5) + rng.uniform(0.0, 0.4)
-        zp = 2 * fh + 0.35
-        side_dec(side, tp, tp + 2.0, zp, zp + 1.5, patch, off=0.012)                 # re-plastered patch
-        tv = FW - 2.4 if fwd else 0.6
-        for i in range(4):                                                            # roster vent blocks
+        zlo = 1.5 * fh
+        nv = rng.randint(2, 5)                                                        # roster vent blocks
+        tv = (FW - 0.6 - nv * 0.45) if fwd else rng.uniform(0.5, 1.2)
+        for i in range(nv):
             side_dec(side, tv + i * 0.45, tv + i * 0.45 + 0.3, TOPB - 0.75, TOPB - 0.45, VENT, off=0.025)
-        tpp = FW - 0.35 if fwd else tp - 0.6                                          # drain pipe
+        extra = rng.choice(['patch', 'window', 'pipe2', 'patch', 'none'])
+        if extra == 'patch':                                                          # re-plastered patch
+            pw_ = rng.uniform(1.2, 2.4)
+            ph_ = pw_ * rng.uniform(0.45, 0.75)
+            tp = rng.uniform(1.0, max(1.1, FW - pw_ - 1.0))
+            zp = rng.uniform(zlo, max(zlo + 0.1, TOPB - 0.95 - ph_))
+            xw = (XL - 0.012) if side == 'left' else (XR + 0.012)
+            pts = [(tp, zp), (tp + pw_, zp + 0.12), (tp + pw_ - 0.15, zp + ph_), (tp + 0.35, zp + ph_ + 0.1),
+                   (tp - 0.1, zp + ph_ * 0.55)]        # irregular (convex) outline: reads as a repair, not a board
+            oface(b, [(xw, Y(tt), zz) for (tt, zz) in pts], patch, (-1 if side == 'left' else 1, 0, 0))
+        elif extra == 'window':                                                       # stacked bathroom windows
+            tw = rng.uniform(FW * 0.35, FW * 0.7)
+            for k in range(2, n):
+                zw = k * fh + 1.5
+                side_dec(side, tw - 0.32, tw + 0.32, zw, zw + 0.55, frame, off=0.02)
+                side_dec(side, tw - 0.25, tw + 0.25, zw + 0.07, zw + 0.48, 'glass_light', off=0.032)
+        tpp = FW - 0.35 if fwd else tv + nv * 0.45 + 0.4                              # drain pipe
         side_dec(side, tpp - 0.05, tpp + 0.05, 0.0, TOPB, PIPE, off=0.035)
+        if extra == 'pipe2':                                                          # second, thinner pipe
+            tp2 = tpp - 0.35 if fwd else tpp + 0.3
+            side_dec(side, tp2 - 0.035, tp2 + 0.035, 0.0, TOPB, shade(PIPE, 1.3), off=0.03)
     if cf:
         # back of a corridor-front kos: small bathroom windows + AC condensers + a drain pipe
         for k in range(n):
@@ -582,7 +683,7 @@ def build(b, v, rng):
                 os_dec(xc - 0.4, xc + 0.4, zf + 1.45, zf + 2.15, frame)
                 os_dec(xc - 0.33, xc + 0.33, zf + 1.52, zf + 2.08, 'glass_light', off=0.035)
                 if rng.random() < 0.45:
-                    b.ac_unit(OS, xc - (1.0 if dleft else -1.0), zf + 1.3, wall=Y(FW))
+                    ac_box(b, OS, xc - (1.0 if dleft else -1.0), zf + 1.3, wall=Y(FW))
             xs = (sx0 + sx1) / 2
             os_dec(xs - 0.3, xs + 0.3, zf + 1.6, zf + 2.3, frame)
             os_dec(xs - 0.24, xs + 0.24, zf + 1.66, zf + 2.24, 'glass_light', off=0.035)
@@ -612,7 +713,7 @@ def build(b, v, rng):
                     for zz in (1.3, 1.65):
                         os_dec(xc - ww / 2, xc + ww / 2, zf + zz, zf + zz + 0.035, 'rail_black', off=0.055)
                 if not stair_bay and bi > 0 and rng.random() < 0.6 and not (k == 0 and g == 'shop'):
-                    b.ac_unit(OS, r0, zf + 1.05, wall=Y(FW))
+                    ac_box(b, OS, r0, zf + 1.05, wall=Y(FW))
                 if shd == 'win':      # small concrete hood over each window
                     box(xc - ww / 2 - 0.15, FW, zf + 2.3, xc + ww / 2 + 0.15, FW + 0.35, zf + 2.38, shc, skip=('front',))
             if shd == 'cont':         # continuous slim sun shade over the windows
@@ -638,23 +739,41 @@ def build(b, v, rng):
         box(xp - 0.06, FW, 0, xp + 0.06, FW + 0.1, H0, PIPE, skip=('bottom', 'front'))
 
     # ------------------------------------------------------------------ roof
-    if v['roof'] in ('hip', 'gable'):
+    def ceiling(x0, x1, t0, t1, col):
+        oface(b, [(x0, Y(t0), TOPB), (x1, Y(t0), TOPB), (x1, Y(t1), TOPB), (x0, Y(t1), TOPB)], col, (0, 0, -1))
+
+    ceilc = v.get('ceil', floor)
+    ceiling(XL, XR, 0, CD, ceilc)                         # top-floor corridor ceiling
+    if not hut:
+        ceiling(sx0, sx1, CD, SBD, ceilc)                 # top of the stair bay
+    if v['roof'] in ('hip', 'gable', 'gablex'):
         pc = v.get('parc', wall)
-        box(rx0, 0, TOPB, rx1, FW, H0, acc, skip=('top', OUT))
-        box(sx0, 0, TOPB, sx1, FW, H0, v.get('deck', 'concrete_dark'), skip=(IN,))
+        box(rx0, 0, TOPB, rx1, FW, H0, acc, skip=('top', 'bottom', OUT))
+        box(sx0, 0, TOPB, sx1, FW, H0, v.get('deck', 'concrete_dark'), skip=(IN, 'bottom'))
         cs_dec(sx0, sx1, TOPB, H0, acc, 0.0)
         os_dec(sx0, sx1, TOPB, H0, acc)
         side_dec(OUT, 0.0, FW, TOPB, H0, acc)
         ov = 0.45
         ylo, yhi = min(Y(0), Y(FW)), max(Y(0), Y(FW))
-        if v['roof'] == 'hip':
+        if v['roof'] == 'gablex':
+            yb_lot = D - 0.02
+            ov0, ov1 = min(0.5, ylo - 0.02), min(0.3, yb_lot - yhi)
+            rs = v.get('rise', 1.5)
+            gx0, gx1 = rx0, rx1
+            zt, sl = gable_x(b, gx0, gx1, ylo, yhi, H0, rs, v['roofc'], wall, ov0=ov0, ov1=ov1, vent='#5a4a3e',
+                             courses=shade(v['roofc'], 0.74))
+            ym_ = (ylo + yhi) / 2
+            cap(b, (gx0, ym_, zt), (gx1, ym_, zt), shade(v['roofc'], 0.78), w=0.1, h=0.06, slope=sl)
+        elif v['roof'] == 'hip':
             b.roof_hip(rx0 + ov, rx1 - ov, ylo + ov, yhi - ov, H0, v.get('rise', 1.3), v['roofc'], over=ov, thick=0.12)
             hip_caps(b, rx0, rx1, ylo, yhi, H0, v.get('rise', 1.3), shade(v['roofc'], 0.78), thick=0.12)
         else:
-            gable_roof(b, rx0, rx1, ylo, yhi, H0, v.get('rise', 1.5), v['roofc'], wall, vent='#5a4a3e')
+            rs = v.get('rise', 1.5)
+            gable_roof(b, rx0, rx1, ylo, yhi, H0, rs, v['roofc'], wall, vent='#5a4a3e',
+                       ribs=shade(v['roofc'], 0.72) if v.get('ribs') else None)
             xm_ = (rx0 + rx1) / 2
-            cap(b, (xm_, ylo, H0 + v.get('rise', 1.5) + 0.14), (xm_, yhi, H0 + v.get('rise', 1.5) + 0.14),
-                shade(v['roofc'], 0.78), w=0.1, h=0.06)
+            cap(b, (xm_, ylo, H0 + rs + 0.14), (xm_, yhi, H0 + rs + 0.14),
+                shade(v['roofc'], 0.78), w=0.1, h=0.06, slope=rs / ((rx1 - rx0) / 2))
         # flat dak strip over the stair bay: edge protection, toren at the far end, laundry / AC / pots near
         st = v.get('strip')
         if st == 'parapet':
@@ -693,8 +812,9 @@ def build(b, v, rng):
         near = v.get('strip_near', 'line')
         ty0 = Y(1.1)
         if near == 'line' and n == 3:
-            lx0, lx1 = sx0 + 0.4, sx1 - 0.4
-            clothes_line(b, 'x', lx0, lx1, ty0, H0, LH, rng)
+            lx0, lx1 = sx0 + 0.2, sx1 - 0.2
+            for tl in (1.1, 2.2):
+                clothes_line(b, 'x', lx0, lx1, Y(tl), H0, LH, rng)
         elif near == 'ac':
             ax = (sx0 + sx1) / 2
             b.box(ax - 0.4, ty0 - 0.175, H0, ax + 0.4, ty0 + 0.175, H0 + 0.55, 'ac_white')
@@ -703,18 +823,27 @@ def build(b, v, rng):
         else:
             for i in range(2):
                 pot(b, (sx0 + sx1) / 2 + (-0.45 + 0.9 * i), Y(0.6 + 0.2 * i), H0, leaf='plant' if i == 0 else 'plant_dark')
+        if v.get('strip_extra'):     # AC condenser beside the toren + a pair of pots mid-strip
+            ax, ta = (sx0 + sx1) / 2, FW - 2.55
+            yA = Y(ta)
+            b.box(ax - 0.4, yA - 0.175, H0, ax + 0.4, yA + 0.175, H0 + 0.55, 'ac_white')
+            b.decal('front', ax - 0.3, ax + 0.05, H0 + 0.1, H0 + 0.45, 'metal', off=0.02, wall=yA - 0.175)
+            for i in range(2):
+                pot(b, ax + (-0.4 + 0.8 * i), Y(ta - 1.3 - 0.25 * i), H0, leaf='plant_dark' if i == 0 else 'plant')
     else:
         deck = v.get('deck', 'concrete')
         ph = v.get('ph', 0.9)
         pc = v.get('parc', wall)
         if hut:   # leave the stairwell open under the stair house (the last flight climbs onto the roof)
-            box(rx0, 0, TOPB, rx1, FW, H0, deck, skip=(OUT,))
+            # the room-zone deck is split at t = SBD so its top edges meet the stair-zone deck edge to edge
+            box(rx0, 0, TOPB, rx1, SBD, H0, deck, skip=(OUT, 'back', 'bottom'))
+            box(rx0, SBD, TOPB, rx1, FW, H0, deck, skip=(OUT, 'front', 'bottom'))
             xquad(S(SW), CD, SBD, TOPB, H0, deck, sx_out)
-            box(sx0, 0, TOPB, sx1, CD, H0, deck, skip=('top', IN))
-            box(sx0, SBD, TOPB, sx1, FW, H0, deck, skip=(IN,))
+            box(sx0, 0, TOPB, sx1, CD, H0, deck, skip=('top', IN, 'bottom'))
+            box(sx0, SBD, TOPB, sx1, FW, H0, deck, skip=(IN, 'bottom'))
             box(min(S(0), S(0.2)), CD, TOPB, max(S(0), S(0.2)), SBD, H0, trim, skip=('top', 'bottom', 'front', 'back'))
         else:
-            box(XL, 0, TOPB, XR, FW, H0, deck, skip=())
+            box(XL, 0, TOPB, XR, FW, H0, deck, skip=('bottom',))
         # parapet (split around the stair house)
         pt = 0.15
         fx0, fx1 = (rx0, rx1) if hut else (XL, XR)
@@ -748,6 +877,37 @@ def build(b, v, rng):
         X0, X1 = XL + pt, XR - pt
         hy0, hy1 = (min(Y(0), Y(SBD)), max(Y(0), Y(SBD))) if hut else (0.0, -1.0)
         taken = []
+
+        # darker waterproofing border along the parapets (breaks up the big flat deck)
+        bw, zb_ = 0.32, H0 + 0.012
+        bandc = shade(deck, 0.84)
+
+        def band(x0, x1, t0, t1):
+            if x1 - x0 > 0.05 and abs(t1 - t0) > 0.05:
+                oface(b, [(x0, Y(t0), zb_), (x1, Y(t0), zb_), (x1, Y(t1), zb_), (x0, Y(t1), zb_)], bandc, (0, 0, 1))
+        if hut:
+            band(min(Q(pt), S(SW)), max(Q(pt), S(SW)), pt, pt + bw)
+        else:
+            band(X0, X1, pt, pt + bw)
+        band(X0, X1, FW - pt - bw, FW - pt)
+        band(min(Q(pt), Q(pt + bw)), max(Q(pt), Q(pt + bw)), pt + bw, FW - pt - bw)
+        band(min(S(pt), S(pt + bw)), max(S(pt), S(pt + bw)), SBD if hut else pt + bw, FW - pt - bw)
+
+        if v.get('hatch'):   # roof hatch above the top-floor corridor end + a steel ladder up to it
+            hx_, ht0 = (sx0 + sx1) / 2 + (0.15 if sr else -0.15), 0.55
+            hy_ = (Y(ht0) + Y(ht0 + 1.0)) / 2
+            taken.append(('hatch', (hx_ - 0.6, hy_ - 0.6, hx_ + 0.6, hy_ + 0.6)))
+            b.box(hx_ - 0.5, hy_ - 0.5, H0, hx_ + 0.5, hy_ + 0.5, H0 + 0.4, pc)
+            b.box(hx_ - 0.56, hy_ - 0.56, H0 + 0.4, hx_ + 0.56, hy_ + 0.56, H0 + 0.48, acc)
+            zl0 = (n - 1) * fh
+            ladc = 'rail_black'
+            u0, u1 = Y(0.5), Y(0.95)
+            for uu in (u0, u1):
+                b.decal(IN, uu - 0.025, uu + 0.025, zl0, TOPB, ladc, off=0.04, wall=S(0.2))
+            zz = zl0 + 0.3
+            while zz < TOPB - 0.1:
+                b.decal(IN, min(u0, u1), max(u0, u1), zz, zz + 0.04, ladc, off=0.035, wall=S(0.2))
+                zz += 0.3
 
         def place(u, vv, hx, hy, what):
             x = min(max(X0 + u * (X1 - X0), X0 + hx + 0.05), X1 - hx - 0.05)
@@ -803,7 +963,7 @@ def build(b, v, rng):
                     b.decal('front', ax - 0.3, ax + 0.05, H0 + 0.1, H0 + 0.45, 'metal', off=0.02, wall=cy - 0.175)
             elif kind == 'dish':
                 _, u, vv = it
-                cx, cy = place(u, vv, 0.45, 0.45, 'dish')
+                cx, cy = place(u, vv, 0.55, 0.45, 'dish')
                 dish(b, cx, cy, H0, h=0.9 if n == 3 else 0.5, face=-1)
             elif kind == 'antenna':
                 _, u, vv = it
