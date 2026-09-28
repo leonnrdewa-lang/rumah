@@ -57,6 +57,13 @@ func hit() -> void:
 	hurt = 1.0
 
 
+## Back on its feet (Hanoman returning to Pancawati after falling).
+func revive() -> void:
+	action = ""
+	action_t = 0.0
+	hurt = 0.0
+
+
 func _rot(n: String, x := 0.0, y := 0.0, z := 0.0) -> void:
 	if not p.has(n):
 		return

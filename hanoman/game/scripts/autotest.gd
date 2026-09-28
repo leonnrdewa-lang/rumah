@@ -181,5 +181,12 @@ func _run() -> void:
 	main.player.take_hit(999.0, main.player.global_position + Vector3(1, 0, 0))
 	await _wait(2.5)
 	await _shot("10_death")
+	# back to Pancawati: Hanoman must stand up again
+	main.go_hub()
+	await _wait(3.0)
+	var r = main.player.rig
+	print("after death: dead=%s action=%s anim=%s" % [main.player.dead, r.action,
+		r.ap.current_animation if r is AnimRig and r.ap else "-"])
+	await _shot("11_hub_after_death")
 	print("AUTOTEST DONE")
 	get_tree().quit()

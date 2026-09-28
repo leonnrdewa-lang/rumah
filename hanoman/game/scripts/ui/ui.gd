@@ -49,6 +49,8 @@ var _joy_origin := Vector2.ZERO
 var _joy_knob: Control
 var _joy_base: Control
 var _advance: Callable
+var _skip: Callable
+var _closed_frame := -100
 var _typing := false
 var _type_label: RichTextLabel
 var _menu_buttons: Array = []
@@ -434,6 +436,7 @@ func _modal(dim := 0.6) -> Control:
 
 func _close_modal(root: Control) -> void:
 	_menu_buttons = []
+	_back = Callable()
 	root.queue_free()
 	touch.visible = _touch_enabled() and G.main.area != "title"
 
@@ -465,6 +468,9 @@ func _portrait(root: Control, id: String, from_left := true) -> TextureRect:
 
 ## lines: [[speaker_id, text], ...]
 func dialog(lines: Array, done: Callable) -> void:
+	if _skip.is_valid():
+		# a dialog is already open (double tap on an NPC): don't stack a second one
+		return
 	var root := _modal(0.0)
 	var grad := TextureRect.new()
 	var gt := GradientTexture2D.new()
@@ -527,6 +533,27 @@ func dialog(lines: Array, done: Callable) -> void:
 		tw.tween_property(text, "visible_ratio", 1.0, 0.018 * String(lines[i][1]).length())
 		tw.tween_callback(func(): _typing = false)
 		Au.sfx("sfx_ui_move", -12.0)
+	# Esc / "Lewati" closes the whole conversation at once
+	var skip_b := _big_button("Lewati", func():
+		if _skip.is_valid(): _skip.call())
+	skip_b.custom_minimum_size = Vector2(170, 44)
+	skip_b.add_theme_font_size_override("font_size", 20)
+	skip_b.focus_mode = Control.FOCUS_NONE
+	skip_b.anchor_left = 1.0
+	skip_b.anchor_right = 1.0
+	skip_b.offset_left = -196
+	skip_b.offset_right = -26
+	skip_b.offset_top = 22
+	skip_b.offset_bottom = 66
+	root.add_child(skip_b)
+	_skip = func():
+		Hf.stop_voice()
+		_advance = Callable()
+		_skip = Callable()
+		_typing = false
+		_closed_frame = Engine.get_process_frames()
+		_close_modal(root)
+		done.call()
 	show_line.call(0)
 	_advance = func():
 		if _typing:
@@ -535,10 +562,7 @@ func dialog(lines: Array, done: Callable) -> void:
 			return
 		idx[0] += 1
 		if idx[0] >= lines.size():
-			Hf.stop_voice()
-			_advance = Callable()
-			_close_modal(root)
-			done.call()
+			_skip.call()
 		else:
 			show_line.call(idx[0])
 	root.gui_input.connect(func(e):
@@ -546,7 +570,21 @@ func dialog(lines: Array, done: Callable) -> void:
 			if _advance.is_valid(): _advance.call())
 
 
+## True while a dialog is open or was just closed: the key that closed it must
+## not also re-trigger the NPC (Input.is_action_just_pressed ignores "handled").
+func dialog_blocking() -> bool:
+	return _skip.is_valid() or Engine.get_process_frames() - _closed_frame < 12
+
+
 func _input(event: InputEvent) -> void:
+	if _skip.is_valid() and (event.is_action_pressed("pause") or event.is_action_pressed("ui_cancel")):
+		get_viewport().set_input_as_handled()
+		_skip.call()
+		return
+	if _back.is_valid() and (event.is_action_pressed("pause") or event.is_action_pressed("ui_cancel")):
+		get_viewport().set_input_as_handled()
+		_back.call()
+		return
 	if _advance.is_valid() and (event.is_action_pressed("interact") or event.is_action_pressed("attack") and event is InputEventKey or event.is_action_pressed("dash")):
 		get_viewport().set_input_as_handled()
 		_advance.call()
@@ -648,6 +686,9 @@ func boon_menu(god: String, offers: Array, done: Callable) -> void:
 	Au.sfx("sfx_boon_appear", -6.0)
 
 
+var _back: Callable   # Esc on a closable menu
+
+
 func choice_menu(title: String, subtitle: String, opts: Array, done: Callable, closable := false) -> void:
 	var root := _modal(0.7)
 	var box := PanelContainer.new()
@@ -694,6 +735,7 @@ func choice_menu(title: String, subtitle: String, opts: Array, done: Callable, c
 		close.pressed.connect(func():
 			_close_modal(root)
 			done.call({}))
+		_back = func(): close.pressed.emit()
 		vb.add_child(close)
 		close.call_deferred("grab_focus")
 	else:

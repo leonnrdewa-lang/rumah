@@ -126,7 +126,7 @@ static func _open_shop(main: Node) -> void:
 		var rank := G.up_rank(id)
 		var maxed := rank >= int(u[3])
 		var cost: int = 0 if maxed else int(u[2][rank])
-		opts.append({"title": "%s  %s" % [u[0], "★".repeat(rank) + "☆".repeat(int(u[3]) - rank)],
+		opts.append({"title": "%s  (%d/%d)" % [u[0], rank, int(u[3])],
 			"desc": u[1] + ("" if maxed else "   —  %d Kembang" % cost), "id": id, "cost": cost,
 			"disabled": maxed or int(G.meta.bunga) < cost, "icon": "res://assets/icons/rw_bunga.png"})
 	main.ui.choice_menu("Kesaktian Jembawan", "Kembang Wijayakusuma: %d" % int(G.meta.bunga), opts, func(o: Dictionary):

@@ -97,6 +97,16 @@ func play(a: String, length := 0.3) -> void:
 	_locked_until = t + length
 
 
+func revive() -> void:
+	super.revive()
+	_dead = false
+	_locked_until = 0.0
+	_freeze_at = -1.0
+	if ap:
+		ap.speed_scale = 1.0
+		_play_clip(_first(["idle", "walk", "run"]), 1.0, 0.0)
+
+
 func hit() -> void:
 	super.hit()
 	if ap and not _dead and t >= _locked_until and clips.has("hit"):

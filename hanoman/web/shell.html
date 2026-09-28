@@ -189,6 +189,36 @@ window.__startGame = function () {
     return nativeFetch(input, init);
   };
 
+  // Godot's audio runs in AudioWorklets loaded with addModule(url). A single 503
+  // from the host there left the whole game silent, so fetch the worklet code with
+  // retries and hand it over as a blob URL.
+  if (window.AudioWorklet && AudioWorklet.prototype.addModule) {
+    const nativeAdd = AudioWorklet.prototype.addModule;
+    AudioWorklet.prototype.addModule = async function (url, opts) {
+      if (typeof url === "string" && !url.startsWith("blob:") && !url.startsWith("data:")) {
+        for (let attempt = 0; attempt < 6; attempt++) {
+          const res = await nativeFetch(url + (attempt ? (url.includes("?") ? "&" : "?") + "r=" + attempt : "")).catch(() => null);
+          if (res && res.ok) {
+            const code = await res.text();
+            return nativeAdd.call(this, URL.createObjectURL(new Blob([code], { type: "text/javascript" })), opts);
+          }
+          await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
+        }
+      }
+      return nativeAdd.call(this, url, opts);
+    };
+  }
+  // Wake the audio context on every tap/key until it runs (mobile browsers).
+  const NativeCtx = window.AudioContext || window.webkitAudioContext;
+  if (NativeCtx) {
+    const ctxs = [];
+    const Wrapped = function (...a) { const c = new NativeCtx(...a); ctxs.push(c); return c; };
+    Wrapped.prototype = NativeCtx.prototype;
+    window.AudioContext = Wrapped;
+    const wake = () => ctxs.forEach((c) => { if (c.state !== "running") c.resume().catch(() => {}); });
+    ["pointerdown", "touchend", "keydown", "click"].forEach((ev) => window.addEventListener(ev, wake, true));
+  }
+
   const loader = document.getElementById("loader");
   const errorBox = document.getElementById("error");
   const tips = [

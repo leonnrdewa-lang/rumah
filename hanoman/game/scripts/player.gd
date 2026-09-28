@@ -59,6 +59,16 @@ func reset_for_run() -> void:
 	cast_cd = 0.0
 	collision_layer = L_PLAYER
 	collision_mask = L_WORLD | L_ENEMY
+	combo_i = -1
+	dash_t = 0.0
+	cast_anim = 0.0
+	invuln = 0.0
+	knock = Vector3.ZERO
+	velocity = Vector3.ZERO
+	if rig:
+		rig.revive()
+	if staff:
+		staff.visible = true
 	if model:
 		Art.set_param(model, "fade", 1.0)
 		model.visible = true
@@ -551,5 +561,7 @@ func _find_interact() -> void:
 
 
 func try_interact() -> void:
+	if G.main.busy or G.main.ui.dialog_blocking():
+		return
 	if interact_target and is_instance_valid(interact_target):
 		interact_target.call("interact")
