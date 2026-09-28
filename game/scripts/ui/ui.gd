@@ -579,13 +579,14 @@ func _build_hud() -> void:
 func _layout() -> void:
 	# phones held upright: enlarge the UI so text stays readable
 	var win := Vector2(get_tree().root.size)
-	var want := 1.0 if win.x >= win.y else 1.75
+	var want := 1.0 if win.x >= win.y else 1.35
 	if _touch_mode and win.x >= win.y:
 		# landscape phones: at least ~0.8 CSS px per UI px, so 15-16 px hints
 		# stay >= 12 px on screen (915x412: 0.57 stretch -> 1.4 content scale)
 		var css := win / _dpr()
 		var stretch := minf(css.x / 1280.0, css.y / 720.0)
-		want = clampf(0.8 / maxf(stretch, 0.01), 1.25, 1.5)
+		# (smaller than before: the HUD covered too much of the play area on phones)
+		want = clampf(0.62 / maxf(stretch, 0.01), 0.95, 1.1)
 		want = snappedf(want, 0.05)
 	if not is_equal_approx(get_tree().root.content_scale_factor, want):
 		get_tree().root.content_scale_factor = want
@@ -1668,6 +1669,7 @@ func toggle_pause() -> void:
 		_paused = false
 		_close_modal(), true, 320))
 	col.add_child(button("Cara main", func(): _paused = false; _close_modal(); show_help(), true, 320))
+	col.add_child(button("Dibuat oleh", func(): _paused = false; _close_modal(); show_credits(), true, 320))
 	col.add_child(button("Keluar ke judul", func():
 		GS.save_game()
 		_paused = false
@@ -1675,6 +1677,21 @@ func toggle_pause() -> void:
 		world.enter_title(), true, 320))
 	_paused = true
 	_open_modal(panel, true, func(): _paused = false)
+
+
+const CREATOR_IG := "leonrdewa"
+
+
+func show_credits(on_close := Callable()) -> void:
+	var lines := [
+		"Sawit The Franchise dibuat oleh @%s." % CREATOR_IG,
+		"Instagram: instagram.com/%s — follow untuk update game ini!" % CREATOR_IG,
+		"Dibuat dengan Blender + Godot Engine. Konsep art: Higgsfield GPT Image 2.5.",
+	]
+	info_panel("Dibuat oleh", lines, "Buka Instagram @" + CREATOR_IG, func():
+		OS.shell_open("https://instagram.com/" + CREATOR_IG)
+		if on_close.is_valid():
+			on_close.call(), TITLE_BROWN, "ui_info")
 
 
 func show_help(on_close := Callable()) -> void:
@@ -1792,7 +1809,10 @@ func show_title() -> void:
 	bcol.add_child(button("Cara Main", func():
 		title_screen.visible = false
 		show_help(func(): if title_screen: title_screen.visible = true), true, 300))
-	var credit := _label("Dibuat dengan Blender + Godot • Konsep art: Higgsfield GPT Image 2.5", 15, CREAM_LIGHT)
+	bcol.add_child(button("Dibuat oleh", func():
+		title_screen.visible = false
+		show_credits(func(): if title_screen: title_screen.visible = true), true, 300))
+	var credit := _label("Dibuat oleh @leonrdewa (Instagram) • Blender + Godot", 15, CREAM_LIGHT)
 	credit.add_theme_color_override("font_outline_color", Color(0.3, 0.2, 0.1, 0.6))
 	credit.add_theme_constant_override("outline_size", 5)
 	credit.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
