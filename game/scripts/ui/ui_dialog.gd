@@ -19,6 +19,8 @@ extends Control
 
 const PortraitStage := preload("res://scripts/ui/ui_portrait.gd")
 const NAME_COLOR := Color("9a5b2e")
+const HINT_COLOR := Color("74532f")
+const HINT_OFF := Color("9c4a2c")
 
 var ui: Node
 var key := ""
@@ -42,6 +44,7 @@ var choice_box: VBoxContainer  ## rows of choice pills (see _arrange)
 var buttons: Array = []
 var portrait_rect := Rect2()  ## canvas rect of the half-body art (empty in badge mode)
 var _queued := false
+var _heights_queued := false
 var _panel_style: StyleBoxFlat
 var _t := 0.0
 var _arranged := -1  ## choice arrangement built: columns, or 0 = lone button in the top row
@@ -68,6 +71,11 @@ func _build() -> void:
 	var touch: bool = ui._touch_mode
 	_fs = {"name": 17, "body": 22, "choice": 20, "hint": 15, "dot": 18, "pill_h": 52.0} if touch \
 		else {"name": 16, "body": 20, "choice": 18, "hint": 14, "dot": 22, "pill_h": 44.0}
+	# small windows (800x600 desktop: 0.625 px on screen per UI px): the choice
+	# hints ("Rp 5 jt", "punya 0 surat") keep >= ~10.5 px on screen
+	var sc: float = ui.screen_scale() if ui.has_method("screen_scale") else 1.0
+	if sc > 0.0:
+		_fs["hint"] = clampi(ceili(10.5 / sc), _fs["hint"], _fs["choice"] - 2)
 	panel = PanelContainer.new()
 	_panel_style = ui._box(ui.CREAM, 24, ui.LINE, 3, true)
 	_panel_style.shadow_size = 14
@@ -128,6 +136,7 @@ func _build() -> void:
 	for c in choices:
 		buttons.append(_make_choice(i, c))
 		i += 1
+	_fit_heights()
 
 	panel.minimum_size_changed.connect(_queue_relayout)
 	choice_box.minimum_size_changed.connect(_queue_relayout)
@@ -221,16 +230,17 @@ func _make_choice(i: int, c: Dictionary) -> Button:
 	tc.add_child(tl)
 	var hint := str(c.get("hint", ""))
 	if hint != "":
-		var hl: Label = ui._label(hint, _fs["hint"], ui.BROWN_SOFT)
+		# darker than BROWN_SOFT on cream; on a disabled pill the hint is the
+		# reason ("punya 0 surat"), so it stays legible in a muted brick red
+		var hl: Label = ui._label(hint, _fs["hint"], HINT_OFF if b.disabled else HINT_COLOR)
+		hl.add_theme_font_override("font", ui._font_semi)
 		hl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		tc.add_child(hl)
 	if b.disabled:
-		row.modulate = Color(1, 1, 1, 0.55)
-	var min_h: float = _fs["pill_h"]
-	var fit := func():
-		b.custom_minimum_size.y = maxf(min_h, row.get_combined_minimum_size().y + 10.0)
-	row.minimum_size_changed.connect(fit)
-	fit.call()
+		dot.modulate = Color(1, 1, 1, 0.6)
+		tl.modulate = Color(1, 1, 1, 0.55)
+	row.minimum_size_changed.connect(_queue_heights)
+	b.set_meta("row", row)
 	# the keyboard-selected pill (what E presses) gets an orange dot and a warm
 	# fill instead of a focus ring (the target shows plain pills)
 	var sel: StyleBoxFlat = ui._box(Color("fff1d2"), 28, ui.LINE_DARK, 2)
@@ -254,12 +264,36 @@ func _make_choice(i: int, c: Dictionary) -> Button:
 	return b
 
 
+func _queue_heights() -> void:
+	if _heights_queued:
+		return
+	_heights_queued = true
+	call_deferred("_fit_heights")
+
+
+func _fit_heights() -> void:
+	## Every choice pill gets the same height (the tallest one's), as in the
+	## target: a two-line label no longer makes its row stand out.
+	_heights_queued = false
+	var h: float = _fs["pill_h"]
+	for b in buttons:
+		if is_instance_valid(b) and b.has_meta("row"):
+			h = maxf(h, (b.get_meta("row") as Control).get_combined_minimum_size().y + 10.0)
+	for b in buttons:
+		if is_instance_valid(b):
+			b.custom_minimum_size.y = h
+
+
 func _on_panel_input(e: InputEvent) -> void:
 	# tapping the panel finishes the typewriter (touch friendly)
 	if (e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT) or (e is InputEventScreenTouch and e.pressed):
 		if ui.is_typing():
 			ui.finish_typing()
 			accept_event()
+		elif buttons.size() == 1 and is_instance_valid(buttons[0]) and not buttons[0].disabled:
+			# a lone "Lanjut": tapping anywhere on the panel continues
+			accept_event()
+			buttons[0].pressed.emit()
 
 
 func _queue_relayout() -> void:

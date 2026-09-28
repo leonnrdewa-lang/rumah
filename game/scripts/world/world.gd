@@ -917,6 +917,12 @@ func start_game(load_save: bool) -> void:
 			GS.new_game()
 	else:
 		GS.new_game()
+	# saves from before the env fix round carry the old 3.2 m-grid parcel centres; the
+	# tiles are placed from the layout, so keep the (minimap's) centres in step with it
+	for lp in layout.get("parcels", []):
+		for p in GS.parcels:
+			if int(p["id"]) == int(lp["id"]):
+				p["center"] = lp["center"]
 	refresh_all()
 	var sp: Array = layout.get("player_spawn", [0, 0])
 	player.global_position = Vector3(sp[0], height_at(sp[0], sp[1]), sp[1])

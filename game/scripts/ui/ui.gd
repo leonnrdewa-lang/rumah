@@ -41,6 +41,7 @@ var modal: Control     # current modal panel (dialog, menu, report...)
 var prompt_pill: PanelContainer
 var prompt_key: Label
 var prompt_label: Label
+var tools_pill: PanelContainer  ## secondary key pill "1-5 Alat" (keyboard screens)
 var money_label: Label
 var clock_label: Label
 var clock_icon: TextureRect   # sun by day, crescent moon from dusk to dawn
@@ -539,6 +540,14 @@ func _build_hud() -> void:
 	prompt_pill.name = "Prompt"
 	prompt_pill.visible = false
 	prompts.add_child(prompt_pill)
+	# keyboard screens: a second, quieter key pill telling how to look at the
+	# tools (the target shows two pills bottom-left: "E Panen", "Q Ganti alat")
+	var tkb := _round_badge("1-5", 34)
+	(tkb.get_child(0) as Label).add_theme_font_size_override("font_size", 15)
+	tools_pill = _pill(_hrow([tkb, _label("Alat", 19, BROWN, true)], 10), CREAM, 5, 18)
+	tools_pill.name = "ToolsHint"
+	tools_pill.visible = false
+	prompts.add_child(tools_pill)
 	# bottom-right: tool hotbar
 	hotbar = Hotbar.new()
 	hotbar.name = "Inventory"
@@ -559,7 +568,12 @@ func _layout() -> void:
 	var win := Vector2(get_tree().root.size)
 	var want := 1.0 if win.x >= win.y else 1.75
 	if _touch_mode and win.x >= win.y:
-		want = 1.25
+		# landscape phones: at least ~0.8 CSS px per UI px, so 15-16 px hints
+		# stay >= 12 px on screen (915x412: 0.57 stretch -> 1.4 content scale)
+		var css := win / _dpr()
+		var stretch := minf(css.x / 1280.0, css.y / 720.0)
+		want = clampf(0.8 / maxf(stretch, 0.01), 1.25, 1.5)
+		want = snappedf(want, 0.05)
 	if not is_equal_approx(get_tree().root.content_scale_factor, want):
 		get_tree().root.content_scale_factor = want
 		call_deferred("_layout")
@@ -618,6 +632,18 @@ func _layout() -> void:
 	_sync_hud()
 
 
+func _dpr() -> float:
+	## Device pixels per CSS pixel (web) / per logical screen point.
+	var d := DisplayServer.screen_get_scale()
+	return d if d > 0.0 else 1.0
+
+
+func screen_scale() -> float:
+	## On-screen (CSS) pixels per UI canvas pixel: the window stretch times the
+	## content scale, over the device pixel ratio. 1.0 at 1280x720 desktop.
+	return get_tree().root.get_final_transform().get_scale().x / _dpr()
+
+
 func _toast_rect() -> Rect2:
 	## Where toasts go right now: the HUD's top gap, or the top edge while a
 	## card modal has cleared the HUD (into the band _center_modal keeps free).
@@ -664,7 +690,7 @@ func _place_prompt(vp: Vector2) -> void:
 		# next to the round action button it stands for; above the hotbar
 		# when the screen is too narrow for that
 		at = Vector2(action_btn.position.x - ps.x - 16.0, roundf(action_btn.position.y + (action_btn.size.y - ps.y) * 0.5))
-		if at.x < 16.0:
+		if at.x < 16.0 or Rect2(at, ps).grow(8.0).intersects(Rect2(_home(hotbar), hotbar.size)):
 			at = Vector2(roundf(vp.x * 0.5 - ps.x * 0.5), _home(hotbar).y - ps.y - 18)
 	_place(prompts, at)
 	if tool_tip.visible:
@@ -886,6 +912,7 @@ func set_prompt(text: String, ok: bool) -> void:
 	if cache == _prompt_cache:
 		return
 	_prompt_cache = cache
+	tools_pill.visible = not _touch_mode and hint == "" and not blocking
 	var kind := _context_kind(text, ok) if not blocking else ""
 	hotbar.set_active(kind)
 	if action_label:
@@ -903,8 +930,11 @@ func set_prompt(text: String, ok: bool) -> void:
 		# keyboard dialogs keep a key hint bottom-left, like the target's
 		# prompt pills beside its dialog: E picks the highlighted choice
 		_show_key_prompt(hint, "", true)
-	elif text == "" or blocking:
+	elif text == "" or blocking or (_touch_mode and ok):
+		# touch screens: the round action button already names a possible action
+		# ("Panen"), so the pill only speaks up for "not yet" reasons
 		prompt_pill.visible = false
+		call_deferred("_place_prompt", root.get_viewport_rect().size)
 		return
 	else:
 		# E key on keyboards, a tapping finger on touch screens (the round action
@@ -956,7 +986,7 @@ func dialog_band(vp: Vector2) -> Vector2:
 	var prompts: Control = hud.get_node("Prompts")
 	var l := 16.0
 	if prompt_pill.visible and prompts.size.x > 0.0:
-		l = _home(prompts).x + prompts.size.x + 14.0
+		l = _home(prompts).x + prompt_pill.size.x + 14.0
 	return Vector2(l, _home(hotbar).x - 14.0)
 
 
@@ -1782,10 +1812,15 @@ func _build_touch() -> void:
 	joy_knob.position = Vector2(46, 46)
 	joy_knob.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	joy_base.add_child(joy_knob)
-	var hint := _label("geser untuk jalan", 16, Color(1, 1, 1, 0.9))
+	# joystick hint: cream text in a translucent dark pill (readable on grass)
+	var hl := _label("geser untuk jalan", 18, CREAM_LIGHT, true)
+	var hint := PanelContainer.new()
+	var hs := _box(Color(0.16, 0.1, 0.05, 0.55), 18)
+	_margins(hs, 16, 6, 16, 7)
+	hint.add_theme_stylebox_override("panel", hs)
+	hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hint.add_child(hl)
 	hint.name = "JoyHint"
-	hint.add_theme_color_override("font_outline_color", Color(0.3, 0.2, 0.1, 0.6))
-	hint.add_theme_constant_override("outline_size", 6)
 	touch.add_child(hint)
 	action_btn = Panel.new()
 	var ast := _circle(CREAM, 62, LINE)
@@ -1825,10 +1860,17 @@ func _circle(color: Color, radius: int, border := Color(0, 0, 0, 0)) -> StyleBox
 
 
 func _layout_touch(vp: Vector2) -> void:
-	action_btn.position = Vector2(vp.x - 124 - 28, vp.y - 124 - 96)
-	var hint: Label = touch.get_node("JoyHint")
+	# above the hotbar's row when that reaches the right edge, else lower down
+	# (landscape phones: the centred hotbar leaves the corner free, and the
+	# button must stay clear of the minimap above it)
+	var ax := vp.x - 124 - 28
+	var lift := 96.0
+	if vp.x > vp.y and _home(hotbar).x + hotbar.size.x < ax - 24.0:
+		lift = 28.0
+	action_btn.position = Vector2(ax, vp.y - 124 - lift)
+	var hint: Control = touch.get_node("JoyHint")
 	hint.size = hint.get_combined_minimum_size()
-	hint.position = Vector2(40, vp.y - 60)
+	hint.position = Vector2(32, vp.y - hint.size.y - 26)
 	# portrait phones: the centred hotbar spans the bottom, lift the hint above it
 	var hb := Rect2(_home(hotbar), hotbar.size).grow(6.0)
 	if hb.intersects(Rect2(hint.position, hint.size)):

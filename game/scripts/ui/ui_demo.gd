@@ -239,6 +239,14 @@ func _layers() -> void:
 	tp(tv.global_position.x, tv.global_position.z + 1.3, Vector3(0, 0, -1))
 	await settle(0.6)
 	await snap("hud_harvest")
+	# a "not yet" prompt: on touch screens the only case the pill still shows
+	# (a villager's parcel: "... (bukan milikmu)")
+	if w.tile_views.has("1:0"):
+		var tv1: Node3D = w.tile_views["1:0"]
+		tp(tv1.global_position.x, tv1.global_position.z + 1.3, Vector3(0, 0, -1))
+		await settle(0.5)
+		await snap("hud_prompt_info")
+		print("   prompt='%s' pill=%s" % [ui.prompt_label.text, ui.prompt_pill.visible])
 	var npc: Node3D = w.npcs["ibu"]
 	tp(npc.global_position.x, npc.global_position.z + 2.0, Vector3(0, 0, -1))
 	await settle(0.3)
@@ -260,7 +268,8 @@ func _layers() -> void:
 	await snap("say_player")
 	ui.close()
 	ui.dialog("portrait_kakek", "Kakek Darman", "Nak, jangan lupa mampir. Kopi di rumah masih ada.",
-		[{"text": "Nanti saya mampir, Kek"}, {"text": "Kopinya kopi sachet?", "hint": "energi +12"}, {"text": "Pamit"}])
+		[{"text": "Nanti saya mampir, Kek"}, {"text": "Kopinya kopi sachet?", "hint": "energi +12"},
+		{"text": "Tipu pakai surat palsu", "hint": "punya 0 surat", "enabled": false}, {"text": "Pamit"}])
 	await settle(1.2)
 	await snap("three_choices")
 	ui.close()

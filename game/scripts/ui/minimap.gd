@@ -72,13 +72,17 @@ func _draw() -> void:
 		draw_rect(Rect2(a, b - a), Color(col, 0.55), true)
 		draw_rect(Rect2(a, b - a), col, false, 2.0)
 	var fs := 13 if not big else 18
+	# the small map only names Pabrik / Kantor, and only while it is at least
+	# ~200 px wide on screen: smaller, the names sit on the markers and roads
+	var on_screen: float = size.x * (ui.screen_scale() if ui and ui.has_method("screen_scale") else 1.0)
+	var names := big or on_screen >= 200.0
 	for id in LABELS:
 		if not world.door_points.has(id):
 			continue
 		var pt := world_to_map(world.door_points[id], area)
 		draw_circle(pt, 4.5 if not big else 6.0, Color("fdf3dc"))
 		draw_circle(pt, 3.0 if not big else 4.0, Color("c9563c"))
-		if big or id in ["pabrik", "kantor"]:
+		if big or (names and id in ["pabrik", "kantor"]):
 			var text: String = LABELS[id]
 			var tw := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
 			var at := pt + Vector2(6, 4)

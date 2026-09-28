@@ -408,7 +408,7 @@ func _build_smoke() -> void:
 		var mat: StandardMaterial3D = _steam_mat if low else _smoke_mat
 		var p := CPUParticles3D.new()
 		p.name = "MillSteam" if low else "ChimneySmoke"
-		p.amount = 11 if low else 24
+		p.amount = 14 if low else 24
 		p.lifetime = 4.5 if low else 7.5
 		p.mesh = _quad(1.1 if low else 1.0, mat)
 		p.direction = Vector3.UP
@@ -430,7 +430,7 @@ func _build_smoke() -> void:
 		curve.add_point(Vector2(0, 0.45))
 		curve.add_point(Vector2(1, 2.4 if low else 3.4))
 		p.scale_amount_curve = curve
-		p.color_ramp = _fade_ramp(Color(0.97, 0.96, 0.93, 0.45) if low else Color(0.93, 0.92, 0.88, 0.85), 0.2 if low else 0.14)
+		p.color_ramp = _fade_ramp(Color(0.97, 0.96, 0.93, 0.75) if low else Color(0.93, 0.92, 0.88, 0.85), 0.2 if low else 0.14)
 		p.local_coords = false
 		p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(p)
