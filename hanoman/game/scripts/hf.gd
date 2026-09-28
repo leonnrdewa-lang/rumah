@@ -93,10 +93,11 @@ func _load_all() -> void:
 		return
 	for j in jobs:
 		var key: String = j[0]
-		_fetch(base + String(j[1]), func(ok: bool, body: PackedByteArray): _on_file(key, ok, body))
+		var ext := String(j[1]).get_extension().to_lower()
+		_fetch(base + String(j[1]), func(ok: bool, body: PackedByteArray): _on_file(key, ok, body, ext))
 
 
-func _on_file(key: String, ok: bool, body: PackedByteArray) -> void:
+func _on_file(key: String, ok: bool, body: PackedByteArray, ext := "") -> void:
 	if ok:
 		if key.begins_with("model/"):
 			var scene := _glb_scene(body)
@@ -110,11 +111,14 @@ func _on_file(key: String, ok: bool, body: PackedByteArray) -> void:
 				print("HF model %s: FAILED to parse" % key.substr(6))
 		else:
 			var img := Image.new()
-			var err := img.load_png_from_buffer(body)
-			if err != OK:
-				err = img.load_webp_from_buffer(body)
-			if err != OK:
-				err = img.load_jpg_from_buffer(body)
+			var err := FAILED
+			match ext:
+				"jpg", "jpeg":
+					err = img.load_jpg_from_buffer(body)
+				"webp":
+					err = img.load_webp_from_buffer(body)
+				_:
+					err = img.load_png_from_buffer(body)
 			if err == OK:
 				img.generate_mipmaps()
 				textures[key] = ImageTexture.create_from_image(img)
