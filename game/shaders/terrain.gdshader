@@ -77,6 +77,13 @@ uniform float shade_hi = 0.95;
 uniform vec3 road_tint = vec3(0.87, 0.82, 0.97);
 uniform vec3 dry_tint = vec3(0.97, 0.92, 1.08);
 
+// env fix round: golden sand (the beach read near white: the texture's pale cream under
+// the 1.4 sun clipped into the glow) and, at night, a neutral dirt road (the warm
+// red-tan albedo under the blue moon light turned a saturated lilac)
+uniform vec3 sand_tint = vec3(0.9, 0.78, 0.55);
+uniform float night_dirt_desat = 0.75;
+global uniform float night;
+
 varying vec3 wpos;
 
 void vertex() {
@@ -161,7 +168,7 @@ void fragment() {
 	if (sandm > 0.001) {
 		vec3 s;
 		if (has_sand > 0.5) {
-			s = textureGrad(sand_tex, tuv * 0.8, tdx * 0.8, tdy * 0.8).rgb * (0.96 + 0.08 * n3);
+			s = textureGrad(sand_tex, tuv * 0.8, tdx * 0.8, tdy * 0.8).rgb * (0.96 + 0.08 * n3) * sand_tint;
 		} else {
 			s = sand_col * (0.95 + 0.07 * n3);
 		}
@@ -197,6 +204,10 @@ void fragment() {
 		}
 		// slightly lighter, dusty centre; darker, grassier rim
 		r *= 0.88 + 0.12 * smoothstep(0.6, 1.0, d.b);
+		// at night: a desaturated, slightly green-grey earth, which the blue light turns
+		// a soft blue-grey instead of purple
+		float rl = dot(r, vec3(0.299, 0.587, 0.114));
+		r = mix(r, vec3(rl) * vec3(0.92, 1.0, 0.9), night * night_dirt_desat);
 		col = mix(col, r, roadm);
 	}
 

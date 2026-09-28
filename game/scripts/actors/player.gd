@@ -25,6 +25,11 @@ var _carry: Node3D
 var _face_pos := Vector3.ZERO
 var _face_t := 0.0
 var _last_pos := Vector3.ZERO
+## Harvest readability (world.gd widens the see-through hole with it): 0..1,
+## eases in while the pole works and holds a while so the dropped bunches read
+var reveal := 0.0
+var reveal_at := Vector3.ZERO   # the palm being harvested
+var _reveal_hold := 0.0
 
 
 func _ready() -> void:
@@ -143,6 +148,9 @@ func _physics_process(delta: float) -> void:
 	anim.turn_towards(atan2(facing.x, facing.z), delta, TURN_RATE)
 	_update_look()
 	anim.update(delta, ground_speed, _t)
+	_reveal_hold -= delta
+	var rw := 1.0 if (_reveal_hold > 0.0 and ground_speed < 0.5) else 0.0
+	reveal = move_toward(reveal, rw, delta * (5.0 if rw > reveal else 1.5))
 	if ground_speed > 0.5:
 		_step_t -= delta * ground_speed
 		if _step_t <= 0.0:
@@ -163,7 +171,11 @@ func _update_look() -> void:
 		anim.look_at_point(p + Vector3(0, 0.9 if tg.has("npc") else 0.5, 0))
 
 
-func do_action_anim(kind: String) -> void:
+func do_action_anim(kind: String, at := Vector3.INF) -> void:
 	## Work animation for a tile action (clear/plant/fert/harvest): plays the
 	## clip, shows the tool in hand and holds the player still until it ends.
+	## A harvest at `at` (the palm) also opens the crown over the player.
 	anim.play_action(kind)
+	if kind == "harvest" and at != Vector3.INF:
+		reveal_at = at
+		_reveal_hold = 4.5

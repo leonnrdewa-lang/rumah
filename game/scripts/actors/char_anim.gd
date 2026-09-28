@@ -72,6 +72,12 @@ const POLE_FOLLOW := 16.0
 const POLE_MAX_SPEED := 7.0
 const POLE_SHOULDER_SPEED := 4.5
 const POLE_ACCEL := 70.0
+## While harvesting the pole tips its top a little toward the character's left
+## (model +X) so the butt below the right fist hangs out past the right hip
+## instead of cutting through the hips and thigh
+const POLE_WORK_OUT := 0.38
+## length of pole below the fist (was 0.5: swung through the thigh)
+const POLE_BUTT := 0.25
 ## Tools grow out of / shrink into the fist over this long (smoothstep); the
 ## long pole grows along its length a little slower than it thickens.
 const TOOL_GROW := 0.14
@@ -983,6 +989,7 @@ func _egrek_basis(delta: float) -> Basis:
 		var aim := (root.global_position + fwd * 1.0 + Vector3.UP * 3.0 - grip_w.origin).normalized()
 		var q := smoothstep(-0.45, 0.1, hand_dir.y) * smoothstep(-0.6, 0.0, hand_dir.dot(fwd))
 		target = (mb_inv * aim.slerp(hand_dir, q)).normalized()
+		target = (target + Vector3(POLE_WORK_OUT, 0, 0) * clampf(target.y * 1.5, 0.0, 1.0)).normalized()
 		slide = 0.0
 		max_speed = POLE_MAX_SPEED
 	_pole_target = target
@@ -1039,9 +1046,9 @@ static func tool_mesh(kind: String) -> ArrayMesh:
 			var node := mb.part("M_Tool_BambooNode", Color("97793a"))
 			var steel := mb.part("M_Tool_Steel", Color("cfd6d8"))
 			var dark := mb.part("M_Tool_SteelDark", Color("6f7474"))
-			mb.cyl(bamboo, Vector3(0, -0.5, 0), Vector3(0, 2.2, 0), 0.019, 7)
+			mb.cyl(bamboo, Vector3(0, -POLE_BUTT, 0), Vector3(0, 2.2, 0), 0.019, 7)
 			for i in 6:
-				var y := -0.3 + i * 0.44
+				var y := -0.22 + i * 0.43
 				mb.cyl(node, Vector3(0, y, 0), Vector3(0, y + 0.025, 0), 0.023, 7)
 			mb.cyl(dark, Vector3(0, 2.18, 0), Vector3(0, 2.3, 0), 0.022, 7)
 			# sickle: rises from the ferrule, arcs over and hooks down toward +Z

@@ -57,7 +57,10 @@ static var _proc_meshes := {}
 ## the bush / cleared / seedling / palm states read at a glance (v2 fix round 3: the
 ## cover plants' leaves reached to ~0.9 m of the spots and crowded the piringan). A
 ## plant stands at least TILE_CLEAR + TILE_REACH x its half-width from a spot.
-const TILE_CLEAR := 1.3
+## (env fix round: 0.85 m on the 4.4 m grid, so ferns and flowers reach the soft rim of
+## the ~1.8 m mulch circle and the plantation floor reads lush instead of a mowed lawn;
+## the circle, the seedling and the thicket still read inside that)
+const TILE_CLEAR := 0.85
 const TILE_REACH := 0.6
 
 

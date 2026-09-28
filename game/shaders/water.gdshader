@@ -10,9 +10,14 @@ uniform sampler2D height_tex : filter_linear, repeat_disable;
 uniform sampler2D noise_tex : filter_linear_mipmap, repeat_enable;
 uniform float world_size = 200.0;
 uniform float water_level = -0.3;
-uniform vec3 shallow : source_color = vec3(0.60, 0.88, 0.80);
-uniform vec3 mid_col : source_color = vec3(0.40, 0.78, 0.71);
-uniform vec3 deep : source_color = vec3(0.22, 0.58, 0.62);
+// env fix round: the sea read a flat pale mint-white (light colours, a half-transparent
+// shallow band over bright sand, glow). Saturated turquoise -> teal-blue now, reaching
+// the deep colour sooner, more opaque, with a view-angle (fresnel) sheen towards the
+// horizon; the white foam stays on the shoreline.
+uniform vec3 shallow : source_color = vec3(0.36, 0.82, 0.76);
+uniform vec3 mid_col : source_color = vec3(0.12, 0.64, 0.68);
+uniform vec3 deep : source_color = vec3(0.05, 0.40, 0.56);
+uniform vec3 sheen : source_color = vec3(0.55, 0.80, 0.86);
 uniform vec3 foam : source_color = vec3(0.99, 0.99, 0.95);
 uniform vec3 night_tint : source_color = vec3(0.10, 0.16, 0.30);
 
@@ -33,8 +38,10 @@ void fragment() {
 	float n = texture(noise_tex, wpos.xz * 0.045 + vec2(t * 0.012, t * 0.009)).g;
 	float dn = depth + (n - 0.5) * 0.25;
 
-	vec3 col = mix(shallow, mid_col, smoothstep(0.0, 0.9, dn));
-	col = mix(col, deep, smoothstep(1.3, 3.9, dn));
+	vec3 col = mix(shallow, mid_col, smoothstep(0.0, 0.6, dn));
+	col = mix(col, deep, smoothstep(0.8, 3.0, dn));
+	float fres = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 4.0);
+	col = mix(col, sheen, fres * 0.5);
 
 	// caustic lines
 	float c1 = texture(noise_tex, wpos.xz * 0.035 + vec2(t * 0.012, -t * 0.008)).r;
@@ -54,6 +61,6 @@ void fragment() {
 
 	col = mix(col, col * night_tint * 3.0, night * 0.75);
 	ALBEDO = col;
-	float a = mix(0.45, 0.93, smoothstep(0.0, 1.6, depth));
+	float a = mix(0.62, 0.97, smoothstep(0.0, 1.0, depth));
 	ALPHA = clamp(max(a, f), 0.0, 1.0) * step(-0.02, depth);
 }

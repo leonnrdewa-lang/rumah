@@ -22,17 +22,22 @@ ROADS = [
     [(-46, 8), (-46, 22)],                                    # to Kakek's plot
     [(30, 7), (30, 22)],                                      # to Tarno's plot
     [(62, 8), (73, 12.5)],                                      # to the jetty
+    # farm track along the north edge of the player's parcel, past the gudang (the
+    # target's shed + truck on a dirt road beside the palms)
+    [(-46, 20.4), (-30, 20.7), (-4, 20.4)],
     [(-20, -26), (-20, -36)],
     [(18, -26), (18, -36)],
 ]
 ROAD_WIDTH = 3.0
 
-# Palm parcels: 4 columns (x) by 3 rows (z) of tiles, 3.2 m apart.
-TILE = 3.2
+# Palm parcels: 4 columns (x) by 3 rows (z) of tiles, 4.4 m apart.
+# (env fix round: 3.2 m put the ~4.5 m crowns into one continuous canopy; at 4.4 m
+# every palm reads as its own star with ground between the crowns, as in the target)
+TILE = 4.4
 PARCEL_COLS = 4
 PARCEL_ROWS = 3
 PARCELS = [
-    {"id": 0, "name": "Lahan Kantor", "owner": "player", "center": (-17, 27)},
+    {"id": 0, "name": "Lahan Kantor", "owner": "player", "center": (-16.4, 28.2)},
     {"id": 1, "name": "Kebun Kakek Darman", "owner": "kakek", "center": (-44, 31)},
     {"id": 2, "name": "Kebun Bu Sari", "owner": "ibu", "center": (-27, -12)},
     {"id": 3, "name": "Kebun Pak Kades", "owner": "kades", "center": (14, -12)},
@@ -55,6 +60,8 @@ BUILDINGS = [
     {"id": "rumah_pemuda", "model": "rumah_b", "pos": (31, -38), "rot": -90},
     {"id": "rumah_petani", "model": "rumah_c", "pos": (37, 24), "rot": -90},
     {"id": "dermaga", "model": "dermaga", "pos": (73, 13), "rot": -90},
+    # the plantation's shed beside the farm track, north-west of the player's parcel
+    {"id": "gudang", "model": "gudang", "pos": (-22.2, 16.0), "rot": 0},
 ]
 
 # Small set pieces (model, pos, rot)
@@ -66,7 +73,13 @@ PROPS = [
     ("gerobak", (3, 34), 30), ("tumpukan_tbs", (45, 0.5), 0), ("tumpukan_tbs", (48.5, 0.2), 40),
     ("truck", (57, 1), -20), ("crate", (60, 21), 0), ("crate", (60.8, 20.2), 25), ("meja", (5, 5), 0),
     ("perahu", (81, 17.5), 80), ("perahu", (76, -12), 20), ("jerigen", (11.5, 4.6), 0), ("jerigen", (12.1, 4.9), 30),
-    ("pagar", (-27, 21.5), 0), ("pagar", (-25, 21.5), 0), ("pagar", (-9, 21.5), 0), ("pagar", (-7, 21.5), 0),
+    ("pagar", (-27.1, 16.4), 90), ("pagar", (-27.1, 14.4), 90),
+    # the gudang yard: a loaded truck, drums and a pile of fresh bunches by the track
+    ("truck", (-14.9, 17.3), 75), ("drum", (-18.6, 18.0), 0), ("drum", (-18.0, 18.4), 40),
+    ("tumpukan_tbs", (-26.0, 18.6), 20), ("crate", (-26.6, 17.6), 15),
+    # the mill yard: oil drums and stacked sacks by the loading dock
+    ("drum", (42.6, -2.6), 0), ("drum", (43.3, -2.2), 30), ("drum", (42.9, -1.6), 70),
+    ("karung_tumpuk", (56.6, -2.6), 15),
 ]
 
 # Where villagers who lost their land end up (tents)

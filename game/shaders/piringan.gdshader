@@ -12,10 +12,12 @@ uniform vec3 tint : source_color = vec3(1.0, 0.97, 0.9);
 uniform float desat = 0.36;
 uniform float lift = 0.2;        // mixes towards warm dirt: lighter, less red
 uniform vec3 dirt : source_color = vec3(0.62, 0.52, 0.36);
-uniform float opacity = 0.94;
+uniform float opacity = 0.86;
 // radius (0-1 of the disc) where the fade starts: a clear weeded disc with a soft,
 // noisy rim (the polish round's 0.45 left only a faint smudge around seedlings)
-uniform float edge = 0.66;
+// (env fix round: the circle read as a bald disc with a crisp rim; the fade starts
+// nearer the middle and the rim is broken into lobes by two octaves of noise)
+uniform float edge = 0.42;
 // 0 day .. 1 night (world.gd). The reddish mulch under the blue night light read as
 // saturated maroon / purple discs (HSV hue 0.77, S 0.30) on the grey-teal night ground:
 // at night the disc turns a neutral, slightly yellow brown-grey (which the blue light
@@ -32,8 +34,9 @@ void vertex() {
 void fragment() {
 	vec4 t = texture(albedo_tex, UV);
 	float r = length((UV - 0.5) * 2.0);
-	float n = texture(noise_tex, wpos.xz * 0.7).r;
-	float fade = 1.0 - smoothstep(edge, 1.0, r + (n - 0.5) * 0.28);
+	float n = texture(noise_tex, wpos.xz * 0.55).r;
+	float n2 = texture(noise_tex, wpos.xz * 1.9 + vec2(0.3, 0.7)).g;
+	float fade = 1.0 - smoothstep(edge, 1.0, r + (n - 0.5) * 0.5 + (n2 - 0.5) * 0.22);
 	vec3 col = t.rgb;
 	float l = dot(col, vec3(0.299, 0.587, 0.114));
 	col = mix(mix(col, vec3(l), desat), dirt, lift) * tint;

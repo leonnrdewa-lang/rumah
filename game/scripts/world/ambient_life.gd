@@ -21,7 +21,7 @@ var _night := 0.0
 var _flock: MultiMeshInstance3D
 var _flock_vel := Vector3.ZERO
 var _flock_life := 0.0
-var _bird_timer := 5.0
+var _bird_timer := 1.0
 var _bird_offsets: Array[Vector3] = []
 
 var _flies: MultiMeshInstance3D
@@ -172,19 +172,26 @@ func _launch_flock() -> void:
 		dir = Vector3(1, 0, -0.3)
 	dir = dir.normalized()
 	var speed := _rng.randf_range(5.0, 6.5)
-	var start := c - dir * 26.0 + Vector3(dir.z, 0, -dir.x) * _rng.randf_range(-5.0, 5.0)
+	# (env fix round: the flock starts ~15 m out and passes a little north of the player,
+	# in the upper half of the frame, so it shows up in most gameplay minutes, not once
+	# every ~40 s far off screen)
+	var start := c - dir * 15.0 + Vector3(dir.z, 0, -dir.x) * _rng.randf_range(-3.0, 3.0) + Vector3(0, 0, -3.0)
 	# low over the fields: high birds pass right in front of the camera and look huge
 	start.y = c.y + _rng.randf_range(3.2, 4.4)
 	_flock.global_position = start
 	_flock.look_at(start + dir, Vector3.UP, true)
 	_flock_vel = dir * speed
-	_flock_life = 52.0 / speed
+	_flock_life = 32.0 / speed
 	var n := _rng.randi_range(2, 5)
 	_flock.multimesh.visible_instance_count = n
 	_flock.visible = true
 
 
 func _update_flock(delta: float) -> void:
+	if _flock.visible and _flock.global_position.distance_to(_focus()) > 40.0:
+		# the player jumped far away (sleep / teleport): send a new flock there soon
+		_flock.visible = false
+		_bird_timer = 0.8
 	if _flock.visible:
 		_flock_life -= delta
 		_flock.global_position += _flock_vel * delta
@@ -194,7 +201,7 @@ func _update_flock(delta: float) -> void:
 		return
 	_bird_timer -= delta
 	if _bird_timer <= 0.0:
-		_bird_timer = _rng.randf_range(14.0, 30.0)
+		_bird_timer = _rng.randf_range(7.0, 13.0)
 		if _night < 0.5:
 			_launch_flock()
 
@@ -401,8 +408,8 @@ func _build_smoke() -> void:
 		var mat: StandardMaterial3D = _steam_mat if low else _smoke_mat
 		var p := CPUParticles3D.new()
 		p.name = "MillSteam" if low else "ChimneySmoke"
-		p.amount = 11 if low else 18
-		p.lifetime = 4.5 if low else 6.0
+		p.amount = 11 if low else 24
+		p.lifetime = 4.5 if low else 7.5
 		p.mesh = _quad(1.1 if low else 1.0, mat)
 		p.direction = Vector3.UP
 		p.spread = 14.0
@@ -410,7 +417,9 @@ func _build_smoke() -> void:
 		p.initial_velocity_max = 1.0 if low else 1.5
 		# the low steam is bent over by the breeze, so it trails across the top of the frame
 		# (westwards too: the tank sits right of the door, under the HUD's top-right pills)
-		p.gravity = Vector3(-0.45, 0.05, 1.3) if low else Vector3(0.4, 0.05, 0.8)
+		# (env fix round: the chimney plume bends over harder, so from the pulled-back camera
+		# it trails over the mill into the top of the frame instead of rising out of it)
+		p.gravity = Vector3(-0.45, 0.05, 1.3) if low else Vector3(0.35, 0.0, 1.3)
 		p.damping_min = 0.1
 		p.damping_max = 0.25
 		p.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
@@ -419,9 +428,9 @@ func _build_smoke() -> void:
 		p.scale_amount_max = 1.4
 		var curve := Curve.new()
 		curve.add_point(Vector2(0, 0.45))
-		curve.add_point(Vector2(1, 2.4 if low else 2.8))
+		curve.add_point(Vector2(1, 2.4 if low else 3.4))
 		p.scale_amount_curve = curve
-		p.color_ramp = _fade_ramp(Color(0.97, 0.96, 0.93, 0.32) if low else Color(0.93, 0.92, 0.88, 0.8), 0.2 if low else 0.14)
+		p.color_ramp = _fade_ramp(Color(0.97, 0.96, 0.93, 0.45) if low else Color(0.93, 0.92, 0.88, 0.85), 0.2 if low else 0.14)
 		p.local_coords = false
 		p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(p)
@@ -549,7 +558,9 @@ func _process(delta: float) -> void:
 		# the low steam in the gameplay frame: a thin haze about as bright as the sunlit
 		# walls behind it (V ~0.8), not a white glow (fix round 3: fainter, fewer and
 		# smaller puffs; at the closer camera it still read as a pale blob on the hopper)
-		_steam_mat.albedo_color = Color(0.74, 0.78, 0.76, 0.34).lerp(Color(0.2, 0.23, 0.32, 0.3), _night)
+		# (env fix round: at 0.34 x the ramp it was invisible in the showcase frames; a soft
+		# cream haze a little brighter than the walls now, still well below a white glow)
+		_steam_mat.albedo_color = Color(0.9, 0.91, 0.88, 0.6).lerp(Color(0.2, 0.23, 0.32, 0.3), _night)
 	_leaves.global_position = c + Vector3(0, 7.5, -2.0)
 	_leaves.emitting = _night < 0.5
 	var ff := _night > 0.45

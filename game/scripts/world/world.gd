@@ -9,6 +9,7 @@ const NOISE_TEX := preload("res://assets/textures/noise.png")
 const UI_SCRIPT := preload("res://scripts/ui/ui.gd")
 const DEALS_SCRIPT := preload("res://scripts/world/deals.gd")
 const AMBIENT_SCRIPT := preload("res://scripts/world/ambient_life.gd")
+const RING_SHADER := preload("res://shaders/ring.gdshader")
 const SHADE_TEX_PATH := "res://assets/textures/world_shade.png"
 const GROUND_DIR := "res://assets/textures/ground/"
 const GROUND_TEX := ["grass", "grass_dry", "dirt", "sand", "mulch"]
@@ -56,7 +57,7 @@ const DECOR_COLLIDE := {"tree_big": 0.55, "coconut": 0.35, "banana": 0.3, "rock_
 const DECOR_ALIAS := {"sawit_wild": ["sawit_3", "", "Fruits"]}
 ## small decor that should not cast shadows
 const DECOR_NO_SHADOW := ["grass_tuft", "flowers", "rock_a", "rock_b"]
-const PROP_COLLIDE := ["sumur", "truck", "crate", "gerobak", "tumpukan_tbs", "meja", "bangku", "lampu", "perahu", "pagar", "jerigen", "karung_pupuk"]
+const PROP_COLLIDE := ["sumur", "truck", "crate", "gerobak", "tumpukan_tbs", "meja", "bangku", "lampu", "perahu", "pagar", "jerigen", "karung_pupuk", "drum", "karung_tumpuk"]
 const SERVICE := {"kantor": "Masuk Kantor Sawit", "toko": "Belanja di Koperasi Desa", "warung": "Mampir ke Warung Mak Inah",
 	"pabrik": "Ke Pabrik Kelapa Sawit (PKS)", "calo": "Bisik-bisik dengan Bang Jeki"}
 
@@ -102,9 +103,13 @@ var night_k := 0.0   # 0 = day, 1 = night (read by ambient_life.gd)
 ## character was ~1/11). The look point sits `cam_lead` m up-screen (north) of the
 ## player, so the player stands just below the centre and the crowns of the palms
 ## behind them stay in frame.
-var cam_distance := 12.0
-var cam_pitch := 44.0
-var cam_lead := 0.7
+## Env fix round: the 12 m camera framed ~13.5 m of ground and the crowns filled half
+## the frame as one canopy; the target shows ~5 separate palms plus the shed, truck and
+## road. 46 deg / 15.5 m with FOV 35 frames ~17.5 m across at the player (the character
+## is ~1/10 of the screen height, as in the target) and more above them.
+var cam_distance := 15.5
+var cam_pitch := 46.0
+var cam_lead := 0.8
 ## extra look-ahead in the walking direction (s of travel): about cancels the follow lag,
 ## so the scene ahead of a walking player is in view
 const CAM_MOVE_LEAD := 0.3
@@ -453,7 +458,7 @@ func _build_plant_mask() -> void:
 	# leaves out of a TILE_CLEAR disc (tile_dist below); the bitmap is the coarse backstop
 	for key in tile_views:
 		var tp: Vector3 = tile_views[key].position
-		_mask_circle(tp.x, tp.z, 1.05)
+		_mask_circle(tp.x, tp.z, 0.8)
 		var cell := Vector2i(floori(tp.x / 4.0), floori(tp.z / 4.0))
 		for cx in range(cell.x - 1, cell.x + 2):
 			for cz in range(cell.y - 1, cell.y + 2):
@@ -555,6 +560,8 @@ func _build_buildings() -> void:
 			_decorate_sign(node, "kantor", "KANTOR SAWIT\nThe Franchise™", Color("3b5d2a"))
 		elif id == "toko":
 			_decorate_sign(node, "toko", "KOPERASI DESA", Color("2f5a6a"))
+		elif id == "gudang":
+			_decorate_sign(node, "gudang", "Kebun Sawit", Color("4a3322"))
 
 
 func _decorate_sign(node: Node3D, model: String, text: String, color: Color) -> void:
@@ -586,7 +593,15 @@ func _build_props() -> void:
 	for p in layout.get("props", []):
 		var m: String = p["model"]
 		var mi := MeshInstance3D.new()
-		mi.mesh = ModelLib.merged_mesh(m, true)
+		if m == "tumpukan_tbs" and ModelLib.has_model("tbs"):
+			# env fix round: the pile is built from the rounded harvest bunches (tbs.glb)
+			# instead of the spiky low-poly placeholder model
+			mi.mesh = _tbs_pile_mesh()
+		elif m == "truck" and ModelLib.has_model("tbs"):
+			# ... and so is the truck's load (its Cargo child was the same spiky heap)
+			mi.mesh = _truck_mesh()
+		else:
+			mi.mesh = ModelLib.merged_mesh(m, true)
 		if mi.mesh.get_surface_count() == 0:
 			continue
 		mi.position = v3(p["pos"])
@@ -617,6 +632,69 @@ func _build_props() -> void:
 			l.position = mi.position + Vector3(0, 2.8, 0)
 			add_child(l)
 			lamps.append(l)
+
+
+var _tbs_pile: ArrayMesh
+var _truck: ArrayMesh
+
+
+func _tbs_pile_mesh() -> ArrayMesh:
+	## A heap of 7 fresh fruit bunches (5 on the ground, 2 on top), merged into one mesh.
+	if _tbs_pile == null:
+		_tbs_pile = _tbs_heap([[-0.42, -0.2, 0.0, 0.3], [0.1, -0.4, 0.0, 1.6], [0.5, 0.05, 0.0, 2.9],
+			[-0.3, 0.36, 0.0, 4.1], [0.22, 0.4, 0.0, 5.2], [-0.1, 0.0, 0.3, 0.9], [0.24, -0.08, 0.26, 3.6]])
+	return _tbs_pile
+
+
+func _truck_mesh() -> ArrayMesh:
+	## The truck without its modelled Cargo heap, loaded with rounded tbs bunches instead.
+	if _truck:
+		return _truck
+	var cargo := ModelLib.merged_mesh("truck", true, "Cargo", "").get_aabb()
+	var body := ModelLib.merged_mesh("truck", true, "", "Cargo")
+	if cargo.size.length() < 0.1:
+		_truck = ModelLib.merged_mesh("truck", true)
+		return _truck
+	var spots := []
+	var nx := maxi(1, int(cargo.size.x / 0.42))
+	var nz := maxi(1, int(cargo.size.z / 0.42))
+	for layer in 2:
+		for i in nx:
+			for k in nz:
+				if layer == 1 and (i + k) % 2 == 1:
+					continue
+				var x := cargo.position.x + (i + 0.5) * cargo.size.x / nx + (0.06 if layer == 1 else 0.0)
+				var z := cargo.position.z + (k + 0.5) * cargo.size.z / nz
+				var y := cargo.position.y + 0.02 + layer * 0.26
+				spots.append([x, z, y, float(i * 7 + k * 3 + layer), 0.85])
+	var heap := _tbs_heap(spots)
+	_truck = body.duplicate() as ArrayMesh
+	for i in heap.get_surface_count():
+		_truck.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, heap.surface_get_arrays(i))
+		_truck.surface_set_material(_truck.get_surface_count() - 1, heap.surface_get_material(i))
+	return _truck
+
+
+func _tbs_heap(spots: Array) -> ArrayMesh:
+	## tbs.glb merged at [x, z, y, yaw] spots
+	var src := ModelLib.merged_mesh("tbs", true)
+	var tools := []
+	for i in src.get_surface_count():
+		var st := SurfaceTool.new()
+		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+		tools.append(st)
+	for sp in spots:
+		var b := Basis(Vector3.UP, sp[3]) * Basis(Vector3.RIGHT, 0.15 * sin(sp[3] * 3.0))
+		var sc: float = sp[4] if sp.size() > 4 else (1.05 if sp[2] > 0.0 else 1.0)
+		var xf := Transform3D(b.scaled(Vector3.ONE * sc), Vector3(sp[0], sp[2], sp[1]))
+		for i in src.get_surface_count():
+			(tools[i] as SurfaceTool).append_from(src, i, xf)
+	var out := ArrayMesh.new()
+	for i in src.get_surface_count():
+		var st: SurfaceTool = tools[i]
+		st.set_material(src.surface_get_material(i))
+		st.commit(out)
+	return out
 
 
 func _build_parcels() -> void:
@@ -812,14 +890,13 @@ func _build_ring() -> void:
 	var tm := TorusMesh.new()
 	tm.inner_radius = 0.72
 	tm.outer_radius = 0.86
-	tm.rings = 24
+	tm.rings = 64
 	tm.ring_segments = 6
 	_ring.mesh = tm
 	_ring.scale = Vector3(1, 0.25, 1)
-	var m := StandardMaterial3D.new()
-	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	m.albedo_color = Color(1, 0.98, 0.9, 0.85)
-	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	# a dashed cream ring like the target's (env fix round), slowly turning
+	var m := ShaderMaterial.new()
+	m.shader = RING_SHADER
 	_ring.material_override = m
 	_ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_ring.visible = false
@@ -922,7 +999,7 @@ func _tile_action(pid: int, idx: int) -> void:
 		Sfx.play("bad", 1.0, -6.0)
 		return
 	var tv: TileView = tile_views["%d:%d" % [pid, idx]]
-	player.do_action_anim(kind)
+	player.do_action_anim(kind, tv.global_position)
 	var dir := tv.global_position - player.global_position
 	dir.y = 0
 	if dir.length() > 0.1:
@@ -943,22 +1020,34 @@ func _tile_action(pid: int, idx: int) -> void:
 			float_text(tv.global_position, "Dipupuk", Color("2f6d2a"))
 		"harvest":
 			Sfx.play("harvest")
-			burst(tv.global_position + Vector3(0, 2.1, 0), Color("c9401f"), 16)
+			burst(tv.global_position + Vector3(0, 2.1, 0) + _to_player(tv.global_position) * 0.7, Color("c9401f"), 10)
 			float_text(tv.global_position + Vector3(0, 1.0, 0), "+TBS", Color("b8401f"))
 			_drop_bunches(tv.global_position)
 
 
+func _to_player(at: Vector3) -> Vector3:
+	## flat unit vector from a palm toward the player (camera side if on top of it)
+	var d := player.global_position - at
+	d.y = 0.0
+	return d.normalized() if d.length() > 0.2 else Vector3(0, 0, 1)
+
+
 func _drop_bunches(at: Vector3) -> void:
-	## Cut fruit bunches thud down beside the palm and lie there for a few seconds.
+	## Cut fruit bunches thud down beside the harvester and lie there for a few
+	## seconds: at the farmer's feet on the camera side, out from under the crown
+	## (as in the target frame), one to each side so the body never hides them.
 	if not ModelLib.has_model("tbs"):
 		return
+	var to_p := _to_player(at)
+	var side := Vector3(-to_p.z, 0, to_p.x)
+	var feet := player.global_position
 	for i in 2:
 		var mi := MeshInstance3D.new()
 		mi.mesh = ModelLib.merged_mesh("tbs", false)
-		var a := randf() * TAU
-		var land := at + Vector3(cos(a), 0, sin(a)) * randf_range(0.9, 1.4)
+		var s := -1.0 if i == 0 else 1.0
+		var land := feet + side * s * randf_range(0.5, 0.65) + Vector3(0, 0, randf_range(0.2, 0.4))
 		land.y = height_at(land.x, land.z)
-		mi.position = at + Vector3(0, 2.0, 0)
+		mi.position = at + Vector3(0, 2.2, 0) + to_p * 0.6
 		mi.rotation = Vector3(randf() * 0.6, randf() * TAU, randf() * 0.6)
 		add_child(mi)
 		var shadow := GroundFx.blob(0.32, 0.4)
@@ -966,7 +1055,7 @@ func _drop_bunches(at: Vector3) -> void:
 		shadow.visible = false
 		add_child(shadow)
 		var tw := create_tween()
-		tw.tween_interval(i * 0.12)
+		tw.tween_interval(0.25 + i * 0.15)
 		tw.tween_property(mi, "position:x", land.x, 0.45)
 		tw.parallel().tween_property(mi, "position:z", land.z, 0.45)
 		tw.parallel().tween_property(mi, "position:y", land.y + 0.12, 0.45).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
@@ -979,7 +1068,30 @@ func _drop_bunches(at: Vector3) -> void:
 		tw.tween_callback(shadow.queue_free)
 
 
+var _burst_mesh: SphereMesh
+var _burst_scale: Curve
+
+
 func burst(pos: Vector3, color: Color, amount := 14) -> void:
+	## A puff of small soft-shaded bits (fruitlets, leaf scraps, soil, fertiliser)
+	## tinted by `color` with a little per-bit variation, shrinking away at the end.
+	if _burst_mesh == null:
+		_burst_mesh = SphereMesh.new()
+		_burst_mesh.radius = 0.5
+		_burst_mesh.height = 0.9
+		_burst_mesh.radial_segments = 8
+		_burst_mesh.rings = 4
+		var m := StandardMaterial3D.new()
+		m.vertex_color_use_as_albedo = true
+		m.roughness = 0.55
+		m.rim_enabled = true
+		m.rim = 0.3
+		_burst_mesh.material = m
+		_burst_scale = Curve.new()
+		_burst_scale.add_point(Vector2(0.0, 0.6))
+		_burst_scale.add_point(Vector2(0.15, 1.0))
+		_burst_scale.add_point(Vector2(0.7, 0.9))
+		_burst_scale.add_point(Vector2(1.0, 0.0))
 	var p := CPUParticles3D.new()
 	p.one_shot = true
 	p.amount = amount
@@ -988,17 +1100,19 @@ func burst(pos: Vector3, color: Color, amount := 14) -> void:
 	p.direction = Vector3.UP
 	p.spread = 70.0
 	p.initial_velocity_min = 2.0
-	p.initial_velocity_max = 4.5
+	p.initial_velocity_max = 4.0
 	p.gravity = Vector3(0, -9.0, 0)
-	p.scale_amount_min = 0.08
-	p.scale_amount_max = 0.16
-	var bm := BoxMesh.new()
-	bm.size = Vector3.ONE
-	var m := StandardMaterial3D.new()
-	m.albedo_color = color
-	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	bm.material = m
-	p.mesh = bm
+	p.angular_velocity_min = -360.0
+	p.angular_velocity_max = 360.0
+	p.scale_amount_min = 0.07
+	p.scale_amount_max = 0.12
+	p.scale_amount_curve = _burst_scale
+	var g := Gradient.new()
+	g.set_color(0, color.lightened(0.12))
+	g.set_color(1, color.darkened(0.3))
+	p.color_initial_ramp = g
+	p.mesh = _burst_mesh
+	p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	p.position = pos
 	add_child(p)
 	p.emitting = true
@@ -1112,11 +1226,17 @@ func _update_camera(delta: float) -> void:
 	_place_camera(dist, cam_pitch)
 	# see-through hole around the player
 	var pp := player.global_position + Vector3(0, 0.7, 0)
-	var sp := camera.unproject_position(pp)
+	# (characters fix round: while harvesting, Player.reveal 0..1, the hole widens and
+	# climbs toward the bunch being cut and also takes the fronds hanging just in front
+	# of the hat, so the farmer, the pole, the bunch and the fallen fruit all read)
+	var rv: float = player.reveal
+	var sp := camera.unproject_position(pp.lerp(player.reveal_at + Vector3(0, 2.2, 0), 0.3 * rv))
 	RenderingServer.global_shader_parameter_set("occlude_center", Vector2(sp.x / vp.x, sp.y / vp.y))
 	var local := camera.global_transform.affine_inverse() * pp
-	RenderingServer.global_shader_parameter_set("occlude_depth", -local.z)
-	RenderingServer.global_shader_parameter_set("occlude_radius", 0.13 * 24.0 / dist)
+	RenderingServer.global_shader_parameter_set("occlude_depth", -local.z + 0.8 * rv)
+	# (env fix round: a tighter hole, ~0.12 of the screen height at play distance; the
+	# shaders fade it with fine interleaved-gradient noise instead of a 4x4 Bayer grid)
+	RenderingServer.global_shader_parameter_set("occlude_radius", lerpf(0.075, 0.17, rv) * 24.0 / dist)
 	# low plants bend away from the player's feet (foliage_body.gdshaderinc)
 	RenderingServer.global_shader_parameter_set("player_pos", player.global_position if player.visible else Vector3(0, -1000, 0))
 

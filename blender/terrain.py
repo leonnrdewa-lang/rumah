@@ -137,6 +137,24 @@ wobble = (fractal_noise(N, (20, 120), 1.5, seed=5) - 0.5) * 0.9
 road = 1.0 - smoothstep(L.ROAD_WIDTH / 2 - 0.4, L.ROAD_WIDTH / 2 + 0.5, road_d + wobble)
 road *= (sd > 2).astype(float)
 
+# env fix round: worn dirt harvest paths (pasar pikul) run between the palm rows of
+# every parcel, ~1.1 m wide and a little wobbly, fading out past the parcel ends, so
+# the plantation floor reads as paths + undergrowth instead of a mowed lawn
+path_d = np.full_like(X, 1e9)
+for p in L.PARCELS:
+    cx, cz = p["center"]
+    hx = L.PARCEL_COLS * L.TILE / 2 + 0.6
+    for r in range(L.PARCEL_ROWS - 1):
+        zp = cz + (r + 0.5 - (L.PARCEL_ROWS - 1) * 0.5) * L.TILE
+        wob = 0.35 * np.sin(X * 0.45 + r * 1.7 + cx) + 0.2 * np.sin(X * 1.1 + cz)
+        dz = np.abs(Z - zp - wob)
+        dx = np.maximum(np.abs(X - cx) - hx, 0)
+        path_d = np.minimum(path_d, np.sqrt(dz ** 2 + (dx * 2.5) ** 2))
+path_wob = (fractal_noise(N, (30, 140), 1.3, seed=6) - 0.5) * 0.5
+path = (1.0 - smoothstep(0.25, 0.85, path_d + path_wob)) * 0.82
+path *= (sd > 3).astype(float)
+road = np.maximum(road, path)
+
 grass_tone = fractal_noise(N, (3, 30), 2.4, seed=21)
 
 enc_h = np.clip((h + 5.0) / 7.0, 0, 1)
@@ -168,7 +186,8 @@ for p in L.PARCELS:
         print("WARNING parcel near coast", p["name"], sample(sd, cx, cz))
 
 BUILDING_R = {"kantor": 6.5, "toko": 6, "warung": 5, "pabrik": 11, "pos_calo": 4.5, "rumah_a": 5.5,
-              "rumah_b": 5.5, "rumah_c": 5.5, "dermaga": 0}
+              "rumah_b": 5.5, "rumah_c": 5.5, "dermaga": 0,
+              "gudang": 4.2}
 circles = []
 for b in L.BUILDINGS:
     r = BUILDING_R.get(b["model"], 5)
@@ -222,7 +241,8 @@ TALL = ("tree_big", "sawit_wild", "banana", "coconut")
 
 # approximate building footprints (half extents, local x/z) - measured from the GLBs
 BUILDING_HALF = {"kantor": (2.7, 2.4), "toko": (3.0, 2.1), "warung": (2.1, 1.8), "pabrik": (7.1, 5.1),
-                 "pos_calo": (1.7, 1.7), "rumah_a": (2.9, 2.5), "rumah_b": (2.5, 2.7), "rumah_c": (2.9, 2.2)}
+                 "pos_calo": (1.7, 1.7), "rumah_a": (2.9, 2.5), "rumah_b": (2.5, 2.7), "rumah_c": (2.9, 2.2),
+                 "gudang": (2.8, 1.8)}
 
 
 def door_point(b):
@@ -378,9 +398,12 @@ for d in decor:
 # plants 1.85-2.3 m, so seedlings, cleared tiles and the bush thickets stay readable
 # (fix round: the polish round let cover plants grow to 0.95-1.05 m and hid the tile
 # states). world.gd filters again at 1.05 m.
-TILE_R = {"grass_a": 1.1, "grass_b": 1.15, "flowers_white": 1.2, "flowers_yellow": 1.2, "leaf_low": 1.45,
-          "fern_low": 1.55, "rock_a": 1.3, "frond_fallen": 1.7, "fern_a": 1.75, "fern_b": 1.7, "keladi": 1.85,
-          "shrub_a": 2.0, "shrub_b": 2.0, "vine_log": 2.3, "pile_fronds": 2.3}
+# (env fix round: on the 4.4 m grid the plants close in on the ~1.8 m mulch circle, so
+# ferns, rocks and flowers fill the plantation floor right up to its soft rim instead of
+# leaving a mowed lawn between the palms)
+TILE_R = {"grass_a": 0.95, "grass_b": 1.0, "flowers_white": 1.0, "flowers_yellow": 1.0, "leaf_low": 1.15,
+          "fern_low": 1.2, "rock_a": 1.05, "frond_fallen": 1.35, "fern_a": 1.45, "fern_b": 1.4, "keladi": 1.55,
+          "shrub_a": 1.8, "shrub_b": 1.8, "vine_log": 2.1, "pile_fronds": 2.0}
 keep_out = [(x, z, r) for (x, z, r) in circles if r < 3.4] + [(x, z, 1.7) for x, z in sign_pts]
 for b in L.BUILDINGS:          # jetty and its road end
     if b["model"] == "dermaga":
@@ -435,7 +458,7 @@ zone_parcel = land_ok & (parcel_ring > 0.2) & (parcel_ring < 5.5)
 zone_forest = land_ok & (tree_d > 0.9) & (tree_d < 10.0)
 zone_inner = land_ok & parcel_in
 zone_beach = (sd > 2.0) & (sand > 0.35) & (sand < 0.9)
-blocked_px = (road_edge < 0.25) | door_block | (bld_dist <= 0.15) | (sd < 2.0)
+blocked_px = (road_edge < 0.25) | door_block | (bld_dist <= 0.15) | (sd < 2.0) | (path_d < 0.4)
 
 # (name, mask, big plants / m2, their species weights, cover plants / m2, their weights);
 # where zones overlap the earlier one wins
@@ -461,9 +484,11 @@ ZONES = [
                                   "vine_log": 0.12},
      2.6, {"grass_b": 1.0, "grass_a": 1.5, "fern_low": 2.6, "leaf_low": 1.6, "frond_fallen": 0.5, "rock_a": 0.06}),
     # the planting grid: low plants only, so paths and tiles stay readable
-    ("inner", zone_inner, 0.08, {"fern_a": 1.0, "fern_b": 1.0},
-     5.4, {"grass_b": 0.8, "grass_a": 2.5, "fern_low": 2.6, "leaf_low": 2.0, "flowers_white": 0.5,
-           "flowers_yellow": 0.3, "frond_fallen": 0.6}),
+    # (env fix round: layered undergrowth between the palms as in the target: fern and
+    # keladi clumps, mossy rocks, flowers and fallen fronds, not only low grass)
+    ("inner", zone_inner, 0.3, {"fern_a": 1.2, "fern_b": 1.2, "keladi": 0.7, "shrub_b": 0.25, "pile_fronds": 0.08},
+     5.4, {"grass_b": 0.6, "grass_a": 2.2, "fern_low": 2.6, "leaf_low": 2.0, "flowers_white": 0.8,
+           "flowers_yellow": 0.6, "frond_fallen": 0.6, "rock_a": 0.12}),
     ("open", land_ok, 0.14, {"fern_a": 0.5, "fern_b": 0.3, "shrub_b": 0.25, "shrub_a": 0.15, "keladi": 0.3},
      3.3, CARPET_OPEN),
     ("beach", zone_beach, 0.0, {}, 0.3, {"grass_b": 1.0, "grass_a": 0.6}),
@@ -725,6 +750,7 @@ for line in L.ROADS:
         best_d[upd] = dseg[upd]
         ln = math.hypot(b[0] - a[0], b[1] - a[1])
         horiz[upd] = abs(b[0] - a[0]) / ln
+horiz[(path_d < 2.0) & (path_d < best_d)] = 1.0     # row paths run along x
 horiz = ndimage.gaussian_filter(horiz, 3.0)
 
 litter = np.clip(ndimage.gaussian_filter(litter, 0.8), 0, 1)

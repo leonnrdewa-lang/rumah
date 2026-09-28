@@ -1604,13 +1604,19 @@ PALMS = {
     # 4 bunches hang low on the trunk (fruit_z), well out from it (fruit_r past the trunk surface), each under a
     # gap of +-`gap` deg in every tier (with drooping fronds a frond above a bunch hides it); tile_view.gd turns
     # ripe palms so one bunch faces the camera (yaw 45 + 90k deg +- jitter), the others show at the sides.
-    "sawit_3": dict(H=3.0, r=0.31, wr=0.82, boots=44, boot=(0.42, 0.3, 0.14), rings=6, spear=1.1, segs=7,
-                    fruits=4, epi=1, crown_r=0.24, ao=0.55, fruit=(0.92, 1.0), fruit_z=(2.0, 1.78), fruit_r=0.52,
-                    fruit_out=0.32, fruit_az=0.0, gap=36, pet=0.18, fold0=(0.16, 0.1), fold1=(0.24, 0.4),
-                    tiers=[dict(n=5, el=(68, 56), droop=(50, 66), zr=(-0.12, 0.0), L=(2.0, 2.2), pw=1.3, win=True,
+    # Env fix round (review: the umbrella crowns were ~5.5 m across on a 3.2 m grid, merged into one
+    # canopy and hid the bunches): a smaller star-shaped crown (~4.2 m across) whose fronds rise briefly,
+    # then reach outward and down, on a 4.4 m grid (layout.py), so every palm reads on its own with ground
+    # between the crowns.  The bunches sit high on the trunk top (2.3-2.5 m, right under the frond bases),
+    # larger and further out, under wide gaps in every tier, so the ~46 deg camera sees them in front of the
+    # trunk as in the target.
+    "sawit_3": dict(H=3.0, r=0.31, wr=0.5, boots=44, boot=(0.42, 0.3, 0.14), rings=6, spear=1.0, segs=7,
+                    fruits=4, epi=1, crown_r=0.26, ao=0.55, fruit=(1.12, 1.22), fruit_z=(2.5, 2.34), fruit_r=0.5,
+                    fruit_out=0.5, fruit_az=0.0, gap=28, pet=0.2, fold0=(0.16, 0.1), fold1=(0.22, 0.34),
+                    tiers=[dict(n=5, el=(72, 62), droop=(44, 58), zr=(-0.12, 0.0), L=(1.75, 1.9), pw=1.3, win=True,
                                 off=0.25),
-                           dict(n=7, el=(46, 40), droop=(72, 82), zr=(0.02, 0.1), L=(2.9, 3.1), pw=1.15, win=True),
-                           dict(n=5, el=(38, 32), droop=(76, 86), zr=(0.12, 0.2), L=(2.65, 2.8), pw=1.1, win=True,
+                           dict(n=8, el=(42, 34), droop=(62, 72), zr=(0.02, 0.1), L=(2.3, 2.45), pw=1.2, win=True),
+                           dict(n=6, el=(30, 24), droop=(58, 66), zr=(0.12, 0.2), L=(2.1, 2.2), pw=1.15, win=True,
                                 off=0.5)]),
 }
 
@@ -1721,7 +1727,7 @@ def build_palm(name, P, seed=3):
             axis = out * P.get("fruit_out", 0.4) + side - UP * 0.9
             stalk_to = out * trunk_radius(z, H, r) * 0.8 + UP * (z + ln * 0.33)
             fruit_bunch(f"Fruit_{k}", c, axis, ln, rnd, mfr, fr, n=P.get("fruit_n", 50), width=0.33, out=out,
-                        stalk_to=stalk_to, redness=rnd.uniform(-0.08, 0.06), fsize=0.1, dark=0.14)
+                        stalk_to=stalk_to, redness=rnd.uniform(-0.2, -0.1), fsize=0.1, dark=0.14)
     return root
 
 

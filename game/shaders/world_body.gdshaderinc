@@ -48,14 +48,13 @@ void fragment() {
 	ROUGHNESS = 1.0;
 	EMISSION = emission_color * night_emission * night * 1.6;
 	if (fade_enabled > 0.5) {
+		// see-through hole around the player (env fix round: interleaved-gradient noise
+		// per pixel instead of the coarse 4x4 Bayer screen door, and a tighter radius)
 		vec2 d = (SCREEN_UV - occlude_center) * vec2(VIEWPORT_SIZE.x / VIEWPORT_SIZE.y, 1.0);
 		float r = length(d);
 		if (-VERTEX.z < occlude_depth - 1.2 && r < occlude_radius) {
-			int bx = int(FRAGCOORD.x) % 4;
-			int by = int(FRAGCOORD.y) % 4;
-			float bayer[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
-			float th = (bayer[bx + by * 4] + 0.5) / 16.0;
-			float fade = smoothstep(occlude_radius, occlude_radius * 0.55, r) * 0.85;
+			float th = fract(52.9829189 * fract(dot(FRAGCOORD.xy, vec2(0.06711056, 0.00583715))));
+			float fade = smoothstep(occlude_radius, occlude_radius * 0.5, r) * 0.85;
 			if (th < fade) {
 				discard;
 			}

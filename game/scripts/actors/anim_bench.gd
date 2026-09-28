@@ -286,7 +286,7 @@ static func _pole_tests(stage: Node3D, fails: Array) -> void:
 				prev_hand = hd
 				var tn: Node3D = anim._tools.get("egrek")
 				if tn and tn.visible:
-					low = minf(low, (_tool_world(anim, tn) * Vector3(0, -0.5, 0)).y)
+					low = minf(low, (_tool_world(anim, tn) * Vector3(0, -CharAnim.POLE_BUTT, 0)).y)
 			var lim := POLE_MOVE_MAX_DEG if ph[0] in ["harvest", "after"] else POLE_CARRY_MAX_DEG
 			lim *= 60.0 / fps
 			var ok := worst <= lim and speedup <= ramp_lim

@@ -951,12 +951,32 @@ def box_walls(P, m, x0, x1, y0, y1, z0, z1, pw=0.3, g=0.04, sides=(True, True, T
                                   lambda xx: z1, pw, g, m))
 
 
+def wall_wear(parts, seed, rust=0.55, grime=0.22, per_m=0.9):
+    """Env fix round: rust streaks running down from the top of ribbed metal walls (under the eaves)
+    and a grimy lower edge, on every wall panel in `parts` (the pabrik read as flat untextured boxes)."""
+    rnd = random.Random(seed)
+    for o in parts:
+        me = o.data
+        if not len(me.vertices):
+            continue
+        zs = [v.co.z for v in me.vertices]
+        z0, z1 = min(zs), max(zs)
+        h = max(z1 - z0, 1e-3)
+        xs = [v.co.x + v.co.y for v in me.vertices]
+        st = _streaks(rnd, min(xs), max(xs), per_m, 0.08, 0.3, 0.35, 1.0)
+        wattr(o, "w_rust", lambda c: rust * _streak_val(st, c.x + c.y) * (0.25 + 0.75 * ((c.z - z0) / h) ** 0.6))
+        wattr(o, "w_down", lambda c: 1.0, "POINT")
+        wattr(o, "w_shadev", [-grime * (1.0 - min(1.0, (v.co.z - z0) / (0.45 * h))) ** 2 + rnd.uniform(-0.04, 0.03)
+                              for v in me.vertices], "POINT")
+
+
 def build_pabrik():
     """Cute little palm-oil mill (PKS): ribbed metal press hall + boiler house, red/white chimney,
     two oil tanks with pipes, office box, and a loading ramp + dock with a hopper at the front (-Y)."""
     name = "pabrik"
     root = empty(name)
-    M = dict(metal=mat("M_Metal", "metal"), dark=mat("M_MetalDark", "metal_dark"), red=mat("M_Red", "red"),
+    # (env fix round: warm weathered zinc instead of the cold pale blue-grey, with rust and grime)
+    M = dict(metal=mat("M_Metal", "#c3bfae"), dark=mat("M_MetalDark", "#6f7672"), red=mat("M_Red", "red"),
              white=mat("M_White", "white"))
     P = []
     ZK = dict(period=0.5, amp=0.06, step=0.04, cham=0.06, thick=0.07)
@@ -964,7 +984,9 @@ def build_pabrik():
     hx0, hx1, hy0, hy1, hz = -4.4, 2.0, -1.5, 3.6, 4.0
     P.append(bx("hall_base", (hx1 - hx0 + 0.2, hy1 - hy0 + 0.2, 0.3), ((hx0 + hx1) / 2, (hy0 + hy1) / 2, 0.15),
                 M['dark'], 0.05, 1))
+    n0 = len(P)
     box_walls(P, M['metal'], hx0, hx1, hy0, hy1, 0.3, hz, pw=0.55)
+    wall_wear(P[n0:], 11)
     for x in (hx0, hx1):
         for y in (hy0, hy1):
             P.append(bx("hall_corner", (0.22, 0.22, hz), (x, y, hz / 2), M['white'], 0.04, 1))
@@ -994,7 +1016,9 @@ def build_pabrik():
     bx0, bx1, by0, by1, bz = hx1, 5.0, 0.4, 3.6, 3.0
     P.append(bx("boiler_base", (bx1 - bx0 + 0.1, by1 - by0 + 0.2, 0.3), ((bx0 + bx1) / 2 + 0.05, (by0 + by1) / 2, 0.15),
                 M['dark'], 0.05, 1))
+    n0 = len(P)
     box_walls(P, M['metal'], bx0, bx1, by0, by1, 0.3, bz, pw=0.46, sides=(True, True, False, True))
+    wall_wear(P[n0:], 12, rust=0.7)
     for x in (bx1,):
         for y in (by0, by1):
             P.append(bx("boiler_corner", (0.2, 0.2, bz), (x, y, bz / 2), M['white'], 0.04, 1))

@@ -151,7 +151,7 @@ def frame_y(p, y, z):
 MATS = {
     "M_Skin": ("#f2b98a", 0.75), "M_SkinTan": ("#d59a6a", 0.75),
     "M_Dark": ("#2e2724", 0.45), "M_White": ("#fbf7ee", 0.8),
-    "M_Straw": ("#ecc97c", 0.9), "M_Batik": ("#c9682c", 0.9), "M_Khaki": ("#b9a371", 0.9),
+    "M_Straw": ("#d8a95c", 0.9), "M_Batik": ("#d2521b", 0.9), "M_Khaki": ("#8a6a42", 0.9),
     "M_Bamboo": ("#d0a257", 0.9), "M_FadedShirt": ("#dcd7c6", 0.9), "M_Sarong": ("#8b4f2e", 0.9),
     "M_Hijab": ("#d08791", 0.9), "M_Dress": ("#f59f7c", 0.9), "M_Floral": ("#fff4de", 0.9),
     "M_Trousers": ("#3b4155", 0.9), "M_Gold": ("#edbc3c", 0.5),
@@ -1378,8 +1378,11 @@ class Rig:
             J, E, A = W["thigh_" + x].translation, W["shin_" + x].translation, W["foot_" + x].translation
             Mf = W["foot_" + x] @ self.rest["foot_" + x].inverted()
             A0 = self.rest["foot_" + x].translation
-            smp = [(J.lerp(E, 0.5), d["thigh_r"] + 0.015), (E, d["knee_r"] + 0.012), (E.lerp(A, 0.5), d["shin_r"] + 0.012),
-                   (A, d["ankle_r"] + 0.01)]
+            # (dense around the knee: between sparse samples the chord of two panels cut the
+            # knee / upper shin at the ends of a long stride and they poked through the hem)
+            smp = [(J.lerp(E, 0.5), d["thigh_r"] + 0.015), (J.lerp(E, 0.78), d["knee_r"] + 0.016),
+                   (E, d["knee_r"] + 0.02), (E.lerp(A, 0.22), d["shin_r"] + 0.02),
+                   (E.lerp(A, 0.5), d["shin_r"] + 0.014), (A, d["ankle_r"] + 0.01)]
             smp += [(Mf @ (A0 + Vector(o[:3]) * S), o[3]) for o in FOOT_PTS]
             pts += [(QhT @ (p - piv), r * S) for (p, r) in smp]
         g_h = QhT @ Vector((0.0, 0.0, -1.0))
@@ -2991,8 +2994,11 @@ def build_player():
     crown = [(0.214, 0.066), (0.33, 0.047), (0.35, 0.052), (0.357, 0.066), (0.347, 0.078), (0.3, 0.078),
              (0.24, 0.086), (0.232, 0.15), (0.215, 0.215), (0.176, 0.262), (0.095, 0.29), (0.0, 0.296)]
     c.add("head", xf(lathe_vf(crown, 24, 1.0, 0.95), H), "M_Straw")
-    c.add("head", xf(lathe_vf([(0.236, 0.084), (0.243, 0.098), (0.243, 0.12), (0.236, 0.132)], 24, 1.0, 0.95), H),
-          "M_Batik")
+    # (from the 44 deg game camera the hat is most of the silhouette: a dark band and a brown
+    # rolled brim edge keep it from melting into sand and dirt roads)
+    c.add("head", xf(lathe_vf([(0.236, 0.084), (0.244, 0.097), (0.244, 0.124), (0.236, 0.136)], 24, 1.0, 0.95), H), DK)
+    c.add("head", xf(lathe_vf([(0.318, 0.043), (0.352, 0.047), (0.364, 0.066), (0.353, 0.084), (0.318, 0.083)],
+                              24, 1.0, 0.95), H), "M_Khaki")
     # sunglasses pushed up, resting on the hat band
     for s in (1, -1):
         c.add("head", xf(ellipsoid_vf((0.045, 0.013, 0.031), 10, 5),
@@ -3617,7 +3623,8 @@ def render_sheet(c, rig, body, acts, clip, path, n=8, views=("game", "side")):
         body.hide_render = True
         for t in tools:
             t.hide_render = True
-        tmp = _scene_setup(n * 150, 300, samples=12)
+        _px = int(os.environ.get('SHEET_PX', '150'))
+        tmp = _scene_setup(n * _px, 2 * _px, samples=12)
         H = 1.25 * c.S * (1.25 if c.name == "preman" else 1.0)
         pitch = SHEET_VIEWS[view][1]
         cam = _camera((0, 0, H * (0.42 if pitch > 20 else 0.5)), pitch, 0.0, 14, ortho=n * cell)
