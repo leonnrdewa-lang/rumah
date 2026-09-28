@@ -62,6 +62,9 @@ func _fetch(url: String, cb: Callable) -> void:
 func _request(url: String, cb: Callable, attempt: int) -> void:
 	var r := HTTPRequest.new()
 	r.download_chunk_size = 262144
+	# the browser already inflates gzip responses; letting HTTPRequest inflate
+	# them again fails on hosts that compress (hf/manifest.json on Higgsfield)
+	r.accept_gzip = false
 	add_child(r)
 	r.request_completed.connect(func(result, code, _h, body):
 		r.queue_free()
