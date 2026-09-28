@@ -843,7 +843,7 @@ func _build_parcels() -> void:
 	if offs.is_empty():
 		for idx in cols * rows:
 			offs.append([((idx % cols) - (cols - 1) * 0.5) * tile_size, ((idx / cols) - (rows - 1) * 0.5) * tile_size])
-	TileView.palm_scale = clampf(tile_size / 4.4, 0.6, 1.0)
+	TileView.palm_scale = clampf(tile_size / 4.6, 0.6, 1.0)
 	var so: Array = layout.get("sign_offset", [-(cols * tile_size) * 0.5 - 0.6, (rows * tile_size) * 0.5 + 0.8])
 	for p in GS.parcels:
 		var pid: int = p["id"]

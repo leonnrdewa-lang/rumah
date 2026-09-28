@@ -657,6 +657,9 @@ func _neighbours() -> Array:
 	var e = world.get("extras")
 	if e is Dictionary:
 		out.append_array(e.values())
+	var w = world.get("walkers")   # map v3: passers-by between the hamlets
+	if w is Array:
+		out.append_array(w)
 	return out
 
 
