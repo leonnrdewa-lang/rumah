@@ -51,7 +51,7 @@ namespace OjolRush
         static readonly string[] BannerTexts =
         {
             "SELAMAT DATANG", "PROMO PULSA 10RB", "LOMBA 17-AN RW 05", "HATI-HATI BANYAK ANAK",
-            "DIJUAL CEPAT TANPA PERANTARA", "PENGAJIAN MALAM JUMAT", "DISKON 50% (SYARAT BERLAKU)",
+            "DIJUAL CEPAT TANPA PERANTARA", "BAZAR MURAH RW 05", "DISKON 50% (SYARAT BERLAKU)",
         };
 
         public CityBuilder(CityMap city, System.Random rng, Transform parent)

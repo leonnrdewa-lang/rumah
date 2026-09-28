@@ -36,7 +36,7 @@ namespace OjolRush
         float time;
 
         static readonly string[] FoodItems = { "Nasi Goreng", "Bakso Urat", "Martabak Manis", "Es Kopi Susu x3", "Sate Ayam 20 tusuk", "Mie Ayam Pangsit", "Seblak Level 5", "Soto Betawi", "Pecel Lele", "Gorengan 10 biji" };
-        static readonly string[] PackageItems = { "Paket Olshop", "Dokumen Kantor", "Kunci Rumah Ketinggalan", "Charger HP", "Kado Ulang Tahun", "Obat dari Apotek", "Sepatu COD" };
+        static readonly string[] PackageItems = { "Paket Olshop", "Dokumen Kantor", "Kunci Rumah Ketinggalan", "Charger HP", "Sparepart Motor", "Obat dari Apotek", "Sepatu COD" };
 
         public void Init(GameManager game, CityMap map, System.Random random)
         {

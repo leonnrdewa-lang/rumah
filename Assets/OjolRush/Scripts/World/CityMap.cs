@@ -53,7 +53,7 @@ namespace OjolRush
         {
             "Kos Melati No. 7", "Kantor Lt. 3 (titip satpam)", "Rumah Pagar Hijau", "Apartemen Tower B",
             "Kontrakan Bu RT", "Pos Ronda RW 05", "Ruko Cat Kuning", "Bengkel Jaya Motor",
-            "Kos Putri Anggrek", "Masjid Al-Ikhlas (samping)", "Salon Cantik Sekali", "Rumah No. 13B",
+            "Kos Putri Anggrek", "Rumah Dinas RT 03", "Salon Cantik Sekali", "Rumah No. 13B",
             "Warnet Gaming Pro", "Toko Bangunan Sinar",
         };
 

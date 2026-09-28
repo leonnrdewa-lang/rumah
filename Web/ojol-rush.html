@@ -75,6 +75,9 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
 .screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
   padding:calc(24px + env(safe-area-inset-top,0px)) 20px calc(24px + env(safe-area-inset-bottom,0px));
   background:linear-gradient(180deg,rgba(26,18,12,.25),rgba(26,18,12,.78) 60%);text-align:center;}
+#title{justify-content:flex-start;padding-top:calc(40px + env(safe-area-inset-top,0px));
+  background:linear-gradient(180deg,rgba(20,12,6,.1) 0%,rgba(20,12,6,.0) 35%,rgba(20,12,6,.55) 62%,rgba(20,12,6,.88) 100%),url(assets/keyart.webp) center/cover no-repeat,#b5663a;}
+#title .spacer{flex:1;}
 .logo{font:400 clamp(56px,17vw,104px)/.92 var(--display);letter-spacing:.01em;text-shadow:0 6px 0 rgba(0,0,0,.45);}
 .logo .o{color:var(--green);} .logo .r{color:var(--yellow);}
 .tag{font:700 20px/1.3 var(--body);max-width:28ch;}
@@ -124,6 +127,7 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
     <span class="plate">DRIVER APP · NgoJek-in</span>
     <div class="logo"><span class="o">OJOL</span><br><span class="r">RUSH</span></div>
     <p class="tag">Kamu bukan yang tercepat. Kamu jagonya nyelip.</p>
+    <div class="spacer"></div>
     <button class="btn" id="startBtn">MULAI SHIFT</button>
     <button class="btn alt ctrlBtn" id="ctrlTitle">Kontrol: SERET</button>
     <div class="best" id="bestTitle"></div>
@@ -227,7 +231,7 @@ function streetName(x,y){
   return V_STREETS[clamp(Math.round(x/PITCH),0,NX-1)];
 }
 const RESTOS=["Warung Bu Tini","Bakso Mas Joko","Martabak Bang Udin","Nasi Padang Sederhana Banget","Kopi Senja Abadi","Sate Pak Kumis","Mie Ayam Gerobak Biru","Pecel Lele Cak Mat","Seblak Teh Ncep","Nasi Uduk Bu Yayah","Soto Betawi H. Ma'ruf-an","Gorengan Mang Asep"];
-const HOMES=["Kos Melati No. 7","Kantor Lt. 3 (titip satpam)","Rumah Pagar Hijau","Apartemen Tower B","Kontrakan Bu RT","Pos Ronda RW 05","Ruko Cat Kuning","Bengkel Jaya Motor","Kos Putri Anggrek","Masjid Al-Ikhlas (samping)","Salon Cantik Sekali","Rumah No. 13B","Warnet Gaming Pro","Toko Bangunan Sinar"];
+const HOMES=["Kos Melati No. 7","Kantor Lt. 3 (titip satpam)","Rumah Pagar Hijau","Apartemen Tower B","Kontrakan Bu RT","Pos Ronda RW 05","Ruko Cat Kuning","Bengkel Jaya Motor","Kos Putri Anggrek","Rumah Dinas RT 03","Salon Cantik Sekali","Rumah No. 13B","Warnet Gaming Pro","Toko Bangunan Sinar"];
 const blockRect=(bi,bj)=>({x0:bi*PITCH+CORR,y0:bj*PITCH+CORR,x1:(bi+1)*PITCH-CORR,y1:(bj+1)*PITCH-CORR});
 const SPOTS=[];
 (function buildSpots(){
@@ -271,7 +275,10 @@ const hemi=new T.HemisphereLight(0xffe2c0,0x5a4638,0.78); scene.add(hemi);
 const sun=new T.DirectionalLight(0xffcf94,0.95); sun.position.set(-60,80,40); scene.add(sun);
 const SUN_C=new T.Color(0xffcf94), RAIN_C=new T.Color(0x9aa6b5);
 
-const M_VC=new T.MeshLambertMaterial({vertexColors:true});
+// Cel shading: three hard light bands.
+const GRAD=(()=>{ const d=new Uint8Array([105,105,105,255, 185,185,185,255, 255,255,255,255]); const t=new T.DataTexture(d,3,1,T.RGBAFormat); t.minFilter=t.magFilter=T.NearestFilter; t.generateMipmaps=false; t.needsUpdate=true; return t; })();
+const M_VC=new T.MeshToonMaterial({vertexColors:true,gradientMap:GRAD});
+const M_OUTLINE=new T.LineBasicMaterial({color:0x2b1e16});
 const M_VC_GLOW=new T.MeshBasicMaterial({vertexColors:true});
 const M_BRAKE_OFF=new T.MeshLambertMaterial({color:0x5a0d0d});
 const M_BRAKE_ON=new T.MeshBasicMaterial({color:0xff1a12});
@@ -332,14 +339,64 @@ function signMesh(text,w,h,bg,fg){
   return m;
 }
 
+// ---------------------------------------------------------------- 2.5D sprites (cel-shaded art generated with GPT Image 2.5)
+const TL=new T.TextureLoader(), TEX={};
+function tex(n){ let t=TEX[n]; if(!t){ t=TL.load('assets/'+n+'.webp'); t.anisotropy=4; TEX[n]=t; } return t; }
+// pixel sizes of each sprite (for aspect ratio); every sprite faces "up" = forward
+const SPR={ojol:[95,192],bike1:[78,160],bike2:[75,160],mpv:[134,256],hatch:[126,224],sedan:[120,256],angkot:[123,256],bajaj:[83,192],bus:[118,448],
+  gerobak:[134,192],tree:[223,224],cat:[37,128],chicken:[61,128],pax:[87,128],policecar:[91,192],cone:[139,192],officer:[125,192]};
+const SMAT={}, SHMAT={}, PGEO={};
+const sprMat=n=>SMAT[n]||(SMAT[n]=new T.MeshBasicMaterial({map:tex(n),alphaTest:0.4}));
+const shdMat=n=>SHMAT[n]||(SHMAT[n]=new T.MeshBasicMaterial({map:tex(n),color:0x1a0f08,transparent:true,opacity:0.34,depthWrite:false}));
+function plane(w,l){ const k=w.toFixed(2)+'x'+l.toFixed(2); let g=PGEO[k]; if(!g){ g=new T.PlaneGeometry(w,l); g.rotateX(-Math.PI/2); PGEO[k]=g; } return g; }
+// A flat sprite lying on the street (top of the image = forward = -Z) plus a drop shadow cast by the low sun.
+function sprite(name,len,y=0.3,shadow=0.55){
+  const [iw,ih]=SPR[name], w=len*iw/ih, g=new T.Group();
+  const body=new T.Mesh(plane(w,len),sprMat(name)); body.position.y=y; body.renderOrder=3; g.add(body);
+  if(shadow>0){ const sh=new T.Mesh(plane(w,len),shdMat(name)); sh.position.y=0.04; sh.renderOrder=2; g.add(sh); g.userData.shadow=sh; g.userData.shOff=shadow; }
+  g.userData.body=body; g.userData.w=w; g.userData.len=len; return g;
+}
+// Keep the shadow offset fixed in world space (sun from the south-west) whatever the sprite's rotation.
+function syncShadow(g,rotY){
+  const sh=g.userData.shadow; if(!sh) return; const o=g.userData.shOff, a=-(rotY===undefined?g.rotation.y:rotY), c=Math.cos(a), sn=Math.sin(a);
+  sh.position.x=o*c+(-o)*sn; sh.position.z=-o*sn+(-o)*c;
+}
+function glowTex(r,g,b){ const c=document.createElement('canvas'); c.width=c.height=64; const x=c.getContext('2d'), gr=x.createRadialGradient(32,32,0,32,32,32);
+  gr.addColorStop(0,`rgba(${r},${g},${b},1)`); gr.addColorStop(.35,`rgba(${r},${g},${b},.85)`); gr.addColorStop(1,`rgba(${r},${g},${b},0)`); x.fillStyle=gr; x.fillRect(0,0,64,64); return new T.CanvasTexture(c); }
+const M_BRAKE_GLOW=new T.MeshBasicMaterial({map:glowTex(255,40,25),transparent:true,depthWrite:false,blending:T.AdditiveBlending});
+const M_BLINK_GLOW=new T.MeshBasicMaterial({map:glowTex(255,165,20),transparent:true,depthWrite:false,blending:T.AdditiveBlending});
+const M_RED_GLOW=new T.MeshBasicMaterial({map:glowTex(255,30,30),transparent:true,depthWrite:false,blending:T.AdditiveBlending});
+const M_BLUE_GLOW=new T.MeshBasicMaterial({map:glowTex(40,90,255),transparent:true,depthWrite:false,blending:T.AdditiveBlending});
+
+// Textured roofs and shop-house facades, batched per texture.
+const ROOF_TEX=['roof1','roof2','roof3'], FAC_TEX=['fac1','fac2','fac3'], FAC_H=7.5, FAC_W=FAC_H*16/9;
+const QB={}; function qb(n){ return QB[n]||(QB[n]={p:[],uv:[],n:[]}); }
+function quad(n,a,b,c,d,uva,uvb,uvc,uvd,nx,ny,nz){ const q=qb(n); for(const [v,u] of [[a,uva],[b,uvb],[c,uvc],[a,uva],[c,uvc],[d,uvd]]){ q.p.push(v[0],v[1],v[2]); q.uv.push(u[0],u[1]); q.n.push(nx,ny,nz); } }
+function roofQuad(x0,x1,y0,y1,h){
+  const uvs=[[0,0],[1,0],[1,1],[0,1]], r=RI(4), U=k=>uvs[(k+r)%4];
+  quad(pick(ROOF_TEX),[x0,h,-y0],[x1,h,-y0],[x1,h,-y1],[x0,h,-y1],U(0),U(1),U(2),U(3),0,1,0);
+}
+function facadeQuad(x0,x1,y,hf){
+  const w=x1-x0, span=Math.min(1,w/FAC_W), u0=Math.random()*(1-span), u1=u0+span, v1=Math.min(1,hf/FAC_H), z=-y+0.03;
+  quad(pick(FAC_TEX),[x0,0,z],[x1,0,z],[x1,hf,z],[x0,hf,z],[u0,0],[u1,0],[u1,v1],[u0,v1],0,0,1);
+}
+const TEXMATS=[];
+function flushQuads(){
+  for(const n in QB){ const q=QB[n], g=new T.BufferGeometry();
+    g.setAttribute('position',new T.Float32BufferAttribute(q.p,3)); g.setAttribute('uv',new T.Float32BufferAttribute(q.uv,2)); g.setAttribute('normal',new T.Float32BufferAttribute(q.n,3));
+    const t=tex(n); const m=new T.MeshBasicMaterial({map:t,color:0xffffff}); TEXMATS.push(m); cityGroup.add(new T.Mesh(g,m)); }
+}
+
 // ---------------------------------------------------------------- city visuals
 const WALLS=[0xf5d69a,0x9fd1b8,0xed9e80,0xf2f0dc,0xb8c2eb,0xe095a3,0xfae673,0xb3e08c,0xd9bfa6,0x99bfd9];
 const ROOFS=[0xb85c38,0x8c4d33,0x737880,0x4d738c,0xcc6b40];
 const SIGNC=[['#e62626','#fff'],['#1a73d9','#fff'],['#f2cc1a','#1a1a1a'],['#26a64d','#fff'],['#f2731a','#fff'],['#8c33a6','#fff']];
 const SIGNT=["WARTEG","BAKSO","PULSA","LAUNDRY","NASI PADANG","BENGKEL","FOTOKOPI","KOPI","SEMBAKO","MARTABAK","SATE","SOTO","APOTEK","SALON","MIE AYAM","SERVIS HP","JAMU","TOKO EMAS"];
-const BANNERS=["SELAMAT DATANG","PROMO PULSA 10RB","LOMBA 17-AN RW 05","HATI-HATI BANYAK ANAK","DIJUAL CEPAT","PENGAJIAN MALAM JUMAT","DISKON 50%*"];
+const BANNERS=["SELAMAT DATANG","PROMO PULSA 10RB","LOMBA 17-AN RW 05","HATI-HATI BANYAK ANAK","DIJUAL CEPAT","BAZAR MURAH RW 05","DISKON 50%*"];
 const cityGroup=new T.Group(); scene.add(cityGroup);
 const chunks=new Map();
+const bchunks=new Map();
+function bchunk(x,y){ const k=Math.floor(x/60)+','+Math.floor(y/60); let g=bchunks.get(k); if(!g){ g=new GB(); bchunks.set(k,g);} return g; }
 function chunk(x,y){ const k=Math.floor(x/60)+','+Math.floor(y/60); let g=chunks.get(k); if(!g){ g=new GB(); chunks.set(k,g);} return g; }
 const ASPH=0x42424a, ASPH_J=0x46464d, SIDEW=0xbdb5a8, CURB=0x8d877f, MARK=0xf2f2e6, CABLE=0x1a1a1a, POLE=0x736b61;
 
@@ -391,8 +448,11 @@ function buildCity(){
   const m=32;
   lots(MINX-m,MAXX+m,MINY-m,MINY-0.1,false); lots(MINX-m,MAXX+m,MAXY+0.1,MAXY+m,true);
   ringCol(MINX-m,MINX-0.1); ringCol(MAXX+0.1,MAXX+m);
-  polesAndCables(); banners(); trees();
+  skyline(); polesAndCables(); banners(); trees();
   for(const g of chunks.values()) if(!g.empty) cityGroup.add(g.mesh());
+  // Buildings get ink outlines for the cel-shaded look.
+  for(const g of bchunks.values()) if(!g.empty){ const m=g.mesh(); cityGroup.add(m); cityGroup.add(new T.LineSegments(new T.EdgesGeometry(m.geometry,25),M_OUTLINE)); }
+  flushQuads();
 }
 function buildBlock(bi,bj){
   const b=blockRect(bi,bj); let gx=NaN, gz=NaN;
@@ -404,24 +464,24 @@ function buildBlock(bi,bj){
 }
 function lots(x0,x1,y0,y1,south){ let x=x0; while(x<x1-0.5){ let w=R(6,11); if(x1-(x+w)<5) w=x1-x; building(x+0.15,x+w-0.15,y0,y1,south); x+=w; } }
 function building(x0,x1,y0,y1,south){
-  const w=x1-x0, d=y1-y0, h=south?R(4,8):R(2.4,3.2), cx=(x0+x1)/2, cy=(y0+y1)/2, g=chunk(cx,cy), wall=pick(WALLS);
-  wbb(g,cx,cy,0,w,h,d,wall);
-  if(!south&&d>8){ const back=d*0.5; wbb(g,cx,y0+back/2,0,w,h+R(1.5,3.5),back,wall); }
-  wbb(g,cx,cy,h,w+0.3,0.25,d+0.3,pick(ROOFS));
-  if(Math.random()<0.45){ const tx=cx+R(-w*.3,w*.3), ty=cy+R(-d*.3,d*.3); wbb(g,tx,ty,h+0.25,0.9,0.5,0.9,0x808080); wbb(g,tx,ty,h+0.75,1.0,1.1,1.0,Math.random()<.5?0x3373d9:0xf28c26); }
-  const fy=south?y0:y1, sg=south?-1:1, shopH=Math.min(2.8,h-0.6), shutter=Math.random()<0.35;
-  wbb(g,cx,fy+sg*0.03,0.05,w-0.8,shopH,0.08,shutter?0x9ea3a8:0x332e29);
-  if(!shutter&&Math.random()<0.7){
-    const aw=pick(SIGNC)[0], n=Math.max(2,(w/1.2)|0);
-    for(let s=0;s<n;s++){ const sx=x0+0.3+(w-0.6)*(s+0.5)/n; g.box(sx,shopH+0.1,-(fy+sg*0.75),(w-0.6)/n,0.08,1.5,s%2?0xf2f2eb:aw,0,sg*18*DEG); }
-  }
-  for(let wy=shopH+1.2;wy<h-0.8;wy+=2.6) for(let wx=x0+1.2;wx<x1-1;wx+=2.2) wbb(g,wx+0.5,fy+sg*0.03,wy,1.1,1.1,0.08,0x384d61);
-  if(south&&w>=5.5&&Math.random()<0.6){
-    const [bg,fg]=pick(SIGNC), sy=Math.min(shopH+0.9,h-0.7);
-    const sm=signMesh(pick(SIGNT),w-1.2,1.1,bg,fg); sm.position.set(cx,sy,-(fy-0.12)); cityGroup.add(sm);
-  }
+  // South-row buildings face the camera: textured ruko facades. North-row ones stay low at the street so they never hide it.
+  const w=x1-x0, d=y1-y0, h=south?R(4.6,8.5):R(2.4,3.2), cx=(x0+x1)/2, cy=(y0+y1)/2, g=bchunk(cx,cy), wall=pick(WALLS);
+  wbb(g,cx,cy,0,w,h,d,wall); roofQuad(x0,x1,y0,y1,h+0.02);
+  if(!south&&d>8){ const back=d*0.5, hb=h+R(1.5,3.5); wbb(g,cx,y0+back/2,0,w,hb,back,wall); roofQuad(x0,x1,y0,y0+back,hb+0.02); }
+  if(south) facadeQuad(x0+0.04,x1-0.04,y0,Math.min(h-0.05,FAC_H));
 }
-function ringCol(x0,x1){ let y=MINY; while(y<MAXY-0.5){ let d=R(8,14); if(MAXY-(y+d)<6) d=MAXY-y; const h=R(3.5,7), cx=(x0+x1)/2, cy=y+d/2, g=chunk(cx,cy); wbb(g,cx,cy,0,x1-x0,h,d-0.3,pick(WALLS)); wbb(g,cx,cy,h,x1-x0+0.3,0.25,d,pick(ROOFS)); y+=d; } }
+function skyline(){
+  // Jakarta CBD towers on the northern horizon (seen through the golden haze).
+  const G=[0x6f9cc2,0x86b2d3,0xa4c3db,0x5d86a8,0xc8d7e2,0xe0c9a6];
+  let x=MINX-40;
+  while(x<MAXX+40){ const w=R(14,26), dpt=R(14,22), h=R(35,95), y=MAXY+R(55,95), g=bchunk(x,y), c=pick(G);
+    wbb(g,x+w/2,y,0,w,h,dpt,c);
+    for(let k=4;k<h-2;k+=R(3,4.5)) wbb(g,x+w/2,y-dpt/2-0.05,k,w+0.1,0.35,0.12,Palette_dark(c));
+    if(Math.random()<.4) wbb(g,x+w/2,y,h,w*.5,R(3,8),dpt*.5,c);
+    x+=w+R(2,10); }
+}
+function Palette_dark(c){ const col=new T.Color(c); col.multiplyScalar(0.72); return col.getHex(); }
+function ringCol(x0,x1){ let y=MINY; while(y<MAXY-0.5){ let d=R(8,14); if(MAXY-(y+d)<6) d=MAXY-y; const h=R(3.5,7), cx=(x0+x1)/2, cy=y+d/2, g=bchunk(cx,cy); wbb(g,cx,cy,0,x1-x0,h,d-0.3,pick(WALLS)); roofQuad(x0,x1,y+0.15,y+d-0.15,h+0.02); y+=d; } }
 function pole(x,y){
   const h=R(6.6,7.4), g=chunk(x,y); wbb(g,x,y,SW_H,0.22,h,0.22,POLE); wbox(g,x,y,h-0.4,1.4,0.1,0.1,POLE);
   if(Math.random()<0.35){ for(let k=0;k<4;k++) g.beam(x+R(-.8,.8),h-R(.3,1.3),-(y+R(-.8,.8)),x+R(-.8,.8),h-R(.3,1.3),-(y+R(-.8,.8)),0.05,CABLE); wbox(g,x,y,h-1,0.45,0.4,0.45,CABLE); }
@@ -449,12 +509,12 @@ function banners(){
   }
 }
 function trees(){
-  for(let k=0;k<26;k++){
+  for(let k=0;k<30;k++){
     let i,j,d; do{ i=RI(NX); j=RI(NZ); d=RI(2); } while(!hasEdge(i,j,d));
     const f=DIRS[d], l=[-f[1],f[0]], side=d===0?1:(Math.random()<.5?1:-1), u=CORR+R(3,37), o=side*(CORR-0.9);
-    const x=i*PITCH+f[0]*u+l[0]*o, y=j*PITCH+f[1]*u+l[1]*o, g=chunk(x,y), h=R(2.4,3.2), leaf=Math.random()<.5?0x4d993f:0x66ad4d;
-    wbb(g,x,y,SW_H,0.3,h,0.3,0x734d2e); wbb(g,x,y,SW_H,0.34,0.6,0.34,0xf2f2eb);
-    wbb(g,x,y,h,R(2.4,3.2),R(1.6,2.2),R(2.4,3.2),leaf); wbb(g,x+R(-.5,.5),y+R(-.5,.5),h+1.4,R(1.5,2),1.1,R(1.5,2),0x7abf5c);
+    const x=i*PITCH+f[0]*u+l[0]*o, y=j*PITCH+f[1]*u+l[1]*o, g=chunk(x,y);
+    wbb(g,x,y,SW_H,0.3,2.6,0.3,0x734d2e); wbb(g,x,y,SW_H,0.36,0.6,0.36,0xf2f2eb);
+    const t=sprite('tree',R(3.4,4.6),3.0,1.8); t.position.set(x,0,-y); t.rotation.y=R(0,6.28); syncShadow(t); cityGroup.add(t);
   }
 }
 
@@ -487,54 +547,14 @@ const JACKETS=[0x33407f,0xb32626,0x404040,0xd9bf4d,0x804d99,0x4d8cbf,0x1a994d];
 const BUSC=[0xd94026,0x2673bf,0x339959];
 const GLASS=0x29384d, TIRE=0x151517, WHITE=0xf2f2eb, SKIN=0xc78f66;
 // Model space: forward = -Z, right = +X. Numbers below use +z forward, flipped by zb().
+const CAR_SPR=['mpv','hatch','sedan'], BIKE_SPR=['bike1','bike2'];
 function buildVehicle(type){
-  const s=SPECS[type], L=s.len, W=s.w, gb=new GB();
-  const zb=(x,y,z,sx,sy,sz,c)=>gb.bb(x,y,-z,sx,sy,sz,c);
-  const wheel=(x,z,r,w)=>zb(x,0,z,w,r*2,r*1.8,TIRE);
-  zb(0,0.01,0,W+0.4,0.01,L+0.5,0x2e2723); // blob shadow
-  let brakes, ly;
-  if(type==='angkot'){
-    zb(0,.3,0,W,1.35,L,0x1f70d9); zb(0,1,-.1,W+.03,.45,L*.72,GLASS); zb(0,.95,L*.36,W*.92,.5,.3,GLASS);
-    zb(0,.72,0,W+.04,.12,L+.02,WHITE); zb(0,1.65,-.2,W*.95,.08,L*.8,0x4d8fe6);
-    zb(-W*.4,1.73,-.2,.06,.1,L*.7,TIRE); zb(W*.4,1.73,-.2,.06,.1,L*.7,TIRE); zb(0,1.72,L*.3,W*.6,.06,.5,0xffd91a);
-    zb(-W*.5,.35,-.4,.05,1.2,.9,0x1a1f29);
-    wheel(-W*.5,L*.32,.32,.22); wheel(W*.5,L*.32,.32,.22); wheel(-W*.5,-L*.32,.32,.22); wheel(W*.5,-L*.32,.32,.22);
-    ly=.75; brakes=[[-W*.36,-L*.5],[W*.36,-L*.5]];
-  } else if(type==='bajaj'){
-    zb(0,.25,-.2,W,.65,L*.72,0xf28019); zb(0,.25,L*.3,W*.55,.95,.7,0xf28019); zb(0,.95,L*.36,W*.5,.45,.1,GLASS);
-    zb(0,.9,-.35,W*.8,.35,.6,0x333333); zb(0,1.55,-.1,W,.1,L*.85,0x1f1f1f);
-    zb(-W*.45,.85,-L*.4,.06,.72,.06,TIRE); zb(W*.45,.85,-L*.4,.06,.72,.06,TIRE);
-    wheel(0,L*.4,.26,.16); wheel(-W*.45,-L*.3,.26,.16); wheel(W*.45,-L*.3,.26,.16);
-    ly=.6; brakes=[[-W*.38,-L*.56],[W*.38,-L*.56]];
-  } else if(type==='bus'){
-    const body=pick(BUSC);
-    zb(0,.35,0,W,2.45,L,body); zb(0,1.45,-.3,W+.03,.8,L*.85,GLASS); zb(0,1.35,L*.5-.05,W*.9,1,.12,GLASS);
-    zb(0,.95,0,W+.04,.2,L+.02,WHITE); zb(0,2.8,0,W*.96,.06,L*.96,WHITE);
-    zb(0,2.86,1.5,W*.6,.3,1.6,0xbfbfc7); zb(0,2.86,-2.5,W*.6,.3,1.6,0xbfbfc7);
-    for(const z of [L*.33,-L*.25,-L*.36]){ wheel(-W*.5,z,.48,.3); wheel(W*.5,z,.48,.3); }
-    ly=.9; brakes=[[-W*.38,-L*.5],[W*.38,-L*.5]];
-  } else if(type==='bike'){
-    const body=pick(CARC), jacket=pick(JACKETS), helm=pick(CARC);
-    zb(0,.3,0,.34,.42,1.45,body); zb(0,.72,-.2,.36,.12,.7,0x262626); zb(0,.72,.55,.7,.06,.06,TIRE);
-    wheel(0,.7,.3,.12); wheel(0,-.68,.3,.14);
-    zb(0,.8,-.15,.5,.6,.34,jacket); zb(-.3,.95,.2,.13,.13,.6,jacket); zb(.3,.95,.2,.13,.13,.6,jacket); zb(0,1.4,-.1,.42,.4,.44,helm);
-    ly=.55; brakes=[[0,-.74]];
-  } else {
-    const body=pick(CARC);
-    zb(0,.28,0,W,.62,L,body); zb(0,.9,-.2,W*.86,.5,L*.5,GLASS); zb(0,1.38,-.2,W*.88,.1,L*.44,body); zb(0,.5,L*.5,W*.9,.18,.08,0x4d4d52);
-    wheel(-W*.5,L*.31,.33,.24); wheel(W*.5,L*.31,.33,.24); wheel(-W*.5,-L*.31,.33,.24); wheel(W*.5,-L*.31,.33,.24);
-    ly=.72; brakes=[[-W*.36,-L*.5],[W*.36,-L*.5]];
-  }
-  const group=new T.Group(); group.add(gb.mesh());
-  const bg=new GB();
-  for(const [x,z] of brakes) bg.box(x,ly,-z,type==='bike'?.22:W*.26,.2,.14,0xffffff);
-  if(type!=='bike') bg.box(0,ly+.11,-(-L*.5+.1),W*.9,.05,.26,0xffffff);
-  const brake=new T.Mesh(bg.geo(),M_BRAKE_OFF); group.add(brake);
-  const hx=type==='bike'?.28:W*.5, hz=L*.5-.05, by=ly+.1;
-  const bl=new GB(); bl.box(-hx,by,-hz,.26,.22,.26,0xffffff); bl.box(-hx,by,hz,.26,.22,.26,0xffffff);
-  const br=new GB(); br.box(hx,by,-hz,.26,.22,.26,0xffffff); br.box(hx,by,hz,.26,.22,.26,0xffffff);
-  const blm=new T.Mesh(bl.geo(),M_BLINK), brm=new T.Mesh(br.geo(),M_BLINK); blm.visible=brm.visible=false; group.add(blm,brm);
-  return {group,brake,bl:blm,br:brm};
+  const s=SPECS[type], name=type==='car'?pick(CAR_SPR):(type==='bike'?pick(BIKE_SPR):type), len=s.len*(type==='bike'?1.08:1.05);
+  const group=sprite(name,len,type==='bus'?0.55:0.32,type==='bus'?0.9:0.55), w=group.userData.w, hl=len/2, gl=plane(1.1,1.1);
+  const brake=new T.Group(); for(const sx of (type==='bike'?[0]:[-1,1])){ const m=new T.Mesh(gl,M_BRAKE_GLOW); m.position.set(sx*w*0.3,0.7,hl-0.2); m.renderOrder=4; brake.add(m); }
+  brake.visible=false; group.add(brake);
+  const blink=sx=>{ const b=new T.Group(); for(const sz of [-1,1]){ const m=new T.Mesh(gl,M_BLINK_GLOW); m.position.set(sx*w*0.46,0.72,sz*(hl-0.25)); m.renderOrder=4; b.add(m); } b.visible=false; group.add(b); return b; };
+  return {group,brake,bl:blink(-1),br:blink(1)};
 }
 
 const TMP={x:0,y:0,tx:0,ty:1};
@@ -631,12 +651,12 @@ class Veh{
     else if(this.turning&&this.nextDir!==this.dir&&this.s<this.pathLen*0.6) side=this.nextDir===leftOf(this.dir)?-1:1;
     const on=side!==0&&(time%0.6)<0.35; this.bl.visible=on&&side<0; this.br.visible=on&&side>0;
   }
-  setBrake(on){ this.braking=on; if(on===this.brakeShown) return; this.brakeShown=on; this.brake.material=on?M_BRAKE_ON:M_BRAKE_OFF; }
+  setBrake(on){ this.braking=on; if(on===this.brakeShown) return; this.brakeShown=on; this.brake.visible=on; }
   pose(){
     this.pathPoint(TMP); this.fx=TMP.tx; this.fy=TMP.ty;
     this.px=TMP.x-TMP.ty*this.lat; this.py=TMP.y+TMP.tx*this.lat;
     const yaw=headingOf(TMP.tx,TMP.ty)+Math.atan2(-this.latVel,Math.max(this.speed,2))/DEG;
-    this.group.position.set(this.px,0,-this.py); this.group.rotation.y=-yaw*DEG;
+    this.group.position.set(this.px,0,-this.py); this.group.rotation.y=-yaw*DEG; syncShadow(this.group);
   }
 }
 
@@ -740,8 +760,9 @@ const traffic={
 
 // ---------------------------------------------------------------- hazards
 const hazGroup=new T.Group(); scene.add(hazGroup);
+function addObj(o,x,y,h=0,yaw=0){ o.position.set(x,h,-y); o.rotation.y=yaw; syncShadow(o); hazGroup.add(o); return o; }
 function addMesh(gb,x,y,h=0,yaw=0,mat){ const m=gb.mesh(mat); m.position.set(x,h,-y); m.rotation.y=yaw; hazGroup.add(m); return m; }
-function dropMesh(m){ if(!m) return; m.parent&&m.parent.remove(m); m.geometry.dispose(); }
+function dropMesh(m){ if(!m) return; m.parent&&m.parent.remove(m); if(m.geometry) m.geometry.dispose(); }
 function roadPoint(i,j,d,along,off){ const f=DIRS[d]; return [i*PITCH+f[0]*(CORR+along)-f[1]*off, j*PITCH+f[1]*(CORR+along)+f[0]*off]; }
 function randEdge(){ let i,j,d; do{ i=RI(NX); j=RI(NZ); d=RI(2); } while(!hasEdge(i,j,d)); return [i,j,d]; }
 const hazards={
@@ -770,23 +791,17 @@ const hazards={
     return {x,y,r,mesh:addMesh(g,x,y,0,R(0,3))};
   },
   makeGerobak(){
-    const [i,j,d]=randEdge(), side=Math.random()<.5?1:-1, f=DIRS[d], p=roadPoint(i,j,d,R(4,36),side*R(8.2,8.8)), g=new GB();
-    const zb=(x,y,z,sx,sy,sz,c)=>g.bb(x,y,-z,sx,sy,sz,c);
-    zb(0,.35,0,1.1,.6,1.9,0x9e6633); zb(0,.95,.2,1,.5,1.2,0xbfd9e6); zb(0,.95,-.65,.7,.45,.45,0xb3b3b8);
-    zb(.55,0,0,.1,.6,.55,TIRE); zb(-.55,0,0,.1,.6,.55,TIRE); zb(0,.95,0,.06,1.4,.06,0x666666); zb(0,2.35,0,1.9,.12,2.3,pick([0xe63333,0x3380e6,0xf2bf1a,0x33b366]));
-    const vx=side>0?-.95:.95; zb(vx,.05,0,.36,.8,.3,0x4d4d66); zb(vx,.85,0,.44,.55,.32,pick(JACKETS)); zb(vx,1.4,0,.32,.32,.32,SKIN);
-    const mesh=addMesh(g,p[0],p[1],SW_H,-headingOf(f[0],f[1])*DEG);
+    const [i,j,d]=randEdge(), side=Math.random()<.5?1:-1, f=DIRS[d], p=roadPoint(i,j,d,R(4,36),side*R(8.2,8.8));
+    const mesh=addObj(sprite('gerobak',2.6,0.45,0.7),p[0],p[1],SW_H,-headingOf(f[0],f[1])*DEG+(side>0?Math.PI:0));
     return {x:p[0],y:p[1],fx:f[0],fy:f[1],hl:1,hw:.6,mesh,steam:R(0,.3)};
   },
   gangPoint(gr){ for(let t=0;t<40;t++){ const x=R(gr.x0+.4,gr.x1-.4), y=R(gr.y0+.4,gr.y1-.4); if(surfaceAt(x,y)===SGANG) return [x,y]; } return [(gr.x0+gr.x1)/2,(gr.y0+gr.y1)/2]; },
   makeGangCritters(){
     for(const gr of GANGS){
-      for(let k=0;k<7;k++){ const [x,y]=this.gangPoint(gr), g=new GB(), c=Math.random()<.5?0xf2ede0:0x995933;
-        g.bb(0,.15,0,.28,.28,.4,c); g.bb(0,.35,-.18,.16,.2,.16,c); g.bb(0,.55,-.2,.06,.08,.12,0xe61a1a); g.bb(0,.4,-.3,.06,.05,.08,0xffb31a);
-        this.chickens.push({x,y,hx:x,hy:y,tx:x,ty:y,t:R(0,1),fly:0,flung:false,vx:0,vy:0,z:0,gr,mesh:addMesh(g,x,y)}); }
-      for(let k=0;k<2;k++){ const [x,y]=this.gangPoint(gr), g=new GB();
-        g.bb(0,0,0,.3,.45,.2,0x334073); g.bb(0,.45,0,.38,.42,.24,pick(JACKETS)); g.bb(0,.87,0,.3,.3,.3,SKIN); g.bb(.45,0,-.2,.26,.26,.26,0xffffff);
-        this.kids.push({x,y,hx:x,hy:y,ph:R(0,6),cd:0,gr,mesh:addMesh(g,x,y)}); }
+      for(let k=0;k<7;k++){ const [x,y]=this.gangPoint(gr);
+        this.chickens.push({x,y,hx:x,hy:y,tx:x,ty:y,t:R(0,1),fly:0,flung:false,vx:0,vy:0,z:0,gr,mesh:addObj(sprite('chicken',0.62,0.2,0.2),x,y,0,R(0,6.28))}); }
+      for(let k=0;k<2;k++){ const [x,y]=this.gangPoint(gr);
+        this.kids.push({x,y,hx:x,hy:y,ph:R(0,6),cd:0,gr,mesh:addObj(sprite('pax',0.78,0.25,0.3),x,y)}); }
     }
     // laundry lines (static, rebuilt with the critters)
     const g=new GB(); const cloth=[0xf24d4d,0x4d99f2,0xffe64d,0xf2f2f2,0x80d980,0xe680cc];
@@ -806,10 +821,8 @@ const hazards={
   makePax(){
     let i,j,d; do{ i=RI(NX); j=RI(NZ); d=RI(4); } while(!hasEdge(i,j,d));
     const along=R(8,30), e=edgeLane(i,j,d,1), f=DIRS[d], x=e.ax+f[0]*along-f[1]*2.35, y=e.ay+f[1]*along+f[0]*2.35;
-    const g=new GB(), shirt=pick(JACKETS); g.bb(0,0,0,.36,.8,.24,0x40404d); g.bb(0,.8,0,.48,.62,.28,shirt); g.bb(0,1.42,0,.34,.34,.34,SKIN);
-    const mesh=addMesh(g,x,y,SW_H,-headingOf(-f[0],-f[1])*DEG);
-    const ag=new GB(); ag.bb(0,0,0,.13,.62,.13,shirt); ag.bb(0,.62,0,.16,.16,.16,SKIN); const arm=ag.mesh(); arm.position.set(.26,1.35,0); mesh.add(arm);
-    return {i,j,d,along,x,y,claimed:false,ph:R(0,6),mesh,arm};
+    const mesh=addObj(sprite('pax',1.1,0.3,0.4),x,y,SW_H,-headingOf(-f[1],f[0])*DEG);
+    return {i,j,d,along,x,y,claimed:false,ph:R(0,6),mesh};
   },
   edgeRect(i,j,d,from,to){ const a=roadPoint(i,j,d,from,0), b=roadPoint(i,j,d,to,0), h=isH(d);
     return {x0:Math.min(a[0],b[0])-(h?0:CORR),y0:Math.min(a[1],b[1])-(h?CORR:0),x1:Math.max(a[0],b[0])+(h?0:CORR),y1:Math.max(a[1],b[1])+(h?CORR:0)}; },
@@ -825,18 +838,16 @@ const hazards={
   makeRazia(){
     for(let t=0;t<30;t++){ const [i,j,d]=randEdge(), r=this.edgeRect(i,j,d,17,23), cx=(r.x0+r.x1)/2, cy=(r.y0+r.y1)/2;
       if(Math.hypot(cx-player.x,cy-player.y)<60||this.overlaps(r)) continue;
-      const g=new GB(), zb=(x,y,z,sx,sy,sz,c)=>g.bb(x,y,-z,sx,sy,sz,c);
-      for(let x=-9;x<=9;x+=1.5){ zb(x,.12,-2.6,.4,.1,.4,0xf2731a); zb(x,.22,-2.6,.25,.45,.25,0xf2731a); zb(x,.45,-2.6,.27,.08,.27,WHITE); }
-      zb(8.5,SW_H+.3,.5,1.9,.7,4.5,WHITE); zb(8.5,SW_H+1,.6,1.7,.55,1.8,GLASS); zb(8.5,SW_H+.55,0,1.95,.18,4.52,0x264dbf);
-      for(const ox of [-1.5,2]){ zb(ox,0,-1.2,.38,.85,.26,0x40331f); zb(ox,.85,-1.2,.5,.62,.3,0x8c7340); zb(ox,1.4,-1.2,.62,.06,.4,0xe6d933); zb(ox,1.47,-1.2,.34,.34,.34,SKIN); }
-      zb(-8.5,0,-3.4,.12,2.2,.12,0x4d4d4d);
-      const f=DIRS[d], mesh=addMesh(g,cx,cy,0,-headingOf(f[0],f[1])*DEG);
-      // Sign board placed in the checkpoint's frame but always facing the camera.
+      const f=DIRS[d], yaw=-headingOf(f[0],f[1])*DEG, grp=new T.Group();
+      // local frame: +X = right of travel, -Z = forward
+      for(let x=-9;x<=9;x+=1.5){ const c=sprite('cone',0.7,0.15,0.2); c.position.set(x,0,2.6); grp.add(c); }
+      const car=sprite('policecar',4.6,0.35,0.6); car.position.set(8.5,SW_H,-0.5); grp.add(car);
+      for(const ox of [-1.5,2]){ const o=sprite('officer',1.0,0.35,0.35); o.position.set(ox,0,1.2); o.rotation.y=Math.PI; grp.add(o); }
+      const gl=plane(1.6,1.6), la=new T.Mesh(gl,M_RED_GLOW), lb=new T.Mesh(gl,M_BLUE_GLOW);
+      la.position.set(8.1,SW_H+1.2,-0.9); lb.position.set(8.9,SW_H+1.2,-0.9); la.renderOrder=lb.renderOrder=5; grp.add(la,lb);
+      const mesh=addObj(grp,cx,cy,0,yaw); for(const c of grp.children) if(c.userData.shadow) syncShadow(c,yaw+c.rotation.y);
       const sign=signMesh('RAZIA',3.2,1,'#f2f2e6','#cc1a1a'), wp=new T.Vector3(-8.5,2.6,3.5);
       mesh.updateMatrixWorld(); mesh.localToWorld(wp); sign.position.copy(wp); hazGroup.add(sign);
-      const la=new T.Mesh(BOX,M_RAZIA[2]), lb=new T.Mesh(BOX,M_RAZIA[2]); la.scale.set(.5,.2,.3); lb.scale.set(.5,.2,.3);
-      la.position.set(-.4,SW_H+1.65,0); lb.position.set(.4,SW_H+1.65,0);
-      const lg=new T.Group(); lg.add(la,lb); lg.position.set(8.5,0,-.4); mesh.add(lg);
       return {r,street:streetName(cx,cy),mesh,sign,la,lb,extra:sign};
     }
     return null;
@@ -851,31 +862,30 @@ const hazards={
     if(surfaceAt(ax,ay)!==SROAD||inJunction(ax,ay)) return;
     const horiz=axisDist(ay,NZ)<=axisDist(ax,NX), across=horiz?[0,1]:[1,0];
     const cx=horiz?ax:clamp(Math.round(ax/PITCH),0,NX-1)*PITCH, cy=horiz?clamp(Math.round(ay/PITCH),0,NZ-1)*PITCH:ay;
-    const s=Math.random()<.5?1:-1, sp=R(4.5,6.5), fur=pick([0xf29933,0xf2f2eb,0x262626,0x998c80]), g=new GB();
-    g.bb(0,.12,0,.24,.22,.55,fur); g.bb(0,.25,-.32,.22,.2,.2,fur); g.bb(-.07,.45,-.35,.06,.08,.05,fur); g.bb(.07,.45,-.35,.06,.08,.05,fur); g.beam(0,.3,.27,0,.6,.45,.06,fur);
+    const s=Math.random()<.5?1:-1, sp=R(4.5,6.5), g=sprite('cat',0.95,0.2,0.2);
     const vx=-across[0]*s*sp, vy=-across[1]*s*sp, x=cx+across[0]*9*s, y=cy+across[1]*9*s;
-    this.cats.push({x,y,vx,vy,t:18/sp+.5,flung:false,fly:0,z:0,mesh:addMesh(g,x,y,0,-headingOf(vx,vy)*DEG)});
+    this.cats.push({x,y,vx,vy,t:18/sp+.5,flung:false,fly:0,z:0,mesh:addObj(g,x,y,0,-headingOf(vx,vy)*DEG)});
   },
   tick(dt){
     if(dt<=0) return; this.time+=dt; const t=this.time;
     if(this.raziaCd>0) this.raziaCd-=dt; if(this.splashT>0) this.splashT-=dt;
-    for(const p of this.pax) p.arm.rotation.z=(15+Math.sin(t*7+p.ph)*35)*DEG;
+    for(const p of this.pax){ const b=p.mesh.userData.body, k=1+Math.abs(Math.sin(t*6+p.ph))*0.12; b.scale.set(k,1,k); }
     if(this.pax.length<this.paxTarget&&Math.random()<dt*0.5) this.pax.push(this.makePax());
     for(const o of this.gerobaks){ o.steam-=dt; if(o.steam<=0){ o.steam=0.25; if((o.x-player.x)**2+(o.y-player.y)**2<3600) fx.emit('steam',o.x-o.fx*.65,1.4,o.y-o.fy*.65,1); } }
     if(game.state==='play'){ this.catT-=dt; if(this.catT<=0){ this.catT=this.level.cat*R(.7,1.3); this.spawnCat(); } }
     for(let k=this.cats.length-1;k>=0;k--){ const c=this.cats[k]; c.t-=dt;
-      if(c.flung){ c.fly+=dt; c.z=Math.max(0,6*c.fly-12*c.fly*c.fly); c.mesh.rotation.y+=12*dt; } else c.z=Math.abs(Math.sin(t*14))*.08;
+      if(c.flung){ c.fly+=dt; c.z=Math.max(0,6*c.fly-12*c.fly*c.fly); c.mesh.rotation.y+=12*dt; syncShadow(c.mesh); } else c.z=Math.abs(Math.sin(t*14))*.08;
       c.x+=c.vx*dt; c.y+=c.vy*dt; c.mesh.position.set(c.x,c.z,-c.y); if(c.t<=0){ dropMesh(c.mesh); this.cats.splice(k,1); } }
     for(const c of this.chickens){ if(c.laundry) continue; const ax=c.x-player.x, ay=c.y-player.y, d=Math.hypot(ax,ay); let vx=0,vy=0;
       if(c.flung){ c.fly+=dt; c.z=Math.max(0,4*c.fly-9*c.fly*c.fly); if(c.fly>.5){ c.flung=false; c.z=0; } vx=c.vx; vy=c.vy; }
       else if(d<5&&player.speed>3){ vx=ax/Math.max(d,.1)*4.5; vy=ay/Math.max(d,.1)*4.5; c.t=.5; }
       else { c.t-=dt; if(c.t<=0){ c.t=R(.8,2.5); c.tx=c.hx+R(-6,6); c.ty=c.hy+R(-6,6); } const tx=c.tx-c.x, ty=c.ty-c.y, m=Math.hypot(tx,ty); if(m>.2){ vx=tx/m*1.2; vy=ty/m*1.2; } }
       const nx=c.x+vx*dt, ny=c.y+vy*dt, s=surfaceAt(nx,ny); if(s===SGANG||s===SSIDE){ c.x=nx; c.y=ny; } else { c.tx=c.hx; c.ty=c.hy; }
-      c.mesh.position.set(c.x,c.z+(vx||vy?Math.abs(Math.sin(t*12))*.05:0),-c.y); if(vx||vy) c.mesh.rotation.y=-headingOf(vx,vy)*DEG; }
+      c.mesh.position.set(c.x,c.z+(vx||vy?Math.abs(Math.sin(t*12))*.05:0),-c.y); if(vx||vy){ c.mesh.rotation.y=-headingOf(vx,vy)*DEG; syncShadow(c.mesh); } }
     for(const k of this.kids){ const vert=(k.gr.y1-k.gr.y0)>(k.gr.x1-k.gr.x0), tt=t*.8+k.ph, a=Math.sin(tt*.7)*4, b=Math.sin(tt*1.7)*1.2;
       const nx=vert?k.hx-b:k.hx+a, ny=vert?k.hy+a:k.hy+b; const vx=nx-k.x, vy=ny-k.y; k.x=nx; k.y=ny;
-      k.mesh.position.set(k.x,Math.abs(Math.sin(t*9+k.ph))*.12,-k.y); if(vx*vx+vy*vy>1e-6) k.mesh.rotation.y=-headingOf(vx,vy)*DEG; }
-    for(const z of this.razias){ const f=(t%0.5)<0.25; z.la.material=f?M_RAZIA[0]:M_RAZIA[2]; z.lb.material=f?M_RAZIA[2]:M_RAZIA[1]; }
+      k.mesh.position.set(k.x,Math.abs(Math.sin(t*9+k.ph))*.12,-k.y); if(vx*vx+vy*vy>1e-6){ k.mesh.rotation.y=-headingOf(vx,vy)*DEG; syncShadow(k.mesh); } }
+    for(const z of this.razias){ const f=(t%0.5)<0.25; z.la.visible=f; z.lb.visible=!f; }
   },
   checkPlayer(dt){
     const p=player; if(!p.active) return; const x=p.x, y=p.y, r=CFG.radius, ground=p.air<=0;
@@ -908,14 +918,8 @@ const player={
     for(let i=0;i<16;i++){ const a0=i/16*Math.PI*2, a1=(i+1)/16*Math.PI*2; ring.beam(Math.cos(a0)*1.25,.05,Math.sin(a0)*1.25,Math.cos(a1)*1.25,.05,Math.sin(a1)*1.25,.16,0xffeb33); }
     root.add(ring.mesh(M_VC_GLOW));
     const pivot=new T.Group(); root.add(pivot);
-    const g=new GB(), zb=(x,y,z,sx,sy,sz,c)=>g.bb(x,y,-z,sx,sy,sz,c), G=0x21c754, GD=0x0d8033;
-    zb(0,.01,0,1,.01,2.2,0x2e2723);
-    zb(0,.28,.05,.4,.42,1.5,0xf2f2f2); zb(0,.28,.62,.44,.75,.3,0xf2f2f2); zb(0,.7,-.2,.38,.12,.75,0x1f1f1f); zb(0,1,.68,.8,.07,.07,TIRE);
-    zb(0,0,.72,.13,.6,.54,TIRE); zb(0,0,-.66,.15,.6,.54,TIRE);
-    zb(0,.8,-.1,.56,.64,.38,G); zb(0,1.1,-.1,.58,.08,.4,GD); zb(-.36,1.05,.3,.15,.15,.62,G); zb(.36,1.05,.3,.15,.15,.62,G);
-    zb(0,1.45,-.05,.48,.46,.5,G); zb(0,1.52,.2,.36,.14,.1,GLASS); zb(0,1.91,-.05,.08,.06,.46,WHITE);
-    zb(0,.85,-.62,.62,.55,.55,G); zb(0,1.4,-.62,.64,.04,.2,WHITE); zb(0,1.4,-.62,.2,.045,.57,0xffe633);
-    pivot.add(g.mesh()); scene.add(root); this.group=root; this.pivot=pivot;
+    this.spr=sprite('ojol',2.1,0.38,0.6); pivot.add(this.spr);
+    scene.add(root); this.group=root; this.pivot=pivot;
   },
   fwd(){ return [Math.sin(this.heading*DEG),Math.cos(this.heading*DEG)]; },
   get s01(){ return clamp(this.speed/CFG.maxSpeed,0,1); },
@@ -959,7 +963,7 @@ const player={
     if(this.air>0&&this.airT>0){ const t=1-this.air/this.airT; y+=4*.7*this.airT*t*(1-t); pitch=lerp(-12,10,t); }
     if(this.bounce>0){ this.bounce-=dt; y+=Math.sin(this.bounce/.2*Math.PI)*.15; }
     let yaw=this.heading; if(this.slide>0&&(this.vx*this.vx+this.vy*this.vy)>1) yaw=this.heading+dAng(headingOf(this.vx,this.vy),this.heading)*.4;
-    this.group.position.set(this.x,y,-this.y); this.group.rotation.y=-yaw*DEG;
+    this.group.position.set(this.x,y,-this.y); this.group.rotation.y=-yaw*DEG; syncShadow(this.spr,-yaw*DEG);
     // lean < 0 when turning right; a negative Z rotation tips the rider's top towards +X (right)
     this.pivot.rotation.set(-pitch*DEG,0,(this.lean+this.wob)*DEG);
   },
@@ -976,7 +980,7 @@ const player={
 
 // ---------------------------------------------------------------- orders
 const FOODS=["Nasi Goreng","Bakso Urat","Martabak Manis","Es Kopi Susu x3","Sate Ayam 20 tusuk","Mie Ayam Pangsit","Seblak Level 5","Soto Betawi","Pecel Lele","Gorengan 10 biji"];
-const PAKETS=["Paket Olshop","Dokumen Kantor","Kunci Rumah Ketinggalan","Charger HP","Kado Ulang Tahun","Obat dari Apotek","Sepatu COD"];
+const PAKETS=["Paket Olshop","Dokumen Kantor","Kunci Rumah Ketinggalan","Charger HP","Sparepart Motor","Obat dari Apotek","Sepatu COD"];
 function buildMarker(col,bowl){
   const root=new T.Group(), g=new GB(); const rr=CFG.markerR;
   for(let i=0;i<20;i+=2){ const a0=i/20*Math.PI*2, a1=(i+1)/20*Math.PI*2; g.beam(Math.cos(a0)*rr,.2,Math.sin(a0)*rr,Math.cos(a1)*rr,.2,Math.sin(a1)*rr,.3,col); }
@@ -1040,7 +1044,7 @@ const rush={
   start(d){ this.raining=true; this.rainT=d; hazards.setRain(true); hud.banner('HUJAN! Jalanan licin'); audio.setRain(true); },
   stop(){ this.raining=false; hazards.setRain(false); hud.banner('Hujan reda'); audio.setRain(false); },
   weather(){ const r=this.rain; scene.background.copy(SKY).lerp(SKY_RAIN,r); scene.fog.color.set(0xf2b27a).lerp(new T.Color(0x808c99),r); scene.fog.near=lerp(75,35,r);
-    sun.color.copy(SUN_C).lerp(RAIN_C,r*.8); sun.intensity=lerp(.95,.45,r); hemi.intensity=lerp(.78,.6,r); }
+    sun.color.copy(SUN_C).lerp(RAIN_C,r*.8); for(const m of TEXMATS) m.color.setRGB(1-r*.35,1-r*.3,1-r*.25); sun.intensity=lerp(.95,.45,r); hemi.intensity=lerp(.78,.6,r); }
 };
 
 // ---------------------------------------------------------------- camera
