@@ -1167,6 +1167,9 @@ func _logic_fish_and_rooms() -> void:
 	check(int(GS.fish_log.get("ikan_raja_sawit", 0)) == before + 1, "collection logs the catch")
 	check(ui.root.get_node_or_null("CatchCard") != null and ui.root.get_node("CatchCard").find_child("Rarity_SSR", true, false) != null, "catch card with SSR badge")
 	# --- the collection panel
+	if ui.modal and not ui.is_bag_open():
+		ui._close_modal()
+		await get_tree().process_frame
 	ui.show_bag()
 	var dexb: Button = ui.modal.find_child("FishDexButton", true, false)
 	check(dexb != null and dexb.text.contains("/20"), "bag has the Koleksi Ikan button")

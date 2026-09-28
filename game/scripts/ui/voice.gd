@@ -340,7 +340,7 @@ class _VoiceNode:
 				player.stop()
 				stop_at = -1.0
 				_duck(false)
-		if not want.is_empty() and Time.get_ticks_msec() - int(want["t"]) > 4000:
+		if not want.is_empty() and Time.get_ticks_msec() - int(want["t"]) > 10000:
 			want = {}
 		_poll -= delta
 		if _poll <= 0.0:
