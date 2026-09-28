@@ -92,6 +92,20 @@ func _plane(size: Vector2, mat: Material, y: float) -> MeshInstance3D:
 	return mi
 
 
+## Which painted Higgsfield floor fits this room.
+func paint_key() -> String:
+	match kind:
+		"hub":
+			return "hub"
+		"boss":
+			return "boss"
+		"miniboss":
+			return "dandaka2"
+	if biome == "muara":
+		return "muara"
+	return "dandaka" if depth % 2 == 1 else "dandaka2"
+
+
 func _build_ground() -> void:
 	var big := Vector2(half.x * 2 + 60, half.y * 2 + 60)
 	if biome == "muara":
@@ -107,7 +121,14 @@ func _build_ground() -> void:
 		_plane(big, _floor_mat(gtex, big * 0.5, 1.0, tint, 0.09), -0.02)
 	var ftex: Texture2D = TEX.get(biome, TEX.dandaka)
 	var ftint: Color = {"dandaka": Color(0.8, 0.86, 0.84), "muara": Color(0.72, 0.68, 0.64), "hub": Color(0.55, 0.5, 0.54)}.get(biome, Color.WHITE)
-	_plane(half * 2.0 + Vector2(4, 4), _floor_mat(ftex, half, corner, ftint, 0.16), 0.0)
+	var fm := _floor_mat(ftex, half, corner, ftint, 0.16)
+	var painted := Hf.floor_tex(paint_key())
+	if painted:
+		fm.set_shader_parameter("paint_tex", painted)
+		fm.set_shader_parameter("use_paint", 1.0)
+		fm.set_shader_parameter("paint_half", half + Vector2(2.0, 1.6))
+		fm.set_shader_parameter("tint", Vector3(0.95, 0.95, 0.95))
+	_plane(half * 2.0 + Vector2(4, 4), fm, 0.0)
 
 
 # --- walls: thin boxes around the rounded-rect edge ---------------------------

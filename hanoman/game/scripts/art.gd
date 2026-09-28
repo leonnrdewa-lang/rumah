@@ -27,6 +27,10 @@ static func has_model(id: String) -> bool:
 ## materials (needed for the per-actor hit flash / fade).
 static func model(id: String, unique := false, outline := 2.4) -> Node3D:
 	var n: Node3D
+	if Hf.has_model(id):
+		n = Hf.instance(id)
+		paint(n, unique, outline)
+		return n
 	if has_model(id):
 		if not _scene_cache.has(id):
 			_scene_cache[id] = load(model_path(id))
@@ -75,16 +79,24 @@ static func paint(root: Node, unique := false, outline := 2.4) -> void:
 			var col := Color(0.8, 0.8, 0.8)
 			var glow := 0.0
 			var name := ""
+			var tex: Texture2D = null
 			if src:
 				name = src.resource_name
 			if src is StandardMaterial3D:
 				col = (src as StandardMaterial3D).albedo_color
+				tex = (src as StandardMaterial3D).albedo_texture
 				if (src as StandardMaterial3D).emission_enabled and name == "":
 					glow = 1.5
 			elif src is ShaderMaterial and (src as ShaderMaterial).shader == TOON:
 				continue
 			if name.begins_with("M_Glow"):
 				glow = 1.8
+			if tex:
+				var tm := toon(col, 0.0, outline, true)
+				tm.set_shader_parameter("albedo_tex", tex)
+				tm.set_shader_parameter("use_tex", 1.0)
+				mi.set_surface_override_material(s, tm)
+				continue
 			mi.set_surface_override_material(s, toon(col, glow, outline, unique))
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 
@@ -99,6 +111,14 @@ static func meshes(root: Node) -> Array[MeshInstance3D]:
 		for c in n.get_children():
 			stack.append(c)
 	return out
+
+
+## Procedural part rig for built-in models, keyframed AnimRig for Higgsfield
+## rigged models.
+static func make_rig(m: Node3D, style: String) -> Rig:
+	if m.has_meta("hf") and m.find_child("AnimationPlayer", true, false):
+		return AnimRig.new(m, style)
+	return Rig.new(m, style)
 
 
 ## Set a shader parameter on every (unique) painted material under root.

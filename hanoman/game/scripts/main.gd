@@ -4,7 +4,7 @@ extends Node3D
 ## and victory.
 
 const POST := preload("res://shaders/post.gdshader")
-const CAM_OFFSET := Vector3(0, 17.5, 12.8)
+const CAM_OFFSET := Vector3(0, 13.8, 10.4)
 
 ## Journey plan: room number -> [kind, biome, title]
 const PLAN := {
@@ -38,7 +38,8 @@ func _ready() -> void:
 	_build_title_scene()
 	ui.title_screen(func(): go_hub(true))
 	Au.music("mus_title")
-	if OS.get_cmdline_user_args().has("--autotest"):
+	var web_autotest := OS.has_feature("web") and str(JavaScriptBridge.eval("location.search", true)).contains("autotest")
+	if OS.get_cmdline_user_args().has("--autotest") or web_autotest:
 		var at = load("res://scripts/autotest.gd").new()
 		add_child(at)
 
@@ -124,7 +125,7 @@ func _process(delta: float) -> void:
 	if player and player.is_inside_tree():
 		var p := player.global_position
 		if room:
-			var lim := room.half + Vector2(1.5, 1.0) - Vector2(4.0, 2.2)
+			var lim := room.half + Vector2(1.5, 1.0) - Vector2(6.0, 3.4)
 			lim = lim.max(Vector2.ZERO)
 			p.x = clamp(p.x, -lim.x, lim.x)
 			p.z = clamp(p.z, -lim.y - 1.0, lim.y + 0.5)

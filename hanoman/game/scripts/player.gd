@@ -119,6 +119,7 @@ func _physics_process(delta: float) -> void:
 			_step_t += delta * mv.length()
 			if _step_t > 0.3:
 				_step_t = 0.0
+				Au.sfx("sfx_step%d" % randi_range(1, 3), -14.0, 0.1)
 	if cast_anim > 0.0:
 		cast_anim -= delta
 		velocity *= 0.3
@@ -386,6 +387,7 @@ func try_dash(mv: Vector3) -> void:
 	dash_dir = (mv if mv.length() > 0.2 else facing).normalized()
 	snap_face(dash_dir)
 	dash_t = DASH_TIME
+	rig.play("dash", DASH_TIME + 0.08)
 	invuln = max(invuln, DASH_TIME + 0.08)
 	collision_mask = L_WORLD
 	Au.sfx("sfx_dash", -4.0)
@@ -461,7 +463,7 @@ func take_hit(dmg: float, from: Vector3, knockback := 3.0, info := {}) -> float:
 
 func on_death() -> void:
 	combo_i = -1
-	rig.play("roar", 0.8)
+	rig.play("die", 1.2)
 	G.main.on_player_death()
 
 

@@ -65,6 +65,8 @@ func _fight(sec: float) -> void:
 
 
 func _run() -> void:
+	while not Hf.loaded:
+		await _wait(0.5)
 	await _wait(1.0)
 	await _shot("00_title")
 	# press start

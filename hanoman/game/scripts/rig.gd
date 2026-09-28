@@ -35,6 +35,12 @@ func _init(model: Node3D, rig_style := "biped") -> void:
 			p[n] = node
 			rest[n] = node.transform.basis
 			rest_pos[n] = node.position
+	# static Higgsfield meshes have no parts: move the whole body instead
+	if p.is_empty() and model.has_meta("hf") and model.get_child_count() > 0:
+		var b := model.get_child(0) as Node3D
+		p["body"] = b
+		rest["body"] = b.transform.basis
+		rest_pos["body"] = b.position
 
 
 func has(n: String) -> bool:

@@ -11,7 +11,7 @@ var _talk_t := 0.0
 func _ready() -> void:
 	model = Art.model(id, true)
 	add_child(model)
-	rig = Rig.new(model, "biped")
+	rig = Art.make_rig(model, "biped")
 	model.rotation.y = randf_range(-0.4, 0.4)
 
 

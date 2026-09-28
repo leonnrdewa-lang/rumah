@@ -16,6 +16,7 @@ config/icon="res://assets/icons/app_icon.png"
 [autoload]
 
 G="*res://scripts/g.gd"
+Hf="*res://scripts/hf.gd"
 Au="*res://scripts/audio.gd"
 
 [display]

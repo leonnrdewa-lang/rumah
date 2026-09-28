@@ -223,7 +223,7 @@ func _transform() -> void:
 	if new_id == "kijang":
 		model.scale = Vector3.ONE * 1.35
 	old.queue_free()
-	rig = Rig.new(model, "biped" if new_id == "kijang_raksasa" else "quad")
+	rig = Art.make_rig(model, "biped" if new_id == "kijang_raksasa" else "quad")
 	rig.play("roar", 1.2)
 	move_speed = 5.5
 	phase_changed.emit()

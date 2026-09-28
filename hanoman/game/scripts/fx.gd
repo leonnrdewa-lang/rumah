@@ -77,7 +77,7 @@ static func _arc_mesh(inner: float, outer: float, arc: float) -> ArrayMesh:
 static func slash(pos: Vector3, dir: Vector3, radius: float, arc: float, color: Color, sweep := 1.0) -> void:
 	var mi := MeshInstance3D.new()
 	mi.mesh = _arc_mesh(radius * 0.35, radius, arc)
-	var m := Art.fx_mat(color, 2.2)
+	var m := Art.fx_mat(color.lerp(Color.WHITE, 0.25), 2.8)
 	mi.material_override = m
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_add(mi, pos + Vector3(0, 0.9, 0))

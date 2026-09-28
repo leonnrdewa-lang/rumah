@@ -54,7 +54,7 @@ func set_model(id: String, style := "biped", scale_f := 1.0) -> void:
 	model = Art.model(id, true)
 	model.scale = Vector3.ONE * scale_f
 	add_child(model)
-	rig = Rig.new(model, style)
+	rig = Art.make_rig(model, style)
 
 
 func slow_factor() -> float:
@@ -148,7 +148,11 @@ func die() -> void:
 func on_death() -> void:
 	Au.sfx("sfx_enemy_die", -2.0)
 	Fx.burst(global_position + Vector3(0, 0.8, 0), Color(0.9, 0.3, 0.5), 22, 6.0, 0.2, 0.6)
+	if rig:
+		rig.play("die", 0.9)
 	var tw := create_tween()
+	if rig is AnimRig:
+		tw.tween_interval(0.6)
 	tw.tween_method(func(v): Art.set_param(model, "fade", v), 1.0, 0.0, 0.5)
 	tw.tween_callback(queue_free)
 

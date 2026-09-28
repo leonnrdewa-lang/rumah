@@ -115,6 +115,9 @@ func _flat(col: Color, border := Color(0, 0, 0, 0), bw := 0, radius := 6) -> Sty
 
 
 static func portrait_tex(id: String) -> Texture2D:
+	var hf: Texture2D = Hf.portrait(id)
+	if hf:
+		return hf
 	for p in ["res://assets/portraits/hf_%s.png" % id, "res://assets/portraits/%s.png" % id]:
 		if ResourceLoader.exists(p):
 			return load(p)
@@ -363,8 +366,14 @@ func toast(text: String, color := CREAM) -> void:
 	tw.tween_callback(l.queue_free)
 
 
+var _area_box: Control
+
+
 func area_title(title: String, sub: String) -> void:
+	if _area_box and is_instance_valid(_area_box):
+		_area_box.queue_free()
 	var box := VBoxContainer.new()
+	_area_box = box
 	box.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	box.position = Vector2(-500, 150)
 	box.size = Vector2(1000, 100)
@@ -510,6 +519,7 @@ func dialog(lines: Array, done: Callable) -> void:
 		title_l.text = info[1]
 		_portrait(holder, who, true)
 		text.text = lines[i][1]
+		Hf.speak(lines[i][1])
 		text.visible_ratio = 0.0
 		_typing = true
 		_type_label = text
@@ -525,6 +535,7 @@ func dialog(lines: Array, done: Callable) -> void:
 			return
 		idx[0] += 1
 		if idx[0] >= lines.size():
+			Hf.stop_voice()
 			_advance = Callable()
 			_close_modal(root)
 			done.call()
@@ -608,7 +619,9 @@ func boon_menu(god: String, offers: Array, done: Callable) -> void:
 	var nm := _label(G.GOD_NAMES[god], 44, F_TITLE, G.GOD_COLORS[god], 10)
 	right.add_child(nm)
 	right.add_child(_label(G.GOD_TITLES[god], 20, F_HEAD, Color(0.8, 0.75, 0.65), 4))
-	var line := _label("“%s”" % Boons.LINES[god][randi() % Boons.LINES[god].size()], 22, F_BODY, CREAM, 4)
+	var god_line: String = Boons.LINES[god][randi() % Boons.LINES[god].size()]
+	Hf.speak(god_line)
+	var line := _label("“%s”" % god_line, 22, F_BODY, CREAM, 4)
 	line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	right.add_child(line)
 	var sp := Control.new()
@@ -763,9 +776,23 @@ func title_screen(start: Callable) -> void:
 		G.main.area = "hub"
 		start.call())
 	bb.add_child(go)
+	if not Hf.loaded:
+		var label_ok := go.text
+		go.disabled = true
+		go.text = "Memuat aset Higgsfield…"
+		Hf.progress.connect(func(d, tot):
+			if is_instance_valid(go): go.text = "Memuat aset Higgsfield… %d/%d" % [d, tot])
+		Hf.ready_loaded.connect(func():
+			if is_instance_valid(go):
+				go.disabled = false
+				go.text = label_ok
+				go.grab_focus())
 	var ctl := _big_button("Kontrol", func(): _controls_help())
 	bb.add_child(ctl)
 	go.call_deferred("grab_focus")
+	var snd := _label("Nyalakan suara (di iPhone matikan mode senyap)", 16, F_BODY, Color(0.7, 0.68, 0.62), 4)
+	snd.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vb.add_child(snd)
 	var cr := _label("Demo · karya @leonrdewa · aset Blender & Higgsfield", 18, F_BODY, Color(0.8, 0.78, 0.7), 6)
 	cr.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vb.add_child(cr)

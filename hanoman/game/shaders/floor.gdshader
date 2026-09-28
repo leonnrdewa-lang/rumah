@@ -12,6 +12,10 @@ uniform float tile = 0.16;
 uniform vec3 edge_color : source_color = vec3(0.05, 0.06, 0.08);
 uniform vec3 tint : source_color = vec3(1.0);
 uniform vec3 shadow_tint = vec3(0.42, 0.45, 0.72);
+// painted arena (Higgsfield): one image stretched over the arena instead of a tile
+uniform sampler2D paint_tex : source_color, filter_linear_mipmap, repeat_disable;
+uniform float use_paint = 0.0;
+uniform vec2 paint_half = vec2(13.0, 10.0);
 
 varying vec3 wpos;
 
@@ -33,6 +37,10 @@ void fragment() {
 	vec3 c = texture(tex, p * tile).rgb * tint;
 	// soft painted mottling
 	c *= 0.86 + 0.28 * n2;
+	if (use_paint > 0.5) {
+		vec2 puv = p / paint_half * 0.5 + 0.5;
+		c = texture(paint_tex, puv).rgb * tint;
+	}
 	// darkened rim and the cliff lip
 	float rim = smoothstep(-2.6, 0.0, d);
 	c = mix(c, c * 0.45 + edge_color * 0.3, rim * 0.7);
