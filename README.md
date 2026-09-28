@@ -27,6 +27,12 @@ build di HP tampil sama seperti di Editor. Bisa dijalankan ulang lewat menu **Oj
 
 Built-in render pipeline dan URP sama-sama didukung (material di-clone dari material default pipeline aktif).
 
+## Demo di browser (tanpa Unity)
+
+`Web/ojol-rush.html` adalah port browser (Three.js) dari game yang sama: aturan, AI lalu lintas, dan angka tuning
+mengikuti kode Unity. Bisa dimainkan langsung di HP Android maupun desktop. Karena tidak ada Unity Editor di
+lingkungan pengembangan, versi inilah yang dipakai sebagai demo yang bisa dicoba.
+
 ## Kontrol
 
 | Input | Aksi |
