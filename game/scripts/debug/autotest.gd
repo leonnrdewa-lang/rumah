@@ -1116,6 +1116,13 @@ func _house_of_type(t: String) -> String:
 
 func _logic_fish_and_rooms() -> void:
 	var ui: Node = world.ui
+	# --- save code round trip (move a save to another phone/browser)
+	var money_before: int = GS.money
+	var code: String = GS.export_code()
+	check(code.begins_with("SAWIT1-") and code.length() > 40, "save code exported")
+	GS.money = 1
+	check(GS.import_code(code) and GS.load_game() and GS.money == money_before, "save code imports back")
+	check(not GS.import_code("SAWIT1-rusak!!") and not GS.import_code("halo"), "broken codes rejected")
 	# --- bait: 10 at the start, one per cast, none left -> no fishing
 	GS.inv["umpan"] = 0
 	check(not world.fishing.start(world.player.global_position + Vector3(0, 0, 3), "river"), "no bait -> cannot cast")

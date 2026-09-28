@@ -271,7 +271,8 @@ class _VoiceNode:
 		if want.is_empty() or not banks.has(want["file"]) or player == null or not is_inside_tree():
 			return
 		# a line whose bank arrived too late is dropped rather than talking over the next one
-		if Time.get_ticks_msec() - int(want["t"]) > 4000:
+		# (closing the dialog calls halt() and clears it; 10 s covers a slow phone network)
+		if Time.get_ticks_msec() - int(want["t"]) > 10000:
 			want = {}
 			return
 		var file: String = want["file"]

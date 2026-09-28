@@ -1706,6 +1706,7 @@ func toggle_pause() -> void:
 		_close_modal()
 		toggle_pause(), true, 320))
 	col.add_child(button("Cara main", func(): _paused = false; _close_modal(); show_help(), true, 320))
+	col.add_child(button("Kode Save (pindah HP)", func(): _paused = false; _close_modal(); show_save_code(), true, 320))
 	col.add_child(button("Dibuat oleh", func(): _paused = false; _close_modal(); show_credits(), true, 320))
 	col.add_child(button("Keluar ke judul", func():
 		GS.save_game()
@@ -1717,6 +1718,50 @@ func toggle_pause() -> void:
 
 
 const CREATOR_IG := "leonrdewa"
+
+
+func show_save_code() -> void:
+	## Pause menu: the save as a text code to continue on another phone/browser.
+	var code := GS.export_code()
+	if code == "":
+		toast("Gagal membuat kode save.", "bad")
+		return
+	DisplayServer.clipboard_set(code)
+	var box := LineEdit.new()
+	box.text = code
+	box.editable = false
+	box.select_all_on_focus = true
+	box.custom_minimum_size = Vector2(420, 44)
+	info_panel("Kode Save", [
+		"Kode ini berisi seluruh progresmu dan sudah DISALIN otomatis.",
+		"Kirim/simpan kodenya (misalnya ke chat sendiri). Di HP atau browser lain, buka game ini lalu pilih \"Masukkan Kode Save\" di layar judul.",
+		"Kalau belum tersalin, tekan kotak di bawah lalu salin manual.",
+	], "Oke", Callable(), TITLE_BROWN, "ui_info", box)
+	toast("Kode save disalin!", "good")
+
+
+func ask_save_code() -> void:
+	## Title screen: paste a code from show_save_code() to continue that game here.
+	if OS.has_feature("web"):
+		# the browser's own prompt: pasting works reliably on phones there
+		var got = JavaScriptBridge.eval("window.prompt('Tempel kode save (SAWIT1-...)') || ''", true)
+		_use_save_code(str(got))
+		return
+	var box := LineEdit.new()
+	box.placeholder_text = "Tempel kode save di sini (SAWIT1-...)"
+	box.custom_minimum_size = Vector2(420, 44)
+	info_panel("Masukkan Kode Save", ["Tempel kode save dari perangkat lain, lalu tekan Pakai kode."],
+		"Pakai kode", func(): _use_save_code(box.text), TITLE_BROWN, "ui_info", box)
+
+
+func _use_save_code(code: String) -> void:
+	if code.strip_edges() == "":
+		return
+	if GS.import_code(code):
+		toast("Kode save diterima! Melanjutkan permainan...", "good")
+		world.start_game(true)
+	else:
+		toast("Kode save tidak valid atau rusak.", "bad")
 
 
 func show_credits(on_close := Callable()) -> void:
@@ -2272,6 +2317,7 @@ func show_title() -> void:
 	bcol.add_child(button("Cara Main", func():
 		title_screen.visible = false
 		show_help(func(): if title_screen: title_screen.visible = true), true, 300))
+	bcol.add_child(button("Masukkan Kode Save", func(): ask_save_code(), true, 300))
 	bcol.add_child(button("Dibuat oleh", func():
 		title_screen.visible = false
 		show_credits(func(): if title_screen: title_screen.visible = true), true, 300))

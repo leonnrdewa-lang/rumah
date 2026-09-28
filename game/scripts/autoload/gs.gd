@@ -820,6 +820,40 @@ func save_game() -> void:
 		f.close()
 
 
+const CODE_PREFIX := "SAWIT1-"
+
+
+func export_code() -> String:
+	## The current game as a copy-paste text code (gzipped JSON in base64), so a save
+	## can move to another phone or browser.
+	save_game()
+	var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
+	if f == null:
+		return ""
+	var raw := f.get_as_text().to_utf8_buffer()
+	return CODE_PREFIX + Marshalls.raw_to_base64(raw.compress(FileAccess.COMPRESSION_GZIP))
+
+
+func import_code(code: String) -> bool:
+	## Checks a code from export_code() and makes it the save; false if it is broken.
+	var c := code.strip_edges().replace(" ", "").replace("\n", "")
+	if not c.begins_with(CODE_PREFIX):
+		return false
+	var packed := Marshalls.base64_to_raw(c.trim_prefix(CODE_PREFIX))
+	if packed.is_empty():
+		return false
+	var raw := packed.decompress_dynamic(4 * 1024 * 1024, FileAccess.COMPRESSION_GZIP)
+	var data = JSON.parse_string(raw.get_string_from_utf8())
+	if typeof(data) != TYPE_DICTIONARY or int(data.get("v", 0)) != SAVE_VERSION or not data.has("inv"):
+		return false
+	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if f == null:
+		return false
+	f.store_string(JSON.stringify(data))
+	f.close()
+	return true
+
+
 func load_game() -> bool:
 	if not has_save():
 		return false
