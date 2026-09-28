@@ -6,16 +6,20 @@ render_mode cull_back, specular_disabled;
 
 uniform sampler2D tex : source_color, filter_linear_mipmap, repeat_enable;
 uniform sampler2D noise : filter_linear_mipmap, repeat_enable;
-uniform vec2 half_size = vec2(11.0, 8.0);
-uniform float corner = 3.0;
 uniform float tile = 0.16;
 uniform vec3 edge_color : source_color = vec3(0.05, 0.06, 0.08);
 uniform vec3 tint : source_color = vec3(1.0);
 uniform vec3 shadow_tint = vec3(0.42, 0.45, 0.72);
-// painted arena (Higgsfield): one image stretched over the arena instead of a tile
+// painted arena (Higgsfield): one image stretched over each chamber instead of a
+// tile; box_info.y picks which of the three paintings a chamber uses
 uniform sampler2D paint_tex : source_color, filter_linear_mipmap, repeat_disable;
+uniform sampler2D paint_tex2 : source_color, filter_linear_mipmap, repeat_disable;
+uniform sampler2D paint_tex3 : source_color, filter_linear_mipmap, repeat_disable;
 uniform float use_paint = 0.0;
 uniform vec2 paint_half = vec2(13.0, 10.0);
+uniform vec2 paint_margin = vec2(2.0, 1.6);
+
+#include "res://shaders/room_sdf.gdshaderinc"
 
 varying vec3 wpos;
 
@@ -23,23 +27,41 @@ void vertex() {
 	wpos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 }
 
-float sd_round_box(vec2 p, vec2 b, float r) {
-	vec2 q = abs(p) - b + r;
-	return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
-}
-
 void fragment() {
 	vec2 p = wpos.xz;
 	float n = texture(noise, p * 0.07).r;
 	float n2 = texture(noise, p * 0.31 + 0.37).r;
-	float d = sd_round_box(p, half_size, corner) + (n - 0.5) * 2.2 + (n2 - 0.5) * 0.6;
+	float d = room_sd(p) + (n - 0.5) * 2.2 + (n2 - 0.5) * 0.6;
 	if (d > 0.0) { discard; }
 	vec3 c = texture(tex, p * tile).rgb * tint;
 	// soft painted mottling
 	c *= 0.86 + 0.28 * n2;
-	if (use_paint > 0.5) {
+	if (use_paint > 0.5 && box_count == 0) {
 		vec2 puv = p / paint_half * 0.5 + 0.5;
 		c = texture(paint_tex, puv).rgb * tint;
+	} else if (use_paint > 0.5) {
+		// blend each chamber's own painting in by how deep inside it we are
+		vec2 gx = dFdx(p);
+		vec2 gy = dFdy(p);
+		vec3 acc = vec3(0.0);
+		float wsum = 0.0;
+		for (int i = 0; i < 8; i++) {
+			if (i >= box_count) { break; }
+			float pi = box_info[i].y;
+			float di = sd_round_box(p - boxes[i].xy, boxes[i].zw, box_info[i].x);
+			float w = (1.0 - smoothstep(-2.5, 0.8, di)) * step(-0.5, pi);
+			vec2 ext = boxes[i].zw + paint_margin;
+			vec2 puv = (p - boxes[i].xy) / ext * 0.5 + 0.5;
+			vec2 sx = gx / ext * 0.5;
+			vec2 sy = gy / ext * 0.5;
+			vec3 pc = pi < 0.5 ? textureGrad(paint_tex, puv, sx, sy).rgb
+				: (pi < 1.5 ? textureGrad(paint_tex2, puv, sx, sy).rgb : textureGrad(paint_tex3, puv, sx, sy).rgb);
+			acc += pc * w;
+			wsum += w;
+		}
+		if (wsum > 0.001) {
+			c = mix(c, acc / wsum * tint, clamp(wsum, 0.0, 1.0));
+		}
 	}
 	// darkened rim and the cliff lip
 	float rim = smoothstep(-2.6, 0.0, d);

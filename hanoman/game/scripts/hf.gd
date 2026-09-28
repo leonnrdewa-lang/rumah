@@ -13,7 +13,9 @@ var manifest := {}
 var loaded := false
 var models := {}       # id -> PackedScene (from GLB bytes)
 var model_info := {}   # id -> manifest entry
-var textures := {}     # key -> Texture2D ("portrait/<id>", "floor/<biome>")
+var textures := {}     # key -> Texture2D ("portrait/<id>", "floor/<biome>", "fx/<name>")
+var sounds := {}       # game sfx name -> AudioStream (loaded up front, they are small)
+var _music := {}       # music name -> AudioStream (fetched when first played)
 var _pending := 0
 var _total := 0
 var _logged := {}
@@ -45,7 +47,7 @@ func _ready() -> void:
 
 func _finish() -> void:
 	if base != "":
-		print("HF ready: models=%s textures=%s" % [str(models.keys()), str(textures.keys())])
+		print("HF ready: models=%s textures=%s sounds=%d" % [str(models.keys()), str(textures.keys()), sounds.size()])
 	loaded = true
 	ready_loaded.emit()
 
@@ -85,12 +87,17 @@ func _load_all() -> void:
 		jobs.append(["portrait/" + id, manifest.portraits[id]])
 	for b in manifest.get("floors", {}):
 		jobs.append(["floor/" + b, manifest.floors[b]])
+	for f in manifest.get("fx", {}):
+		jobs.append(["fx/" + f, manifest.fx[f]])
+	for a in manifest.get("sfx", {}):
+		jobs.append(["sfx/" + a, manifest.sfx[a]])
 	for id in manifest.get("models", {}):
 		jobs.append(["model/" + id, manifest.models[id].file])
 		model_info[id] = manifest.models[id]
 	_total = jobs.size()
-	print("HF manifest: %d portraits, %d floors, %d models, %d voices" % [manifest.get("portraits", {}).size(),
-		manifest.get("floors", {}).size(), manifest.get("models", {}).size(), manifest.get("voices", {}).size()])
+	print("HF manifest: %d portraits, %d floors, %d models, %d voices, %d fx, %d sfx, %d music" % [manifest.get("portraits", {}).size(),
+		manifest.get("floors", {}).size(), manifest.get("models", {}).size(), manifest.get("voices", {}).size(),
+		manifest.get("fx", {}).size(), manifest.get("sfx", {}).size(), manifest.get("music", {}).size()])
 	_pending = _total
 	if _total == 0:
 		_finish()
@@ -113,6 +120,10 @@ func _on_file(key: String, ok: bool, body: PackedByteArray, ext := "") -> void:
 				probe.free()
 			else:
 				print("HF model %s: FAILED to parse" % key.substr(6))
+		elif key.begins_with("sfx/"):
+			var st := audio_from_bytes(body, ext)
+			if st:
+				sounds[key.substr(4)] = st
 		else:
 			var img := Image.new()
 			var err := FAILED
@@ -151,6 +162,45 @@ func _own(n: Node, owner_node: Node) -> void:
 	for c in n.get_children():
 		c.owner = owner_node
 		_own(c, owner_node)
+
+
+static func audio_from_bytes(body: PackedByteArray, ext: String) -> AudioStream:
+	match ext:
+		"ogg":
+			return AudioStreamOggVorbis.load_from_buffer(body)
+		"wav":
+			return AudioStreamWAV.load_from_buffer(body)
+	var s := AudioStreamMP3.new()
+	s.data = body
+	return s
+
+
+func fx_tex(name: String) -> Texture2D:
+	return textures.get("fx/" + name)
+
+
+func sound(name: String) -> AudioStream:
+	return sounds.get(name)
+
+
+func has_music(name: String) -> bool:
+	return manifest.get("music", {}).has(name)
+
+
+## Fetch a music track from the pack (once) and hand it to `cb`.
+func music_stream(name: String, cb: Callable) -> void:
+	if _music.has(name):
+		cb.call(_music[name])
+		return
+	var path := String(manifest.get("music", {}).get(name, ""))
+	if path == "":
+		cb.call(null)
+		return
+	_fetch(base + path, func(ok: bool, body: PackedByteArray):
+		var st: AudioStream = audio_from_bytes(body, path.get_extension().to_lower()) if ok else null
+		if st:
+			_music[name] = st
+		cb.call(st))
 
 
 func has_model(id: String) -> bool:

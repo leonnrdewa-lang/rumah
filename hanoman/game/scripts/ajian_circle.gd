@@ -31,13 +31,18 @@ func _ready() -> void:
 	_mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(_mi)
 	create_tween().tween_property(_mi, "scale", Vector3(RADIUS, 1, RADIUS), 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	# painted Javanese rune circle turning under the bound raksasa
+	Fx.sprite("circle", Vector3(0, 0.06, 0), RADIUS * 2.2, col, LIFE, {"parent": self, "flat": true, "from": 0.2, "grow": 1.0,
+		"spin": 3.0, "tint": 0.45, "intensity": 1.7, "hold": 0.9, "fade_in": 0.05})
+	Fx.wind(global_position, RADIUS * 2.2, col)
+	Fx.sprite("shards", global_position + Vector3(0, 1.0, 0), RADIUS * 1.6, col, 0.5, {"from": 0.3, "grow": 1.2, "tint": 0.4})
 	var light := OmniLight3D.new()
 	light.light_color = col
 	light.light_energy = 1.2
 	light.omni_range = 5.0
 	light.position.y = 1.0
 	add_child(light)
-	Fx.burst(global_position + Vector3(0, 0.3, 0), col, 24, 4.0, 0.18, 0.5)
+	Fx.burst(global_position + Vector3(0, 0.3, 0), col, 20, 5.0, 0.18, 0.5)
 	if Boons.owned("baruna_ajian"):
 		Fx.shock(global_position, RADIUS + 1.0, G.GOD_COLORS.baruna, 0.45)
 		Au.sfx("sfx_wave", -3.0)

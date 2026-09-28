@@ -4,7 +4,15 @@ extends Node
 ## silently so the game runs before the audio pass is done. Autoloaded as `Au`.
 
 const DIR := "res://assets/audio/"
-const POOL := 14
+const POOL := 20
+## New effects that have no built-in recording fall back to the closest one.
+const FALLBACK := {
+	"sfx_laser": "sfx_special", "sfx_laser_hit": "sfx_hit_heavy", "sfx_geyser": "sfx_shark_splash",
+	"sfx_tail": "sfx_swing3", "sfx_enemy_dash": "sfx_dash", "sfx_explosion": "sfx_explode",
+	"sfx_enemy_slam": "sfx_slam", "sfx_staff_slam": "sfx_slam", "sfx_bite": "sfx_croc_snap",
+	"sfx_gate": "sfx_door_open", "sfx_boon": "sfx_boon_appear",
+	"mus_miniboss": "mus_dandaka",
+}
 
 var _mus: Array[AudioStreamPlayer] = []
 var _cur := 0
@@ -53,11 +61,16 @@ func _bus(name: String, db: float) -> void:
 func _load(name: String) -> AudioStream:
 	if _cache.has(name):
 		return _cache[name]
-	var path := DIR + name + ".ogg"
-	var s: AudioStream = null
-	if ResourceLoader.exists(path):
-		s = load(path)
-	_cache[name] = s
+	# Higgsfield pack first (epic generated sound effects), then the built-in file
+	var s: AudioStream = Hf.sound(name)
+	if s == null:
+		var path := DIR + name + ".ogg"
+		if ResourceLoader.exists(path):
+			s = load(path)
+		elif FALLBACK.has(name):
+			s = _load(FALLBACK[name])
+	if Hf.loaded:   # until the pack is in, keep asking so its sounds win
+		_cache[name] = s
 	return s
 
 
@@ -65,7 +78,15 @@ func music(name: String, fade := 1.2) -> void:
 	if name == _music_name:
 		return
 	_music_name = name
-	var s := _load(name) if name != "" else null
+	if name != "" and Hf.has_music(name):
+		Hf.music_stream(name, func(st: AudioStream):
+			if _music_name == name:
+				_play_music(name, st if st else _load(name), fade))
+		return
+	_play_music(name, _load(name) if name != "" else null, fade)
+
+
+func _play_music(name: String, s: AudioStream, fade: float) -> void:
 	var old := _mus[_cur]
 	_cur = 1 - _cur
 	var nw := _mus[_cur]
@@ -75,6 +96,8 @@ func music(name: String, fade := 1.2) -> void:
 	if s:
 		if s is AudioStreamOggVorbis and not name.begins_with("stg_"):
 			(s as AudioStreamOggVorbis).loop = true
+		elif s is AudioStreamMP3:
+			(s as AudioStreamMP3).loop = true
 		nw.stream = s
 		nw.volume_db = -40.0
 		nw.play()

@@ -23,3 +23,8 @@ Pipeline (all Higgsfield tools, credits noted):
    `remove_background`, 45 voiced lines with Seed Audio (`tools/voice_lines.py`
    lists them; file name = first 12 hex of md5(text)).
 7. `fetch.py` (here) builds `hf/` from `../../art/hf_assets.json`.
+8. v3 pack (`process_v3.py`, URLs in `../../art/hf_assets_v3.json`): 12 VFX sprites
+   (GPT Image 2.5 on black; normalised: slash bulge up, beam 1024x256 horizontal,
+   lightning 256x768 vertical), 35 SFX (`mirelo_text_to_audio`) and 4 music tracks
+   (`sonilo_music`) loudness-normalised to OGG, 4 more painted floors, and Hanoman's
+   staff clips (attack_2, special) merged into `hf/models/hanoman2.glb`.

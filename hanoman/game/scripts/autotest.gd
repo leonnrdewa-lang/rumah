@@ -64,6 +64,42 @@ func _fight(sec: float) -> void:
 	p.touch_move = Vector2.ZERO
 
 
+## Freeze-frame each of Hanoman's skills mid-effect (VFX review).
+func _showcase() -> void:
+	var p: Player = main.player
+	for e in main.enemies():
+		e.invuln = 999.0
+	var es: Array = main.enemies()
+	var aim := Vector3(0, 0, -1)
+	if not es.is_empty():
+		aim = (es[0].global_position - p.global_position)
+		aim.y = 0
+		aim = aim.normalized()
+	p.aim = aim
+	p.facing = aim
+	for step_i in 3:
+		await _press("attack")
+		await _wait(0.13 if step_i < 2 else 0.3)
+		await _shot("fx_swing%d" % (step_i + 1))
+		await _wait(0.25)
+	await _wait(0.4)
+	p.prana = 3.0
+	p.aim = aim
+	await _press("special")
+	await _wait(0.16)
+	await _shot("fx_laser")
+	await _wait(0.6)
+	await _press("cast")
+	await _wait(0.35)
+	await _shot("fx_ajian")
+	await _press("dash")
+	await _wait(0.08)
+	await _shot("fx_dash")
+	for e in main.enemies():
+		e.invuln = 0.0
+	await _wait(1.0)
+
+
 func _run() -> void:
 	while not Hf.loaded:
 		await _wait(0.5)
@@ -78,11 +114,31 @@ func _run() -> void:
 	main.ui.dialog([["rama", "Uji dialog: Hanoman, bawalah cincinku ke Alengka."]], func(): pass)
 	await _wait(1.5)
 	await _shot("02_dialog")
-	main.ui._advance.call()
-	main.ui._advance.call()
+	for k in 2:
+		if main.ui._advance.is_valid():
+			main.ui._advance.call()
 	main.start_run()
 	await _wait(2.0)
 	await _shot("03_room1")
+	if OS.get_cmdline_user_args().has("--fxshots"):
+		await _showcase()
+	if OS.get_cmdline_user_args().has("--overview"):
+		for k in 3:
+			var r: Arena = main.room
+			var c := r.bounds.get_center()
+			var span := maxf(r.bounds.size.x, r.bounds.size.y * 1.6)
+			main.cam_override = true
+			main.cam.global_position = Vector3(c.x, span * 1.25, c.y + span * 0.35)
+			main.cam.look_at(Vector3(c.x, 0, c.y))
+			main.cam.far = 400.0
+			await _wait(0.6)
+			await _shot("ov_room%d" % k)
+			main.cam_override = false
+			main.cam.far = 120.0
+			if k < 2:
+				G.run.room = 0
+				main.enter_room({"type": "kepeng"})
+				await _wait(2.5)
 	await _wait(1.5)
 	await _fight(40.0)
 	await _wait(1.0)

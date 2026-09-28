@@ -140,12 +140,17 @@ func _kijang(delta: float) -> Vector3:
 				set_state("attack")
 				if _next_attack == "charge":
 					rig.play("charge", 0.55)
-					Au.sfx("sfx_dash", -2.0, 0.1, 0.7)
+					Au.sfx("sfx_enemy_dash", -1.0, 0.1, 0.8)
+					Fx.dust(global_position, 1.2, Color(1.0, 0.85, 0.5))
 				else:
 					rig.play("slam", 0.5)
 		"attack":
 			if _next_attack == "charge":
 				_boss_melee(global_position + target_dir * 0.8, 1.3, dmg, 7.0)
+				if Engine.get_physics_frames() % 2 == 0:
+					var gold := Color(1.0, 0.82, 0.3) if phase == 1 else Color(0.5, 1.0, 0.45)
+					Fx.sparks(global_position + Vector3(0, 0.9, 0), gold, 5, 3.5, -target_dir + Vector3.UP * 0.5)
+					Fx.sprite("shards", global_position + Vector3(0, 0.9, 0), 1.6, gold, 0.3, {"from": 0.6, "grow": 1.0, "tint": 0.5})
 				if state_t > 0.55:
 					_clear_tele()
 					combo_left -= 1
@@ -158,9 +163,11 @@ func _kijang(delta: float) -> Vector3:
 			else:
 				if state_t > 0.2 and not _hit_this_attack:
 					var c := global_position + target_dir * 2.5
-					Fx.shock(c, 3.4, Color(0.6, 1.0, 0.5), 0.4)
-					Au.sfx("sfx_slam", 0.0, 0.05, 0.7)
-					G.main.shake(0.35)
+					Fx.shock(c, 3.6, Color(0.6, 1.0, 0.5), 0.45, true)
+					Fx.impact(c + Vector3(0, 0.5, 0), Color(0.6, 1.0, 0.5), true)
+					Au.sfx("sfx_enemy_slam", 0.0, 0.05, 0.9)
+					G.main.shake(0.45)
+					G.main.flash(Color(0.6, 1.0, 0.5), 0.12, 0.15)
 					_clear_tele()
 					_boss_melee(c, 3.2, dmg + 4, 8.0)
 					_hit_this_attack = true
@@ -190,7 +197,9 @@ func _begin_charge() -> void:
 
 func _summon_clones() -> void:
 	G.say("Kijang Kencana membelah diri!", Color(1, 0.85, 0.4))
-	Au.sfx("sfx_boon_appear", -4.0, 0.0, 0.7)
+	Au.sfx("sfx_boon", -3.0, 0.0, 0.8)
+	Fx.magic_circle(global_position, 3.0, Color(1.0, 0.82, 0.3), 1.0, 3.0)
+	Fx.sprite("shards", global_position + Vector3(0, 1.2, 0), 4.0, Color(1.0, 0.85, 0.4), 0.5, {"from": 0.3, "grow": 1.3})
 	for k in 2:
 		var c := Boss.new()
 		c.clone = true
@@ -199,6 +208,7 @@ func _summon_clones() -> void:
 		c.hp = 1.0
 		var off := Vector3(randf_range(-4, 4), 0, randf_range(-4, 4))
 		G.main.spawn_actor(c, G.main.clamp_to_room(global_position + off, 2.0))
+		Fx.smoke(c.global_position + Vector3(0, 1.0, 0), 2.4, Color(1.0, 0.8, 0.4))
 		c.set_meta("no_count", false)
 		get_tree().create_timer(9.0).timeout.connect(func():
 			if is_instance_valid(c) and not c.dead: c.die())
@@ -212,9 +222,14 @@ func _transform() -> void:
 	boss_name = "Kala Marica"
 	boss_title = "Raksasa di balik Kijang Kencana"
 	G.say("Kijang Kencana menampakkan wujud aslinya: Kala Marica!", Color(0.6, 1.0, 0.5))
-	Au.sfx("sfx_boss_roar", 0.0, 0.0, 0.8)
-	G.main.shake(0.6)
-	Fx.burst(global_position + Vector3(0, 1.5, 0), Color(0.4, 1.0, 0.4), 40, 7.0, 0.3, 0.8)
+	Au.sfx("sfx_roar", 0.0, 0.0, 0.8)
+	Au.sfx("sfx_lightning", -2.0)
+	G.main.shake(0.7)
+	G.main.flash(Color(0.6, 1.0, 0.5), 0.35, 0.4)
+	Fx.lightning(global_position, 10.0, Color(0.6, 1.0, 0.5))
+	Fx.magic_circle(global_position, 4.0, Color(0.5, 1.0, 0.45), 1.6, 2.5)
+	Fx.smoke(global_position + Vector3(0, 1.5, 0), 5.0, Color(0.3, 0.7, 0.3))
+	Fx.burst(global_position + Vector3(0, 1.5, 0), Color(0.4, 1.0, 0.4), 30, 7.0, 0.3, 0.8)
 	var old := model
 	var new_id := "kijang_raksasa" if Art.has_model("kijang_raksasa") else "kijang"
 	model = Art.model(new_id, true)
@@ -245,7 +260,7 @@ func _set_submerged(on: bool) -> void:
 			add_child(_fin)
 		_fin.emitting = true
 		Au.sfx("sfx_shark_splash", -2.0)
-		Fx.burst(global_position + Vector3(0, 0.3, 0), Color(0.6, 0.9, 1.0), 26, 6.0, 0.25, 0.6)
+		Fx.splash(global_position, 3.5)
 	else:
 		collision_layer = L_ENEMY
 		collision_mask = L_WORLD | L_PLAYER
@@ -253,8 +268,9 @@ func _set_submerged(on: bool) -> void:
 		if _fin:
 			_fin.emitting = false
 		create_tween().tween_property(model, "position:y", 0.0, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		Au.sfx("sfx_shark_splash", 0.0, 0.1, 0.8)
-		Fx.burst(global_position + Vector3(0, 0.5, 0), Color(0.6, 0.9, 1.0), 36, 8.0, 0.3, 0.7)
+		Au.sfx("sfx_geyser", 0.0, 0.05)
+		Fx.splash(global_position, 5.0)
+		Fx.sprite("splash", global_position + Vector3(0, 2.2, 0), 4.5, Color(0.6, 0.9, 1.0), 0.6, {"billboard": 2.0, "stretch": Vector2(0.8, 1.6), "from": 0.3, "grow": 1.1, "tint": 0.2})
 
 
 func _sura(delta: float) -> Vector3:
@@ -298,8 +314,10 @@ func _sura(delta: float) -> Vector3:
 				_set_submerged(false)
 				rig.play("bite", 0.5)
 				_clear_tele()
-				Fx.shock(_tele_pos, 3.0, Color(0.6, 0.9, 1.0), 0.45)
-				G.main.shake(0.45)
+				Fx.shock(_tele_pos, 3.2, Color(0.6, 0.9, 1.0), 0.5, true)
+				Au.sfx("sfx_bite", 0.0, 0.05, 0.8)
+				G.main.shake(0.5)
+				G.main.flash(Color(0.6, 0.9, 1.0), 0.15, 0.2)
 				_hit_this_attack = false
 				_boss_melee(_tele_pos, 2.6, dmg, 9.0)
 				set_state("surfaced")
@@ -315,13 +333,15 @@ func _sura(delta: float) -> Vector3:
 				set_state("attack")
 				if _next_attack == "bite":
 					rig.play("bite", 0.4)
-					Au.sfx("sfx_croc_snap", 0.0, 0.1, 0.8)
+					Au.sfx("sfx_bite", 0.0, 0.1, 0.8)
+					Fx.impact(global_position + target_dir * 2.2 + Vector3(0, 0.8, 0), Color(0.6, 0.9, 1.0), true)
 				else:
-					Au.sfx("sfx_wave", 0.0)
+					Au.sfx("sfx_geyser", -2.0, 0.1, 1.1)
+					Fx.splash(global_position + target_dir * 1.5, 3.0)
 					for k in 5:
 						var a := atan2(target_dir.x, target_dir.z) + (k - 2) * 0.28
 						var dir := Vector3(sin(a), 0, cos(a))
-						var p := Projectile.spawn(global_position + dir * 1.5, dir, 10.0, "enemy", 9.0, Color(0.4, 0.8, 1.0), 0.45)
+						var p := Projectile.spawn(global_position + dir * 1.5, dir, 10.0, "enemy", 9.0, Color(0.4, 0.8, 1.0), 0.45, "splash")
 						p.life = 2.0
 						p.on_hit = func(t: Actor, _pr): t.knock += dir * 6.0
 		"attack":
@@ -374,13 +394,17 @@ func _baya(delta: float) -> Vector3:
 				match _next_attack:
 					"spin":
 						rig.play("spin", 0.6)
-						Au.sfx("sfx_swing3", 0.0, 0.05, 0.6)
+						Au.sfx("sfx_tail", 0.0, 0.05)
+						Fx.shock(global_position, 4.4, Color(0.55, 0.85, 1.0), 0.5)
+						Fx.splash(global_position, 5.0)
+						Fx.sprite("wind", global_position + Vector3(0, 0.3, 0), 8.8, Color(0.6, 0.9, 1.0), 0.55, {"flat": true, "from": 0.5, "grow": 1.05, "spin": -7.0, "tint": 0.4})
 					"bite":
 						rig.play("bite", 0.4)
-						Au.sfx("sfx_croc_snap", 0.0)
+						Au.sfx("sfx_bite", 0.0)
+						Fx.impact(global_position + target_dir * 2.6 + Vector3(0, 0.6, 0), Color(1.0, 0.6, 0.4), true)
 					"roll":
 						rig.play("charge", 0.9)
-						Au.sfx("sfx_dash", 0.0, 0.05, 0.6)
+						Au.sfx("sfx_enemy_dash", 0.0, 0.05, 0.6)
 		"attack":
 			match _next_attack:
 				"spin":
@@ -392,6 +416,8 @@ func _baya(delta: float) -> Vector3:
 					_boss_melee(global_position + target_dir * 2.6, 2.4, dmg + 3, 7.0)
 				"roll":
 					_boss_melee(global_position + target_dir * 1.2, 1.9, dmg, 9.0)
+					if Engine.get_physics_frames() % 4 == 0:
+						Fx.splash(global_position, 2.2)
 					if state_t < 0.8:
 						return target_dir * 14.0
 			var len: float = {"spin": 0.65, "bite": 0.4, "roll": 0.85}[_next_attack]
@@ -411,10 +437,15 @@ func on_death() -> void:
 		queue_free()
 		return
 	_clear_tele()
-	Au.sfx("sfx_boss_roar", 0.0, 0.0, 0.6)
-	G.main.shake(0.6)
+	Au.sfx("sfx_roar", 0.0, 0.0, 0.6)
+	Au.sfx("sfx_explosion", 0.0)
+	G.main.shake(0.8)
 	G.main.hitstop(0.25)
-	Fx.burst(global_position + Vector3(0, 1.5, 0), Color(1, 0.8, 0.4), 60, 9.0, 0.35, 1.0)
+	G.main.flash(Color(1, 0.9, 0.7), 0.45, 0.5)
+	Fx.shock(global_position, 7.0, Color(1, 0.8, 0.4), 0.7, true)
+	Fx.impact(global_position + Vector3(0, 1.5, 0), Color(1, 0.85, 0.5), true)
+	Fx.smoke(global_position + Vector3(0, 1.5, 0), 6.0, Color(0.7, 0.5, 0.9))
+	Fx.burst(global_position + Vector3(0, 1.5, 0), Color(1, 0.8, 0.4), 40, 9.0, 0.35, 1.0)
 	if rival and is_instance_valid(rival) and not rival.dead:
 		G.say("%s tumbang! %s mengamuk!" % [boss_name, rival.boss_name], Color(1, 0.6, 0.3))
 	var tw := create_tween()

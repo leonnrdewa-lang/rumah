@@ -61,7 +61,9 @@ func _ready() -> void:
 	if model:
 		model.position.y = -1.5
 		create_tween().tween_property(model, "position:y", 0.0, 0.55).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	Fx.burst(global_position + Vector3(0, 0.3, 0), Color(0.5, 0.15, 0.6), 20, 4.0, 0.3, 0.6)
+	Fx.magic_circle(global_position, radius + 1.0, Color(0.75, 0.25, 0.95), 0.9, 2.0)
+	Fx.smoke(global_position + Vector3(0, 0.8, 0), 2.2, Color(0.55, 0.2, 0.75))
+	Fx.burst(global_position + Vector3(0, 0.3, 0), Color(0.7, 0.3, 0.9), 14, 4.0, 0.25, 0.6)
 
 
 func _make_bar() -> void:
@@ -124,6 +126,8 @@ func _physics_process(delta: float) -> void:
 	velocity.y = 0
 	move_and_slide()
 	global_position.y = 0.0
+	if G.main.room:
+		global_position = G.main.room.push_inside(global_position, radius * 0.8)
 	if rig:
 		rig.update(delta * (0.4 + 0.6 * sf), Vector2(want.x, want.z).length() * sf)
 
@@ -163,7 +167,7 @@ func _chase_speed() -> float:
 func _telegraph(pos: Vector3, r: float, time: float, arc := TAU, yaw := 0.0) -> void:
 	if tele and is_instance_valid(tele):
 		tele.queue_free()
-	tele = Fx.ring(pos, r, Color(1.0, 0.18, 0.15), time, true, arc, yaw)
+	tele = Fx.ring(pos, r, Color(1.0, 0.18, 0.15), time, true, arc, yaw, true)
 	Au.sfx("sfx_telegraph", -14.0, 0.05)
 
 
@@ -206,6 +210,7 @@ func _think_wil(delta: float) -> Vector3:
 				set_state("attack")
 				rig.play("lunge", 0.3)
 				Au.sfx("sfx_swing1", -10.0, 0.2, 1.4)
+				Fx.slash(global_position, target_dir, 1.4, 1.8, Color(1.0, 0.35, 0.3), 1.0 if randf() < 0.5 else -1.0)
 			return Vector3.ZERO
 		"attack":
 			_melee(global_position + target_dir * 0.9, 1.0, dmg, 3.0)
@@ -245,11 +250,18 @@ func _think_cakil(delta: float) -> Vector3:
 			if state_t > 0.7:
 				set_state("attack")
 				rig.play("lunge", 0.45)
-				Au.sfx("sfx_dash", -6.0, 0.1, 0.8)
+				Au.sfx("sfx_enemy_dash", -3.0, 0.1)
+				Fx.dust(global_position, 0.9)
 			return Vector3.ZERO
 		"attack":
 			_melee(global_position + target_dir * 0.5, 1.1, dmg, 5.0)
+			if Engine.get_physics_frames() % 3 == 0:
+				Fx.sparks(global_position + Vector3(0, 1.0, 0), Color(0.75, 0.85, 1.0), 4, 3.0, -target_dir + Vector3.UP * 0.4)
+			if state_t > 0.2 and not has_meta("cakil_cut"):
+				set_meta("cakil_cut", true)
+				Fx.slash(global_position, target_dir, 1.8, 2.2, Color(0.8, 0.9, 1.0), 1.0)
 			if state_t > 0.45:
+				remove_meta("cakil_cut")
 				set_state("recover")
 				cooldown = randf_range(1.6, 2.4)
 				_clear_tele()
@@ -273,7 +285,7 @@ func _think_buto(delta: float) -> Vector3:
 				target_dir = to.normalized()
 				rig.play("windup", 0.95)
 				_telegraph(global_position + target_dir * 2.2, 2.8, 0.95)
-				Au.sfx("sfx_boss_roar", -12.0, 0.1, 1.5)
+				Au.sfx("sfx_roar", -8.0, 0.1, 1.3)
 				return Vector3.ZERO
 			return to.normalized() * _chase_speed()
 		"windup":
@@ -283,9 +295,10 @@ func _think_buto(delta: float) -> Vector3:
 		"attack":
 			if state_t > 0.14 and not _hit_this_attack:
 				var c := global_position + target_dir * 2.2
-				Fx.shock(c, 3.0, Color(0.9, 0.7, 0.4), 0.4)
-				Au.sfx("sfx_slam", 0.0, 0.05, 0.8)
-				G.main.shake(0.3)
+				Fx.shock(c, 3.2, Color(1.0, 0.62, 0.3), 0.45, true)
+				Fx.impact(c + Vector3(0, 0.5, 0), Color(1.0, 0.7, 0.4), true)
+				Au.sfx("sfx_enemy_slam", 0.0, 0.05)
+				G.main.shake(0.4)
 				_clear_tele()
 				if not _melee(c, 2.8, dmg, 7.0):
 					_hit_this_attack = true
@@ -309,7 +322,8 @@ func _think_banaspati(delta: float) -> Vector3:
 			if cooldown <= 0.0 and d < 12.0:
 				set_state("windup")
 				rig.play("bite", 0.5)
-				Fx.burst(global_position + Vector3(0, 1.3, 0), Color(1, 0.5, 0.1), 12, 2.0, 0.2, 0.5)
+				Fx.fire(global_position + Vector3(0, 1.4, 0), 1.6)
+				Fx.magic_circle(global_position, 1.3, Color(1.0, 0.45, 0.15), 0.6, 3.0)
 				return Vector3.ZERO
 			if _wander == Vector3.ZERO or randf() < delta * 0.8:
 				_wander = Vector3(randf_range(-1, 1), 0, randf_range(-1, 1)).normalized()
@@ -318,10 +332,10 @@ func _think_banaspati(delta: float) -> Vector3:
 		"windup":
 			if state_t > 0.5:
 				var dir := to.normalized()
-				var p := Projectile.spawn(global_position + dir * 0.8, dir, 9.5, "enemy", dmg, Color(1.0, 0.45, 0.1), 0.3)
+				var p := Projectile.spawn(global_position + dir * 0.8, dir, 9.5, "enemy", dmg, Color(1.0, 0.45, 0.1), 0.3, "fire")
 				p.height = 1.2
 				p.life = 2.2
-				Au.sfx("sfx_fireball", -6.0)
+				Au.sfx("sfx_fireball", -4.0)
 				set_state("recover")
 				cooldown = randf_range(2.0, 3.0)
 		"recover":
@@ -352,7 +366,10 @@ func _think_yuyu(delta: float) -> Vector3:
 			if state_t > 0.6:
 				set_state("attack")
 				rig.play("snap", 0.35)
-				Au.sfx("sfx_croc_snap", -4.0, 0.1, 1.3)
+				Au.sfx("sfx_bite", -3.0, 0.1, 1.2)
+				var cp := global_position + target_dir * 1.4
+				Fx.impact(cp + Vector3(0, 0.6, 0), Color(1.0, 0.5, 0.4))
+				Fx.splash(cp, 1.8)
 		"attack":
 			_melee(global_position + target_dir * 1.4, 1.8, dmg, 5.0)
 			if state_t > 0.35:
@@ -371,6 +388,7 @@ func take_hit(amount: float, from: Vector3, knockback := 3.0, info := {}) -> flo
 		dir.y = 0
 		if dir.length() > 0.01 and facing.angle_to(dir) < 0.9:
 			Fx.text(global_position, "Tangkis!", Color(0.8, 0.8, 0.9))
+			Fx.sparks(global_position + dir.normalized() * radius + Vector3(0, 0.8, 0), Color(1, 0.9, 0.6), 10, 6.0, dir)
 			Au.sfx("sfx_hit_heavy", -8.0, 0.1, 1.6)
 			return super.take_hit(amount * 0.25, from, knockback * 0.3, info)
 	return super.take_hit(amount, from, knockback, info)

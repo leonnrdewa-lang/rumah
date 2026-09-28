@@ -26,7 +26,7 @@ const UPGRADES := {
 	"otot": ["Otot Kawat", "+10 nyawa maksimum per tingkat.", [2, 4, 6], 3],
 	"tulang": ["Balung Wesi", "Kebal satu serangan mematikan per perjalanan (bangkit 50% nyawa).", [6], 1],
 	"lesat": ["Langkah Bayu", "+1 muatan Lesat.", [5], 1],
-	"gada": ["Gada Rujakpolo", "+15% kerusakan Serang per tingkat.", [3, 5], 2],
+	"gada": ["Tongkat Mustika", "+15% kerusakan Serang per tingkat.", [3, 5], 2],
 	"prana": ["Prana Sejati", "+1 muatan Jurus.", [4], 1],
 	"rejeki": ["Rejeki Kepeng", "Mulai perjalanan dengan 60 Kepeng per tingkat.", [2, 3], 2],
 }

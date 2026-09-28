@@ -29,7 +29,15 @@ aset Higgsfield saat berjalan (`game/scripts/hf.gd` membaca `hf/manifest.json`):
   arena bos, dan Pancawati
 - **Potret lukis** tanpa latar untuk dialog dan pilihan anugerah dewa
 - **Suara (voice acting)**: 45 baris dialog berbahasa Indonesia, tiap tokoh suaranya berbeda
-- Alur pembuatannya: `tools/higgsfield/README.md`; daftar URL aset: `art/hf_assets.json`
+- **Efek jurus dilukis** (GPT Image 2.5 di latar hitam, blend aditif): sabetan tongkat, sinar
+  Tongkat Mulur, lingkaran sakti, ledakan, api, cipratan, petir, angin, tanda bahaya musuh
+- **SFX & musik epik**: 35 efek suara (Mirelo) + musik hutan, muara, kijang, dan bos (Sonilo)
+- **Tongkat & Jurus Tongkat Mulur**: Hanoman menyerang dengan tongkat; Jurus memanjangkan
+  tongkat seperti laser menembus semua raksasa di garisnya
+- **Tahap 3 bilik**: tiap ruang pertempuran terdiri dari tiga bilik bersambung lorong
+  (kolam, pilar, reruntuhan, bakau, candi, dermaga), gerbang terbuka setelah bilik bersih
+- Alur pembuatannya: `tools/higgsfield/README.md`; daftar URL aset: `art/hf_assets.json`,
+  `art/hf_assets_v3.json` (efek, suara, musik, lantai tambahan, klip Hanoman bertongkat)
 
 ## Main (versi aset Blender)
 
@@ -42,8 +50,8 @@ cd docs/hanoman && python3 -m http.server 8060   # buka http://localhost:8060
 | | PC | HP |
 |---|---|---|
 | Gerak | WASD / panah | jempol kiri |
-| Serang (gada, kombo 3) | J / klik kiri | tombol gada |
-| Jurus (bilah angin Kuku Pancanaka) | K / klik kanan | tombol /// |
+| Serang (tongkat, kombo 3) | J / klik kiri | tombol serang |
+| Jurus (Tongkat Mulur, sinar tongkat memanjang) | K / klik kanan | tombol /// |
 | Ajian (lingkaran pengikat Bayu) | Q | tombol lingkaran |
 | Lesat (menghindar, kebal sesaat) | Spasi / Shift | tombol garis |
 | Interaksi | E | ketuk label di bawah |

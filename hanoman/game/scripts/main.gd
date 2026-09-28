@@ -27,6 +27,10 @@ var _cam_target := Vector3.ZERO
 var busy := false          # menus / dialogue / transitions freeze combat
 var area := "title"
 var _hurt := 0.0
+var _flash_a := 0.0
+var cam_override := false    # autotest overview shots
+var _flash_col := Color.WHITE
+var _flash_decay := 1.0
 
 
 func _ready() -> void:
@@ -125,18 +129,21 @@ func _process(delta: float) -> void:
 	if player and player.is_inside_tree():
 		var p := player.global_position
 		if room:
-			var lim := room.half + Vector2(1.5, 1.0) - Vector2(6.0, 3.4)
-			lim = lim.max(Vector2.ZERO)
-			p.x = clamp(p.x, -lim.x, lim.x)
-			p.z = clamp(p.z, -lim.y - 1.0, lim.y + 0.5)
+			var b: Rect2 = room.bounds if room.bounds.has_area() else Rect2(-room.half, room.half * 2.0)
+			var lo := b.position + Vector2(6.0 - 1.5, 3.4 - 1.0)
+			var hi := b.end - Vector2(6.0 - 1.5, 3.4 - 1.0)
+			var mid := b.get_center()
+			p.x = clamp(p.x, lo.x, hi.x) if lo.x < hi.x else mid.x
+			p.z = clamp(p.z, lo.y - 1.0, hi.y + 0.5) if lo.y < hi.y else mid.y
 		_cam_target = _cam_target.lerp(p, clamp(delta * 5.0, 0.0, 1.0))
 	var sh := Vector3.ZERO
 	if _shake > 0.0:
 		_shake = max(0.0, _shake - delta * 1.8)
 		var a := _shake * _shake * 0.9
 		sh = Vector3(randf_range(-a, a), randf_range(-a, a), randf_range(-a, a))
-	cam.global_position = _cam_target + CAM_OFFSET + sh
-	cam.look_at(_cam_target + sh * 0.5 + Vector3(0, 0.6, 0))
+	if not cam_override:
+		cam.global_position = _cam_target + CAM_OFFSET + sh
+		cam.look_at(_cam_target + sh * 0.5 + Vector3(0, 0.6, 0))
 	_hurt = move_toward(_hurt, 0.0, delta * 1.5)
 	if _hitstop_until > 0 and Time.get_ticks_msec() >= _hitstop_until:
 		_hitstop_until = 0
@@ -144,6 +151,8 @@ func _process(delta: float) -> void:
 	if G.in_run and player and not player.dead and float(G.run.hp) < float(G.run.max_hp) * 0.3:
 		_hurt = max(_hurt, 0.35 + 0.15 * sin(Time.get_ticks_msec() * 0.006))
 	post_mat.set_shader_parameter("hurt", _hurt)
+	_flash_a = max(0.0, _flash_a - _flash_decay * delta)
+	post_mat.set_shader_parameter("flash", Color(_flash_col.r, _flash_col.g, _flash_col.b, _flash_a))
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -176,12 +185,8 @@ func room_contains(p: Vector3, margin := 0.0) -> bool:
 func clamp_to_room(p: Vector3, margin := 1.0) -> Vector3:
 	if room == null:
 		return p
-	var q := Vector2(p.x, p.z)
-	for i in 12:
-		if room.sd(q) < -margin:
-			break
-		q *= 0.9
-	return Vector3(q.x, 0, q.y)
+	var q := room.push_inside(Vector3(p.x, 0, p.z), margin)
+	return Vector3(q.x, 0, q.z)
 
 
 func mouse_ground() -> Vector3:
@@ -212,6 +217,15 @@ func hitstop(t: float) -> void:
 
 func hurt_flash() -> void:
 	_hurt = 1.0
+
+
+## Brief full-screen colour flash (laser, slams, crits, boss moments).
+func flash(color: Color, strength := 0.2, time := 0.18) -> void:
+	if _flash_a > strength:
+		return
+	_flash_col = color
+	_flash_a = strength
+	_flash_decay = strength / max(time, 0.01)
 
 
 # --- areas ------------------------------------------------------------------------
@@ -274,18 +288,8 @@ func enter_room(reward: Dictionary) -> void:
 		room.biome = spec[1]
 		room.depth = n
 		room.reward = reward
-		match room.kind:
-			"miniboss":
-				room.half = Vector2(12, 9)
-			"boss":
-				room.half = Vector2(13, 9.5)
-				room.corner = 4.0
-			"rest":
-				room.half = Vector2(9, 7)
-			_:
-				room.half = Vector2(randf_range(9.5, 12.5), randf_range(7.0, 9.0))
-				room.corner = randf_range(2.0, 4.5)
-		room.waves = _waves_for(n, room.biome)
+		room.plan_layout()
+		room.waves = _waves_for(n, room.chambers.size())
 		room.exits = _exits_for(n)
 		add_child(room)
 		room.build()
@@ -304,6 +308,8 @@ func enter_room(reward: Dictionary) -> void:
 		var mus := "mus_dandaka" if room.biome == "dandaka" else "mus_muara"
 		if room.kind == "boss":
 			mus = "mus_boss"
+		elif room.kind == "miniboss":
+			mus = "mus_miniboss"
 		if room.kind != "rest":
 			Au.music(mus)
 		Au.ambience("amb_forest" if room.biome == "dandaka" else "amb_river")
@@ -348,19 +354,34 @@ func _boss_intro() -> void:
 		room.start())
 
 
-func _waves_for(n: int, biome: String) -> Array:
-	var sets := {
-		1: [["wil", "wil", "wil"], ["wil", "wil", "banaspati"]],
-		2: [["wil", "wil", "cakil"], ["banaspati", "banaspati", "wil", "wil"]],
-		3: [["cakil", "cakil", "wil"], ["buto_ijo", "wil", "wil"], ["banaspati", "wil", "wil"]],
-		4: [["buto_ijo", "banaspati", "banaspati"], ["cakil", "cakil", "buto_ijo", "wil"]],
-		7: [["yuyu", "wil", "wil", "wil"], ["yuyu", "yuyu", "banaspati", "banaspati"]],
-		8: [["yuyu", "cakil", "cakil"], ["buto_ijo", "yuyu", "banaspati"], ["yuyu", "yuyu", "wil", "wil", "wil"]],
+## Waves for each chamber of room `n`: the three chambers of a stage get
+## progressively tougher mixes drawn from that stage's raksasa.
+func _waves_for(n: int, chambers_n: int) -> Array:
+	var pools := {
+		1: ["wil", "wil", "wil", "banaspati"],
+		2: ["wil", "wil", "cakil", "banaspati"],
+		3: ["wil", "cakil", "banaspati", "buto_ijo"],
+		4: ["cakil", "banaspati", "wil", "buto_ijo"],
+		7: ["yuyu", "wil", "banaspati", "cakil"],
+		8: ["yuyu", "cakil", "banaspati", "wil", "buto_ijo"],
 	}
-	var w: Array = sets.get(n, [["wil", "wil"]]).duplicate(true)
-	for list in w:
-		list.shuffle()
-	return w
+	var pool: Array = pools.get(n, ["wil", "wil"])
+	var out := []
+	for k in chambers_n:
+		var ch_waves := []
+		var count := 1 if k == 0 and n <= 2 else 2
+		for w in count:
+			var size := 3 + (1 if n >= 3 else 0) + (1 if k == chambers_n - 1 else 0)
+			var list := []
+			for i in size:
+				list.append(pool[randi() % pool.size()])
+			# every chamber after the first carries one of the stage's heavy hitters
+			if k > 0 and w == count - 1:
+				list[0] = pool[pool.size() - 1]
+			list.shuffle()
+			ch_waves.append(list)
+		out.append(ch_waves)
+	return out
 
 
 func _exits_for(n: int) -> Array:

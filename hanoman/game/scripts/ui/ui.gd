@@ -799,7 +799,7 @@ func title_screen(start: Callable) -> void:
 
 
 func _controls_help() -> void:
-	var txt := "PC:  WASD gerak · J / klik kiri = Serang (kombo 3) · K / klik kanan = Jurus (bilah angin)\nQ = Ajian (lingkaran pengikat) · Spasi / Shift = Lesat (menghindar) · E = Interaksi · Esc = Jeda\nMouse mengarahkan serangan.\n\nHP / Tablet:  jempol kiri = gerak, tombol kanan = Serang, Jurus, Ajian, Lesat.\nSerangan otomatis membidik raksasa terdekat.\n\nGamepad:  stik kiri gerak · X Serang · Y Jurus · RB Ajian · A Lesat · B Interaksi"
+	var txt := "PC:  WASD gerak · J / klik kiri = Serang (kombo 3) · K / klik kanan = Jurus (tongkat mulur)\nQ = Ajian (lingkaran pengikat) · Spasi / Shift = Lesat (menghindar) · E = Interaksi · Esc = Jeda\nMouse mengarahkan serangan.\n\nHP / Tablet:  jempol kiri = gerak, tombol kanan = Serang, Jurus, Ajian, Lesat.\nSerangan otomatis membidik raksasa terdekat.\n\nGamepad:  stik kiri gerak · X Serang · Y Jurus · RB Ajian · A Lesat · B Interaksi"
 	choice_menu("Kontrol", "", [{"title": "Cara bermain", "desc": txt, "disabled": true}], func(_o): pass, true)
 
 

@@ -15,16 +15,18 @@ var on_hit: Callable
 var hit_set := {}
 var height := 1.0
 var visual: Node3D
+var look := ""          # painted sprite: fire | splash | "" (energy)
 
 
-static func spawn(pos: Vector3, dir: Vector3, speed: float, p_team: String, dmg: float, col: Color, size := 0.3) -> Projectile:
+static func spawn(pos: Vector3, dir: Vector3, speed: float, p_team: String, dmg: float, col: Color, size := 0.3, p_look := "") -> Projectile:
 	var p := Projectile.new()
 	p.vel = dir.normalized() * speed
 	p.team = p_team
 	p.damage = dmg
 	p.color = col
 	p.radius = size + 0.35
-	var o := Fx.orb(col, size)
+	p.look = p_look
+	var o := Fx.orb(col, size, p_look)
 	p.add_child(o)
 	p.visual = o
 	var tr := Fx.trail(col, size * 0.9)
@@ -66,5 +68,12 @@ func _physics_process(delta: float) -> void:
 
 
 func _pop() -> void:
-	Fx.burst(global_position, color, 10, 3.0, 0.15, 0.3)
+	match look:
+		"fire":
+			Fx.fire(global_position, 1.8, color)
+			Au.sfx("sfx_explosion", -12.0, 0.1, 1.3)
+		"splash":
+			Fx.splash(Vector3(global_position.x, 0.0, global_position.z), 1.8, color)
+		_:
+			Fx.impact(global_position, color)
 	queue_free()

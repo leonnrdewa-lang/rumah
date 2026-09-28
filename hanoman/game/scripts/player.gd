@@ -1,8 +1,8 @@
 class_name Player
 extends Actor
-## Hanoman: Serang (3-hit gada combo), Jurus (Kuku Pancanaka wind blade, Prana
-## charges), Ajian (Bayu binding circle), Lesat (dash with i-frames). The gods'
-## boons hook into each action.
+## Hanoman: Serang (3-hit tongkat combo ending in a ground slam), Jurus (the
+## staff shoots out like a laser, Prana charges), Ajian (Bayu binding circle),
+## Lesat (dash with i-frames). The gods' boons hook into each action.
 
 const DASH_SPEED := 21.0
 const DASH_TIME := 0.17
@@ -10,10 +10,12 @@ const DASH_REGEN := 0.75
 const PRANA_REGEN := 1.5
 const CAST_COOLDOWN := 8.0
 const COMBO := [
-	{"anim": "swing_a", "len": 0.3, "hit": 0.11, "dmg": 12.0, "range": 2.1, "arc": 2.3, "lunge": 3.0},
-	{"anim": "swing_b", "len": 0.3, "hit": 0.11, "dmg": 12.0, "range": 2.1, "arc": 2.3, "lunge": 3.0},
-	{"anim": "slam", "len": 0.5, "hit": 0.24, "dmg": 26.0, "range": 2.6, "arc": 6.3, "lunge": 4.5},
+	{"anim": "swing_a", "len": 0.3, "hit": 0.11, "dmg": 12.0, "range": 2.6, "arc": 2.6, "lunge": 3.0},
+	{"anim": "swing_b", "len": 0.3, "hit": 0.11, "dmg": 12.0, "range": 2.6, "arc": 2.6, "lunge": 3.0},
+	{"anim": "slam", "len": 0.52, "hit": 0.25, "dmg": 28.0, "range": 3.0, "arc": 6.3, "lunge": 4.5},
 ]
+const LASER_LEN := 15.0
+const LASER_WIDTH := 1.4
 
 var aim := Vector3(0, 0, 1)
 var mouse_aim := false
@@ -37,12 +39,14 @@ var touch_aim := Vector2.ZERO
 var interact_target: Node = null
 var _fire_trail_t := 0.0
 var _step_t := 0.0
+var staff: Staff
 
 
 func _ready() -> void:
 	team = "player"
 	setup_body(0.45, 1.6, L_PLAYER, L_WORLD | L_ENEMY)
 	set_model("hanoman", "biped")
+	staff = Staff.attach(model)
 	move_speed = 7.2
 	add_to_group("player")
 	reset_for_run()
@@ -127,6 +131,8 @@ func _physics_process(delta: float) -> void:
 	velocity.y = 0
 	move_and_slide()
 	global_position.y = 0.0
+	if G.main.room:
+		global_position = G.main.room.push_inside(global_position, radius * 0.8)
 	rig.update(delta, Vector2(velocity.x, velocity.z).length() if dash_t <= 0.0 else 0.0)
 	rig.lean = 0.55 if dash_t > 0.0 else 0.0
 	_find_interact()
@@ -200,7 +206,7 @@ func _start_swing(i: int) -> void:
 	snap_face(atk_dir)
 	var c: Dictionary = COMBO[i]
 	rig.play(c.anim, c.len)
-	Au.sfx("sfx_swing%d" % (i + 1), -3.0)
+	Au.sfx("sfx_swing%d" % (i + 1), -3.0 if i < 2 else -1.0, 0.08, 1.0 if i < 2 else 0.85)
 
 
 func _attack_tick(delta: float) -> void:
@@ -230,11 +236,15 @@ func _swing_hit(i: int) -> void:
 	var center := global_position
 	if i == 2:
 		center += atk_dir * 1.2
-		Fx.shock(center, c.range, col, 0.3)
-		Au.sfx("sfx_slam", -4.0)
-		G.main.shake(0.25)
+		Fx.shock(center, c.range + 0.4, col, 0.38, true)
+		Fx.impact(center + Vector3(0, 0.4, 0), col, true)
+		Fx.sprite("circle", center + Vector3(0, 0.06, 0), c.range * 2.2, col, 0.6, {"flat": true, "from": 0.4, "grow": 1.1, "spin": 1.2, "tint": 0.5, "intensity": 1.6, "hold": 0.3})
+		Au.sfx("sfx_staff_slam", -1.0, 0.05)
+		G.main.shake(0.4)
+		G.main.flash(Color(1.0, 0.85, 0.5), 0.18, 0.18)
 	else:
-		Fx.slash(global_position, atk_dir, c.range + 0.3, c.arc, col, 1.0 if i == 0 else -1.0)
+		Fx.slash(global_position, atk_dir, c.range + 0.2, c.arc, col, 1.0 if i == 0 else -1.0)
+		Fx.light(global_position + atk_dir * 1.2 + Vector3(0, 1, 0), col, 1.6, 4.0, 0.15)
 	var dmg: float = c.dmg * float(G.run.get("attack_mult", 1.0))
 	dmg *= 1.0 + (Boons.val("bayu_serang") + Boons.val("baruna_serang")) / 100.0
 	var kb := 3.5 if i < 2 else 6.0
@@ -260,17 +270,18 @@ func _swing_hit(i: int) -> void:
 		if Boons.owned("indra_serang"):
 			chain_lightning(e, Boons.val("indra_serang"), 2)
 	if hits > 0:
-		Au.sfx("sfx_hit" if i < 2 else "sfx_hit_heavy", -2.0)
-		G.main.hitstop(0.05 if i < 2 else 0.08)
+		Au.sfx("sfx_hit" if i < 2 else "sfx_hit_heavy", -2.0, 0.1, 1.0 if i < 2 else 0.8)
+		G.main.hitstop(0.05 if i < 2 else 0.09)
 
 
 func _deal(e: Actor, dmg: float, kb: float, col: Color) -> float:
 	var crit := randf() * 100.0 < Boons.val("indra_pasif")
 	var d := e.take_hit(dmg, global_position, kb, {"crit": crit, "color": Color(1, 0.4, 0.3) if crit else Color(1, 0.95, 0.8)})
 	if d > 0.0:
-		Fx.burst(e.global_position + Vector3(0, 1.0, 0), col, 10, 5.0, 0.14, 0.3)
+		Fx.impact(e.global_position + Vector3(0, 1.0, 0), col, crit or dmg >= 25.0)
 		if crit:
 			Au.sfx("sfx_crit", -3.0)
+			G.main.flash(Color(1, 0.95, 0.8), 0.12, 0.1)
 	return d
 
 
@@ -312,43 +323,95 @@ func strike(e: Actor, dmg: float) -> void:
 
 # --- Jurus -----------------------------------------------------------------
 
+## Tongkat Mulur: the staff shoots out along the aim like a laser, piercing every
+## raksasa in the line.
 func try_special() -> void:
 	if prana < 1.0 or special_cd > 0.0 or dash_t > 0.0:
 		return
 	prana -= 1.0
-	special_cd = 0.28
+	special_cd = 0.5
 	combo_i = -1
-	var dir := assisted(aim, 12.0)
+	cast_anim = 0.32
+	var dir := assisted(aim, LASER_LEN)
 	snap_face(dir)
-	rig.play("thrust", 0.28)
-	Au.sfx("sfx_special", -3.0)
+	rig.play("thrust", 0.4)
 	var holder := Boons.slot_holder("jurus")
-	var col := Color(0.85, 1.0, 0.95)
+	var col := Color(1.0, 0.78, 0.35)
 	if holder != "":
 		col = G.GOD_COLORS[Boons.god_of(holder)]
-	var dmg := 16.0 * (1.0 + Boons.val("bayu_jurus") / 100.0)
 	var wave := Boons.owned("baruna_jurus")
+	# charge flare at the fist, then fire
+	var hand := _hand_pos()
+	Fx.sprite("impact", hand, 1.4, col, 0.14, {"from": 0.2, "grow": 1.0, "spin": 3.0, "tint": 0.4, "intensity": 2.6})
+	Au.sfx("sfx_laser", -1.0, 0.03)
+	get_tree().create_timer(0.07, true, false, true).timeout.connect(func():
+		if not dead:
+			_fire_laser(dir, col, wave))
+
+
+func _hand_pos() -> Vector3:
+	var p := global_position + facing * 0.45
+	if staff and staff.is_inside_tree():
+		p = staff.global_position
+	return Vector3(p.x, 1.05, p.z)
+
+
+func _fire_laser(dir: Vector3, col: Color, wave: bool) -> void:
+	var from := _hand_pos()
+	var width := LASER_WIDTH * (1.9 if wave else 1.0)
+	var length := LASER_LEN
+	Fx.laser(from, dir, length, width, col, 0.42)
+	# the staff itself stretches out along the beam
+	var beam_staff := Staff.new()
+	Fx.layer.add_child(beam_staff)
+	beam_staff.global_position = from
+	beam_staff.basis = Basis(Quaternion(Vector3.UP, dir))
+	beam_staff.grip = 0.3
+	beam_staff.set_length(1.0)
+	beam_staff.set_glow(col)
+	beam_staff.extend_to(length, 0.09, 0.26, 0.14)
+	beam_staff.get_tree().create_timer(0.55).timeout.connect(beam_staff.queue_free)
+	if staff:
+		staff.visible = false
+		get_tree().create_timer(0.5).timeout.connect(func():
+			if staff: staff.visible = true)
+	G.main.shake(0.3)
+	G.main.flash(col.lerp(Color.WHITE, 0.5), 0.22, 0.2)
+	var dmg := 22.0 * (1.0 + Boons.val("bayu_jurus") / 100.0)
 	if wave:
-		dmg = Boons.val("baruna_jurus")
-	var p := Projectile.spawn(global_position + dir * 0.8, dir, 24.0, "player", dmg, col, 0.45 if wave else 0.28)
-	p.life = 0.55
-	p.pierce = Boons.owned("bayu_jurus") or wave
-	if wave:
-		p.radius = 1.4
-		p.knockback = 5.0
-	p.on_hit = func(e: Actor, pr: Projectile):
-		_deal(e, pr.damage, pr.knockback, col)
+		dmg = Boons.val("baruna_jurus") * 1.4
+	var kb := 9.0 if Boons.owned("bayu_jurus") else 4.0
+	var hits := 0
+	for e in G.main.enemies():
+		if e.dead:
+			continue
+		var to: Vector3 = e.global_position - from
+		to.y = 0
+		var along := to.dot(dir)
+		if along < -0.5 or along > length:
+			continue
+		var off := (to - dir * along).length()
+		if off > width * 0.5 + e.radius:
+			continue
+		hits += 1
+		var d := _deal(e, dmg, kb, col)
+		if d > 0.0:
+			e.knock += dir * kb * 0.5
 		if wave:
 			e.apply_wet(0.3)
 		if Boons.owned("surya_jurus"):
-			var c := e.global_position
+			var c: Vector3 = e.global_position
 			Fx.shock(c, 2.4, G.GOD_COLORS.surya, 0.3)
-			Au.sfx("sfx_explode", -5.0)
+			Fx.fire(c + Vector3(0, 1, 0), 2.2, G.GOD_COLORS.surya)
+			Au.sfx("sfx_explosion", -5.0)
 			for o in G.main.enemies():
 				if not o.dead and o != e and o.global_position.distance_to(c) < 2.4 + o.radius:
 					_deal(o, Boons.val("surya_jurus"), 3.0, G.GOD_COLORS.surya)
 		if Boons.owned("indra_jurus") and not e.dead:
 			strike(e, Boons.val("indra_jurus"))
+	if hits > 0:
+		Au.sfx("sfx_laser_hit", -3.0)
+		G.main.hitstop(0.06)
 
 
 # --- Ajian -----------------------------------------------------------------
@@ -374,6 +437,7 @@ func try_cast() -> void:
 	c.global_position = Vector3(target.x, 0, target.z)
 	c.player = self
 	Au.sfx("sfx_cast", -2.0)
+	G.main.flash(Color(0.7, 1.0, 0.95), 0.12, 0.15)
 
 
 # --- Lesat -----------------------------------------------------------------
@@ -391,7 +455,9 @@ func try_dash(mv: Vector3) -> void:
 	invuln = max(invuln, DASH_TIME + 0.08)
 	collision_mask = L_WORLD
 	Au.sfx("sfx_dash", -4.0)
-	Fx.burst(global_position + Vector3(0, 0.6, 0), Color(0.8, 1.0, 0.95), 10, 3.0, 0.2, 0.3)
+	Fx.wind(global_position, 2.2)
+	Fx.dust(global_position, 0.9, Color(0.8, 0.85, 0.9))
+	Fx.sparks(global_position + Vector3(0, 0.8, 0), Color(0.8, 1.0, 0.95), 8, 5.0, -dash_dir + Vector3.UP * 0.3)
 	if Boons.owned("bayu_lesat"):
 		Fx.shock(global_position, 2.5, G.GOD_COLORS.bayu, 0.3)
 		for e in G.main.enemies():

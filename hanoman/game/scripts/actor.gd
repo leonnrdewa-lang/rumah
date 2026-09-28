@@ -147,7 +147,9 @@ func die() -> void:
 
 func on_death() -> void:
 	Au.sfx("sfx_enemy_die", -2.0)
-	Fx.burst(global_position + Vector3(0, 0.8, 0), Color(0.9, 0.3, 0.5), 22, 6.0, 0.2, 0.6)
+	Fx.smoke(global_position + Vector3(0, 1.0, 0), 2.4 + radius, Color(0.6, 0.25, 0.8))
+	Fx.sprite("shards", global_position + Vector3(0, 1.0, 0), 2.6 + radius, Color(1.0, 0.5, 0.7), 0.4, {"from": 0.3, "grow": 1.3, "tint": 0.5})
+	Fx.burst(global_position + Vector3(0, 0.8, 0), Color(0.9, 0.3, 0.5), 18, 6.0, 0.2, 0.6)
 	if rig:
 		rig.play("die", 0.9)
 	var tw := create_tween()
