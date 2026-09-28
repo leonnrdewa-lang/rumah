@@ -68,6 +68,9 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
 .hel .crack{display:none;} .hel.lost .crack{display:block;}
 #pauseBtn{position:absolute;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));pointer-events:auto;width:52px;height:52px;border-radius:14px;border:0;
   background:rgba(15,12,10,.6);color:#fff;font:400 20px var(--display);cursor:pointer;}
+#brakeBtn{position:absolute;right:14px;bottom:calc(78px + env(safe-area-inset-bottom,0px));pointer-events:auto;width:84px;height:84px;border-radius:50%;
+  border:4px solid #2a1a0a;background:#e8352a;color:#fff;font:400 22px var(--display);letter-spacing:.04em;cursor:pointer;box-shadow:0 5px 0 #2a1a0a;touch-action:none;}
+#brakeBtn.on{transform:translateY(4px);box-shadow:0 1px 0 #2a1a0a;background:#b8231a;}
 #stick{position:absolute;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;border:3px solid rgba(255,255,255,.55);left:0;top:0;}
 #knob{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;background:rgba(255,255,255,.6);}
 #crack{position:absolute;left:50%;top:44%;width:180px;height:180px;margin:-90px 0 0 -90px;}
@@ -120,6 +123,7 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
     <div id="helmets"></div>
     <div id="stick" hidden><div id="knob"></div></div>
     <svg id="crack" viewBox="0 0 64 64" style="display:none"><path d="M8 40 A24 24 0 0 1 56 40 L58 46 L6 46Z" fill="#ff4b3a" stroke="#2a1a0a" stroke-width="2"/><path d="M34 16 L28 26 L35 31 L27 45" fill="none" stroke="#1a1410" stroke-width="3"/></svg>
+    <button id="brakeBtn" aria-label="Rem">REM</button>
     <button id="pauseBtn" aria-label="Istirahat">II</button>
   </div>
 
@@ -131,7 +135,7 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
     <button class="btn" id="startBtn">MULAI SHIFT</button>
     <button class="btn alt ctrlBtn" id="ctrlTitle">Kontrol: SERET</button>
     <div class="best" id="bestTitle"></div>
-    <p class="hint">Seret jempol = arah motor · Tahan diam = pelan<br>Salip mepet = poin · Antar sebelum waktu habis</p>
+    <p class="hint">Seret jempol = arah motor · Tahan tombol REM (Spasi di PC) = rem<br>Salip mepet = poin · Antar sebelum waktu habis</p>
   </div>
 
   <div id="pause" class="screen" hidden>
@@ -430,7 +434,7 @@ function bInst(type,cx,cy,W,H,D,face,ink){ _bq.setFromAxisAngle(_Y,FACE_YAW[face
 // Fill a lot: a building on the street edge (natural-ish depth) plus a back-lot house when there's room.
 function lot3d(x0,x1,y0,y1,face,type,h){
   const ew=face>=2, W=ew?y1-y0:x1-x0, D=ew?x1-x0:y1-y0, a=MDL[type].asp;
-  const dF=Math.min(D,Math.max(4,W*a*R(1,1.3))), rest=D-dF-0.3;
+  let dF=Math.min(D,Math.max(4,W*a*R(1,1.3))), rest=D-dF-0.3; if(rest<5){ dF=D; rest=0; }
   const put=(t,off,dep,hh,ink)=>{ const mid=off+dep/2; let cx=(x0+x1)/2, cy=(y0+y1)/2;
     if(face===0) cy=y0+mid; else if(face===1) cy=y1-mid; else if(face===2) cx=x1-mid; else cx=x0+mid;
     bInst(t,cx,cy,W-0.25,hh,dep,face,ink); };
@@ -447,7 +451,7 @@ function flushBuildings(){
     for(const [k,L] of groups){ const [gx,gz]=k.split(',').map(Number), sphere=new T.Sphere(new T.Vector3(gx*60+30,8,gz*60+30),62);
       for(const p of MDL[t].parts){ const g=new T.BufferGeometry(); for(const a in p.g.attributes) g.setAttribute(a,p.g.attributes[a]); g.setIndex(p.g.index); g.boundingSphere=sphere;
         const add=(mat,list)=>{ if(!list.length) return; const im=new T.InstancedMesh(g,mat,list.length); list.forEach((m,i)=>im.setMatrixAt(i,m)); cityGroup.add(im); };
-        add(p.mat,L); add(M_INK,L.filter(m=>m.ink)); } } }
+        add(p.mat,L); if(!lowEnd) add(M_INK,L.filter(m=>m.ink)); } } }
 }
 
 function glowTex(r,g,b){ const c=document.createElement('canvas'); c.width=c.height=64; const x=c.getContext('2d'), gr=x.createRadialGradient(32,32,0,32,32,32);
@@ -556,9 +560,10 @@ function building(x0,x1,y0,y1,south){
   // South-row buildings face the camera: textured ruko facades. North-row ones stay low at the street so they never hide it.
   if(MDL.house&&MDL.ruko){
     const w=x1-x0, face=south?0:1;
+    const nat=t=>w*MDL[t].sy/MDL[t].sx; // natural height for this frontage
     if(south&&y0>MAXY&&MDL.tower&&Math.random()<.55) lot3d(x0,x1,y0,y1,face,'tower',R(14,26));
-    else if(south) lot3d(x0,x1,y0,y1,face,w>7.5&&Math.random()<.75?'ruko':'house',R(5,8));
-    else lot3d(x0,x1,y0,y1,face,'house',R(2.8,3.6));
+    else if(south){ const t=w>7.5&&Math.random()<.75?'ruko':'house'; lot3d(x0,x1,y0,y1,face,t,clamp(nat(t)*R(.8,.95),4.5,9)); }
+    else lot3d(x0,x1,y0,y1,face,'house',clamp(nat('house')*.6,3,4.6));
     return;
   }
   const w=x1-x0, d=y1-y0, h=south?R(4.6,8.5):R(2.4,3.2), cx=(x0+x1)/2, cy=(y0+y1)/2, g=bchunk(cx,cy), wall=pick(WALLS);
@@ -1031,7 +1036,7 @@ const player={
     const prevH=this.heading;
     if(this.frozen>0){ this.frozen-=dt; this.speed=0; this.vx=this.vy=0; this.visual(dt,0); return; }
     const surf=surfaceAt(this.x,this.y); let f=surf===SSIDE?CFG.sidewalkF:(surf===SGANG?CFG.gangF:1); if(hazards.inFlood) f*=CFG.floodF;
-    let target=CFG.maxSpeed*f; if(input.hold) target*=CFG.holdFactor;
+    let target=CFG.maxSpeed*f; if(input.hold) target*=CFG.holdFactor; if(input.brake) target=0;
     if(this.air>0){ this.air-=dt; if(this.air<=0){ this.air=0; this.wobV+=90; game.onLanded(this.x,this.y); } }
     else if(input.dx||input.dy){
       const diff=dAng(this.heading,headingOf(input.dx,input.dy)); let rate=lerp(CFG.turnLow,CFG.turnHigh,this.s01); if(this.slide>0) rate*=0.6;
@@ -1269,7 +1274,7 @@ const audio={
 
 // ---------------------------------------------------------------- input
 const input={
-  mode:store.get('ojol_ctrl','drag'), dx:0, dy:0, hold:false, pid:null, ox:0, oy:0, kx:0, ky:0, touching:false, keys:{},
+  mode:store.get('ojol_ctrl','drag'), dx:0, dy:0, hold:false, brake:false, brakeBtn:false, pid:null, ox:0, oy:0, kx:0, ky:0, touching:false, keys:{},
   radius(){ return Math.max(56,Math.min(innerWidth,innerHeight)*.12); },
   jc(){ return [innerWidth/2,innerHeight*.8]; },
   update(){
@@ -1278,7 +1283,7 @@ const input={
       if(m<Math.max(12,this.radius()*.18)) this.hold=true; else { this.dx=ddx/m; this.dy=-ddy/m; } }
     const k=this.keys; let kx=(k.ArrowRight||k.KeyD?1:0)-(k.ArrowLeft||k.KeyA?1:0), ky=(k.ArrowUp||k.KeyW?1:0)-(k.ArrowDown||k.KeyS?1:0);
     if(kx||ky){ const m=Math.hypot(kx,ky); this.dx=kx/m; this.dy=ky/m; this.hold=false; }
-    if(k.Space) this.hold=true;
+    this.brake=!!k.Space||this.brakeBtn;
   }
 };
 const gameEl=$('game');
@@ -1296,7 +1301,10 @@ const endTouch=e=>{ if(e.pointerId===input.pid){ input.touching=false; input.pid
 window.addEventListener('pointerup',endTouch); window.addEventListener('pointercancel',endTouch);
 window.addEventListener('keydown',e=>{ input.keys[e.code]=true; if(e.code==='Escape'||e.code==='KeyP') game.togglePause(); if(e.code.startsWith('Arrow')||e.code==='Space') e.preventDefault(); audio.init(); });
 window.addEventListener('keyup',e=>{ input.keys[e.code]=false; });
-window.addEventListener('blur',()=>{ input.keys={}; input.touching=false; });
+window.addEventListener('blur',()=>{ input.keys={}; input.touching=false; input.brakeBtn=false; });
+// REM button: hold to brake (Space does the same on a keyboard)
+{ const b=$('brakeBtn'), on=e=>{ e.preventDefault(); e.stopPropagation(); audio.init(); input.brakeBtn=true; b.classList.add('on'); }, off=()=>{ input.brakeBtn=false; b.classList.remove('on'); };
+  b.addEventListener('pointerdown',on); for(const ev of ['pointerup','pointercancel','pointerleave']) b.addEventListener(ev,off); }
 
 // ---------------------------------------------------------------- HUD
 const hud={
