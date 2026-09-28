@@ -1,0 +1,17 @@
+name: Headless tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Mono
+        run: sudo apt-get update && sudo apt-get install -y mono-mcs mono-runtime
+      - name: Compile check against UnityEngine reference assemblies
+        run: Tools/HeadlessTests/compile-check.sh
+      - name: Logic + traffic simulation tests
+        run: Tools/HeadlessTests/run.sh
