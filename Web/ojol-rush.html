@@ -590,7 +590,9 @@ function buildCity(){
   for(let bi=0;bi<NX-1;bi++) for(let bj=0;bj<NZ-1;bj++) buildBlock(bi,bj);
   // outer ring
   const m=32;
-  lots(MINX-m,MAXX+m,MINY-m,MINY-0.1,false); lots(MINX-m,MAXX+m,MAXY+0.1,MAXY+m,true);
+  lots(MINX-m,MAXX+m,MINY-m,MINY-0.1,false);
+  // north edge: a row of CBD towers right behind the last street (visible from the game camera), else normal lots
+  if((BLD.byRole.tall||[]).length) towerRow(MINX-m,MAXX+m,MAXY+0.6,MAXY+m); else lots(MINX-m,MAXX+m,MAXY+0.1,MAXY+m,true);
   ringCol(MINX-m,MINX-0.1); ringCol(MAXX+0.1,MAXX+m);
   skyline(); polesAndCables(); banners(); trees();
   for(const g of chunks.values()) if(!g.empty) cityGroup.add(g.mesh());
@@ -614,6 +616,12 @@ function building(x0,x1,y0,y1,south){
   wbb(g,cx,cy,0,w,h,d,wall); roofQuad(x0,x1,y0,y1,h+0.02);
   if(!south&&d>8){ const back=d*0.5, hb=h+R(1.5,3.5); wbb(g,cx,y0+back/2,0,w,hb,back,wall); roofQuad(x0,x1,y0,y0+back,hb+0.02); }
   if(south) facadeQuad(x0+0.04,x1-0.04,y0,Math.min(h-0.05,FAC_H));
+}
+function towerRow(x0,x1,y0,y1){
+  const TALL=BLD.byRole.tall; let x=x0, prev=null;
+  while(x<x1-8){ let e=pick(TALL); if(e===prev&&TALL.length>1) e=pick(TALL); prev=e;
+    const w=Math.min(e.w,x1-x); if(w<e.w*0.86){ lots(x,x1,y0,y1,true); break; }
+    placeBld(e,x,x+w,y0,y1,0,R(0,2)); x+=w+R(1.5,6); }
 }
 function skyline(){
   // Jakarta CBD towers on the northern horizon (seen through the golden haze).

@@ -41,7 +41,8 @@ window.street=async(files,back)=>{ const s=scene(); let xo=0; const ms=[];
   for(let i=0;i<W;i+=9){ const o=new T.Mesh(new T.BoxGeometry(0.8,1.7,1.9),new T.MeshToonMaterial({color:0x2fbf4a,gradientMap:GRAD})); o.position.set(i+2,0.85,6); s.add(o); }
   const segs=Math.ceil(W/34), sh=document.createElement('canvas'); sh.width=V*2; sh.height=H*2*segs; const x=sh.getContext('2d');
   R.setSize(V*2,H*2);
-  for(let k=0;k<segs;k++){ const tx=Math.min(W,17+k*34); const cam=new T.PerspectiveCamera(55,V/H,0.5,800); const d=34, p=58*Math.PI/180;
+  let maxH=0; s.traverse(o=>{ if(o.isMesh){ o.geometry.computeBoundingBox(); maxH=Math.max(maxH,o.geometry.boundingBox.max.y); } });
+  for(let k=0;k<segs;k++){ const tx=Math.min(W,17+k*34); const cam=new T.PerspectiveCamera(55,V/H,0.5,800); const d=Math.max(34,1.3*maxH), p=58*Math.PI/180;
     cam.position.set(tx,Math.sin(p)*d,-4+Math.cos(p)*d); cam.lookAt(tx,0,-4); R.render(s,cam); x.drawImage(R.domElement,0,k*H*2); }
   R.setSize(V,H); return sh.toDataURL('image/png'); };
 window.ready=true;
