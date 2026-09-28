@@ -3,6 +3,7 @@ painted VFX sprites (normalised so slashes bulge up, beams run horizontally and
 bolts vertically), sound effects and music (Ogg Vorbis, loudness-normalised,
 leading silence trimmed), new painted floors and the staff-wielding Hanoman
 (clips merged, textures shrunk).   python3 process_v3.py urls.json OUT_HF_DIR"""
+import re
 import json, math, os, subprocess, sys
 from PIL import Image
 
@@ -105,26 +106,43 @@ def fx(name, key):
     return "hf/fx/%s.jpg" % name
 
 
-def audio(src, dst, music=False):
-    af = "loudnorm=I=-16:TP=-1.5:LRA=11" if music else \
-        "silenceremove=start_periods=1:start_threshold=-50dB,loudnorm=I=-14:TP=-1.0:LRA=11,afade=t=in:d=0.005"
-    for codec, ext in (("libvorbis", "ogg"), ("libmp3lame", "mp3")):
-        out = "%s.%s" % (dst, ext)
-        cmd = ["ffmpeg", "-y", "-loglevel", "error", "-i", src, "-af", af, "-ar", "44100", "-ac", "2", "-c:a", codec,
-               "-q:a", "3" if music else "4", out]
-        if subprocess.call(cmd) == 0:
-            return out
-    raise SystemExit("ffmpeg failed for " + src)
+def peak_db(path):
+    r = subprocess.run(["ffmpeg", "-hide_banner", "-i", path, "-af", "volumedetect", "-f", "null", "-"],
+                       capture_output=True, text=True)
+    m = re.search(r"max_volume: (-?[0-9.]+) dB", r.stderr)
+    return float(m.group(1)) if m else -99.0
+
+
+def audio(src, dst, music=False, pre=""):
+    """Music: EBU loudness. SFX: peak-normalised to -1.5 dB (loudnorm leaves 1 s
+    clips 20-40 dB too quiet, and silenceremove at -50 dB emptied quiet sources)."""
+    if music:
+        af = "loudnorm=I=-16:TP=-1.5:LRA=11"
+    else:
+        gain = max(0.0, min(30.0, -1.5 - peak_db(src)))
+        af = pre + "silenceremove=start_periods=1:start_threshold=-70dB,volume=%.1fdB,alimiter=limit=0.9,afade=t=in:d=0.005" % gain
+    out = dst + ".ogg"
+    cmd = ["ffmpeg", "-y", "-loglevel", "error", "-i", src, "-af", af, "-ar", "44100", "-ac", "2", "-c:a", "libvorbis",
+           "-q:a", "3" if music else "4", out]
+    if subprocess.call(cmd) != 0:
+        raise SystemExit("ffmpeg failed for " + src)
+    return out
 
 
 man = {"fx": {}, "sfx": {}, "music": {}, "floors": {}}
 for name, key in U["fx"].items():
     man["fx"][name] = fx(name, key)
     print("fx", name)
+# swing2/3 are pitched copies of swing1 (the generated swing2 came back near-silent);
+# sources that are still near-silent are left out so the game uses its own sounds
+DERIVED = {"sfx_swing2": "asetrate=44100*1.07,aresample=44100,", "sfx_swing3": "asetrate=44100*0.9,aresample=44100,bass=g=4,"}
 for name, key in U["sfx"].items():
-    out = audio(get(key, "mp3"), os.path.join(OUT, "sfx", name))
-    man["sfx_files"] = man.get("sfx_files", {})
-    man["sfx_files"][name] = "hf/sfx/" + os.path.basename(out)
+    src = get(U["sfx"]["sfx_swing1"] if name in DERIVED else key, "mp3")
+    if peak_db(src) < -40.0:
+        print("sfx", name, "skipped (near-silent source)")
+        continue
+    out = audio(src, os.path.join(OUT, "sfx", name), pre=DERIVED.get(name, ""))
+    man["sfx"][name] = "hf/sfx/" + os.path.basename(out)
     print("sfx", name, os.path.getsize(out))
 for name, key in U["music"].items():
     out = audio(get(key, "m4a"), os.path.join(OUT, "music", name), True)

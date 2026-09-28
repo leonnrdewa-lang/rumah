@@ -122,7 +122,8 @@ func _on_file(key: String, ok: bool, body: PackedByteArray, ext := "") -> void:
 				print("HF model %s: FAILED to parse" % key.substr(6))
 		elif key.begins_with("sfx/"):
 			var st := audio_from_bytes(body, ext)
-			if st:
+			# an empty/undecodable clip would throw in the web audio backend (0-frame buffer)
+			if st and st.get_length() > 0.05:
 				sounds[key.substr(4)] = st
 		else:
 			var img := Image.new()
@@ -198,6 +199,8 @@ func music_stream(name: String, cb: Callable) -> void:
 		return
 	_fetch(base + path, func(ok: bool, body: PackedByteArray):
 		var st: AudioStream = audio_from_bytes(body, path.get_extension().to_lower()) if ok else null
+		if st and st.get_length() <= 0.05:
+			st = null
 		if st:
 			_music[name] = st
 		cb.call(st))
