@@ -80,6 +80,9 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
   #helmets{left:calc(14px + env(safe-area-inset-left,0px));} #helmets svg{width:40px;height:40px;}
   #big b{font-size:46px;} .screen{gap:8px;} .screen h1,.screen .logo{transform:scale(.8);}
 }
+.ctrlSeg{display:flex;gap:6px;padding:5px;border-radius:16px;background:rgba(15,12,10,.55);pointer-events:auto;}
+.segB{border:0;border-radius:12px;padding:10px 16px;font:800 16px var(--body);color:#fff;background:transparent;cursor:pointer;opacity:.7;}
+.segB.on{background:var(--green);color:#10200f;opacity:1;box-shadow:0 3px 0 rgba(0,0,0,.35);}
 #stick{position:absolute;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;border:3px solid rgba(255,255,255,.55);left:0;top:0;}
 #knob{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;background:rgba(255,255,255,.6);}
 #crack{position:absolute;left:50%;top:44%;width:180px;height:180px;margin:-90px 0 0 -90px;}
@@ -150,7 +153,7 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
     <p class="tag">Kamu bukan yang tercepat. Kamu jagonya nyelip.</p>
     <div class="spacer"></div>
     <button class="btn" id="startBtn">MULAI SHIFT</button>
-    <button class="btn alt ctrlBtn" id="ctrlTitle">Kontrol: SERET</button>
+    <div class="ctrlSeg"><button class="segB" data-m="drag">👆 SENTUH</button><button class="segB" data-m="joy">🕹️ JOYSTICK</button></div>
     <div class="best" id="bestTitle"></div>
     <p class="hint">Seret jempol = arah motor · Tahan tombol REM (Spasi di PC) = rem<br>Salip mepet = poin · Antar sebelum waktu habis</p>
     <a id="credit" href="https://www.instagram.com/leonrdewa/" target="_blank" rel="noopener">Dibuat oleh <b>@leonrdewa</b></a>
@@ -160,7 +163,7 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
     <div class="over-title">ISTIRAHAT DULU</div>
     <button class="btn" id="resumeBtn">LANJUT</button>
     <button class="btn warn" id="restartBtn">ULANG SHIFT</button>
-    <button class="btn alt ctrlBtn" id="ctrlPause">Kontrol: SERET</button>
+    <div class="ctrlSeg"><button class="segB" data-m="drag">👆 SENTUH</button><button class="segB" data-m="joy">🕹️ JOYSTICK</button></div>
   </div>
 
   <div id="over" class="screen" hidden>
@@ -170,7 +173,7 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
     <div class="best" id="bestOver"></div>
     <dl class="stats" id="stats"></dl>
     <button class="btn" id="againBtn">LAGI</button>
-    <button class="btn alt ctrlBtn" id="ctrlOver">Kontrol: SERET</button>
+    <div class="ctrlSeg"><button class="segB" data-m="drag">👆 SENTUH</button><button class="segB" data-m="joy">🕹️ JOYSTICK</button></div>
   </div>
 </div>
 
@@ -1384,7 +1387,7 @@ const audio={
 const input={
   mode:store.get('ojol_ctrl','drag'), dx:0, dy:0, hold:false, brake:false, brakeBtn:false, pid:null, ox:0, oy:0, kx:0, ky:0, touching:false, keys:{},
   radius(){ return Math.max(56,Math.min(innerWidth,innerHeight)*.12); },
-  jc(){ return [innerWidth/2,innerHeight*.8]; },
+  jc(){ const r=this.radius(); return [Math.max(r+34,innerWidth*.16),innerHeight-r-(innerHeight>innerWidth?110:46)]; },
   update(){
     this.dx=this.dy=0; this.hold=false;
     if(this.touching){ const ddx=this.kx-this.ox, ddy=this.ky-this.oy, m=Math.hypot(ddx,ddy);
@@ -1399,7 +1402,7 @@ gameEl.addEventListener('pointerdown',e=>{
   audio.init();
   if(game.state!=='play'||game.paused||e.target.closest('button')) return;
   input.pid=e.pointerId; input.touching=true;
-  if(input.mode==='joy'){ [input.ox,input.oy]=input.jc(); } else { input.ox=e.clientX; input.oy=e.clientY; }
+  if(input.mode==='joy'){ [input.ox,input.oy]=input.jc(); if(Math.hypot(e.clientX-input.ox,e.clientY-input.oy)>input.radius()*2.6) { input.touching=false; input.pid=null; return; } } else { input.ox=e.clientX; input.oy=e.clientY; }
   input.kx=e.clientX; input.ky=e.clientY; clampKnob(); e.preventDefault();
 },{passive:false});
 function clampKnob(){ const r=input.radius(), dx=input.kx-input.ox, dy=input.ky-input.oy, m=Math.hypot(dx,dy);
@@ -1464,7 +1467,7 @@ const hud={
     // joystick
     const st=$('stick'); const r=input.radius();
     if(input.mode==='joy'||input.touching){ st.hidden=false; const [ox,oy]=input.mode==='joy'&&!input.touching?input.jc():[input.ox,input.oy];
-      st.style.width=st.style.height=r*2+'px'; st.style.margin=(-r)+'px 0 0 '+(-r)+'px'; st.style.transform=`translate(${ox}px,${oy}px)`; st.style.opacity=input.mode==='joy'?.8:.45;
+      st.style.width=st.style.height=r*2+'px'; st.style.margin=(-r)+'px 0 0 '+(-r)+'px'; st.style.transform=`translate(${ox}px,${oy}px)`; st.style.opacity=input.mode==='joy'?.9:.45;
       let kx=input.touching?input.kx-ox:0, ky=input.touching?input.ky-oy:0; const m=Math.hypot(kx,ky); if(m>r){ kx=kx/m*r; ky=ky/m*r; } $('knob').style.transform=`translate(${kx}px,${ky}px)`; }
     else st.hidden=true;
     // target arrow
@@ -1511,7 +1514,7 @@ const game={
   screens(){
     $('title').hidden=this.state!=='title'; $('hud').hidden=this.state!=='play'; $('pause').hidden=!(this.state==='play'&&this.paused); $('over').hidden=this.state!=='over';
     $('bestTitle').textContent=this.best?'Skor terbaik: '+fmt(this.best):'Belum ada skor. Gas!';
-    for(const b of document.querySelectorAll('.ctrlBtn')) b.textContent='Kontrol: '+(input.mode==='drag'?'SERET (bebas)':'JOYSTICK (tetap)');
+    for(const b of document.querySelectorAll('.segB')) b.classList.toggle('on',b.dataset.m===input.mode);
     if(this.state==='over'){
       $('reason').textContent=this.reason; $('finalScore').textContent=fmt(score.score);
       $('bestOver').textContent=this.newBest?'REKOR BARU!':'Terbaik: '+fmt(this.best);
@@ -1586,7 +1589,7 @@ $('resumeBtn').onclick=()=>game.togglePause();
 $('pauseBtn').onclick=()=>game.togglePause();
 $('musicBtn').onclick=()=>{ audio.init(); $('musicBtn').classList.toggle('off',!audio.toggleMusic()); };
 $('musicBtn').classList.toggle('off',store.get('ojol_music','1')!=='1');
-for(const b of document.querySelectorAll('.ctrlBtn')) b.onclick=()=>{ input.mode=input.mode==='drag'?'joy':'drag'; store.set('ojol_ctrl',input.mode); game.screens(); };
+for(const b of document.querySelectorAll('.segB')) b.onclick=()=>{ input.mode=b.dataset.m; store.set('ojol_ctrl',input.mode); audio.init(); game.screens(); };
 document.addEventListener('visibilitychange',()=>{ if(document.hidden&&game.state==='play'&&!game.paused) game.togglePause(); });
 
 // ---------------------------------------------------------------- player counter (server: /api/plays on the hosting site)
