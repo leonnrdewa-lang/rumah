@@ -4,11 +4,14 @@ extends Node
 ## writes window.sawitButtons: every visible, enabled button as
 ## {text, x, y, w, h} in CSS pixels of the page. The test then taps by label
 ## ("Lanjut", "Siap, Juragan!") instead of guessing coordinates.
-## It only reads the scene tree; nothing is registered outside the web build.
+## It only reads the scene tree (sawitTestSet, which changes money/day, exists only
+## on a page opened with ?sawit_test); nothing is registered outside the web build.
 
 var _cb: JavaScriptObject
 var _cb_audio: JavaScriptObject
 var _cb_talk: JavaScriptObject
+var _cb_state: JavaScriptObject
+var _cb_set: JavaScriptObject
 var _dpr := 1.0
 
 
@@ -25,12 +28,47 @@ func _ready() -> void:
 		# window.sawitTalk() opens a talk dialog with the first land-owning villager
 		_cb_talk = JavaScriptBridge.create_callback(_talk)
 		win.sawitTalk = _cb_talk
+		# window.sawitState() -> window.sawitStateJson: money, day, hour, game state, player
+		# position, open modal (tools/web_savecode_test.js)
+		_cb_state = JavaScriptBridge.create_callback(_state)
+		win.sawitState = _cb_state
+		# only on a test URL (?sawit_test): window.sawitTestSet(money, day) gives the save
+		# code test a game that differs from a new one
+		if str(JavaScriptBridge.eval("location.search", true)).contains("sawit_test"):
+			_cb_set = JavaScriptBridge.create_callback(_test_set)
+			win.sawitTestSet = _cb_set
 
 
 func _exit_tree() -> void:
 	_cb = null
 	_cb_audio = null
 	_cb_talk = null
+	_cb_state = null
+	_cb_set = null
+
+
+func _state(_args: Array) -> void:
+	var st := {"money": GS.money, "day": GS.day, "hour": GS.hour, "active": GS.game_active, "has_save": GS.has_save()}
+	var w := _find_world(get_tree().root)
+	if w:
+		st["state"] = str(w.get("state"))
+		var p: Node3D = w.get("player")
+		if p:
+			st["pos"] = [p.global_position.x, p.global_position.z]
+		var ui: Node = w.get("ui")
+		if ui:
+			var m: Node = ui.get("modal")
+			st["modal"] = str(m.name) if m else ""
+	var win := JavaScriptBridge.get_interface("window")
+	if win:
+		win.sawitStateJson = JSON.stringify(st)
+
+
+func _test_set(args: Array) -> void:
+	if args.size() >= 2:
+		GS.money = int(args[0])
+		GS.day = int(args[1])
+		GS.stats_changed.emit()
 
 
 func _audio(_args: Array) -> void:
@@ -101,7 +139,10 @@ func _collect(n: Node, out: Array) -> void:
 		return
 	if n is BaseButton and not (n as BaseButton).disabled:
 		var b := n as BaseButton
-		var t: Transform2D = b.get_screen_transform()
+		# viewport -> window pixels: the stretch + content scale. get_screen_transform()
+		# leaves it out (the root window embeds subwindows), which put every button at
+		# its 1280x720-layout place on phone screens
+		var t: Transform2D = get_tree().root.get_final_transform() * b.get_global_transform_with_canvas()
 		var r := Rect2(t.origin, b.size * t.get_scale())
 		# canvas pixels -> CSS pixels
 		var dpr := _dpr

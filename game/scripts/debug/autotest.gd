@@ -164,6 +164,12 @@ func _run() -> void:
 		"anim":
 			# character animation checks (anim track): scripts/actors/anim_check.gd
 			await AnimCheck.run(self)
+		"animals_models":
+			# animal GLBs (blender/animals.py): clips, extras, materials; screenshots
+			await AnimalModelsCheck.run(self)
+		"animals":
+			# the animals in the island (scripts/world/animals.gd): places, behaviour, petting; screenshots
+			await AnimalsCheck.run(self)
 		"basic":
 			await shot("title", 60)
 			world.start_game(false)

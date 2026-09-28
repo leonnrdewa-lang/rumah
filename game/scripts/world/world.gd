@@ -13,6 +13,7 @@ const RING_SHADER := preload("res://shaders/ring.gdshader")
 const FISHING_SCRIPT := preload("res://scripts/world/fishing.gd")
 const INTERIOR_SCRIPT := preload("res://scripts/world/interior.gd")
 const AMBIENCE_SCRIPT := preload("res://scripts/world/ambience.gd")
+const ANIMALS_SCRIPT := preload("res://scripts/world/animals.gd")
 ## x beyond this is the house interior (interior.gd ORIGIN), off the island
 const INTERIOR_X := 300.0
 const SHADE_TEX_PATH := "res://assets/textures/world_shade.png"
@@ -149,6 +150,7 @@ var _tile_grid := {}   # 4 m cell -> planting spots (xz) in it and its neighbour
 var fishing: Node3D
 var interior: Node3D
 var ambience: Node3D           # nature sounds by place and hour (ambience.gd)
+var animals: Node3D            # cattle, goats, chickens, ducks, frogs, cats, dogs (animals.gd)
 var inside := ""               # house id the player is in ("" = outdoors)
 var _inside_vid := ""
 var _fish_spot := {}           # {"pos", "water"} in front of the player, or {}
@@ -203,6 +205,10 @@ func _ready() -> void:
 	ambience.name = "Ambience"
 	ambience.world = self
 	add_child(ambience)
+	animals = ANIMALS_SCRIPT.new()
+	animals.name = "Animals"
+	animals.world = self
+	add_child(animals)
 	deals = DEALS_SCRIPT.new()
 	deals.name = "Deals"
 	deals.world = self
@@ -1625,6 +1631,8 @@ func _update_target() -> void:
 			best["_pos"] = pos
 	if best.is_empty() and inside == "":
 		best = _fish_target()
+	if best.is_empty() and inside == "" and animals:
+		best = animals.pet_target()   # "Elus <hewan>": lowest priority, only when nothing else is in reach
 	target = best
 	if best.is_empty():
 		_ring.visible = false

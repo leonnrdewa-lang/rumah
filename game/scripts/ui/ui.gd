@@ -1726,6 +1726,9 @@ func show_save_code() -> void:
 	if code == "":
 		toast("Gagal membuat kode save.", "bad")
 		return
+	# web: a page <dialog> with a real textarea + "Salin kode" (web_code_dialog.gd)
+	if _web_code("export", code):
+		return
 	DisplayServer.clipboard_set(code)
 	var box := LineEdit.new()
 	box.text = code
@@ -1742,10 +1745,9 @@ func show_save_code() -> void:
 
 func ask_save_code() -> void:
 	## Title screen: paste a code from show_save_code() to continue that game here.
-	if OS.has_feature("web"):
-		# the browser's own prompt: pasting works reliably on phones there
-		var got = JavaScriptBridge.eval("window.prompt('Tempel kode save (SAWIT1-...)') || ''", true)
-		_use_save_code(str(got))
+	# web: a page <dialog> with a real textarea (native paste on phones). Not
+	# window.prompt(): the sandboxed Artifact iframe blocks it, so the button did nothing.
+	if _web_code("import"):
 		return
 	var box := LineEdit.new()
 	box.placeholder_text = "Tempel kode save di sini (SAWIT1-...)"
@@ -1762,6 +1764,19 @@ func _use_save_code(code: String) -> void:
 		world.start_game(true)
 	else:
 		toast("Kode save tidak valid atau rusak.", "bad")
+
+
+func _web_code(mode: String, code := "") -> bool:
+	## Web only: the save-code dialog as HTML over the canvas; false elsewhere.
+	if not OS.has_feature("web"):
+		return false
+	var d: Node = get_node_or_null("WebCodeDialog")
+	if d == null:
+		d = preload("res://scripts/ui/web_code_dialog.gd").new()
+		d.name = "WebCodeDialog"
+		d.set("ui", self)
+		add_child(d)
+	return d.open(mode, code)
 
 
 func show_credits(on_close := Callable()) -> void:

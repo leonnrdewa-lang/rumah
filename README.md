@@ -31,6 +31,13 @@ mereka dengan harga yang kamu atur sendiri.
   per baris dipilih dengan Whisper (semua klip WER ≤ 0,25), -18 LUFS (`tools/make_voices.py`). Audionya di luar
   paket game (`game/voices/`, ±24 MB Ogg): bank tiap tokoh diunduh saat didekati, obrolan bisnisnya saat
   percakapan dimulai
+- **Hewan:** ±80 hewan (`game/scripts/world/animals.gd`, model dari `blender/animals.py`, cel-shading + garis
+  tinta seperti warga): sapi bali merumput di padang dekat desa, kerbau di tepi sungai (kadang berendam),
+  kambing di dekat pagar, kawanan ayam dengan jagonya di halaman rumah (juga di depan rumahmu), bebek berenang
+  di sungai, kodok di tepian (lebih banyak dan ramai bersahutan malam hari), kucing di teras, anjing kampung.
+  Mereka berkeliaran, makan, bersuara (suara 3D, paling banyak 3 sekaligus; jago berkokok pagi), kabur kalau
+  didatangi sambil berlari, menoleh ke arahmu, anjing kadang membuntuti; malam hari tidur di dekat kandang.
+  Hadap seekor hewan dan tekan tombol aksi untuk **mengelusnya** (ia bersuara, muncul hati)
 
 ## Main
 
@@ -47,7 +54,7 @@ cd docs && python3 -m http.server 8060
 | | PC | Android (browser) |
 |---|---|---|
 | Jalan | WASD / panah (Shift = lari) | geser jempol di sisi kiri layar |
-| Aksi (tebas, tanam, pupuk, panen, ngobrol, masuk rumah, mancing, tidur) | E / Spasi | tombol bulat kanan bawah |
+| Aksi (tebas, tanam, pupuk, panen, ngobrol, masuk rumah, mancing, tidur, elus hewan) | E / Spasi | tombol bulat kanan bawah |
 | Tas (semua barang bawaan) | B / tombol tas kanan atas | tombol tas kanan atas |
 | Pilihan dialog | klik atau tombol angka 1–6 | ketuk |
 | Menu / Status / Peta | Esc atau P / Tab atau I / klik peta mini | tombol Menu, Status, ketuk peta mini |
@@ -101,11 +108,13 @@ python3 blender/vegetation.py     # sawit (4 tahap), semak, pohon, batu
 python3 blender/buildings.py      # rumah (a-g), kantor, warung, koperasi, pabrik, dermaga, jembatan, truk
 python3 blender/props.py          # props + ikon item
 python3 blender/characters.py     # 12 karakter chibi + potret dialog
+python3 blender/animals.py        # 8 hewan (sapi, kerbau, kambing, ayam, bebek, kodok, kucing, anjing): rig + animasi
 python3 tools/make_ui_icons.py
 python3 tools/make_item_icons.py   # ikon ikan, pancing, tas, kasur
 python3 tools/make_audio.py
 python3 tools/make_music.py       # butuh fluidsynth, ffmpeg, musescore-general-soundfont (apt), mido pyloudnorm soundfile (pip)
 python3 tools/make_ambience.py    # suara alam (amb_*.ogg): butuh ffmpeg (libvorbis), numpy scipy soundfile pyloudnorm
+python3 tools/make_animal_sounds.py # suara hewan (audio/animals/<id>_<n>.ogg, ayam_crow): sintesis source-filter, -16 LUFS
 python3 tools/make_voices.py all  # suara tokoh: butuh model TTS di /opt/idtts, Whisper di /opt/asr (lihat docstring)
 python3 tools/build_web.py        # ekspor Godot → docs/ dan dist/artifact/
 ```
@@ -117,8 +126,12 @@ godot --headless --path game -- --autotest=logic          # semua jalur gameplay
 godot --headless --path game -- --autotest=music          # musik: konteks, crossfade, ducking, jingle
 godot --headless --path game -- --autotest=voice          # suara: tiap baris punya klip, pemutaran di bus Voice
 godot --headless --path game -- --autotest=ambience       # suara alam: tabel mix di sungai/jembatan/pantai/dermaga/hutan/dusun/rumah, siang & malam
+godot --headless --path game -- --autotest=animals_models # model hewan: klip, loop, extras, material toon + outline, ukuran, arah hadap
+xvfb-run -a godot --path game --rendering-driver opengl3 -- --autotest=animals --shots=/tmp/shots  # hewan di pulau: sebaran, perilaku, elus, biaya/frame
 xvfb-run godot --path game --rendering-driver opengl3 -- --autotest=basic --shots=/tmp/shots
 NODE_PATH=$(npm root -g) node tools/web_test.js http://127.0.0.1:8060/ /tmp/shots
+# Kode Save di web (langsung + di iframe ber-sandbox seperti Artifact claude.ai, PC & HP): ekspor → HP baru → lanjut
+NODE_PATH=$(npm root -g) node tools/web_savecode_test.js dist/artifact /tmp/shots
 ```
 
 ## Lisensi aset pihak ketiga
