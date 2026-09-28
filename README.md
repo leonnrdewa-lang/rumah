@@ -33,6 +33,12 @@ Built-in render pipeline dan URP sama-sama didukung (material di-clone dari mate
 mengikuti kode Unity. Bisa dimainkan langsung di HP Android maupun desktop. Karena tidak ada Unity Editor di
 lingkungan pengembangan, versi inilah yang dipakai sebagai demo yang bisa dicoba.
 
+Versi online: **https://ojol-rush.higgsfield.app**. Di sana kendaraan, pohon, dan bangunan (rumah, ruko, gedung)
+memakai model 3D cel-shaded: gambar referensi dibuat dengan GPT Image 2.5, dijadikan 3D lewat Meshy
+(image-to-3D), lalu teksturnya dikecilkan ke 512 px dan mesh bangunan disederhanakan. Model dimuat dari
+`models/<nama>.glb` di samping halaman. Bila file model tidak ada (misalnya saat membuka `Web/ojol-rush.html`
+langsung dari repo ini), game otomatis kembali memakai sprite 2D.
+
 ## Kontrol
 
 | Input | Aksi |

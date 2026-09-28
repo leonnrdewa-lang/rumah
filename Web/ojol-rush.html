@@ -153,6 +153,7 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script>
 "use strict";
 /* ====================================================================================
@@ -351,6 +352,8 @@ const shdMat=n=>SHMAT[n]||(SHMAT[n]=new T.MeshBasicMaterial({map:tex(n),color:0x
 function plane(w,l){ const k=w.toFixed(2)+'x'+l.toFixed(2); let g=PGEO[k]; if(!g){ g=new T.PlaneGeometry(w,l); g.rotateX(-Math.PI/2); PGEO[k]=g; } return g; }
 // A flat sprite lying on the street (top of the image = forward = -Z) plus a drop shadow cast by the low sun.
 function sprite(name,len,y=0.3,shadow=0.55){
+  if(name==='cone') return cone3d(len);
+  const V=VARIANT[name]; if(V&&MDL[V[0]]) return model(V[0],len,shadow,V[1]);
   const [iw,ih]=SPR[name], w=len*iw/ih, g=new T.Group();
   const body=new T.Mesh(plane(w,len),sprMat(name)); body.position.y=y; body.renderOrder=3; g.add(body);
   if(shadow>0){ const sh=new T.Mesh(plane(w,len),shdMat(name)); sh.position.y=0.04; sh.renderOrder=2; g.add(sh); g.userData.shadow=sh; g.userData.shOff=shadow; }
@@ -361,6 +364,92 @@ function syncShadow(g,rotY){
   const sh=g.userData.shadow; if(!sh) return; const o=g.userData.shOff, a=-(rotY===undefined?g.rotation.y:rotY), c=Math.cos(a), sn=Math.sin(a);
   sh.position.x=o*c+(-o)*sn; sh.position.z=-o*sn+(-o)*c;
 }
+// ---------------------------------------------------------------- 3D models (Meshy image-to-3D of GPT Image 2.5 art), cel shaded
+// Loaded from models/<name>.glb; anything missing falls back to the flat sprite above.
+// yaw (deg) turns each model so vehicles face -Z (forward) and buildings face +Z (their street side).
+const MODEL_DEF={ojol:-90,bike:-90,mpv:-90,sedan:-90,angkot:-90,bajaj:-90,bus:-90,gerobak:-90,policecar:-90,tree:0,house:0,ruko:0,tower:0};
+const BUILDINGS=new Set(['house','ruko','tower']), MDL={};
+// sprite name -> [model, tint]
+const VARIANT={ojol:['ojol'],bike1:['bike'],bike2:['bike',0xa9c8ff],mpv:['mpv'],hatch:['sedan',0xb5dcff],sedan:['sedan'],angkot:['angkot'],bajaj:['bajaj'],
+  bus:['bus'],gerobak:['gerobak'],policecar:['policecar'],tree:['tree']};
+// Ink outline: back faces pushed out along the normal by a constant screen-space width.
+const M_INK=new T.MeshBasicMaterial({color:0x24170f,side:T.BackSide});
+M_INK.onBeforeCompile=sh=>{ sh.vertexShader=sh.vertexShader.replace('#include <project_vertex>',`#include <project_vertex>
+  vec3 inkN=normal;
+  #ifdef USE_INSTANCING
+  inkN=mat3(instanceMatrix)*inkN;
+  #endif
+  inkN=normalize(normalMatrix*inkN); gl_Position.xy+=normalize(inkN.xy+vec2(1e-5))*0.0034*gl_Position.w;`); };
+const BLOB=(()=>{ const c=document.createElement('canvas'); c.width=c.height=64; const x=c.getContext('2d'), gr=x.createRadialGradient(32,32,4,32,32,32);
+  gr.addColorStop(0,'rgba(0,0,0,1)'); gr.addColorStop(.6,'rgba(0,0,0,.8)'); gr.addColorStop(1,'rgba(0,0,0,0)'); x.fillStyle=gr; x.fillRect(0,0,64,64); return new T.CanvasTexture(c); })();
+const M_BLOB=new T.MeshBasicMaterial({map:BLOB,color:0x1a0f08,transparent:true,opacity:0.42,depthWrite:false});
+function prepModel(n,root){
+  root.updateMatrixWorld(true);
+  const rot=new T.Matrix4().makeRotationY(MODEL_DEF[n]*DEG), parts=[], box=new T.Box3();
+  root.traverse(o=>{ if(!o.isMesh) return;
+    const g=o.geometry.clone(); g.applyMatrix4(o.matrixWorld); g.applyMatrix4(rot); if(!g.attributes.normal) g.computeVertexNormals(); g.computeBoundingBox(); box.union(g.boundingBox);
+    const src=Array.isArray(o.material)?o.material[0]:o.material, map=src.map||null;
+    if(map){ map.encoding=T.LinearEncoding; map.anisotropy=4; }
+    parts.push({g,mat:new T.MeshToonMaterial({map,color:map?0xffffff:src.color,gradientMap:GRAD})}); });
+  if(!parts.length) return;
+  const size=box.getSize(new T.Vector3()), c=box.getCenter(new T.Vector3()), bld=BUILDINGS.has(n);
+  const m=(bld?new T.Matrix4().makeScale(1/size.x,1/size.y,1/size.z):new T.Matrix4().makeScale(1/size.z,1/size.z,1/size.z)).multiply(new T.Matrix4().makeTranslation(-c.x,-box.min.y,-c.z));
+  for(const p of parts){ p.g.applyMatrix4(m); p.g.computeBoundingSphere(); }
+  MDL[n]={parts,sx:size.x/size.z,sy:size.y/size.z,asp:size.z/size.x};
+}
+function loadModels(onProgress){
+  if(!T.GLTFLoader) return Promise.resolve();
+  const L=new T.GLTFLoader(), names=Object.keys(MODEL_DEF); let done=0;
+  return Promise.all(names.map(n=>new Promise(res=>{
+    const fin=()=>{ done++; if(onProgress) onProgress(done,names.length); res(); };
+    L.load('models/'+n+'.glb',g=>{ try{ prepModel(n,g.scene); }catch(e){ console.warn('model',n,e); } fin(); },undefined,()=>fin());
+  })));
+}
+const TINTED={};
+function tintedMat(mat,tint){ const k=mat.uuid+tint; return TINTED[k]||(TINTED[k]=Object.assign(mat.clone(),{color:new T.Color(tint)})); }
+// A cel-shaded 3D model `len` long (forward = -Z) with a soft blob shadow; same userData contract as sprite().
+function model(n,len,shadow,tint){
+  const M=MDL[n], g=new T.Group(), body=new T.Group();
+  for(const p of M.parts){ body.add(new T.Mesh(p.g,tint?tintedMat(p.mat,tint):p.mat)); body.add(new T.Mesh(p.g,M_INK)); }
+  body.scale.setScalar(len); g.add(body);
+  const w=len*M.sx, h=len*M.sy;
+  if(shadow>0){ const sh=new T.Mesh(plane(w*1.25,len*1.12),M_BLOB); sh.position.y=0.04; sh.renderOrder=2; g.add(sh); g.userData.shadow=sh; g.userData.shOff=shadow*0.6; }
+  g.userData.body=body; g.userData.w=w; g.userData.len=len; g.userData.h=h; g.userData.is3d=true; return g;
+}
+const M_CONE=new T.MeshToonMaterial({color:0xff6a1a,gradientMap:GRAD}), M_CONE_W=new T.MeshToonMaterial({color:0xf5f5ee,gradientMap:GRAD});
+function cone3d(len){
+  const g=new T.Group(), base=new T.Mesh(new T.BoxGeometry(len*0.8,len*0.08,len*0.8),M_CONE); base.position.y=len*0.04; g.add(base);
+  const c=new T.Mesh(new T.ConeGeometry(len*0.3,len,10),M_CONE); c.position.y=len*0.5; g.add(c, new T.Mesh(c.geometry,M_INK)); g.children[2].position.copy(c.position);
+  const band=new T.Mesh(new T.CylinderGeometry(len*0.17,len*0.21,len*0.16,10),M_CONE_W); band.position.y=len*0.55; g.add(band);
+  g.userData.body=g; g.userData.w=len*0.8; g.userData.len=len*0.8; g.userData.h=len; g.userData.is3d=true; return g;
+}
+// Buildings: street-facing models collected into instanced meshes (one draw per model + one for its ink).
+const BI={house:[],ruko:[],tower:[]}, _bm=new T.Matrix4(), _bq=new T.Quaternion(), _bp=new T.Vector3(), _bs=new T.Vector3(), _Y=new T.Vector3(0,1,0);
+const FACE_YAW=[0,Math.PI,Math.PI/2,-Math.PI/2]; // facing south(+Z), north(-Z), east(+X), west(-X)
+function bInst(type,cx,cy,W,H,D,face,ink){ _bq.setFromAxisAngle(_Y,FACE_YAW[face]); const m=_bm.compose(_bp.set(cx,0,-cy),_bq,_bs.set(W,H,D)).clone(); m.ink=ink; BI[type].push(m); }
+// Fill a lot: a building on the street edge (natural-ish depth) plus a back-lot house when there's room.
+function lot3d(x0,x1,y0,y1,face,type,h){
+  const ew=face>=2, W=ew?y1-y0:x1-x0, D=ew?x1-x0:y1-y0, a=MDL[type].asp;
+  const dF=Math.min(D,Math.max(4,W*a*R(1,1.3))), rest=D-dF-0.3;
+  const put=(t,off,dep,hh,ink)=>{ const mid=off+dep/2; let cx=(x0+x1)/2, cy=(y0+y1)/2;
+    if(face===0) cy=y0+mid; else if(face===1) cy=y1-mid; else if(face===2) cx=x1-mid; else cx=x0+mid;
+    bInst(t,cx,cy,W-0.25,hh,dep,face,ink); };
+  put(type,0,dF,h,true);
+  // back-lot fill skips the ink pass: it is mostly seen as roofs and halves the triangle count
+  if(rest>3.5) put(Math.random()<.35&&MDL.ruko?'ruko':'house',dF+0.3,rest,Math.max(3,h*R(0.6,1.1)),false);
+}
+// Instances are grouped per 60 m chunk; each chunk shares the model's buffers but gets its own bounding
+// sphere so off-screen chunks are frustum-culled.
+function flushBuildings(){
+  const e=new T.Vector3();
+  for(const t in BI){ if(!MDL[t]) continue; const groups=new Map();
+    for(const m of BI[t]){ e.setFromMatrixPosition(m); const k=Math.floor(e.x/60)+','+Math.floor(e.z/60); let L=groups.get(k); if(!L) groups.set(k,L=[]); L.push(m); }
+    for(const [k,L] of groups){ const [gx,gz]=k.split(',').map(Number), sphere=new T.Sphere(new T.Vector3(gx*60+30,8,gz*60+30),62);
+      for(const p of MDL[t].parts){ const g=new T.BufferGeometry(); for(const a in p.g.attributes) g.setAttribute(a,p.g.attributes[a]); g.setIndex(p.g.index); g.boundingSphere=sphere;
+        const add=(mat,list)=>{ if(!list.length) return; const im=new T.InstancedMesh(g,mat,list.length); list.forEach((m,i)=>im.setMatrixAt(i,m)); cityGroup.add(im); };
+        add(p.mat,L); add(M_INK,L.filter(m=>m.ink)); } } }
+}
+
 function glowTex(r,g,b){ const c=document.createElement('canvas'); c.width=c.height=64; const x=c.getContext('2d'), gr=x.createRadialGradient(32,32,0,32,32,32);
   gr.addColorStop(0,`rgba(${r},${g},${b},1)`); gr.addColorStop(.35,`rgba(${r},${g},${b},.85)`); gr.addColorStop(1,`rgba(${r},${g},${b},0)`); x.fillStyle=gr; x.fillRect(0,0,64,64); return new T.CanvasTexture(c); }
 const M_BRAKE_GLOW=new T.MeshBasicMaterial({map:glowTex(255,40,25),transparent:true,depthWrite:false,blending:T.AdditiveBlending});
@@ -452,7 +541,7 @@ function buildCity(){
   for(const g of chunks.values()) if(!g.empty) cityGroup.add(g.mesh());
   // Buildings get ink outlines for the cel-shaded look.
   for(const g of bchunks.values()) if(!g.empty){ const m=g.mesh(); cityGroup.add(m); cityGroup.add(new T.LineSegments(new T.EdgesGeometry(m.geometry,25),M_OUTLINE)); }
-  flushQuads();
+  flushQuads(); flushBuildings();
 }
 function buildBlock(bi,bj){
   const b=blockRect(bi,bj); let gx=NaN, gz=NaN;
@@ -465,6 +554,13 @@ function buildBlock(bi,bj){
 function lots(x0,x1,y0,y1,south){ let x=x0; while(x<x1-0.5){ let w=R(6,11); if(x1-(x+w)<5) w=x1-x; building(x+0.15,x+w-0.15,y0,y1,south); x+=w; } }
 function building(x0,x1,y0,y1,south){
   // South-row buildings face the camera: textured ruko facades. North-row ones stay low at the street so they never hide it.
+  if(MDL.house&&MDL.ruko){
+    const w=x1-x0, face=south?0:1;
+    if(south&&y0>MAXY&&MDL.tower&&Math.random()<.55) lot3d(x0,x1,y0,y1,face,'tower',R(14,26));
+    else if(south) lot3d(x0,x1,y0,y1,face,w>7.5&&Math.random()<.75?'ruko':'house',R(5,8));
+    else lot3d(x0,x1,y0,y1,face,'house',R(2.8,3.6));
+    return;
+  }
   const w=x1-x0, d=y1-y0, h=south?R(4.6,8.5):R(2.4,3.2), cx=(x0+x1)/2, cy=(y0+y1)/2, g=bchunk(cx,cy), wall=pick(WALLS);
   wbb(g,cx,cy,0,w,h,d,wall); roofQuad(x0,x1,y0,y1,h+0.02);
   if(!south&&d>8){ const back=d*0.5, hb=h+R(1.5,3.5); wbb(g,cx,y0+back/2,0,w,hb,back,wall); roofQuad(x0,x1,y0,y0+back,hb+0.02); }
@@ -481,7 +577,8 @@ function skyline(){
     x+=w+R(2,10); }
 }
 function Palette_dark(c){ const col=new T.Color(c); col.multiplyScalar(0.72); return col.getHex(); }
-function ringCol(x0,x1){ let y=MINY; while(y<MAXY-0.5){ let d=R(8,14); if(MAXY-(y+d)<6) d=MAXY-y; const h=R(3.5,7), cx=(x0+x1)/2, cy=y+d/2, g=bchunk(cx,cy); wbb(g,cx,cy,0,x1-x0,h,d-0.3,pick(WALLS)); roofQuad(x0,x1,y+0.15,y+d-0.15,h+0.02); y+=d; } }
+function ringCol(x0,x1){ let y=MINY; while(y<MAXY-0.5){ let d=R(8,14); if(MAXY-(y+d)<6) d=MAXY-y; const h=R(3.5,7), cx=(x0+x1)/2, cy=y+d/2, g=bchunk(cx,cy);
+  if(MDL.house&&MDL.ruko){ lot3d(x0,x1,y+0.15,y+d-0.15,x1<MINX?2:3,Math.random()<.5?'ruko':'house',h); y+=d; continue; } wbb(g,cx,cy,0,x1-x0,h,d-0.3,pick(WALLS)); roofQuad(x0,x1,y+0.15,y+d-0.15,h+0.02); y+=d; } }
 function pole(x,y){
   const h=R(6.6,7.4), g=chunk(x,y); wbb(g,x,y,SW_H,0.22,h,0.22,POLE); wbox(g,x,y,h-0.4,1.4,0.1,0.1,POLE);
   if(Math.random()<0.35){ for(let k=0;k<4;k++) g.beam(x+R(-.8,.8),h-R(.3,1.3),-(y+R(-.8,.8)),x+R(-.8,.8),h-R(.3,1.3),-(y+R(-.8,.8)),0.05,CABLE); wbox(g,x,y,h-1,0.45,0.4,0.45,CABLE); }
@@ -513,7 +610,8 @@ function trees(){
     let i,j,d; do{ i=RI(NX); j=RI(NZ); d=RI(2); } while(!hasEdge(i,j,d));
     const f=DIRS[d], l=[-f[1],f[0]], side=d===0?1:(Math.random()<.5?1:-1), u=CORR+R(3,37), o=side*(CORR-0.9);
     const x=i*PITCH+f[0]*u+l[0]*o, y=j*PITCH+f[1]*u+l[1]*o, g=chunk(x,y);
-    wbb(g,x,y,SW_H,0.3,2.6,0.3,0x734d2e); wbb(g,x,y,SW_H,0.36,0.6,0.36,0xf2f2eb);
+    if(!MDL.tree) wbb(g,x,y,SW_H,0.3,2.6,0.3,0x734d2e);
+    wbb(g,x,y,SW_H,0.36,0.6,0.36,0xf2f2eb);
     const t=sprite('tree',R(3.4,4.6),3.0,1.8); t.position.set(x,0,-y); t.rotation.y=R(0,6.28); syncShadow(t); cityGroup.add(t);
   }
 }
@@ -551,9 +649,10 @@ const CAR_SPR=['mpv','hatch','sedan'], BIKE_SPR=['bike1','bike2'];
 function buildVehicle(type){
   const s=SPECS[type], name=type==='car'?pick(CAR_SPR):(type==='bike'?pick(BIKE_SPR):type), len=s.len*(type==='bike'?1.08:1.05);
   const group=sprite(name,len,type==='bus'?0.55:0.32,type==='bus'?0.9:0.55), w=group.userData.w, hl=len/2, gl=plane(1.1,1.1);
-  const brake=new T.Group(); for(const sx of (type==='bike'?[0]:[-1,1])){ const m=new T.Mesh(gl,M_BRAKE_GLOW); m.position.set(sx*w*0.3,0.7,hl-0.2); m.renderOrder=4; brake.add(m); }
+  const d3=group.userData.is3d, ly=d3?group.userData.h*0.45:0.7, bz=d3?hl+0.1:hl-0.2, bx=d3?0.52:0.46;
+  const brake=new T.Group(); for(const sx of (type==='bike'?[0]:[-1,1])){ const m=new T.Mesh(gl,M_BRAKE_GLOW); m.position.set(sx*w*0.3,ly,bz); m.renderOrder=4; brake.add(m); }
   brake.visible=false; group.add(brake);
-  const blink=sx=>{ const b=new T.Group(); for(const sz of [-1,1]){ const m=new T.Mesh(gl,M_BLINK_GLOW); m.position.set(sx*w*0.46,0.72,sz*(hl-0.25)); m.renderOrder=4; b.add(m); } b.visible=false; group.add(b); return b; };
+  const blink=sx=>{ const b=new T.Group(); for(const sz of [-1,1]){ const m=new T.Mesh(gl,M_BLINK_GLOW); m.position.set(sx*w*bx,ly,sz*(d3?hl:hl-0.25)); m.renderOrder=4; b.add(m); } b.visible=false; group.add(b); return b; };
   return {group,brake,bl:blink(-1),br:blink(1)};
 }
 
@@ -1375,8 +1474,12 @@ document.addEventListener('visibilitychange',()=>{ if(document.hidden&&game.stat
 // ---------------------------------------------------------------- boot & loop
 function resize(){ const w=gameEl.clientWidth||innerWidth, h=gameEl.clientHeight||innerHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
 window.addEventListener('resize',resize);
-buildCity(); buildSignals(); player.build(); orders.init(); fx.init(); hud.init(); rating.reset(); resize(); game.title();
 let last=performance.now();
+{ const sb=$('startBtn'), label=sb.textContent; sb.disabled=true; sb.textContent='MEMUAT 3D…';
+  loadModels((d,n)=>{ sb.textContent='MEMUAT 3D '+d+'/'+n; }).then(()=>{
+    buildCity(); buildSignals(); player.build(); orders.init(); fx.init(); hud.init(); rating.reset(); resize(); game.title();
+    sb.disabled=false; sb.textContent=label; last=performance.now(); requestAnimationFrame(frame);
+  }); }
 function frame(now){
   const raw=Math.min(.1,(now-last)/1000); last=now; let dt=Math.min(raw,.05);
   if(game.hitStop>0){ game.hitStop-=raw; dt=0; } if(game.popCd>0) game.popCd-=raw; if(game.paused) dt=0;
@@ -1386,5 +1489,4 @@ function frame(now){
   cam.update(dt,raw); fx.tick(dt); audio.tick(raw); hud.tick(game.paused?0:raw);
   renderer.render(scene,camera); requestAnimationFrame(frame);
 }
-requestAnimationFrame(frame);
 </script>
