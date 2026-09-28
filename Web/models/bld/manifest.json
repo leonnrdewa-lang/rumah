@@ -1,0 +1,1306 @@
+[
+ {
+  "file": "gedung_00.glb",
+  "type": "gedung",
+  "roles": [
+   "tall"
+  ],
+  "tris": 622,
+  "w": 17.4,
+  "d": 17.55,
+  "h": 51.15,
+  "footprint_w": 18.0,
+  "footprint_d": 18.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "gedung_01.glb",
+  "type": "gedung",
+  "roles": [
+   "tall"
+  ],
+  "tris": 1286,
+  "w": 19.54,
+  "d": 15.75,
+  "h": 52.4,
+  "footprint_w": 20.0,
+  "footprint_d": 16.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "gedung_02.glb",
+  "type": "gedung",
+  "roles": [
+   "tall"
+  ],
+  "tris": 938,
+  "w": 23.6,
+  "d": 19.55,
+  "h": 59.0,
+  "footprint_w": 24.0,
+  "footprint_d": 20.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "gedung_03.glb",
+  "type": "gedung",
+  "roles": [
+   "tall"
+  ],
+  "tris": 1270,
+  "w": 21.6,
+  "d": 21.7,
+  "h": 55.18,
+  "footprint_w": 22.0,
+  "footprint_d": 22.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "gedung_04.glb",
+  "type": "gedung",
+  "roles": [
+   "tall"
+  ],
+  "tris": 960,
+  "w": 23.54,
+  "d": 15.69,
+  "h": 53.55,
+  "footprint_w": 24.0,
+  "footprint_d": 16.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "gedung_05.glb",
+  "type": "gedung",
+  "roles": [
+   "tall"
+  ],
+  "tris": 1520,
+  "w": 15.44,
+  "d": 16.62,
+  "h": 58.55,
+  "footprint_w": 16.0,
+  "footprint_d": 17.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "gedung_06.glb",
+  "type": "gedung",
+  "roles": [
+   "tall"
+  ],
+  "tris": 706,
+  "w": 13.54,
+  "d": 13.67,
+  "h": 43.55,
+  "footprint_w": 14.0,
+  "footprint_d": 14.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "gedung_07.glb",
+  "type": "gedung",
+  "roles": [
+   "tall"
+  ],
+  "tris": 1128,
+  "w": 21.28,
+  "d": 13.58,
+  "h": 30.35,
+  "footprint_w": 22.0,
+  "footprint_d": 14.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "gedung_08.glb",
+  "type": "gedung",
+  "roles": [
+   "tall"
+  ],
+  "tris": 876,
+  "w": 14.4,
+  "d": 14.68,
+  "h": 56.85,
+  "footprint_w": 15.0,
+  "footprint_d": 15.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "kantor_00.glb",
+  "type": "kantor",
+  "roles": [
+   "front"
+  ],
+  "tris": 442,
+  "w": 10.0,
+  "d": 10.99,
+  "h": 11.16,
+  "footprint_w": 10.0,
+  "footprint_d": 11.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "kantor_01.glb",
+  "type": "kantor",
+  "roles": [
+   "front"
+  ],
+  "tris": 710,
+  "w": 14.0,
+  "d": 11.98,
+  "h": 17.76,
+  "footprint_w": 14.0,
+  "footprint_d": 12.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "kantor_02.glb",
+  "type": "kantor",
+  "roles": [
+   "front"
+  ],
+  "tris": 684,
+  "w": 12.0,
+  "d": 10.98,
+  "h": 11.77,
+  "footprint_w": 12.0,
+  "footprint_d": 11.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "kantor_03.glb",
+  "type": "kantor",
+  "roles": [
+   "front"
+  ],
+  "tris": 702,
+  "w": 16.0,
+  "d": 11.99,
+  "h": 9.61,
+  "footprint_w": 16.0,
+  "footprint_d": 12.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "kantor_04.glb",
+  "type": "kantor",
+  "roles": [
+   "front"
+  ],
+  "tris": 552,
+  "w": 11.0,
+  "d": 11.98,
+  "h": 17.4,
+  "footprint_w": 11.0,
+  "footprint_d": 12.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "kantor_05.glb",
+  "type": "kantor",
+  "roles": [
+   "front"
+  ],
+  "tris": 394,
+  "w": 9.0,
+  "d": 10.98,
+  "h": 11.82,
+  "footprint_w": 9.0,
+  "footprint_d": 11.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "kantor_06.glb",
+  "type": "kantor",
+  "roles": [
+   "front",
+   "fill"
+  ],
+  "tris": 714,
+  "w": 13.0,
+  "d": 10.98,
+  "h": 8.85,
+  "footprint_w": 13.0,
+  "footprint_d": 11.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "kantor_07.glb",
+  "type": "kantor",
+  "roles": [
+   "front",
+   "fill"
+  ],
+  "tris": 456,
+  "w": 10.0,
+  "d": 9.99,
+  "h": 8.91,
+  "footprint_w": 10.0,
+  "footprint_d": 10.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "kantor_08.glb",
+  "type": "kantor",
+  "roles": [
+   "front"
+  ],
+  "tris": 606,
+  "w": 11.5,
+  "d": 10.98,
+  "h": 12.76,
+  "footprint_w": 11.5,
+  "footprint_d": 11.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "kos_00.glb",
+  "type": "kos",
+  "roles": [
+   "front"
+  ],
+  "tris": 954,
+  "w": 8.01,
+  "d": 9.92,
+  "h": 11.62,
+  "footprint_w": 8.0,
+  "footprint_d": 10.0,
+  "overflow": 0.005
+ },
+ {
+  "file": "kos_01.glb",
+  "type": "kos",
+  "roles": [
+   "front"
+  ],
+  "tris": 1166,
+  "w": 10.01,
+  "d": 10.96,
+  "h": 11.97,
+  "footprint_w": 10.0,
+  "footprint_d": 11.0,
+  "overflow": 0.005
+ },
+ {
+  "file": "kos_02.glb",
+  "type": "kos",
+  "roles": [
+   "front"
+  ],
+  "tris": 938,
+  "w": 12.01,
+  "d": 10.42,
+  "h": 10.87,
+  "footprint_w": 12.0,
+  "footprint_d": 10.5,
+  "overflow": 0.005
+ },
+ {
+  "file": "kos_03.glb",
+  "type": "kos",
+  "roles": [
+   "front"
+  ],
+  "tris": 1098,
+  "w": 9.01,
+  "d": 10.94,
+  "h": 11.97,
+  "footprint_w": 9.0,
+  "footprint_d": 11.0,
+  "overflow": 0.005
+ },
+ {
+  "file": "kos_04.glb",
+  "type": "kos",
+  "roles": [
+   "front"
+  ],
+  "tris": 1058,
+  "w": 11.01,
+  "d": 11.716,
+  "h": 11.95,
+  "footprint_w": 11.0,
+  "footprint_d": 12.0,
+  "overflow": 0.005
+ },
+ {
+  "file": "kos_05.glb",
+  "type": "kos",
+  "roles": [
+   "front"
+  ],
+  "tris": 1114,
+  "w": 11.51,
+  "d": 9.94,
+  "h": 11.97,
+  "footprint_w": 11.5,
+  "footprint_d": 10.0,
+  "overflow": 0.005
+ },
+ {
+  "file": "kos_06.glb",
+  "type": "kos",
+  "roles": [
+   "front"
+  ],
+  "tris": 952,
+  "w": 10.51,
+  "d": 11.94,
+  "h": 11.7,
+  "footprint_w": 10.5,
+  "footprint_d": 12.0,
+  "overflow": 0.005
+ },
+ {
+  "file": "kos_07.glb",
+  "type": "kos",
+  "roles": [
+   "front"
+  ],
+  "tris": 912,
+  "w": 8.51,
+  "d": 8.96,
+  "h": 11.022,
+  "footprint_w": 8.5,
+  "footprint_d": 9.0,
+  "overflow": 0.005
+ },
+ {
+  "file": "kos_08.glb",
+  "type": "kos",
+  "roles": [
+   "front"
+  ],
+  "tris": 604,
+  "w": 9.51,
+  "d": 10.44,
+  "h": 10.9,
+  "footprint_w": 9.5,
+  "footprint_d": 10.5,
+  "overflow": 0.005
+ },
+ {
+  "file": "ruko_00.glb",
+  "type": "ruko",
+  "roles": [
+   "front"
+  ],
+  "tris": 702,
+  "w": 8.0,
+  "d": 11.862,
+  "h": 9.64,
+  "footprint_w": 8.0,
+  "footprint_d": 12.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "ruko_01.glb",
+  "type": "ruko",
+  "roles": [
+   "front"
+  ],
+  "tris": 698,
+  "w": 5.0,
+  "d": 11.63,
+  "h": 13.64,
+  "footprint_w": 5.0,
+  "footprint_d": 12.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "ruko_02.glb",
+  "type": "ruko",
+  "roles": [
+   "front"
+  ],
+  "tris": 1072,
+  "w": 13.5,
+  "d": 12.862,
+  "h": 13.112,
+  "footprint_w": 13.5,
+  "footprint_d": 13.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "ruko_03.glb",
+  "type": "ruko",
+  "roles": [
+   "front"
+  ],
+  "tris": 1112,
+  "w": 9.0,
+  "d": 10.862,
+  "h": 12.05,
+  "footprint_w": 9.0,
+  "footprint_d": 11.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "ruko_04.glb",
+  "type": "ruko",
+  "roles": [
+   "front"
+  ],
+  "tris": 592,
+  "w": 4.5,
+  "d": 9.95,
+  "h": 13.732,
+  "footprint_w": 4.5,
+  "footprint_d": 10.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "ruko_05.glb",
+  "type": "ruko",
+  "roles": [
+   "front"
+  ],
+  "tris": 1068,
+  "w": 10.0,
+  "d": 12.862,
+  "h": 14.062,
+  "footprint_w": 10.0,
+  "footprint_d": 13.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "ruko_06.glb",
+  "type": "ruko",
+  "roles": [
+   "front"
+  ],
+  "tris": 1164,
+  "w": 12.0,
+  "d": 10.95,
+  "h": 8.93,
+  "footprint_w": 12.0,
+  "footprint_d": 11.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "ruko_07.glb",
+  "type": "ruko",
+  "roles": [
+   "front"
+  ],
+  "tris": 534,
+  "w": 6.0,
+  "d": 10.67,
+  "h": 8.75,
+  "footprint_w": 6.0,
+  "footprint_d": 11.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "ruko_08.glb",
+  "type": "ruko",
+  "roles": [
+   "front"
+  ],
+  "tris": 904,
+  "w": 8.5,
+  "d": 11.862,
+  "h": 11.95,
+  "footprint_w": 8.5,
+  "footprint_d": 12.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "ruko_09.glb",
+  "type": "ruko",
+  "roles": [
+   "front"
+  ],
+  "tris": 1138,
+  "w": 14.0,
+  "d": 13.862,
+  "h": 13.64,
+  "footprint_w": 14.0,
+  "footprint_d": 14.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "ruko_10.glb",
+  "type": "ruko",
+  "roles": [
+   "front"
+  ],
+  "tris": 568,
+  "w": 5.5,
+  "d": 9.63,
+  "h": 9.486,
+  "footprint_w": 5.5,
+  "footprint_d": 10.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "ruko_11.glb",
+  "type": "ruko",
+  "roles": [
+   "front"
+  ],
+  "tris": 710,
+  "w": 9.5,
+  "d": 9.862,
+  "h": 10.162,
+  "footprint_w": 9.5,
+  "footprint_d": 10.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah2_00.glb",
+  "type": "rumah2",
+  "roles": [
+   "front",
+   "fill"
+  ],
+  "tris": 716,
+  "w": 6.0,
+  "d": 9.95,
+  "h": 7.7,
+  "footprint_w": 6.0,
+  "footprint_d": 10.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah2_01.glb",
+  "type": "rumah2",
+  "roles": [
+   "front",
+   "fill"
+  ],
+  "tris": 834,
+  "w": 7.0,
+  "d": 10.95,
+  "h": 7.574,
+  "footprint_w": 7.0,
+  "footprint_d": 11.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah2_02.glb",
+  "type": "rumah2",
+  "roles": [
+   "front",
+   "fill"
+  ],
+  "tris": 862,
+  "w": 8.0,
+  "d": 11.95,
+  "h": 7.72,
+  "footprint_w": 8.0,
+  "footprint_d": 12.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah2_03.glb",
+  "type": "rumah2",
+  "roles": [
+   "front",
+   "fill"
+  ],
+  "tris": 842,
+  "w": 9.0,
+  "d": 11.95,
+  "h": 7.92,
+  "footprint_w": 9.0,
+  "footprint_d": 12.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah2_04.glb",
+  "type": "rumah2",
+  "roles": [
+   "front",
+   "fill"
+  ],
+  "tris": 958,
+  "w": 10.0,
+  "d": 12.95,
+  "h": 7.9,
+  "footprint_w": 10.0,
+  "footprint_d": 13.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah2_05.glb",
+  "type": "rumah2",
+  "roles": [
+   "front",
+   "fill"
+  ],
+  "tris": 976,
+  "w": 11.0,
+  "d": 12.95,
+  "h": 7.92,
+  "footprint_w": 11.0,
+  "footprint_d": 13.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah2_06.glb",
+  "type": "rumah2",
+  "roles": [
+   "front",
+   "fill"
+  ],
+  "tris": 596,
+  "w": 6.5,
+  "d": 8.95,
+  "h": 7.65,
+  "footprint_w": 6.5,
+  "footprint_d": 9.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah2_07.glb",
+  "type": "rumah2",
+  "roles": [
+   "front",
+   "fill"
+  ],
+  "tris": 868,
+  "w": 8.5,
+  "d": 10.95,
+  "h": 7.82,
+  "footprint_w": 8.5,
+  "footprint_d": 11.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah2_08.glb",
+  "type": "rumah2",
+  "roles": [
+   "front",
+   "fill"
+  ],
+  "tris": 1038,
+  "w": 14.0,
+  "d": 13.95,
+  "h": 7.97,
+  "footprint_w": 14.0,
+  "footprint_d": 14.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah2_09.glb",
+  "type": "rumah2",
+  "roles": [
+   "front",
+   "fill"
+  ],
+  "tris": 812,
+  "w": 12.0,
+  "d": 12.95,
+  "h": 7.435,
+  "footprint_w": 12.0,
+  "footprint_d": 13.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah2_10.glb",
+  "type": "rumah2",
+  "roles": [
+   "front",
+   "fill"
+  ],
+  "tris": 722,
+  "w": 7.5,
+  "d": 11.95,
+  "h": 7.6,
+  "footprint_w": 7.5,
+  "footprint_d": 12.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah2_11.glb",
+  "type": "rumah2",
+  "roles": [
+   "front",
+   "fill"
+  ],
+  "tris": 696,
+  "w": 9.5,
+  "d": 10.95,
+  "h": 7.464,
+  "footprint_w": 9.5,
+  "footprint_d": 11.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah_00.glb",
+  "type": "rumah",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 652,
+  "w": 5.5,
+  "d": 8.42,
+  "h": 4.085,
+  "footprint_w": 5.5,
+  "footprint_d": 8.5,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah_01.glb",
+  "type": "rumah",
+  "roles": [
+   "front",
+   "fill"
+  ],
+  "tris": 1219,
+  "w": 5.96,
+  "d": 9.98,
+  "h": 5.631,
+  "footprint_w": 6.0,
+  "footprint_d": 10.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah_02.glb",
+  "type": "rumah",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 739,
+  "w": 6.46,
+  "d": 9.98,
+  "h": 4.76,
+  "footprint_w": 6.5,
+  "footprint_d": 10.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah_03.glb",
+  "type": "rumah",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 861,
+  "w": 6.96,
+  "d": 9.48,
+  "h": 4.66,
+  "footprint_w": 7.0,
+  "footprint_d": 9.5,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah_04.glb",
+  "type": "rumah",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 990,
+  "w": 7.46,
+  "d": 9.48,
+  "h": 4.71,
+  "footprint_w": 7.5,
+  "footprint_d": 9.5,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah_05.glb",
+  "type": "rumah",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 883,
+  "w": 7.96,
+  "d": 10.43,
+  "h": 4.76,
+  "footprint_w": 8.0,
+  "footprint_d": 10.5,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah_06.glb",
+  "type": "rumah",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 975,
+  "w": 8.46,
+  "d": 9.98,
+  "h": 4.66,
+  "footprint_w": 8.5,
+  "footprint_d": 10.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah_07.glb",
+  "type": "rumah",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 892,
+  "w": 8.96,
+  "d": 10.48,
+  "h": 4.76,
+  "footprint_w": 9.0,
+  "footprint_d": 10.5,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah_08.glb",
+  "type": "rumah",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 886,
+  "w": 9.46,
+  "d": 10.98,
+  "h": 4.76,
+  "footprint_w": 9.5,
+  "footprint_d": 11.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah_09.glb",
+  "type": "rumah",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 1345,
+  "w": 9.96,
+  "d": 9.98,
+  "h": 4.58,
+  "footprint_w": 10.0,
+  "footprint_d": 10.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah_10.glb",
+  "type": "rumah",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 1104,
+  "w": 10.96,
+  "d": 11.48,
+  "h": 4.76,
+  "footprint_w": 11.0,
+  "footprint_d": 11.5,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah_11.glb",
+  "type": "rumah",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 1120,
+  "w": 11.96,
+  "d": 10.98,
+  "h": 4.71,
+  "footprint_w": 12.0,
+  "footprint_d": 11.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah_12.glb",
+  "type": "rumah",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 1108,
+  "w": 13.96,
+  "d": 11.98,
+  "h": 4.76,
+  "footprint_w": 14.0,
+  "footprint_d": 12.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah_13.glb",
+  "type": "rumah",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 972,
+  "w": 7.0,
+  "d": 8.92,
+  "h": 4.083,
+  "footprint_w": 7.0,
+  "footprint_d": 9.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "rumah_14.glb",
+  "type": "rumah",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 972,
+  "w": 5.96,
+  "d": 8.98,
+  "h": 4.71,
+  "footprint_w": 6.0,
+  "footprint_d": 9.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "toko_00.glb",
+  "type": "toko",
+  "roles": [
+   "front",
+   "low"
+  ],
+  "tris": 610,
+  "w": 10.0,
+  "d": 12.7,
+  "h": 4.73,
+  "footprint_w": 10.0,
+  "footprint_d": 13.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "toko_01.glb",
+  "type": "toko",
+  "roles": [
+   "front",
+   "low"
+  ],
+  "tris": 812,
+  "w": 12.0,
+  "d": 14.0,
+  "h": 4.75,
+  "footprint_w": 12.0,
+  "footprint_d": 14.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "toko_02.glb",
+  "type": "toko",
+  "roles": [
+   "front",
+   "low"
+  ],
+  "tris": 438,
+  "w": 6.96,
+  "d": 9.7,
+  "h": 4.755,
+  "footprint_w": 7.0,
+  "footprint_d": 10.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "toko_03.glb",
+  "type": "toko",
+  "roles": [
+   "front"
+  ],
+  "tris": 874,
+  "w": 9.0,
+  "d": 11.8,
+  "h": 10.387,
+  "footprint_w": 9.0,
+  "footprint_d": 12.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "toko_04.glb",
+  "type": "toko",
+  "roles": [
+   "front",
+   "low"
+  ],
+  "tris": 692,
+  "w": 7.46,
+  "d": 9.7,
+  "h": 4.705,
+  "footprint_w": 7.5,
+  "footprint_d": 10.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "toko_05.glb",
+  "type": "toko",
+  "roles": [
+   "front",
+   "low"
+  ],
+  "tris": 348,
+  "w": 6.0,
+  "d": 9.0,
+  "h": 4.55,
+  "footprint_w": 6.0,
+  "footprint_d": 9.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "toko_06.glb",
+  "type": "toko",
+  "roles": [
+   "front"
+  ],
+  "tris": 964,
+  "w": 7.96,
+  "d": 10.8,
+  "h": 8.3,
+  "footprint_w": 8.0,
+  "footprint_d": 11.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "toko_07.glb",
+  "type": "toko",
+  "roles": [
+   "front"
+  ],
+  "tris": 592,
+  "w": 6.5,
+  "d": 9.68,
+  "h": 8.4,
+  "footprint_w": 6.5,
+  "footprint_d": 10.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "toko_08.glb",
+  "type": "toko",
+  "roles": [
+   "front",
+   "low"
+  ],
+  "tris": 844,
+  "w": 8.0,
+  "d": 12.75,
+  "h": 4.78,
+  "footprint_w": 8.0,
+  "footprint_d": 13.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "toko_09.glb",
+  "type": "toko",
+  "roles": [
+   "front",
+   "low"
+  ],
+  "tris": 696,
+  "w": 11.5,
+  "d": 11.95,
+  "h": 4.68,
+  "footprint_w": 11.5,
+  "footprint_d": 12.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "toko_10.glb",
+  "type": "toko",
+  "roles": [
+   "front",
+   "low"
+  ],
+  "tris": 668,
+  "w": 8.96,
+  "d": 10.23,
+  "h": 4.7,
+  "footprint_w": 9.0,
+  "footprint_d": 10.5,
+  "overflow": 0.0
+ },
+ {
+  "file": "toko_11.glb",
+  "type": "toko",
+  "roles": [
+   "front",
+   "low"
+  ],
+  "tris": 398,
+  "w": 6.46,
+  "d": 8.75,
+  "h": 3.985,
+  "footprint_w": 6.5,
+  "footprint_d": 9.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "warung_00.glb",
+  "type": "warung",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 742,
+  "w": 5.58,
+  "d": 7.28,
+  "h": 3.424,
+  "footprint_w": 5.6,
+  "footprint_d": 7.5,
+  "overflow": 0.0
+ },
+ {
+  "file": "warung_01.glb",
+  "type": "warung",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 892,
+  "w": 7.14,
+  "d": 8.39,
+  "h": 4.42,
+  "footprint_w": 7.2,
+  "footprint_d": 8.5,
+  "overflow": 0.0
+ },
+ {
+  "file": "warung_02.glb",
+  "type": "warung",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 1044,
+  "w": 8.18,
+  "d": 7.8,
+  "h": 4.668,
+  "footprint_w": 8.2,
+  "footprint_d": 8.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "warung_03.glb",
+  "type": "warung",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 866,
+  "w": 6.12,
+  "d": 8.9,
+  "h": 4.74,
+  "footprint_w": 6.2,
+  "footprint_d": 9.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "warung_04.glb",
+  "type": "warung",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 552,
+  "w": 4.18,
+  "d": 5.816,
+  "h": 4.33,
+  "footprint_w": 4.2,
+  "footprint_d": 6.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "warung_05.glb",
+  "type": "warung",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 562,
+  "w": 4.72,
+  "d": 6.86,
+  "h": 4.27,
+  "footprint_w": 4.8,
+  "footprint_d": 7.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "warung_06.glb",
+  "type": "warung",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 1014,
+  "w": 8.96,
+  "d": 7.86,
+  "h": 4.73,
+  "footprint_w": 9.0,
+  "footprint_d": 8.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "warung_07.glb",
+  "type": "warung",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 808,
+  "w": 5.18,
+  "d": 6.826,
+  "h": 4.624,
+  "footprint_w": 5.2,
+  "footprint_d": 7.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "warung_08.glb",
+  "type": "warung",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 1054,
+  "w": 6.78,
+  "d": 7.87,
+  "h": 4.66,
+  "footprint_w": 6.8,
+  "footprint_d": 8.0,
+  "overflow": 0.0
+ },
+ {
+  "file": "warung_09.glb",
+  "type": "warung",
+  "roles": [
+   "front",
+   "low",
+   "fill"
+  ],
+  "tris": 946,
+  "w": 7.52,
+  "d": 8.43,
+  "h": 4.62,
+  "footprint_w": 7.6,
+  "footprint_d": 8.5,
+  "overflow": 0.0
+ }
+]
