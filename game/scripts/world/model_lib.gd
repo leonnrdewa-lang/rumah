@@ -21,14 +21,14 @@ const GLOW_WORDS := ["Glass", "Lamp", "Window", "Bulb"]
 ## shade like the ground instead of flickering between lit and dark
 const GROUND_PLANT_WORDS := ["Grass", "Fern", "Flower", "Petal", "Clover", "Plant", "Keladi", "Taro"]
 ## ground-cover greens (grass, ferns, leafy clumps, bushes; not palm fronds / canopies)
-const COVER_GREEN_SAT := 0.62
-const COVER_GREEN_WARM := 0.08
+const COVER_GREEN_SAT := 0.9
+const COVER_GREEN_WARM := -0.06
 const COVER_TONE := 1.0
 ## young palms keep a fresh, lighter green instead of the crown toning, so a seedling
 ## stands out from the ferns around it (stage 0-1; stage 2 is half way to a crown)
-const YOUNG_FROND := {"green_sat": 0.64, "green_warm": 0.08, "tone": 1.1, "tip_light": 0.36,
+const YOUNG_FROND := {"green_sat": 1.05, "green_warm": 0.02, "tone": 1.1, "tip_light": 0.36,
 	"backlight": Vector3(0.3, 0.32, 0.14)}
-const YOUNG_FROND_2 := {"green_sat": 0.6, "green_warm": 0.07, "tone": 0.96, "tip_light": 0.32,
+const YOUNG_FROND_2 := {"green_sat": 1.0, "green_warm": 0.02, "tone": 0.96, "tip_light": 0.32,
 	"backlight": Vector3(0.24, 0.26, 0.12)}
 
 static var _scenes := {}
@@ -173,9 +173,9 @@ static func convert_material(m: Material, fade := true, rim := 0.0, outline := t
 				# saturation dropped to 0.96: lighter, a bit more saturated and warmer, crown
 				# pixels now measure V 0.58 / S 0.52 / hue 81 against the target's 0.57 /
 				# 0.54 / 80)
-				sm.set_shader_parameter("green_sat", 0.64)
-				sm.set_shader_parameter("green_warm", 0.12)
-				sm.set_shader_parameter("tone", 0.88)
+				sm.set_shader_parameter("green_sat", 0.9)
+				sm.set_shader_parameter("green_warm", -0.04)
+				sm.set_shader_parameter("tone", 0.98)
 				sm.set_shader_parameter("tip_light", 0.3)
 				sm.set_shader_parameter("backlight", Vector3(0.18, 0.2, 0.1))
 		elif mname.findn("Grass") >= 0 or mname.findn("Flower") >= 0 or mname.findn("Petal") >= 0:

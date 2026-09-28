@@ -70,6 +70,7 @@ var _typing_full := ""
 var _typing_t := 0.0
 var _joy_index := -1
 var _joy_center := Vector2.ZERO
+var _joy_home := Vector2(125, 595)
 var _action_index := -1
 var _touch_mode := false
 var _paused := false
@@ -111,6 +112,18 @@ func _ready() -> void:
 	root.theme = _make_theme()
 	root.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	add_child(root)
+	# full-screen anime colour grade between the 3D world and the HUD (layer 5 < 10)
+	var post := CanvasLayer.new()
+	post.layer = 5
+	post.name = "PostGrade"
+	var grade := ColorRect.new()
+	grade.set_anchors_preset(Control.PRESET_FULL_RECT)
+	grade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var gm := ShaderMaterial.new()
+	gm.shader = preload("res://shaders/post_grade.gdshader")
+	grade.material = gm
+	post.add_child(grade)
+	add_child(post)
 	_touch_mode = OS.has_feature("mobile") or OS.has_feature("web_android") or OS.has_feature("web_ios")
 	_build_hud()
 	_build_touch()
@@ -1117,7 +1130,8 @@ func _open_modal(panel: Control, dim := true, on_close := Callable()) -> void:
 		world.player.touch_vec = Vector2.ZERO
 	_joy_index = -1
 	if joy_base:
-		joy_base.visible = false
+		joy_base.position = _joy_home - joy_base.size * 0.5
+		joy_knob.position = joy_base.size * 0.5 - joy_knob.size * 0.5
 	call_deferred("_focus_first", panel)
 
 
@@ -1802,14 +1816,14 @@ func _build_touch() -> void:
 	root.add_child(touch)
 	joy_base = Panel.new()
 	joy_base.add_theme_stylebox_override("panel", _circle(Color(1, 0.97, 0.88, 0.35), 80, Color(1, 1, 1, 0.6)))
-	joy_base.size = Vector2(160, 160)
+	joy_base.size = Vector2(170, 170)
 	joy_base.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	joy_base.visible = false
+	# a fixed joystick bottom-left, always on screen while playing (phones)
 	touch.add_child(joy_base)
 	joy_knob = Panel.new()
 	joy_knob.add_theme_stylebox_override("panel", _circle(Color(1, 0.97, 0.88, 0.9), 34, Color(0.55, 0.4, 0.25, 0.5)))
-	joy_knob.size = Vector2(68, 68)
-	joy_knob.position = Vector2(46, 46)
+	joy_knob.size = Vector2(72, 72)
+	joy_knob.position = Vector2(49, 49)
 	joy_knob.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	joy_base.add_child(joy_knob)
 	# joystick hint: cream text in a translucent dark pill (readable on grass)
@@ -1868,22 +1882,27 @@ func _layout_touch(vp: Vector2) -> void:
 	if vp.x > vp.y and _home(hotbar).x + hotbar.size.x < ax - 24.0:
 		lift = 28.0
 	action_btn.position = Vector2(ax, vp.y - 124 - lift)
+	# the fixed joystick: bottom-left corner, above the hotbar on portrait phones
+	_joy_home = Vector2(40.0 + joy_base.size.x * 0.5, vp.y - 40.0 - joy_base.size.y * 0.5)
+	var hb := Rect2(_home(hotbar), hotbar.size).grow(6.0)
+	if hb.intersects(Rect2(_joy_home - joy_base.size * 0.5, joy_base.size)):
+		_joy_home.y = hb.position.y - 20.0 - joy_base.size.y * 0.5
+	if _joy_index < 0:
+		joy_base.position = _joy_home - joy_base.size * 0.5
 	var hint: Control = touch.get_node("JoyHint")
 	hint.size = hint.get_combined_minimum_size()
-	hint.position = Vector2(32, vp.y - hint.size.y - 26)
-	# portrait phones: the centred hotbar spans the bottom, lift the hint above it
-	var hb := Rect2(_home(hotbar), hotbar.size).grow(6.0)
-	if hb.intersects(Rect2(hint.position, hint.size)):
-		hint.position = Vector2(24, hb.position.y - hint.size.y - 8.0)
+	hint.position = Vector2(_joy_home.x - hint.size.x * 0.5, joy_base.position.y - hint.size.y - 8.0)
 
 
 func _handle_touch(event: InputEvent) -> void:
 	if not hud.visible or world == null or world.state != "play":
 		return
 	var vp := root.get_viewport_rect().size
-	# events arrive in window coordinates; convert to the canvas
-	var xf := root.get_viewport().get_final_transform().affine_inverse()
-	var pos: Vector2 = xf * event.position
+	# _input already receives the events in canvas coordinates (the root window
+	# applies its stretch / content-scale transform before dispatch). Transforming
+	# them again put every touch at the wrong place on scaled phone screens: the
+	# joystick jumped and the action button never registered its taps.
+	var pos: Vector2 = root.get_global_transform_with_canvas().affine_inverse() * event.position
 	if event is InputEventScreenTouch:
 		if event.pressed:
 			if is_blocking():
@@ -1899,26 +1918,33 @@ func _handle_touch(event: InputEvent) -> void:
 				return  # hotbar slots handle their own taps
 			if minimap and Rect2(minimap.position, minimap.size).has_point(pos):
 				return
-			if pos.x < vp.x * 0.55 and pos.y > vp.y * 0.28 and _joy_index < 0:
+			# the joystick: grabbed on (or near) its fixed base; a touch elsewhere in
+			# the lower left of the screen moves the base under the thumb
+			if _joy_index < 0 and (pos.distance_to(_joy_home) < joy_base.size.x * 0.9
+					or (pos.x < vp.x * 0.45 and pos.y > vp.y * 0.35)):
 				_joy_index = event.index
-				_joy_center = pos
-				joy_base.visible = true
-				joy_base.position = pos - joy_base.size * 0.5
-				joy_knob.position = joy_base.size * 0.5 - joy_knob.size * 0.5
+				_joy_center = _joy_home if pos.distance_to(_joy_home) < joy_base.size.x * 0.9 else pos
+				joy_base.position = _joy_center - joy_base.size * 0.5
+				_joy_drag(pos)
 				touch.get_node("JoyHint").visible = false
 		else:
 			if event.index == _joy_index:
 				_joy_index = -1
-				joy_base.visible = false
+				joy_base.position = _joy_home - joy_base.size * 0.5
+				joy_knob.position = joy_base.size * 0.5 - joy_knob.size * 0.5
 				world.player.touch_vec = Vector2.ZERO
 			if event.index == _action_index:
 				_action_index = -1
 				action_btn.scale = Vector2.ONE
 	elif event is InputEventScreenDrag and event.index == _joy_index:
-		var d: Vector2 = pos - _joy_center
-		var r := 70.0
-		if d.length() > r:
-			d = d.normalized() * r
-		joy_knob.position = joy_base.size * 0.5 - joy_knob.size * 0.5 + d
-		var v := d / r
-		world.player.touch_vec = v if v.length() > 0.12 else Vector2.ZERO
+		_joy_drag(pos)
+
+
+func _joy_drag(pos: Vector2) -> void:
+	var d: Vector2 = pos - _joy_center
+	var r := 70.0
+	if d.length() > r:
+		d = d.normalized() * r
+	joy_knob.position = joy_base.size * 0.5 - joy_knob.size * 0.5 + d
+	var v := d / r
+	world.player.touch_vec = v if v.length() > 0.12 else Vector2.ZERO

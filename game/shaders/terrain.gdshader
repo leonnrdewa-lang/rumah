@@ -38,10 +38,10 @@ uniform float tile_m = 5.5;
 uniform float world_size = 200.0;
 uniform float water_level = -0.3;
 uniform float shade_strength = 1.0;
-uniform float tex_saturation = 0.74;
+uniform float tex_saturation = 0.92;
 // linear multiplier: texture -> the target's warm yellow-green lawn (sunlit V ~0.75,
 // hue ~66: #b3bb62; tan patches come from the dry-grass layer)
-uniform vec3 grass_tint = vec3(1.40, 1.12, 1.5);
+uniform vec3 grass_tint = vec3(0.86, 1.1, 1.55);
 // average colour of grass_tex (linear), set by world.gd; detail is scaled around it
 uniform vec3 grass_avg = vec3(0.27, 0.39, 0.065);
 // < 1 flattens the texture's fine blade noise into a smoother, painterly ground.

@@ -26,8 +26,8 @@ uniform float tint_strength = 0.22;
 uniform float tip_light = 0.18;
 // green leaves are pulled towards the target's soft olive palette (the textures and
 // the post saturation make them read neon otherwise); yellow/white petals keep colour
-uniform float green_sat = 0.72;
-uniform float green_warm = 0.05;
+uniform float green_sat = 0.9;
+uniform float green_warm = -0.05;
 // overall albedo scale (palm crowns are toned down a little)
 uniform float tone = 1.0;
 // translucency of the leaves when lit from behind
