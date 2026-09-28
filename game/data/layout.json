@@ -408,6 +408,18 @@
    "rot": 0
   },
   {
+   "id": "rumah_juragan",
+   "model": "rumah_a",
+   "pos": [
+    7.5,
+    0.0,
+    30.5
+   ],
+   "rot": 0,
+   "wall": "#e8d3a8",
+   "roof": "#8a3b28"
+  },
+  {
    "id": "rumah_sukamakmur_0",
    "model": "rumah_g",
    "pos": [

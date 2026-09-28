@@ -30,14 +30,18 @@ cd docs && python3 -m http.server 8060
 | | PC | Android (browser) |
 |---|---|---|
 | Jalan | WASD / panah (Shift = lari) | geser jempol di sisi kiri layar |
-| Aksi (tebas, tanam, pupuk, panen, ngobrol, masuk) | E / Spasi | tombol bulat kanan bawah |
+| Aksi (tebas, tanam, pupuk, panen, ngobrol, masuk rumah, mancing, tidur) | E / Spasi | tombol bulat kanan bawah |
+| Tas (semua barang bawaan) | B / tombol tas kanan atas | tombol tas kanan atas |
 | Pilihan dialog | klik atau tombol angka 1–6 | ketuk |
 | Menu / Status / Peta | Esc atau P / Tab atau I / klik peta mini | tombol Menu, Status, ketuk peta mini |
 
 ### Alur permainan
 
 1. Panen 3 pohon sawit yang sudah berbuah di samping Kantor, jual TBS ke Pabrik (timur desa).
-2. Tanam bibit, beri pupuk, tidur di Kantor untuk ganti hari (sawit ±6 hari sampai berbuah).
+2. Tanam bibit, beri pupuk, lalu masuk rumahmu (timur Kantor) dan tidur di kasur untuk ganti hari
+   (sawit ±6 hari sampai berbuah). Rumah warga juga bisa dimasuki; pemiliknya kadang ada di rumah.
+   Sambil menunggu: **mancing** di pantai, sungai, dermaga atau jembatan (hadap ke air, tunggu tanda "!",
+   tekan, lalu tekan lagi saat penanda di zona hijau) dan jual ikannya di Warung / Koperasi.
 3. Kuasai kebun warga. Pulau kini ~5x lebih luas (450 m): Desa Sukamakmur di tengah dikelilingi
    enam dusun (Seberang, Muara, Barat, Bukit, Utara, Selatan) dengan ~70 rumah beragam (rumah panggung,
    limas, bata, pondok; warna dinding/atap berbeda-beda), dua sungai dengan 5 jembatan (kayu & beton),
@@ -81,6 +85,7 @@ python3 blender/buildings.py      # rumah (a-g), kantor, warung, koperasi, pabri
 python3 blender/props.py          # props + ikon item
 python3 blender/characters.py     # 12 karakter chibi + potret dialog
 python3 tools/make_ui_icons.py
+python3 tools/make_item_icons.py   # ikon ikan, pancing, tas, kasur
 python3 tools/make_audio.py
 python3 tools/build_web.py        # ekspor Godot → docs/ dan dist/artifact/
 ```

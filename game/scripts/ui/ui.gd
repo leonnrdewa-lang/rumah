@@ -506,19 +506,23 @@ func _build_hud() -> void:
 	menu_row.name = "Buttons"
 	menu_row.alignment = BoxContainer.ALIGNMENT_END
 	menu_row.add_theme_constant_override("separation", 8)
+	var bagb := button("", show_bag)
+	bagb.name = "BagButton"
+	bagb.tooltip_text = "Tas (B)"
 	var sb := button("Status", show_status)
 	var mb := button("Menu", toggle_pause)
-	for pair in [[sb, "ui_status"], [mb, "ui_menu"]]:
+	for pair in [[bagb, "ui_bag"], [sb, "ui_status"], [mb, "ui_menu"]]:
 		var b: Button = pair[0]
 		b.icon = icon(pair[1])
 		b.add_theme_constant_override("icon_max_width", 30)
 		b.custom_minimum_size = Vector2(0, 44)
 		b.add_theme_font_size_override("font_size", 19)
 		var st := _box(CREAM, 24, LINE, 2, true)
-		_margins(st, 6, 6, 16, 6)
+		var rpad := 16 if b.text != "" else 6
+		_margins(st, 6, 6, rpad, 6)
 		b.add_theme_stylebox_override("normal", st)
 		var sth := _box(CREAM_LIGHT, 24, ACCENT, 2, true)
-		_margins(sth, 6, 6, 16, 6)
+		_margins(sth, 6, 6, rpad, 6)
 		b.add_theme_stylebox_override("hover", sth)
 		b.focus_mode = Control.FOCUS_NONE
 		menu_row.add_child(b)
@@ -793,7 +797,7 @@ func _sync_hud() -> void:
 	var blocked: Array = modal.occupied_rects() if dialog_open and modal.has_method("occupied_rects") else []
 	var prompts: Control = hud.get_node("Prompts")
 	for p in _hud_top() + [prompts, hotbar]:
-		var hide := card
+		var hide: bool = card or (p == minimap and world != null and world.inside != "")
 		if dialog_open:
 			if _touch_mode and (p == prompts or p == hotbar):
 				hide = true  # the thumb area: the dialog takes the taps
@@ -932,6 +936,10 @@ func set_prompt(text: String, ok: bool) -> void:
 	if action_label:
 		action_label.text = _short_verb(text) if ok and not blocking else ""
 		var slot_icon := ""
+		if ok and not blocking and (text == "Mancing" or text.begins_with("Tarik") or text.begins_with("Tunggu")):
+			slot_icon = "icon_pancing"
+		elif ok and not blocking and text.begins_with("Tidur"):
+			slot_icon = "icon_kasur"
 		if kind != "":
 			for sl in Hotbar.SLOTS:
 				if sl["kind"] == kind:
@@ -1136,7 +1144,7 @@ func _open_modal(panel: Control, dim := true, on_close := Callable()) -> void:
 	call_deferred("_focus_first", panel)
 
 
-func _focus_first(panel: Control) -> void:
+func _focus_first(panel: Variant) -> void:
 	if not is_instance_valid(panel) or _touch_mode:
 		return
 	var btn := _find_button(panel)
@@ -1698,16 +1706,202 @@ func show_help(on_close := Callable()) -> void:
 	var lines := [
 		"Tujuan: jadi Raja Sawit! Kuasai ke-7 lahan desa lalu beli Lisensi Sawit The Franchise (Rp 20 juta) di Kantor.",
 		"Gerak: WASD / panah (Shift untuk lari). Di HP: geser jempol kiri di layar.",
-		"Aksi: E / Spasi (atau tombol bulat kanan bawah di HP) — tebas semak, tanam, pupuk, panen, ngobrol. Alat di hotbar kanan bawah dipilih otomatis sesuai aksi.",
-		"Menu: Esc / P.  Status: Tab / I.  Pilihan dialog: tombol angka 1–6.",
+		"Aksi: E / Spasi (atau tombol bulat kanan bawah di HP) — tebas semak, tanam, pupuk, panen, ngobrol, masuk rumah, mancing. Alat di hotbar kanan bawah dipilih otomatis sesuai aksi.",
+		"Menu: Esc / P.  Status: Tab / I.  Tas: B.  Pilihan dialog: tombol angka 1–6.",
 		"Sawit butuh ±6 hari untuk berbuah; pupuk mempercepat. Panen TBS lalu jual ke Pabrik di timur.",
 		"Lahan warga bisa dibeli wajar, ditawar murah, ditipu pakai surat palsu, atau dirampas pakai preman (sewa dari Bang Jeki dekat dermaga). Preman juga bisa memalak tabungan warga.",
 		"Makin culas, makin tinggi Kecurigaan. Kalau penuh (100), Satgas datang menyidak: denda besar. Sidak ke-3 = tamat.",
 		"Punya Mesin Olah Minyak? Olah TBS jadi minyak goreng lalu jual ke warga... harganya kamu yang atur.",
 		"Warga tanpa lahan bisa kamu jadikan buruh murah. Warga yang masih punya lahan bisa diajak 'kemitraan franchise'.",
-		"Tidur di Kantor untuk lanjut hari & menyimpan otomatis. Lewat jam 24:00 kamu pingsan.",
+		"Mancing: hadap ke air (pantai, sungai, dermaga, jembatan) lalu tekan aksi. Tunggu tanda \"!\", tekan, lalu tekan lagi saat penanda di zona hijau. Jual ikan di Warung atau Koperasi. Ikan langka: Arwana Emas!",
+		"Tas: tombol tas di kanan atas (atau B) untuk melihat semua barang bawaanmu.",
+		"Rumah bisa dimasuki lewat pintunya. Tidur di kasur rumahmu (timur Kantor) untuk lanjut hari & menyimpan otomatis. Lewat jam 24:00 kamu pingsan.",
 	]
 	info_panel("Cara Main", lines, "Siap, Juragan!", on_close, TITLE_BROWN, "ui_info")
+
+
+# ------------------------------------------------------------------ bag (tas)
+const BAG_ORDER := ["tbs", "bibit", "pupuk", "minyak", "surat", "pancing"]
+
+
+func bag_entries() -> Array:
+	## [{"key", "name", "icon", "desc", "count" (-1 = tool), "price"}] in display order
+	var out: Array = []
+	var keys: Array = BAG_ORDER.duplicate()
+	for id in GS.FISH:
+		keys.append(id)
+	for k in keys:
+		var n := int(GS.inv.get(k, 0))
+		if n <= 0 and not (k in ["tbs", "bibit", "pupuk"]):
+			continue
+		var info: Dictionary = GS.item_info(k)
+		if info.is_empty():
+			continue
+		out.append({"key": k, "name": info["name"], "icon": info["icon"], "desc": info["desc"], "count": n,
+			"price": int(info.get("price", 0))})
+	for t in GS.TOOLS:
+		out.append({"key": t["icon"], "name": t["name"], "icon": t["icon"], "desc": t["desc"], "count": -1, "price": 0})
+	for u in [["gerobak", "Gerobak dorong", "icon_gerobak", "Kapasitas angkut TBS 25."], ["truk", "Truk pickup", "icon_truk", "Kapasitas angkut TBS 80."],
+			["mesin", "Mesin Olah Minyak", "icon_minyak", "Olah TBS jadi minyak goreng di Pabrik."]]:
+		if GS.upgrades.get(u[0], false):
+			out.append({"key": u[0], "name": u[1], "icon": u[2], "desc": u[3], "count": -1, "price": 0})
+	return out
+
+
+func is_bag_open() -> bool:
+	return modal != null and modal.has_meta("bag")
+
+
+func show_bag(select := "") -> void:
+	if modal and not is_bag_open():
+		return
+	if is_bag_open() and select == "":
+		_close_modal()
+		return
+	var entries := bag_entries()
+	if select == "" and not entries.is_empty():
+		select = entries[0]["key"]
+	var panel := PanelContainer.new()
+	panel.name = "Bag"
+	panel.set_meta("bag", true)
+	panel.set_meta("closable", true)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 10)
+	panel.add_child(col)
+	var vp := root.get_viewport_rect().size
+	var wide := vp.x >= vp.y
+	var chip := _chip("ui_coins", GS.fmt_rp(GS.money))
+	chip.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	panel.set_meta("money_label", chip.find_child("Text", true, false))
+	var title := _title_label("Tas", TITLE_BROWN, 30)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var head := _hrow([_icon_rect("ui_bag", 44), title, chip], 12)
+	col.add_child(head)
+	col.add_child(_divider())
+	var cell := 86.0 if _touch_mode else 80.0
+	var cols := 6 if wide else 4
+	cols = mini(cols, maxi(3, int((vp.x - 90.0) / (cell + 8.0))))
+	var grid := GridContainer.new()
+	grid.columns = cols
+	grid.add_theme_constant_override("h_separation", 8)
+	grid.add_theme_constant_override("v_separation", 8)
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	var rows := int(ceil(entries.size() / float(cols)))
+	var max_h := maxf(cell + 8.0, vp.y - 330.0)
+	scroll.custom_minimum_size = Vector2(cols * (cell + 8.0), minf(rows * (cell + 8.0), max_h))
+	scroll.add_child(grid)
+	col.add_child(scroll)
+	var sel: Dictionary = {}
+	for e in entries:
+		var b := Button.new()
+		b.name = "slot_" + str(e["key"])
+		b.custom_minimum_size = Vector2(cell, cell)
+		b.focus_mode = Control.FOCUS_ALL
+		var on: bool = e["key"] == select
+		if on:
+			sel = e
+		var st := _box(CREAM_LIGHT if on else CREAM, 16, ACCENT if on else LINE, 3 if on else 2)
+		b.add_theme_stylebox_override("normal", st)
+		b.add_theme_stylebox_override("hover", _box(CREAM_LIGHT, 16, ACCENT, 2))
+		b.add_theme_stylebox_override("pressed", _box(CREAM_DARK, 16, ACCENT, 3))
+		b.add_theme_stylebox_override("focus", _box(Color(0, 0, 0, 0), 16, ACCENT, 3))
+		var ic := TextureRect.new()
+		ic.texture = icon(str(e["icon"]))
+		ic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		ic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		ic.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		ic.position = Vector2(cell * 0.13, cell * 0.1)
+		ic.size = Vector2(cell * 0.74, cell * 0.74)
+		if int(e["count"]) == 0:
+			ic.modulate.a = 0.4
+		b.add_child(ic)
+		if int(e["count"]) >= 0:
+			var cl := _label(str(e["count"]), 17, BROWN, true)
+			cl.add_theme_color_override("font_outline_color", CREAM_LIGHT)
+			cl.add_theme_constant_override("outline_size", 6)
+			cl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+			cl.position = Vector2(4, cell - 28)
+			cl.size = Vector2(cell - 12, 24)
+			b.add_child(cl)
+		var key: String = e["key"]
+		b.pressed.connect(func():
+			Sfx.play("click", 1.1, -8.0)
+			_on_modal_close = Callable()
+			show_bag_select(key))
+		grid.add_child(b)
+	# the selected item's info
+	var info := PanelContainer.new()
+	var ist := _box(CREAM_LIGHT, 18, LINE, 2)
+	_margins(ist, 12, 8, 14, 10)
+	info.add_theme_stylebox_override("panel", ist)
+	var ih := HBoxContainer.new()
+	ih.add_theme_constant_override("separation", 12)
+	info.add_child(ih)
+	var tcol := VBoxContainer.new()
+	tcol.add_theme_constant_override("separation", 0)
+	tcol.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var dw := maxf(200.0, cols * (cell + 8.0) - 110.0)
+	if not sel.is_empty():
+		ih.add_child(_icon_rect(str(sel["icon"]), 56))
+		var nm := str(sel["name"])
+		if int(sel["count"]) > 0:
+			nm += "  x%d" % int(sel["count"])
+		tcol.add_child(_label(nm, 21, BROWN, true))
+		var dl := _label(str(sel["desc"]), 17, BROWN_SOFT)
+		dl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		dl.custom_minimum_size = Vector2(dw, 0)
+		tcol.add_child(dl)
+		if int(sel["price"]) > 0:
+			tcol.add_child(_label("Harga jual: %s / ekor" % GS.fmt_short(int(sel["price"])), 17, Color("7a4a12"), true))
+	else:
+		tcol.add_child(_label("Tasmu kosong.", 20, BROWN_SOFT))
+	ih.add_child(tcol)
+	col.add_child(info)
+	var nf := GS.fish_count()
+	var foot := _label(("Ikan: %d ekor • nilai %s (jual di Warung / Koperasi)" % [nf, GS.fmt_short(GS.fish_value())]) if nf > 0 else "Bawaan TBS: %d/%d" % [int(GS.inv.get("tbs", 0)), GS.capacity()], 16, BROWN_SOFT)
+	foot.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	col.add_child(foot)
+	var close_b := button("Tutup" + ("" if _touch_mode else "  (B / Esc)"), _close_modal, true, 180)
+	close_b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	col.add_child(close_b)
+	_open_modal(panel, true)
+	panel.set_meta("bag_select", select)
+
+
+func show_bag_select(key: String) -> void:
+	## re-open the bag with another item selected (keeps the panel in place)
+	show_bag(key)
+
+
+func on_inside_changed() -> void:
+	_sync_hud()
+	_prompt_cache = ""
+
+
+var _fade_rect: ColorRect
+
+
+func fade_screen(mid: Callable, done := Callable()) -> void:
+	## dark fade (0.25 s), `mid` at full dark, fade back in (0.3 s)
+	if _fade_rect == null:
+		_fade_rect = ColorRect.new()
+		_fade_rect.color = Color("1e140c")
+		_fade_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+		_fade_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		root.add_child(_fade_rect)
+	root.move_child(_fade_rect, -1)
+	_fade_rect.visible = true
+	_fade_rect.modulate.a = 0.0
+	var tw := create_tween()
+	tw.tween_property(_fade_rect, "modulate:a", 1.0, 0.25)
+	tw.tween_callback(mid)
+	tw.tween_interval(0.12)
+	tw.tween_property(_fade_rect, "modulate:a", 0.0, 0.3)
+	tw.tween_callback(func():
+		_fade_rect.visible = false
+		if done.is_valid():
+			done.call())
 
 
 func show_game_over(reason: String) -> void:

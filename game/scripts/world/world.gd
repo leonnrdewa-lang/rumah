@@ -10,6 +10,10 @@ const UI_SCRIPT := preload("res://scripts/ui/ui.gd")
 const DEALS_SCRIPT := preload("res://scripts/world/deals.gd")
 const AMBIENT_SCRIPT := preload("res://scripts/world/ambient_life.gd")
 const RING_SHADER := preload("res://shaders/ring.gdshader")
+const FISHING_SCRIPT := preload("res://scripts/world/fishing.gd")
+const INTERIOR_SCRIPT := preload("res://scripts/world/interior.gd")
+## x beyond this is the house interior (interior.gd ORIGIN), off the island
+const INTERIOR_X := 300.0
 const SHADE_TEX_PATH := "res://assets/textures/world_shade.png"
 const GROUND_DIR := "res://assets/textures/ground/"
 const GROUND_TEX := ["grass", "grass_dry", "dirt", "sand", "mulch"]
@@ -140,6 +144,15 @@ var _plant_mask := PackedByteArray()
 var _pm_n := 0
 const PM_RES := 0.5
 var _tile_grid := {}   # 4 m cell -> planting spots (xz) in it and its neighbours
+## fishing (fishing.gd) and house interiors (interior.gd)
+var fishing: Node3D
+var interior: Node3D
+var inside := ""               # house id the player is in ("" = outdoors)
+var _inside_vid := ""
+var _fish_spot := {}           # {"pos", "water"} in front of the player, or {}
+var _fish_probe_t := 0.0
+var _house_items: Array = []   # interactables that only exist inside
+var _fading := false
 
 
 func _ready() -> void:
@@ -174,6 +187,14 @@ func _ready() -> void:
 	ambient.name = "AmbientLife"
 	ambient.set("world", self)
 	add_child(ambient)
+	fishing = FISHING_SCRIPT.new()
+	fishing.name = "Fishing"
+	fishing.world = self
+	add_child(fishing)
+	interior = INTERIOR_SCRIPT.new()
+	interior.name = "Interior"
+	interior.world = self
+	add_child(interior)
 	deals = DEALS_SCRIPT.new()
 	deals.name = "Deals"
 	deals.world = self
@@ -183,6 +204,8 @@ func _ready() -> void:
 	ui.world = self
 	add_child(ui)
 	deals.ui = ui
+	fishing.ui = ui
+	_build_interior_items()
 	GS.parcel_changed.connect(_on_parcel_changed)
 	GS.villager_changed.connect(func(vid): refresh_villager(vid))
 	GS.stats_changed.connect(func(): player.update_carry(int(GS.inv.get("tbs", 0))))
@@ -199,6 +222,21 @@ func _ready() -> void:
 
 # ------------------------------------------------------------------ queries
 func height_at(x: float, z: float) -> float:
+	if x > INTERIOR_X:
+		return 0.0   # the house interior's floor
+	var h := terrain_height(x, z)
+	for r in walk_rects:
+		if x > r[0] and x < r[2] and z > r[1] and z < r[3]:
+			return maxf(h, r[4])
+	for br in bridges:
+		var d := _bridge_deck(br, x, z)
+		if d > -INF:
+			return maxf(h, d)
+	return h
+
+
+func terrain_height(x: float, z: float) -> float:
+	## the ground itself (no jetty or bridge decks)
 	var fx := (x + world_size * 0.5) / world_size * height_img.get_width() - 0.5
 	var fz := (z + world_size * 0.5) / world_size * height_img.get_height() - 0.5
 	var w := height_img.get_width()
@@ -211,15 +249,7 @@ func height_at(x: float, z: float) -> float:
 	var tz := clampf(fz - z0, 0.0, 1.0)
 	var a := lerpf(height_img.get_pixel(x0, z0).r, height_img.get_pixel(x1, z0).r, tx)
 	var b := lerpf(height_img.get_pixel(x0, z1).r, height_img.get_pixel(x1, z1).r, tx)
-	var h := lerpf(a, b, tz)
-	for r in walk_rects:
-		if x > r[0] and x < r[2] and z > r[1] and z < r[3]:
-			return maxf(h, r[4])
-	for br in bridges:
-		var d := _bridge_deck(br, x, z)
-		if d > -INF:
-			return maxf(h, d)
-	return h
+	return lerpf(a, b, tz)
 
 
 func _bridge_deck(br: Array, x: float, z: float) -> float:
@@ -233,6 +263,8 @@ func _bridge_deck(br: Array, x: float, z: float) -> float:
 
 
 func is_walkable(x: float, z: float) -> bool:
+	if x > INTERIOR_X:
+		return interior.is_walkable(x, z)
 	for r in walk_rects:
 		if x > r[0] and x < r[2] and z > r[1] and z < r[3]:
 			return true
@@ -637,6 +669,22 @@ func _build_buildings() -> void:
 			_decorate_sign(node, "toko", "KOPERASI DESA", Color("2f5a6a"))
 		elif id == "gudang":
 			_decorate_sign(node, "gudang", "Kebun Sawit", Color("4a3322"))
+		if id.begins_with("rumah"):
+			var hid := id
+			interactables.append({"pos": door, "r": 2.0, "door": true, "prompt": func(): return house_prompt(hid),
+				"act": func(): enter_house(hid)})
+		if id == "rumah_juragan":
+			# a name plate over the door of the player's own house
+			var plate := Label3D.new()
+			plate.text = "Rumah Juragan"
+			plate.font = ModelLib.label_font()
+			plate.font_size = 56
+			plate.outline_size = 12
+			plate.modulate = Color("6a3a18")
+			plate.outline_modulate = Color("fdf3dc")
+			plate.pixel_size = 0.006
+			plate.position = Vector3(0, minf(aabb.end.y * 0.62, 2.6), aabb.end.z + 0.08)
+			node.add_child(plate)
 
 
 func _recolour(node: MeshInstance3D, wall: String, roof: String) -> void:
@@ -1226,7 +1274,18 @@ func _on_day_started(report: Array) -> void:
 			var d: Vector3 = door_points.get("kantor", Vector3.ZERO)
 			spawn_temp_actor("char_petugas", "Petugas Satgas", d + Vector3(2.5, 0, 1.5), 1.5)
 	refresh_all()
-	player.global_position = door_points.get("kantor", player.global_position)
+	fishing.cancel()
+	if GS.last_slept and inside == "rumah_juragan":
+		# wake up beside the bed
+		player.global_position = interior.bed_pos()
+		player.facing = Vector3(0, 0, 1)
+		cam_rig.global_position = player.global_position
+	else:
+		if inside != "":
+			_leave_interior()
+		player.global_position = door_points.get("rumah_juragan", door_points.get("kantor", player.global_position))
+		player.facing = Vector3(0, 0, 1)
+		cam_rig.global_position = player.global_position
 	ui.show_morning(report)
 
 
@@ -1478,6 +1537,13 @@ func _update_camera(delta: float) -> void:
 	cam_rig.global_position = cam_rig.global_position.lerp(target_pos, k)
 	var dist := cam_distance
 	var fov := 35.0
+	var pitch := cam_pitch
+	if inside != "":
+		# the room: closer and steeper, centred on the room more than on the player
+		dist = 13.0
+		pitch = 57.0
+		var room: Vector3 = interior.ORIGIN + Vector3(0, 0.3, 0.25)
+		cam_rig.global_position = cam_rig.global_position.lerp(room.lerp(target_pos, 0.2), k)
 	if aspect < 1.0:
 		# portrait phones: the camera keeps the vertical field of view, so the narrow
 		# screen shows little ground across; pull back and widen a little
@@ -1486,7 +1552,7 @@ func _update_camera(delta: float) -> void:
 		dist *= lerpf(2.0, 1.0, a)
 		fov = lerpf(42.0, 35.0, a)
 	camera.fov = fov
-	_place_camera(dist, cam_pitch)
+	_place_camera(dist, pitch)
 	# see-through hole around the player
 	var pp := player.global_position + Vector3(0, 0.7, 0)
 	# (characters fix round: while harvesting, Player.reveal 0..1, the hole widens and
@@ -1520,6 +1586,9 @@ func _place_camera(dist: float, pitch_deg: float, max_shadow := 70.0) -> void:
 
 
 func _update_target() -> void:
+	if fishing.active or _fading:
+		_ring.visible = false
+		return
 	var best := {}
 	var best_score := INF
 	var pp := player.global_position
@@ -1546,6 +1615,8 @@ func _update_target() -> void:
 			best_score = score
 			best = it
 			best["_pos"] = pos
+	if best.is_empty() and inside == "":
+		best = _fish_target()
 	target = best
 	if best.is_empty():
 		_ring.visible = false
@@ -1557,14 +1628,20 @@ func _update_target() -> void:
 	ui.set_prompt(best["prompt"].call(), ok)
 	_ring.visible = true
 	var rp: Vector3 = best["_pos"]
-	_ring.global_position = Vector3(rp.x, height_at(rp.x, rp.z) + 0.08, rp.z)
+	var ry := water_level + 0.04 if best.has("fish") else height_at(rp.x, rp.z) + 0.08
+	_ring.global_position = Vector3(rp.x, ry, rp.z)
 	var s := 1.0 + sin(_t * 5.0) * 0.06
 	var base := 1.2 if best.has("tile") else 0.8
 	_ring.scale = Vector3(base * s, 0.25, base * s)
 
 
 func try_action() -> void:
-	if state != "play" or ui.is_blocking() or target.is_empty():
+	if state != "play" or ui.is_blocking() or _fading:
+		return
+	if fishing.active:
+		fishing.press()
+		return
+	if target.is_empty():
 		return
 	if target.has("ok") and not target["ok"].call():
 		Sfx.play("bad", 1.0, -8.0)
@@ -1582,3 +1659,191 @@ func _unhandled_input(event: InputEvent) -> void:
 		ui.toggle_pause()
 	elif event.is_action_pressed("status"):
 		ui.show_status()
+	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_B:
+		if not fishing.active:
+			ui.show_bag()
+
+
+# ------------------------------------------------------------------ fishing
+func water_kind(x: float, z: float) -> String:
+	## "sea" / "river" if (x, z) is open water deep enough to fish, else ""
+	if x > INTERIOR_X or terrain_height(x, z) > water_level - 0.08:
+		return ""
+	for rv in layout.get("rivers", []):
+		var pts: Array = rv["pts"]
+		var hw: float = float(rv.get("hw", 4.0)) + 3.0
+		for i in pts.size() - 1:
+			var a := Vector2(pts[i][0], pts[i][1])
+			var b := Vector2(pts[i + 1][0], pts[i + 1][1])
+			var q := Geometry2D.get_closest_point_to_segment(Vector2(x, z), a, b)
+			if q.distance_squared_to(Vector2(x, z)) < hw * hw:
+				return "river"
+	return "sea"
+
+
+func fishing_spot() -> Dictionary:
+	## open water 2-4 m in front of the player: {"pos": Vector3 on the surface, "water"}
+	var pp := player.global_position
+	var f := Vector3(player.facing.x, 0, player.facing.z).normalized()
+	if pp.x > INTERIOR_X:
+		return {}
+	for d in [2.4, 3.2, 4.0, 1.8]:
+		var p: Vector3 = pp + f * d
+		var k := water_kind(p.x, p.z)
+		if k != "" and not is_walkable(p.x, p.z) and not is_walkable(p.x + f.x * 0.6, p.z + f.z * 0.6):
+			return {"pos": Vector3(p.x, water_level, p.z), "water": k}
+	return {}
+
+
+func _fish_target() -> Dictionary:
+	_fish_probe_t -= get_process_delta_time()
+	if _fish_probe_t <= 0.0:
+		_fish_probe_t = 0.12
+		_fish_spot = fishing_spot()
+	if _fish_spot.is_empty():
+		return {}
+	var sp: Dictionary = _fish_spot
+	return {"pos": sp["pos"], "r": 5.0, "fish": true, "_pos": sp["pos"],
+		"prompt": func(): return "Mancing" if int(GS.inv.get("pancing", 0)) > 0 else "Butuh pancing (beli di Koperasi)",
+		"ok": func(): return int(GS.inv.get("pancing", 0)) > 0,
+		"act": func(): start_fishing()}
+
+
+func start_fishing() -> bool:
+	var sp := fishing_spot()
+	if sp.is_empty():
+		return false
+	return fishing.start(sp["pos"], sp["water"])
+
+
+# ------------------------------------------------------------------ houses
+func house_owner(hid: String) -> String:
+	for vid in GS.VILLAGERS:
+		if GS.VILLAGERS[vid]["home"] == hid:
+			return vid
+	return ""
+
+
+func house_prompt(hid: String) -> String:
+	if hid == "rumah_juragan":
+		return "Masuk rumahmu"
+	var vid := house_owner(hid)
+	if vid != "":
+		return "Masuk rumah " + GS.vname(vid)
+	return "Masuk rumah warga"
+
+
+func _owner_home(vid: String) -> bool:
+	## is the villager in their house right now?
+	if vid == "":
+		return false
+	var v: Dictionary = GS.villagers[vid]
+	if v.get("evicted", false):
+		return false
+	if GS.hour >= 17.0 or GS.hour < 7.5:
+		return true
+	if v["worker"]:
+		return false
+	return absi(hash(vid + str(GS.day) + str(int(GS.hour / 3.0)))) % 3 != 0
+
+
+func _build_interior_items() -> void:
+	## interaction spots inside the room (shared by every house)
+	interactables.append({"pos": interior.door_pos() + Vector3(0, 0, 0.3), "r": 1.6, "door": true,
+		"prompt": func(): return "Keluar rumah", "act": func(): exit_house()})
+	interactables.append({"pos": interior.to_world(interior.BED_LOCAL), "r": 2.1,
+		"prompt": func(): return bed_prompt(), "ok": func(): return inside == "rumah_juragan",
+		"act": func(): use_bed()})
+	interactables.append({"pos": interior.to_world(interior.CUPBOARD_LOCAL) + Vector3(0, 0, 0.5), "r": 1.5,
+		"prompt": func(): return "Buka lemari (Tas)" if inside == "rumah_juragan" else "Lemari milik tuan rumah",
+		"ok": func(): return inside == "rumah_juragan", "act": func(): ui.show_bag()})
+
+
+func bed_prompt() -> String:
+	if inside == "rumah_juragan":
+		return "Tidur di kasur"
+	if _inside_vid != "":
+		return "Kasur %s (jangan tidur di rumah orang!)" % GS.vname(_inside_vid)
+	return "Kasur warga (bukan milikmu)"
+
+
+func use_bed() -> void:
+	if inside != "rumah_juragan":
+		return
+	deals.sleep_in_bed()
+
+
+func enter_house(hid: String, instant := false) -> void:
+	if inside != "" or _fading or not door_points.has(hid):
+		return
+	var vid := house_owner(hid)
+	var v: Dictionary = GS.villagers.get(vid, {})
+	if vid != "" and v.get("evicted", false):
+		ui.toast("Rumah %s kosong dan digembok. Pemiliknya kini tinggal di tenda biru..." % GS.vname(vid), "bad")
+		return
+	Sfx.play("door", 1.0, -4.0)
+	_fade(func():
+		inside = hid
+		_inside_vid = vid if _owner_home(vid) else ""
+		interior.setup_for(hid, _inside_vid)
+		if _inside_vid != "":
+			var on: Node3D = interior.owner_node()
+			var ovid := _inside_vid
+			var it := {"node": on, "r": 1.9, "npc": true, "house": true,
+				"prompt": func(): return "Ngobrol dengan " + GS.vname(ovid), "act": func(): deals.talk(ovid)}
+			_house_items.append(it)
+			interactables.append(it)
+		player.global_position = interior.door_pos()
+		player.facing = Vector3(0, 0, -1)
+		player.velocity = Vector3.ZERO
+		cam_rig.global_position = player.global_position
+		_ring.visible = false
+		ambient.visible = false   # no birds or butterflies in the living room
+		ui.on_inside_changed()
+		if hid == "rumah_juragan":
+			ui.toast("Rumahmu. Tidur di kasur untuk lanjut hari & menyimpan.", "info")
+		elif _inside_vid == "" and vid != "":
+			ui.toast("%s sedang tidak di rumah." % GS.vname(vid), "info")
+		elif vid == "":
+			ui.toast("Rumah warga. Penghuninya sedang keluar.", "info"), instant)
+
+
+func exit_house(instant := false) -> void:
+	if inside == "" or _fading:
+		return
+	Sfx.play("door", 1.0, -4.0)
+	_fade(func(): _leave_interior(), instant)
+
+
+func _leave_interior() -> void:
+	var hid := inside
+	for it in _house_items:
+		interactables.erase(it)
+	_house_items.clear()
+	interior.leave()
+	inside = ""
+	_inside_vid = ""
+	var d: Vector3 = door_points.get(hid, door_points.get("kantor", Vector3.ZERO))
+	var node: Node3D = building_nodes.get(hid)
+	var out := Vector3(0, 0, 1)
+	if node:
+		out = (node.global_transform.basis * Vector3(0, 0, 1)).normalized()
+	player.global_position = Vector3(d.x, height_at(d.x, d.z), d.z) + out * 0.3
+	player.facing = out
+	player.velocity = Vector3.ZERO
+	cam_rig.global_position = player.global_position
+	ui.on_inside_changed()
+	ambient.visible = true
+
+
+func _fade(mid: Callable, instant := false) -> void:
+	## screen fades to dark, `mid` runs, fades back (instant: no fade, for tests)
+	if instant:
+		mid.call()
+		return
+	_fading = true
+	player.locked = true
+	ui.fade_screen(mid, func():
+		_fading = false
+		if state == "play" and not ui.is_blocking():
+			player.locked = false)

@@ -198,6 +198,7 @@ func _run() -> void:
 		"logic":
 			world.start_game(false)
 			world.ui.close()
+			await _features_logic()
 			var d: Node = world.deals
 			GS.money = 60000000
 			GS.inv["surat"] = 3
@@ -280,6 +281,8 @@ func _run() -> void:
 			GS.sleep()
 			print("after raid game_active=", GS.game_active)
 			await wait(0.2)
+		"features":
+			await _features_shots()
 		"walk":
 			world.start_game(false)
 			world.ui.close()
@@ -922,3 +925,232 @@ func _showcase() -> void:
 	await shot("touch_915x412", 20)
 	get_window().size = Vector2i(1280, 720)
 	await wait(0.3)
+
+
+# ------------------------------------------------------------------ fishing / bag / houses
+var _fails := 0
+
+
+func check(ok: bool, what: String) -> void:
+	print("CHECK %s: %s" % ["ok" if ok else "FAIL", what])
+	if not ok:
+		_fails += 1
+		push_error("autotest check failed: " + what)
+
+
+func find_fish_spot(center: Vector3, want: String, radius := 40.0) -> bool:
+	## puts the player on land (or a deck) facing `want` water ("sea" / "river")
+	var dirs := [Vector3(1, 0, 0), Vector3(-1, 0, 0), Vector3(0, 0, 1), Vector3(0, 0, -1)]
+	var r := 0.0
+	while r <= radius:
+		var n := maxi(1, int(r * 1.5))
+		for i in n:
+			var a := TAU * i / n
+			var x := center.x + cos(a) * r
+			var z := center.z + sin(a) * r
+			if not world.is_walkable(x, z) or not world.is_free(x, z, 0.4):
+				continue
+			for f in dirs:
+				tp(x, z, f)
+				var sp: Dictionary = world.fishing_spot()
+				if not sp.is_empty() and sp["water"] == want:
+					return true
+		r += 2.0
+	return false
+
+
+func _fish_once(perfect := true) -> String:
+	## one full cast; returns fishing.last_result
+	var fi: Node = world.fishing
+	fi.fast = true
+	if not world.start_fishing():
+		return "no-start"
+	var t := 0.0
+	while fi.phase != "bite" and fi.active and t < 4.0:
+		await get_tree().process_frame
+		t += get_process_delta_time()
+	fi.press()
+	if fi.phase == "reel":
+		fi.cursor = fi.zone_c if perfect else fmod(fi.zone_c + 0.5, 1.0)
+		fi.press()
+	await wait(0.1)
+	return fi.last_result
+
+
+func _features_logic() -> void:
+	var d: Node = world.deals
+	var ui: Node = world.ui
+	# --- fishing at the sea and at a river, then selling
+	check(int(GS.inv.get("pancing", 0)) == 1, "new game gives a fishing rod")
+	var j: Vector3 = world.building_nodes["dermaga"].global_position
+	check(find_fish_spot(j, "sea"), "found a sea fishing spot near the jetty")
+	world._update_target()
+	check(world.target.get("fish", false) and world.target["prompt"].call() == "Mancing", "prompt at the water is Mancing")
+	var e0: float = GS.energy
+	var res: String = await _fish_once(true)
+	check(res.begins_with("caught:"), "sea catch (%s)" % res)
+	check(GS.energy < e0, "fishing costs energy")
+	check(GS.fish_count() == 1, "fish in the bag")
+	var br: Array = world.bridges[0]
+	check(find_fish_spot(Vector3(br[0], 0, br[1]), "river", 30.0), "found a river fishing spot at a bridge")
+	res = await _fish_once(true)
+	check(res.begins_with("caught:"), "river catch (%s)" % res)
+	res = await _fish_once(false)
+	check(res == "missed", "missing the green zone loses the fish (%s)" % res)
+	world.fishing.fast = true
+	world.start_fishing()
+	var tw := 0.0
+	while world.fishing.phase != "wait" and tw < 3.0:
+		await get_tree().process_frame
+		tw += get_process_delta_time()
+	world.fishing.press()
+	check(world.fishing.last_result == "early", "pressing before the bite reels in empty")
+	check(not world.player.locked, "player free again after fishing")
+	var pool: Array = GS.fish_available("river", 18.5)
+	check("ikan_lele" in pool and "ikan_arwana" in pool and not "ikan_kakap" in pool, "river fish at dusk: " + str(pool))
+	check("ikan_kakap" in GS.fish_available("sea", 12.0), "kakap in the sea")
+	var m0: int = GS.money
+	var val: int = GS.fish_value()
+	var got: int = d.sell_fish()
+	check(got == val and got > 0 and GS.money == m0 + got and GS.fish_count() == 0, "sold fish for %d" % got)
+	d.open_warung()
+	ui.close()
+	d.open_toko()
+	ui.close()
+	# --- the bag
+	GS.catch_fish("ikan_arwana")
+	ui.show_bag()
+	check(ui.is_bag_open(), "bag opens")
+	var n_slots: int = ui.modal.find_children("slot_*", "Button", true, false).size()
+	check(n_slots == ui.bag_entries().size() and n_slots >= 6, "bag shows %d items" % n_slots)
+	ui.show_bag_select("ikan_arwana")
+	await get_tree().process_frame
+	check(ui.is_bag_open() and ui.modal.get_meta("bag_select") == "ikan_arwana", "bag item selection")
+	ui.show_bag()
+	await get_tree().process_frame
+	check(ui.modal == null, "bag closes (toggle)")
+	# --- houses: a villager's, then the player's own
+	check(world.door_points.has("rumah_juragan"), "player house exists")
+	var dp: Vector3 = world.door_points["rumah_ibu"]
+	tp(dp.x, dp.z + 0.4, Vector3(0, 0, -1))
+	world._update_target()
+	check(world.target.get("door", false) and str(world.target["prompt"].call()).begins_with("Masuk rumah"), "door prompt: " + str(world.target.get("prompt", func(): return "").call()))
+	GS.hour = 18.0
+	world.try_action()
+	await wait(0.9)
+	check(world.inside == "rumah_ibu" and world.player.global_position.x > 300.0, "entered Bu Sari's house")
+	check(world._inside_vid == "ibu" and world.interior.owner_node() != null, "Bu Sari is at home in the evening")
+	var on: Node3D = world.interior.owner_node()
+	tp(on.global_position.x, on.global_position.z + 1.2, Vector3(0, 0, -1))
+	world._update_target()
+	check(str(world.target.get("prompt", func(): return "").call()).contains("Bu Sari"), "can talk to the owner inside")
+	world.target["act"].call()
+	check(ui.modal != null, "talk dialog opens inside")
+	ui.close()
+	tp(world.interior.bed_pos().x, world.interior.bed_pos().z, Vector3(1, 0, 0))
+	world._update_target()
+	check(not world.target.get("ok", func(): return true).call(), "no sleeping in someone else's bed")
+	var ex: Vector3 = world.interior.door_pos()
+	tp(ex.x, ex.z + 0.2, Vector3(0, 0, 1))
+	world._update_target()
+	check(str(world.target.get("prompt", func(): return "").call()) == "Keluar rumah", "exit prompt")
+	world.try_action()
+	await wait(0.9)
+	check(world.inside == "" and world.player.global_position.distance_to(dp) < 1.5, "left the house at its door")
+	# the kantor no longer has a bed
+	d.open_kantor()
+	var has_sleep := false
+	for b in ui.modal.find_children("*", "Button", true, false):
+		if (b as Button).text == "Tidur":
+			has_sleep = true
+	ui.close()
+	check(not has_sleep, "kantor menu has no sleep any more")
+	# sleep in the bed at home
+	world.enter_house("rumah_juragan", true)
+	check(world.inside == "rumah_juragan" and world._inside_vid == "", "entered own house")
+	var bp: Vector3 = world.interior.bed_pos()
+	tp(bp.x, bp.z, Vector3(1, 0, -0.5))
+	world._update_target()
+	check(str(world.target.get("prompt", func(): return "").call()) == "Tidur di kasur" and world.target["ok"].call(), "bed prompt Tidur")
+	var day0: int = GS.day
+	GS.hour = 21.0
+	world.try_action()
+	await get_tree().process_frame
+	check(GS.day == day0 + 1 and GS.last_slept, "sleeping in bed advances the day")
+	check(world.inside == "rumah_juragan" and world.player.global_position.distance_to(bp) < 1.0, "wake up beside the bed")
+	check(FileAccess.file_exists(GS.SAVE_PATH), "autosaved")
+	ui.close()
+	# pass out at midnight inside a villager's house -> taken home, outside
+	world.exit_house(true)
+	world.enter_house("rumah_kades", true)
+	GS.hour = 23.99
+	GS.advance(1.0)
+	await get_tree().process_frame
+	check(GS.day == day0 + 2 and not GS.last_slept and world.inside == "", "pass out after 24:00")
+	check(world.player.global_position.distance_to(world.door_points["rumah_juragan"]) < 1.5, "woke at own house door")
+	ui.close()
+	# save keeps the fish / rod keys
+	GS.save_game()
+	GS.load_game()
+	check(int(GS.inv.get("pancing", 0)) == 1 and int(GS.inv.get("ikan_arwana", 0)) == 1, "save keeps rod and fish")
+	print("features logic: %s (%d failed)" % ["OK" if _fails == 0 else "FAIL", _fails])
+	GS.hour = 8.0
+
+
+func _features_shots() -> void:
+	world.start_game(false)
+	world.ui.close()
+	GS.hour = 9.0
+	var fi: Node = world.fishing
+	var j: Vector3 = world.building_nodes["dermaga"].global_position
+	find_fish_spot(j, "sea")
+	world._update_target()
+	await shot("fish_prompt", 30)
+	fi.fast = false
+	world.start_fishing()
+	await wait(1.4)
+	await shot("fish_wait", 2)
+	fi._wait = 0.0
+	await wait(0.15)
+	await shot("fish_bite", 2)
+	fi.press()
+	await wait(0.4)
+	await shot("fish_reel", 2)
+	fi.cursor = fi.zone_c
+	fi.press()
+	await wait(0.45)
+	await shot("fish_catch", 2)
+	GS.catch_fish("ikan_kakap")
+	GS.catch_fish("udang_galah")
+	GS.catch_fish("ikan_arwana")
+	await wait(1.5)
+	world.ui.show_bag()
+	await shot("bag", 20)
+	world.ui.show_bag_select("ikan_arwana")
+	await shot("bag_arwana", 10)
+	world.ui.close()
+	# the player's house from outside, then inside
+	var dp: Vector3 = world.door_points["rumah_juragan"]
+	tp(dp.x, dp.z + 1.5, Vector3(0, 0, -1))
+	await shot("house_outside", 40)
+	world.enter_house("rumah_juragan", true)
+	await shot("house_own", 40)
+	var bp: Vector3 = world.interior.bed_pos()
+	tp(bp.x, bp.z, Vector3(1, 0, -0.4))
+	await shot("bed_prompt", 30)
+	GS.hour = 21.0
+	await shot("house_night", 30)
+	world.try_action()
+	await shot("morning_in_bed", 30)
+	world.ui.close()
+	world.exit_house(true)
+	# a villager at home in the evening
+	GS.hour = 18.0
+	world.enter_house("rumah_kades", true)
+	var on: Node3D = world.interior.owner_node()
+	if on:
+		tp(on.global_position.x + 0.3, on.global_position.z + 1.4, Vector3(0, 0, -1))
+	await shot("house_villager", 40)
+	world.exit_house(true)
+	GS.hour = 10.0
+	await shot("after_exit", 30)

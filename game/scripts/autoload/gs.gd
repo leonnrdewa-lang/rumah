@@ -23,14 +23,48 @@ const PRICE := {
 	"surat": 400000, "preman": 1500000, "amplop": 2000000,
 	"gerobak": 750000, "truk": 4000000, "mesin": 4000000, "csr": 1500000,
 	"buruh_upah": 150000, "buruh_murah": 60000, "lisensi": 20000000,
-	"olah": 10000, "minyak_grosir": 30000, "franchise_fee": 2500000,
+	"olah": 10000, "minyak_grosir": 30000, "franchise_fee": 2500000, "pancing": 50000,
 }
+## Fish (mancing): where they bite ("sea" = the coast, the lagoon and the jetty;
+## "river" = the rivers and under the bridges), how often (weight), when (hours, empty =
+## all day), sell price (warung / koperasi) and how hard the timing bar is (0..1).
+const FISH := {
+	"ikan_nila": {"name": "Ikan Nila", "water": ["river"], "w": 30, "price": 25000, "hard": 0.15,
+		"desc": "Ikan sungai sejuta umat. Enak dibakar."},
+	"ikan_lele": {"name": "Ikan Lele", "water": ["river"], "w": 24, "price": 20000, "hard": 0.2,
+		"hours": [17.0, 24.0], "desc": "Suka keluar sore dan malam. Kumisnya lebih rapi dari Pak RT."},
+	"ikan_patin": {"name": "Ikan Patin", "water": ["river"], "w": 14, "price": 45000, "hard": 0.35,
+		"desc": "Patin sungai, dagingnya lembut. Laku di warung."},
+	"ikan_gabus": {"name": "Ikan Gabus", "water": ["river"], "w": 10, "price": 60000, "hard": 0.5,
+		"desc": "Ikan buas penunggu rawa. Katanya bagus untuk luka operasi."},
+	"udang_galah": {"name": "Udang Galah", "water": ["river", "sea"], "w": 8, "price": 80000, "hard": 0.45,
+		"hours": [6.0, 11.0], "desc": "Capit birunya panjang. Muncul pagi-pagi di muara."},
+	"ikan_bawal": {"name": "Ikan Bawal", "water": ["sea"], "w": 28, "price": 35000, "hard": 0.2,
+		"desc": "Bawal laut, pipih dan gurih."},
+	"ikan_kakap": {"name": "Ikan Kakap Merah", "water": ["sea"], "w": 16, "price": 90000, "hard": 0.5,
+		"desc": "Kakap merah dari dermaga. Harganya bikin juragan senyum."},
+	"ikan_arwana": {"name": "Ikan Arwana Emas", "water": ["river", "sea"], "w": 1.5, "price": 1500000, "hard": 0.85,
+		"hours": [5.0, 8.0, 17.5, 20.0], "desc": "SANGAT LANGKA! Ikan hias pembawa hoki. Kolektor kota rela bayar mahal."},
+}
+## Everything that can sit in the bag (Tas): name, icon, description. Fish come from FISH.
+const ITEMS := {
+	"tbs": {"name": "TBS (Tandan Buah Segar)", "icon": "icon_tbs", "desc": "Hasil panen sawit. Jual ke Pabrik di timur desa."},
+	"bibit": {"name": "Bibit sawit", "icon": "icon_bibit", "desc": "Tanam di petak kosong lahanmu. Beli di Koperasi."},
+	"pupuk": {"name": "Pupuk", "icon": "icon_pupuk", "desc": "Sawit tumbuh 1 hari lebih cepat, atau buah dobel saat panen."},
+	"minyak": {"name": "Minyak goreng", "icon": "icon_minyak", "desc": "Jerigen hasil olahan pabrik. Jual ke warga atau ke warung."},
+	"surat": {"name": "Surat tanah palsu", "icon": "icon_surat", "desc": "Dipakai untuk 'membeli' kebun warga yang kurang teliti."},
+	"pancing": {"name": "Pancing bambu", "icon": "icon_pancing", "desc": "Hadap ke air (pantai, sungai, dermaga, jembatan) lalu tekan aksi: Mancing."},
+}
+const TOOLS := [
+	{"name": "Parang", "icon": "icon_parang", "desc": "Untuk menebas semak di lahanmu."},
+	{"name": "Egrek", "icon": "icon_egrek", "desc": "Galah bersabit untuk memanen tandan sawit."},
+]
 const OIL_PRICES := [25000, 55000, 95000]
 const OIL_PRICE_NAMES := ["Normal", "Mahal", "Gila-gilaan"]
 const CAPACITY := {"base": 10, "gerobak": 25, "truk": 80}
 const STAGE_DAYS := [2, 2, 2]
 const FRUIT_DAYS := 2
-const ENERGY_COST := {"clear": 10.0, "plant": 5.0, "fert": 3.0, "harvest": 6.0}
+const ENERGY_COST := {"clear": 10.0, "plant": 5.0, "fert": 3.0, "harvest": 6.0, "fish": 4.0}
 const MAX_WORKERS := 4
 ## lands to control before the franchise licence can be bought (map v3 has 20 parcels:
 ## the player chooses whose gardens to take)
@@ -101,7 +135,7 @@ const QUESTS := [
 	{"text": "Panen 3 tandan (TBS) dari pohon sawit yang berbuah", "reward": 0},
 	{"text": "Jual TBS ke Pabrik Kelapa Sawit di timur desa", "reward": 100000},
 	{"text": "Tanam 4 bibit sawit di petak kosong lahanmu", "reward": 150000},
-	{"text": "Tidur di Kantor untuk lanjut ke hari berikutnya", "reward": 0},
+	{"text": "Tidur di kasur rumahmu (timur Kantor) untuk lanjut hari", "reward": 0},
 	{"text": "Kuasai lahan warga pertama (beli, tawar, tipu... atau gusur)", "reward": 300000},
 	{"text": "Bersihkan semak dan punya total 20 pohon sawit", "reward": 500000},
 	{"text": "Beli Mesin Olah Minyak di Pabrik", "reward": 500000},
@@ -129,6 +163,8 @@ var quest_index: int = 0
 var stats := {}
 var pending_events: Array = []
 var game_active := false
+## true when the last new day started from a bed (not passing out at midnight)
+var last_slept := false
 var rng := RandomNumberGenerator.new()
 
 
@@ -150,7 +186,7 @@ func new_game() -> void:
 	max_energy = 100.0
 	rep = 0.0
 	heat = 0.0
-	inv = {"bibit": 6, "pupuk": 3, "tbs": 0, "minyak": 0, "surat": 0}
+	inv = {"bibit": 6, "pupuk": 3, "tbs": 0, "minyak": 0, "surat": 0, "pancing": 1}
 	upgrades = {"gerobak": false, "truk": false, "mesin": false, "preman": 0, "lisensi": false}
 	oil_price_level = 1
 	tbs_price = 150000
@@ -160,7 +196,8 @@ func new_game() -> void:
 	pending_events = []
 	stats = {"harvested": 0, "tbs_sold": 0, "planted": 0, "cleared": 0, "earned": 0,
 		"land_fair": 0, "land_cheap": 0, "land_fraud": 0, "land_seized": 0, "land_debt": 0,
-		"oil_sold": 0, "oil_villager": 0, "sidak": 0, "franchise": 0, "bribes": 0}
+		"oil_sold": 0, "oil_villager": 0, "sidak": 0, "franchise": 0, "bribes": 0,
+		"fish_caught": 0, "fish_sold": 0}
 	parcels = []
 	var layout: Dictionary = load_layout()
 	var n := tile_count()
@@ -444,6 +481,7 @@ func start_new_day(slept: bool) -> void:
 		money -= fine
 		heat = 45.0
 		report.append("[SIDAK] Satgas menyita " + fmt_rp(fine) + " sebagai denda. (Sidak ke-%d dari 3)" % stats["sidak"])
+	last_slept = slept
 	day += 1
 	hour = DAY_START
 	energy = max_energy if slept else max_energy * 0.6
@@ -576,6 +614,81 @@ func _run_plasma(report: Array) -> void:
 
 func sleep() -> void:
 	start_new_day(true)
+
+
+# ------------------------------------------------------------------ fishing / bag
+func item_info(key: String) -> Dictionary:
+	## {"name", "icon", "desc", "price"} for a bag item ({} if unknown)
+	if FISH.has(key):
+		var f: Dictionary = FISH[key]
+		return {"name": f["name"], "icon": key, "desc": f["desc"], "price": int(f["price"]), "fish": true}
+	return ITEMS.get(key, {})
+
+
+func fish_available(water: String, h: float) -> Array:
+	## fish ids that can bite in this water at hour h
+	var out: Array = []
+	for id in FISH:
+		var f: Dictionary = FISH[id]
+		if not water in f["water"]:
+			continue
+		var hs: Array = f.get("hours", [])
+		if not hs.is_empty():
+			var ok := false
+			for i in range(0, hs.size(), 2):
+				if h >= float(hs[i]) and h < float(hs[i + 1]):
+					ok = true
+			if not ok:
+				continue
+		out.append(id)
+	return out
+
+
+func roll_fish(water: String, h: float) -> String:
+	var pool := fish_available(water, h)
+	if pool.is_empty():
+		return "ikan_nila"
+	var total := 0.0
+	for id in pool:
+		total += float(FISH[id]["w"])
+	var r := rng.randf() * total
+	for id in pool:
+		r -= float(FISH[id]["w"])
+		if r <= 0.0:
+			return id
+	return pool[-1]
+
+
+func catch_fish(id: String) -> void:
+	add_item(id, 1)
+	stats["fish_caught"] = int(stats.get("fish_caught", 0)) + 1
+
+
+func fish_count() -> int:
+	var n := 0
+	for id in FISH:
+		n += int(inv.get(id, 0))
+	return n
+
+
+func fish_value() -> int:
+	var v := 0
+	for id in FISH:
+		v += int(inv.get(id, 0)) * int(FISH[id]["price"])
+	return v
+
+
+func sell_all_fish() -> int:
+	## sells every fish in the bag; returns the money earned
+	var total := fish_value()
+	var n := fish_count()
+	if n <= 0:
+		return 0
+	for id in FISH:
+		inv.erase(id)
+	stats["fish_sold"] = int(stats.get("fish_sold", 0)) + n
+	add_money(total)
+	return total
 
 
 # ------------------------------------------------------------------ quests

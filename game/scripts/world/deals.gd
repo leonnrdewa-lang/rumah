@@ -145,7 +145,7 @@ func say(portrait: String, speaker: String, text: String, next := Callable()) ->
 # ------------------------------------------------------------------ intro
 func intro() -> void:
 	say(HQ_PORTRAIT, "Telepon dari Pusat", "Halo, Juragan! Selamat, kamu resmi jadi pewaralaba Sawit The Franchise™ di Desa Sukamakmur!",
-		func(): say(HQ_PORTRAIT, "Telepon dari Pusat", "Modal dari pusat: Rp 2 juta, 6 bibit, 3 karung pupuk, dan sepetak lahan di samping kantor. Tiga pohon sudah berbuah, tinggal panen!",
+		func(): say(HQ_PORTRAIT, "Telepon dari Pusat", "Modal dari pusat: Rp 2 juta, 6 bibit, 3 karung pupuk, sebatang pancing, rumah mungil di timur kantor, dan sepetak lahan di samping kantor. Tiga pohon sudah berbuah, tinggal panen!",
 			func(): ui.dialog(HQ_PORTRAIT, "Telepon dari Pusat", "Target pusat: kuasai SEMUA lahan desa ini. Caranya? Terserah kamu. Kami tidak mau tahu... asal jangan ketahuan. Klik-klik!",
 				[{"text": "Siap, Pak Bos!", "cb": func(): ui.toast("Dekati pohon sawit berbuah di sebelah kiri kantor, lalu tekan E / tombol aksi.", "info")},
 				 {"text": "Lihat cara main", "cb": func(): ui.show_help()}])))
@@ -164,8 +164,6 @@ func open_service(id: String) -> void:
 
 func open_kantor() -> void:
 	var items: Array = []
-	items.append({"icon": "icon_rumah", "text": "Tidur sampai besok pagi", "desc": "Hari berganti, energi pulih, permainan tersimpan.",
-		"button": "Tidur", "cb": func(): _sleep()})
 	var workers_n := GS.workers.size()
 	items.append({"icon": "icon_helm", "text": "Rekrut buruh (%d/%d)" % [workers_n, GS.MAX_WORKERS],
 		"desc": "Tiap pagi memanen & menjual 8 pohon siap panen dan menebas 2 semak. Upah dibayar tiap pagi.",
@@ -194,6 +192,11 @@ func open_kantor() -> void:
 		"price": GS.fmt_short(GS.PRICE["lisensi"]), "enabled": need <= 0 and GS.money >= GS.PRICE["lisensi"],
 		"cb": func(): _buy_license()})
 	ui.menu("Kantor Sawit", "Uang: %s • Harga TBS hari ini: %s" % [GS.fmt_rp(GS.money), GS.fmt_rp(GS.tbs_price)], items, Callable(), "portrait_player")
+
+
+func sleep_in_bed() -> void:
+	## the kasur in the player's house (world.use_bed): the only way to end the day
+	_sleep()
 
 
 func _sleep() -> void:
@@ -274,6 +277,10 @@ func open_toko() -> void:
 		{"icon": "icon_koin", "text": "Kopi sachet", "desc": "Energi +12. Pahit seperti kenyataan.", "price": GS.fmt_short(GS.PRICE["kopi"]),
 			"cb": func(): _eat(12, GS.PRICE["kopi"], open_toko)},
 	]
+	if int(GS.inv.get("pancing", 0)) <= 0:
+		items.append({"icon": "icon_pancing", "text": "Pancing bambu", "desc": "Untuk mancing di pantai, sungai, dermaga & jembatan.",
+			"price": GS.fmt_short(GS.PRICE["pancing"]), "cb": func(): _buy("pancing", 1, GS.PRICE["pancing"], open_toko)})
+	_add_fish_sale(items, open_toko, "Koperasi menampung ikan untuk dijual ke kota.")
 	ui.menu("Koperasi Desa Sukamakmur", "Bibit: %d • Pupuk: %d • Uang: %s" % [GS.inv["bibit"], GS.inv["pupuk"], GS.fmt_rp(GS.money)], items, Callable(), "portrait_petani")
 
 
@@ -306,7 +313,31 @@ func open_warung() -> void:
 		items.append({"icon": "icon_minyak", "text": "Jual semua minyak goreng ke warung (%d)" % oil,
 			"desc": "Harga grosir Rp 30rb/jerigen. Mak Inah menjualnya lagi ke warga.",
 			"price": GS.fmt_short(oil * GS.PRICE["minyak_grosir"]), "button": "Jual", "cb": func(): _sell_oil_wholesale()})
+	_add_fish_sale(items, open_warung, "Mak Inah memasaknya jadi lauk warung.")
 	ui.menu("Warung Mak Inah", "\"" + gossip + "\"", items, Callable(), "portrait_ibu")
+
+
+func _add_fish_sale(items: Array, reopen: Callable, desc: String) -> void:
+	var n := GS.fish_count()
+	if n <= 0:
+		return
+	var icon := "ikan_nila"
+	for id in GS.FISH:
+		if int(GS.inv.get(id, 0)) > 0:
+			icon = id
+			break
+	items.append({"icon": icon, "text": "Jual semua ikan (%d ekor)" % n, "desc": desc,
+		"price": GS.fmt_short(GS.fish_value()), "button": "Jual", "cb": func(): sell_fish(reopen)})
+
+
+func sell_fish(reopen := Callable()) -> int:
+	var got := GS.sell_all_fish()
+	if got > 0:
+		Sfx.play("cash")
+		world.float_text(world.player.global_position, "+" + GS.fmt_short(got), Color("2f6d2a"))
+		if reopen.is_valid():
+			ui.refresh_menu(reopen)
+	return got
 
 
 func _gossip() -> String:

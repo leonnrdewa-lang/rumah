@@ -151,6 +151,8 @@ BUILDINGS = [
     {"id": "dermaga", "model": "dermaga", "pos": (73, 13), "rot": -90},
     # the plantation's shed beside the farm track, north-west of the player's parcel
     {"id": "gudang", "model": "gudang", "pos": (-22.2, 16.0), "rot": 0},
+    # the player's own house east of the kantor: sleep in its bed (kasur)
+    {"id": "rumah_juragan", "model": "rumah_a", "pos": (7.5, 30.5), "rot": 0, "wall": "#e8d3a8", "roof": "#8a3b28"},
 ]
 
 # Small set pieces (model, pos, rot)
