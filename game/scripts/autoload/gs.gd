@@ -12,7 +12,8 @@ signal game_over(reason: String)
 signal game_won
 
 const SAVE_PATH := "user://sawit_save.json"
-const SAVE_VERSION := 1
+## 2 = map v3 (20 parcels of 20 staggered tiles, 19 villagers); older saves start over
+const SAVE_VERSION := 2
 const DAY_START := 6.0
 const DAY_END := 24.0
 const HOURS_PER_SECOND := 1.0 / 12.0  # one in-game hour lasts 12 real seconds
@@ -31,6 +32,9 @@ const STAGE_DAYS := [2, 2, 2]
 const FRUIT_DAYS := 2
 const ENERGY_COST := {"clear": 10.0, "plant": 5.0, "fert": 3.0, "harvest": 6.0}
 const MAX_WORKERS := 4
+## lands to control before the franchise licence can be bought (map v3 has 20 parcels:
+## the player chooses whose gardens to take)
+const LICENSE_NEED := 7
 
 const VILLAGERS := {
 	"kakek": {"name": "Kakek Darman", "model": "char_kakek", "parcel": 1, "home": "rumah_kakek",
@@ -51,6 +55,46 @@ const VILLAGERS := {
 	"petani": {"name": "Pak Tarno", "model": "char_petani", "parcel": 6, "home": "rumah_petani",
 		"value": 5000000, "savings": 600000, "tawar": 0.45, "tipu": 0.55,
 		"bio": "Petani ulet. Kebunnya penuh singkong dan cabai."},
+	# ---- map v3: the hamlets (dusun) around Sukamakmur
+	"somad": {"name": "Pak Haji Somad", "model": "char_kakek", "parcel": 7, "home": "rumah_somad",
+		"value": 7500000, "savings": 3000000, "tawar": 0.15, "tipu": 0.25,
+		"bio": "Juragan kopra di Dusun Seberang. Sudah naik haji dua kali, pelitnya tetap."},
+	"ucok": {"name": "Bang Ucok", "model": "char_petani", "parcel": 8, "home": "rumah_ucok",
+		"value": 4500000, "savings": 350000, "tawar": 0.55, "tipu": 0.5,
+		"bio": "Sopir perahu tambang di sungai. Suka nyanyi keras-keras."},
+	"rian": {"name": "Rian", "model": "char_pemuda", "parcel": 9, "home": "rumah_rian",
+		"value": 4000000, "savings": 250000, "tawar": 0.2, "tipu": 0.35, "aktivis": true,
+		"bio": "Konten kreator dusun. Semua hal jadi video, termasuk kamu."},
+	"wati": {"name": "Mbak Wati", "model": "char_ibu", "parcel": 10, "home": "rumah_wati",
+		"value": 4200000, "savings": 500000, "tawar": 0.4, "tipu": 0.45,
+		"bio": "Penjual jamu gendong di Dusun Muara. Tahu semua gosip."},
+	"slamet": {"name": "Pak Slamet", "model": "char_petani", "parcel": 11, "home": "rumah_slamet",
+		"value": 5200000, "savings": 450000, "tawar": 0.5, "tipu": 0.6,
+		"bio": "Petani karet yang sabar. Getah karetnya harga murah terus."},
+	"dullah": {"name": "Kakek Dullah", "model": "char_kakek", "parcel": 12, "home": "rumah_dullah",
+		"value": 6000000, "savings": 200000, "tawar": 0.1, "tipu": 0.2,
+		"bio": "Tetua adat Dusun Barat. Hafal batas tanah ulayat sampai ke pohon-pohonnya."},
+	"lastri": {"name": "Bu Lastri", "model": "char_ibu", "parcel": 13, "home": "rumah_lastri",
+		"value": 4800000, "savings": 700000, "tawar": 0.3, "tipu": 0.2,
+		"bio": "Guru SD. Membaca setiap surat sampai catatan kakinya."},
+	"romlah": {"name": "Nenek Romlah", "model": "char_nenek", "parcel": 14, "home": "rumah_romlah",
+		"value": 3200000, "savings": 120000, "tawar": 0.6, "tipu": 0.85,
+		"bio": "Nenek penjual rempeyek. Matanya sudah rabun."},
+	"darsih": {"name": "Mbok Darsih", "model": "char_nenek", "parcel": 15, "home": "rumah_darsih",
+		"value": 3600000, "savings": 180000, "tawar": 0.5, "tipu": 0.75,
+		"bio": "Dukun beranak Dusun Bukit. Percaya sawit bikin sumur kering."},
+	"yanto": {"name": "Mas Yanto", "model": "char_buruh", "parcel": 16, "home": "rumah_yanto",
+		"value": 3800000, "savings": 150000, "tawar": 0.65, "tipu": 0.5,
+		"bio": "Mantan buruh pabrik yang di-PHK. Butuh uang cepat."},
+	"karta": {"name": "Pak Karta", "model": "char_petani", "parcel": 19, "home": "rumah_karta",
+		"value": 5000000, "savings": 600000, "tawar": 0.35, "tipu": 0.45,
+		"bio": "Peternak kambing di Dusun Utara. Kambingnya suka makan bibit sawit."},
+	"bidan": {"name": "Bu Bidan Rina", "model": "char_ibu", "parcel": 17, "home": "rumah_bidan",
+		"value": 5500000, "savings": 1500000, "tawar": 0.2, "tipu": 0.15,
+		"bio": "Bidan desa. Teliti, tegas, dan kenal semua orang sejak lahir."},
+	"rt": {"name": "Pak RT Bejo", "model": "char_kades", "parcel": 18, "home": "rumah_rt",
+		"value": 6500000, "savings": 1800000, "tawar": 0.3, "tipu": 0.2, "sogok": true,
+		"bio": "Ketua RT Dusun Selatan. Stempelnya bisa disewa."},
 }
 
 const QUESTS := [
@@ -63,7 +107,7 @@ const QUESTS := [
 	{"text": "Beli Mesin Olah Minyak di Pabrik", "reward": 500000},
 	{"text": "Jual 5 jerigen minyak goreng ke warga", "reward": 750000},
 	{"text": "Kuasai 5 lahan (milik sendiri atau mitra franchise)", "reward": 1000000},
-	{"text": "Kuasai ke-7 lahan & beli Lisensi Sawit The Franchise di Kantor", "reward": 0},
+	{"text": "Kuasai 7 lahan & beli Lisensi Sawit The Franchise di Kantor", "reward": 0},
 ]
 
 var money: int = 0
@@ -119,15 +163,18 @@ func new_game() -> void:
 		"oil_sold": 0, "oil_villager": 0, "sidak": 0, "franchise": 0, "bribes": 0}
 	parcels = []
 	var layout: Dictionary = load_layout()
+	var n := tile_count()
 	for p in layout.get("parcels", []):
 		var tiles: Array = []
-		for i in 12:
+		for i in n:
 			tiles.append(_tile("bush"))
 		parcels.append({"id": int(p["id"]), "name": p["name"], "owner": p["owner"], "plasma": false,
 			"center": p["center"], "tiles": tiles})
 	# starting plot: a few trees already bearing fruit so the first harvest happens on day one
+	# (the north row: 3 ripe, then a palm that fruits tomorrow and two young ones; a few
+	# thickets are left in the south row to clear)
 	var start: Array = parcels[0]["tiles"]
-	for i in 12:
+	for i in n:
 		start[i] = _tile("empty")
 	for i in [0, 1, 2]:
 		start[i] = _tile("palm", 3)
@@ -136,8 +183,8 @@ func new_game() -> void:
 	start[3]["fd"] = 1
 	start[4] = _tile("palm", 2)
 	start[5] = _tile("palm", 1)
-	start[10] = _tile("bush")
-	start[11] = _tile("bush")
+	for i in range(n - 3, n):
+		start[i] = _tile("bush")
 	villagers = {}
 	for vid in VILLAGERS:
 		var d: Dictionary = VILLAGERS[vid]
@@ -146,6 +193,12 @@ func new_game() -> void:
 	game_active = true
 	stats_changed.emit()
 	quest_changed.emit()
+
+
+func tile_count() -> int:
+	## planting spots per parcel (layout: cols x rows)
+	var l := load_layout()
+	return int(l.get("parcel_cols", 4)) * int(l.get("parcel_rows", 3))
 
 
 func _tile(state: String, stage: int = 0) -> Dictionary:
@@ -563,7 +616,14 @@ func current_quest() -> String:
 
 # ------------------------------------------------------------------ save / load
 func has_save() -> bool:
-	return FileAccess.file_exists(SAVE_PATH)
+	## only a save this version can load counts ("Lanjutkan" stays hidden for old ones)
+	if not FileAccess.file_exists(SAVE_PATH):
+		return false
+	var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
+	if f == null:
+		return false
+	var data = JSON.parse_string(f.get_as_text())
+	return typeof(data) == TYPE_DICTIONARY and int(data.get("v", 0)) == SAVE_VERSION
 
 
 func save_game() -> void:

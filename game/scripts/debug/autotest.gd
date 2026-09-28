@@ -225,7 +225,7 @@ func _run() -> void:
 				for p in GS.parcels:
 					if p["owner"] != "player":
 						continue
-					for i in 12:
+					for i in GS.tile_count():
 						GS.energy = 100
 						world._tile_action(p["id"], i)
 				if int(GS.inv["tbs"]) > 0:
@@ -337,7 +337,7 @@ func _run() -> void:
 				for p in GS.parcels:
 					if p["owner"] != "player":
 						continue
-					for i in 12:
+					for i in GS.tile_count():
 						var info := GS.tile_action_info(p["id"], i)
 						if not info["ok"] and info["verb"].begins_with("Butuh bibit") and GS.money > 400000:
 							d._buy("bibit", 5, GS.PRICE["bibit"] * 5, func(): pass)
@@ -727,11 +727,11 @@ func _run() -> void:
 			world.ui.visible = false
 			var states := [["palm", 3], ["palm", 3], ["palm", 3], ["palm", 3], ["empty", 0], ["palm", 0], ["palm", 1],
 				["palm", 2], ["bush", 0], ["bush", 0], ["empty", 0], ["palm", 1]]
-			for i in 12:
+			for i in GS.tile_count():
 				var t: Dictionary = GS.parcels[0]["tiles"][i]
-				t["s"] = states[i][0]
-				t["st"] = states[i][1]
-				t["fr"] = states[i][1] == 3
+				t["s"] = states[i % states.size()][0]
+				t["st"] = states[i % states.size()][1]
+				t["fr"] = states[i % states.size()][1] == 3
 			GS.parcel_changed.emit(0)
 			GS.hour = 8.5
 			tp(-17, 29.5, Vector3(0, 0, -1))
@@ -749,6 +749,47 @@ func _run() -> void:
 			world.ui.visible = true
 		"showcase":
 			await _showcase()
+		"map3":
+			# map v3 check: the dense staggered palms, the bridges (and walking over one),
+			# every hamlet, the big minimap and the frame cost in a hamlet
+			world.start_game(false)
+			world.ui.close()
+			GS.hour = 9.0
+			for i in GS.tile_count():
+				GS.parcels[0]["tiles"][i] = {"s": "palm", "st": 3, "g": 0, "f": false, "fr": i % 3 == 0, "fd": 0}
+			GS.parcel_changed.emit(0)
+			tp(-17, 34, Vector3(0, 0, -1))
+			await shot("m3_dense_palms", 30)
+			tp(-17, 25.5, Vector3(0, 0, -1))
+			await shot("m3_dense_palms_in", 20)
+			for b in world.layout.get("bridges", []):
+				tp(float(b["pos"][0]) - 3.0, float(b["pos"][2]) + 5.0, Vector3(0, 0, -1))
+				await shot("m3_bridge_%d_%d" % [b["pos"][0], b["pos"][2]], 25)
+			var br: Array = world.layout["bridges"][0]["pos"]
+			var pl: Player = world.player
+			tp(float(br[0]) - 9.0, float(br[2]), Vector3(1, 0, 0))
+			pl.touch_vec = Vector2(1, 0)
+			var ymax := -10.0
+			for k in 60:
+				await wait(0.1)
+				ymax = maxf(ymax, pl.global_position.y)
+			pl.touch_vec = Vector2.ZERO
+			print("bridge walk: from x=%.1f to x=%.1f, max y=%.2f, walkable mid=%s" % [float(br[0]) - 9.0,
+				pl.global_position.x, ymax, world.is_walkable(float(br[0]), float(br[2]))])
+			for v in world.layout.get("villages", []):
+				tp(float(v["center"][0]) + 2.0, float(v["center"][1]) + 7.0, Vector3(0, 0, -1))
+				await shot("m3_village_%s" % v["id"], 25)
+				print("perf at %s: draw calls=%d primitives=%d fps=%d" % [v["id"],
+					Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),
+					Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME), Engine.get_frames_per_second()])
+			tp(-3.5, 37.5, Vector3(0, 0, -1))
+			world.ui.minimap.big = true
+			world.ui.call("_layout")
+			await shot("m3_minimap_big", 10)
+			world.ui.minimap.big = false
+			world.ui.call("_layout")
+			print("npcs=%d extras=%d walkers=%d houses=%d" % [world.npcs.size(), world.extras.size(), world.walkers.size(),
+				world.building_nodes.size()])
 		"tour":
 			world.start_game(false)
 			world.ui.close()

@@ -23,6 +23,9 @@ const SHADOW_MODELS := ["shrub_a", "shrub_b", "banana", "keladi", "bush_a", "bus
 ## soft patches of the polish round made seedlings and cleared tiles hard to read.
 const PIRINGAN_SCALE := [0.84, 0.86, 0.88, 0.9, 0.9]
 
+## palms (and stumps) are scaled to the planting grid: map v3 plants them 3.7 m apart in
+## a staggered grid (world.gd sets tile / 4.4), so neighbouring crowns stay apart
+static var palm_scale := 1.0
 static var _tiles := {}     # pid -> {idx: TileView}
 static var _batches := {}   # pid -> Node3D holding the parcel's MultiMeshes
 static var _dirty := {}     # pid -> true while a rebuild is queued
@@ -41,7 +44,7 @@ func _ready() -> void:
 	# a quarter turn plus 45 deg (+- 14 deg): the ripe palm's 4 bunches hang under gaps in
 	# its drooping crown at 45 + 90k deg, so one of them faces the camera (vegetation.py)
 	_yaw = deg_to_rad(45.0 + 90.0 * float(h % 4) + float((h / 4) % 29) - 14.0)
-	_scale = 0.9 + float((h / 7) % 100) / 500.0
+	_scale = (0.9 + float((h / 7) % 100) / 500.0) * palm_scale
 	if not _tiles.has(pid):
 		_tiles[pid] = {}
 	_tiles[pid][idx] = self

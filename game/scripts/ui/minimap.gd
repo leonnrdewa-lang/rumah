@@ -36,10 +36,25 @@ func _process(delta: float) -> void:
 		queue_redraw()
 
 
+## map v3: the island is ~350 m across. The big map shows all of it; the small one a
+## 170 x 150 m window (the v2 island's size) around the player.
+const ISLAND_CROP := Rect2(2.0 - 178.0, -2.0 - 157.0, 356.0, 314.0)
+const LOCAL_SIZE := Vector2(170.0, 150.0)
+
+
+func _crop() -> Rect2:
+	if big or world == null or world.player == null:
+		return ISLAND_CROP
+	var c := Vector2(world.player.global_position.x, world.player.global_position.z)
+	var o := c - LOCAL_SIZE * 0.5
+	o.x = clampf(o.x, ISLAND_CROP.position.x, ISLAND_CROP.end.x - LOCAL_SIZE.x)
+	o.y = clampf(o.y, ISLAND_CROP.position.y, ISLAND_CROP.end.y - LOCAL_SIZE.y)
+	return Rect2(o, LOCAL_SIZE)
+
+
 func world_to_map(p: Vector3, area: Rect2) -> Vector2:
-	var ws: float = world.world_size
 	# show the island (crop the empty sea around it)
-	var crop := Rect2(-85, -75, 170, 150)
+	var crop := _crop()
 	var u := (p.x - crop.position.x) / crop.size.x
 	var v := (p.z - crop.position.y) / crop.size.y
 	return area.position + Vector2(u, v) * area.size
@@ -55,15 +70,17 @@ func _draw() -> void:
 	bg.anti_aliasing = true
 	draw_style_box(bg, area)
 	var ws: float = world.world_size
-	var crop := Rect2(-85, -75, 170, 150)
+	var crop := _crop()
 	var src := Rect2((crop.position.x + ws * 0.5) / ws * TEX.get_width(), (crop.position.y + ws * 0.5) / ws * TEX.get_height(),
 		crop.size.x / ws * TEX.get_width(), crop.size.y / ws * TEX.get_height())
 	draw_texture_rect_region(TEX, area.grow(-3), src)
 	var tile: float = world.tile_size
+	var ph: Array = world.layout.get("parcel_half", [tile * 1.5, tile])
+	var half := Vector3(float(ph[0]) + tile * 0.5, 0, float(ph[1]) + tile * 0.5)
 	for p in GS.parcels:
 		var c := Vector3(p["center"][0], 0, p["center"][1])
-		var a := world_to_map(c - Vector3(tile * 2, 0, tile * 1.5), area)
-		var b := world_to_map(c + Vector3(tile * 2, 0, tile * 1.5), area)
+		var a := world_to_map(c - half, area)
+		var b := world_to_map(c + half, area)
 		var col := Color("8a5a32")
 		if p["owner"] == "player":
 			col = Color("2f6d2a")
@@ -90,6 +107,16 @@ func _draw() -> void:
 				at.x = pt.x - 6 - tw
 			draw_string_outline(font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, 4, Color("fdf3dc"))
 			draw_string(font, at, text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, Color("5a3b22"))
+	if big:
+		# the hamlets' names (map v3)
+		for v in world.layout.get("villages", []):
+			if v["id"] == "sukamakmur":
+				continue
+			var vp := world_to_map(Vector3(v["center"][0], 0, v["center"][1]), area) + Vector2(0, -14)
+			var vt: String = v["name"]
+			var vw := font.get_string_size(vt, HORIZONTAL_ALIGNMENT_LEFT, -1, fs - 2).x
+			draw_string_outline(font, vp - Vector2(vw * 0.5, 0), vt, HORIZONTAL_ALIGNMENT_LEFT, -1, fs - 2, 4, Color("fdf3dc"))
+			draw_string(font, vp - Vector2(vw * 0.5, 0), vt, HORIZONTAL_ALIGNMENT_LEFT, -1, fs - 2, Color("3b5d2a"))
 	var target: Variant = quest_target()
 	if target != null:
 		var tp := world_to_map(target, area)
@@ -132,5 +159,5 @@ func quest_target() -> Variant:
 		4:
 			return world.door_points.get("calo") if GS.money < 3500000 else null
 		9:
-			return world.door_points.get("kantor") if GS.controlled_parcels() >= 7 else null
+			return world.door_points.get("kantor") if GS.controlled_parcels() >= GS.LICENSE_NEED else null
 	return null

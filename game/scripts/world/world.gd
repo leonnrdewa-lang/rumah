@@ -74,6 +74,16 @@ var tile_size := 3.2
 var obstacles: Array = []     # circles [x, z, r]
 var rects: Array = []         # [x0, z0, x1, z1]
 var walk_rects: Array = []    # walkable areas over water (jetty)
+## map v3 bridges: [cx, cz, along_x, half_len, half_w, base_y, deck_h, ramp] - walkable,
+## the deck rises over the ramps at both ends (height_at)
+var bridges: Array = []
+var fence_nodes: Array = []
+var _free_grid := {}          # 8 m cell -> [circles, rects] near it (is_free)
+var _free_counts := Vector2i(-1, -1)
+const FREE_CELL := 8.0
+## named villagers who own no land (talk_extra) and the walking passers-by (map v3)
+var walkers: Array = []
+var _walker_t: Array = []
 var interactables: Array = []
 var tile_views := {}
 var parcel_signs := {}
@@ -145,6 +155,8 @@ func _ready() -> void:
 	_build_decor()
 	_build_buildings()
 	_build_props()
+	_build_bridges()
+	_build_fences()
 	_build_parcels()
 	_build_undergrowth()
 	_build_player()
@@ -195,26 +207,70 @@ func height_at(x: float, z: float) -> float:
 	for r in walk_rects:
 		if x > r[0] and x < r[2] and z > r[1] and z < r[3]:
 			return maxf(h, r[4])
+	for br in bridges:
+		var d := _bridge_deck(br, x, z)
+		if d > -INF:
+			return maxf(h, d)
 	return h
+
+
+func _bridge_deck(br: Array, x: float, z: float) -> float:
+	## deck height of a bridge at (x, z), or -INF off it
+	var u: float = (x - br[0]) if br[2] else (z - br[1])
+	var v: float = (z - br[1]) if br[2] else (x - br[0])
+	if absf(u) > br[3] or absf(v) > br[4]:
+		return -INF
+	var k := clampf((br[3] - absf(u)) / br[7], 0.0, 1.0)
+	return br[5] + br[6] * k
 
 
 func is_walkable(x: float, z: float) -> bool:
 	for r in walk_rects:
 		if x > r[0] and x < r[2] and z > r[1] and z < r[3]:
 			return true
+	for br in bridges:
+		if _bridge_deck(br, x, z) > -INF:
+			return true
 	return height_at(x, z) > water_level + 0.1
 
 
 func is_free(x: float, z: float, pad := 0.0) -> bool:
-	for c in obstacles:
+	## (map v3: hundreds of obstacles; they are looked up in an 8 m grid, see _free_cell)
+	if _free_counts != Vector2i(obstacles.size(), rects.size()):
+		_rebuild_free_grid()
+	var cell: Array = _free_grid.get(Vector2i(floori(x / FREE_CELL), floori(z / FREE_CELL)), [])
+	if cell.is_empty():
+		return true
+	for c in cell[0]:
 		var dx: float = x - c[0]
 		var dz: float = z - c[1]
 		if dx * dx + dz * dz < (c[2] + pad) * (c[2] + pad):
 			return false
-	for r in rects:
+	for r in cell[1]:
 		if x > r[0] - pad and x < r[2] + pad and z > r[1] - pad and z < r[3] + pad:
 			return false
 	return true
+
+
+func _rebuild_free_grid() -> void:
+	## every circle / rect is listed in each 8 m cell within its extent + 2 m (the pad
+	## callers use is <= 1 m)
+	_free_grid.clear()
+	_free_counts = Vector2i(obstacles.size(), rects.size())
+	for c in obstacles:
+		var r: float = c[2] + 2.0
+		_grid_add(c[0] - r, c[1] - r, c[0] + r, c[1] + r, 0, c)
+	for q in rects:
+		_grid_add(q[0] - 2.0, q[1] - 2.0, q[2] + 2.0, q[3] + 2.0, 1, q)
+
+
+func _grid_add(x0: float, z0: float, x1: float, z1: float, slot: int, item: Array) -> void:
+	for gx in range(floori(x0 / FREE_CELL), floori(x1 / FREE_CELL) + 1):
+		for gz in range(floori(z0 / FREE_CELL), floori(z1 / FREE_CELL) + 1):
+			var k := Vector2i(gx, gz)
+			if not _free_grid.has(k):
+				_free_grid[k] = [[], []]
+			_free_grid[k][slot].append(item)
 
 
 func v3(a: Array, y := 0.0) -> Vector3:
@@ -478,6 +534,10 @@ func _build_plant_mask() -> void:
 		_mask_circle(c[0], c[1], float(c[2]) + 0.15)
 	for r in walk_rects:
 		_mask_rect(r[0] - 1.0, r[1] - 1.0, r[2] + 1.0, r[3] + 1.0)
+	for br in bridges:
+		var hx: float = (br[3] if br[2] else br[4]) + 0.8
+		var hz: float = (br[4] if br[2] else br[3]) + 0.8
+		_mask_rect(br[0] - hx, br[1] - hz, br[0] + hx, br[1] + hz)
 	var sp: Array = layout.get("player_spawn", [0, 0])
 	_mask_circle(sp[0], sp[1], 1.5)
 
@@ -540,6 +600,8 @@ func _build_buildings() -> void:
 		node.rotation.y = deg_to_rad(b["rot"])
 		add_child(node)
 		building_nodes[b["id"]] = node
+		if b.has("wall") or b.has("roof"):
+			_recolour(node, b.get("wall", ""), b.get("roof", ""))
 		var aabb := ModelLib.mesh_aabb(b["model"])
 		var xf := node.transform
 		if b["model"] != "dermaga":
@@ -566,6 +628,77 @@ func _build_buildings() -> void:
 			_decorate_sign(node, "toko", "KOPERASI DESA", Color("2f5a6a"))
 		elif id == "gudang":
 			_decorate_sign(node, "gudang", "Kebun Sawit", Color("4a3322"))
+
+
+func _recolour(node: MeshInstance3D, wall: String, roof: String) -> void:
+	## map v3: the hamlets' houses share a few shapes; each gets its own wall and roof
+	## colour (the albedo of its M_Wall / M_Roof surfaces; baked AO and weathering stay)
+	for i in node.mesh.get_surface_count():
+		var m := node.mesh.surface_get_material(i)
+		if m == null:
+			continue
+		var col := ""
+		if m.resource_name.begins_with("M_Wall") and wall != "":
+			col = wall
+		elif m.resource_name.begins_with("M_Roof") and roof != "":
+			col = roof
+		if col != "":
+			var c := Color(col)
+			node.set_surface_override_material(i, ModelLib.retuned(m, "tint" + col, {"albedo": c}))
+
+
+func _build_bridges() -> void:
+	## Wooden and concrete bridges over the rivers (map v3): the model runs along its X,
+	## ramps down to the banks at both ends; walking on it is done by height_at().
+	for b in layout.get("bridges", []):
+		var mi := MeshInstance3D.new()
+		mi.mesh = ModelLib.merged_mesh(b["model"], true)
+		if mi.mesh.get_surface_count() == 0:
+			continue
+		var p := v3(b["pos"])
+		var half: float = float(b.get("len", 14.0)) * 0.5
+		var rot := deg_to_rad(float(b.get("rot", 0.0)))
+		var along_x := absf(sin(rot)) < 0.5
+		var e1 := p + (Vector3(half, 0, 0) if along_x else Vector3(0, 0, half))
+		var e2 := p - (Vector3(half, 0, 0) if along_x else Vector3(0, 0, half))
+		var base := maxf(height_at(e1.x, e1.z), height_at(e2.x, e2.z))
+		base = maxf(base, water_level + 0.15)
+		p.y = base
+		mi.position = p
+		mi.rotation.y = rot
+		add_child(mi)
+		bridges.append([p.x, p.z, along_x, half - 0.1, float(b.get("width", 3.2)) * 0.5 - 0.35, base, 0.55, 2.5])
+
+
+func _build_fences() -> void:
+	## Yard fences of the hamlets: one MultiMesh per model and 48 m chunk, with collision.
+	var groups := {}
+	for f in layout.get("fences", []):
+		var key := "%s|%d|%d" % [f["model"], floori(float(f["pos"][0]) / 48.0), floori(float(f["pos"][2]) / 48.0)]
+		if not groups.has(key):
+			groups[key] = []
+		groups[key].append(f)
+	for key in groups:
+		var m: String = key.get_slice("|", 0)
+		var mesh := ModelLib.merged_mesh(m, true)
+		if mesh.get_surface_count() == 0:
+			continue
+		var list: Array = groups[key]
+		var mm := MultiMesh.new()
+		mm.transform_format = MultiMesh.TRANSFORM_3D
+		mm.mesh = mesh
+		mm.instance_count = list.size()
+		var aabb := mesh.get_aabb()
+		for i in list.size():
+			var f: Dictionary = list[i]
+			var xf := Transform3D(Basis(Vector3.UP, deg_to_rad(float(f["rot"]))), v3(f["pos"]))
+			xf.origin.y = height_at(xf.origin.x, xf.origin.z)
+			mm.set_instance_transform(i, xf)
+			_add_box(xf, aabb, 0.95)
+		var mmi := MultiMeshInstance3D.new()
+		mmi.multimesh = mm
+		add_child(mmi)
+		fence_nodes.append(mmi)
 
 
 func _decorate_sign(node: Node3D, model: String, text: String, color: Color) -> void:
@@ -704,13 +837,19 @@ func _tbs_heap(spots: Array) -> ArrayMesh:
 func _build_parcels() -> void:
 	var cols: int = layout.get("parcel_cols", 4)
 	var rows: int = layout.get("parcel_rows", 3)
+	# map v3: staggered planting spots from the layout (older layouts: the square grid);
+	# the palms are scaled to the grid so neighbouring crowns do not run into each other
+	var offs: Array = layout.get("tile_offsets", [])
+	if offs.is_empty():
+		for idx in cols * rows:
+			offs.append([((idx % cols) - (cols - 1) * 0.5) * tile_size, ((idx / cols) - (rows - 1) * 0.5) * tile_size])
+	TileView.palm_scale = clampf(tile_size / 4.4, 0.6, 1.0)
+	var so: Array = layout.get("sign_offset", [-(cols * tile_size) * 0.5 - 0.6, (rows * tile_size) * 0.5 + 0.8])
 	for p in GS.parcels:
 		var pid: int = p["id"]
 		var c := v3(p["center"])
-		for idx in cols * rows:
-			var col := idx % cols
-			var row := idx / cols
-			var pos := c + Vector3((col - (cols - 1) * 0.5) * tile_size, 0, (row - (rows - 1) * 0.5) * tile_size)
+		for idx in offs.size():
+			var pos := c + Vector3(float(offs[idx][0]), 0, float(offs[idx][1]))
 			pos.y = height_at(pos.x, pos.z)
 			var tv := TileView.new()
 			tv.pid = pid
@@ -726,7 +865,7 @@ func _build_parcels() -> void:
 				"act": func(): _tile_action(tpid, tidx)})
 			obstacles.append([pos.x, pos.z, 0.5])
 		# parcel sign at the front-left corner
-		var sp := c + Vector3(-(cols * tile_size) * 0.5 - 0.6, 0, (rows * tile_size) * 0.5 + 0.8)
+		var sp := c + Vector3(float(so[0]), 0, float(so[1]))
 		sp.y = height_at(sp.x, sp.z)
 		var sign := MeshInstance3D.new()
 		sign.mesh = ModelLib.merged_mesh("papan", true)
@@ -801,6 +940,43 @@ func _build_npcs() -> void:
 	interactables.append({"node": extras["anak"], "r": 1.6, "npc": true, "prompt": func(): return "Ngobrol dengan Dik Udin",
 		"act": func(): deals.talk_extra("anak")})
 	extras["mak"] = _extra("char_ibu", "Mak Inah", door_points.get("warung", Vector3(8, 0, 5)) + Vector3(1.5, 0, -0.5), 0.8, true)
+	# map v3: named villagers of the hamlets who own no garden (chat only) ...
+	var vill := {}
+	for v in layout.get("villages", []):
+		vill[v["id"]] = v
+	for id in DEALS_SCRIPT.EXTRAS:
+		var e: Dictionary = DEALS_SCRIPT.EXTRAS[id]
+		var v: Dictionary = vill.get(e["village"], {})
+		var at := v3(v.get("center", [0, 0]))
+		var hs: Array = v.get("houses", [])
+		if not hs.is_empty():
+			var hid: String = hs[absi(hash(id)) % hs.size()]
+			if door_points.has(hid):
+				at = door_points[hid] + Vector3(0.6, 0, 1.4)
+		if not is_walkable(at.x, at.z) or not is_free(at.x, at.z, 0.3):
+			at = v3(v.get("center", [0, 0])) + Vector3(2.5, 0, 2.5)
+		at.y = height_at(at.x, at.z)
+		var n := _extra(e["model"], e["name"], at, float(e.get("radius", 4.0)), true)
+		extras[id] = n
+		var eid: String = id
+		var ename: String = e["name"]
+		interactables.append({"node": n, "r": 1.6, "npc": true, "prompt": func(): return "Ngobrol dengan " + ename,
+			"act": func(): deals.talk_extra(eid)})
+	# ... and passers-by walking the roads from hamlet to hamlet
+	var centres: Array = []
+	for v in layout.get("villages", []):
+		centres.append(v3(v["center"]))
+	if not centres.is_empty():
+		for i in DEALS_SCRIPT.WALKER_MODELS.size():
+			var c: Vector3 = centres[i % centres.size()] + Vector3(randf_range(-4, 4), 0, randf_range(2.5, 4.5))
+			c.y = height_at(c.x, c.z)
+			var n := _extra(DEALS_SCRIPT.WALKER_MODELS[i], "Warga", c, 4.0, true)
+			n.set_meta("walker", i)
+			walkers.append(n)
+			_walker_t.append(randf_range(20.0, 90.0))
+			var wi := i
+			interactables.append({"node": n, "r": 1.5, "npc": true, "prompt": func(): return "Sapa warga",
+				"act": func(): deals.talk_walker(wi)})
 	for vid in GS.VILLAGERS:
 		refresh_villager(vid)
 
@@ -838,7 +1014,11 @@ func refresh_villager(vid: String) -> void:
 	else:
 		npc.home = house
 		var pc := v3(GS.parcel_of(vid)["center"])
-		npc.set_anchor(house.lerp(pc, 0.35), 5.0)
+		var a := house.lerp(pc, 0.35)
+		# (map v3: some hamlet gardens lie across a river from the house; stay on this bank)
+		if house.distance_to(pc) > 40.0 or not is_walkable(a.x, a.z) or not is_free(a.x, a.z, 0.3):
+			a = house + Vector3(0, 0, 1.5)
+		npc.set_anchor(a, 5.0)
 
 
 func _worker_anchor(vid: String) -> Vector3:
@@ -846,8 +1026,9 @@ func _worker_anchor(vid: String) -> Vector3:
 	for p in GS.parcels:
 		if p["owner"] == "player":
 			owned.append(p)
-	var p: Dictionary = owned[hash(vid) % owned.size()]
-	return v3(p["center"]) + Vector3(0, 0, 5.5)
+	var p: Dictionary = owned[absi(hash(vid)) % owned.size()]
+	var ph: Array = layout.get("parcel_half", [6.6, 4.4])
+	return v3(p["center"]) + Vector3(0, 0, float(ph[1]) + 1.3)
 
 
 func _free_tent_index() -> int:
@@ -953,7 +1134,7 @@ func refresh_all() -> void:
 
 
 func _on_parcel_changed(pid: int) -> void:
-	for idx in 12:
+	for idx in GS.tile_count():
 		var key := "%d:%d" % [pid, idx]
 		if tile_views.has(key):
 			tile_views[key].refresh()
@@ -1161,10 +1342,33 @@ func _process(delta: float) -> void:
 		var b: MeshInstance3D = boats[i]
 		b.position.y = water_level - 0.08 + sin(_t * 1.3 + i * 2.0) * 0.05
 		b.rotation.z = sin(_t * 0.9 + i) * 0.03
+	_update_walkers(delta)
 	if state == "play":
 		_update_target()
 	else:
 		_ring.visible = false
+
+
+func _update_walkers(delta: float) -> void:
+	## Passers-by: after a while in one hamlet they set off along the roads to another.
+	var vs: Array = layout.get("villages", [])
+	if vs.size() < 2:
+		return
+	for i in walkers.size():
+		_walker_t[i] -= delta
+		if _walker_t[i] > 0.0:
+			continue
+		_walker_t[i] = randf_range(70.0, 150.0)
+		var n: Npc = walkers[i]
+		if n.talking or GS.hour > 17.5:
+			continue
+		var v: Dictionary = vs[randi() % vs.size()]
+		var c := v3(v["center"]) + Vector3(randf_range(-5, 5), 0, randf_range(2.5, 5.0))
+		if not is_walkable(c.x, c.z) or not is_free(c.x, c.z, 0.5):
+			continue
+		c.y = height_at(c.x, c.z)
+		n.home = c
+		n.set_anchor(c, 5.0)
 
 
 func _update_daylight() -> void:

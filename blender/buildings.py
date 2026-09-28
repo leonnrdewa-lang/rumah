@@ -567,6 +567,278 @@ def build_rumah_c():
     return root
 
 
+# ------------------------------------------------------------ map v3: more house types
+# The game recolours M_Wall / M_Roof per house (world.gd, layout "wall" / "roof"), so a
+# handful of shapes gives dozens of different-looking homes across the hamlets.
+def build_rumah_d():
+    """Rumah panggung tinggi: high stilts (1.45 m) with cross braces, a long front verandah
+    under the main gable (ridge along X), a steep ladder-stair at the side of the porch."""
+    name = "rumah_d"
+    root = empty(name)
+    M = house_materials("#9c4c2b", "#e9d3a4", "#6e4a2c")
+    P = []
+    FH = 1.45
+    WZ = FH + 1.9
+    x0, x1, y0, y1 = -2.0, 2.0, -1.0, 1.4
+    py = -2.1
+    P.append(bx("floor", (x1 - x0 + 0.2, y1 - py + 0.04, 0.18), (0, (y1 + py) / 2, FH - 0.09), M['trim'], 0.05, 2))
+    stilts(P, M, (-1.9, 0.0, 1.9), (py + 0.1, y0, y1 - 0.1), FH - 0.18, size=0.19)
+    for y in (y0, y1 - 0.1):   # cross braces between the stilts
+        P.append(beam("brace", (-1.9, y, 0.25), (0.0, y, FH - 0.35), 0.07, 0.07, Vector((0, 1, 0)), M['trim'], 0.01))
+        P.append(beam("brace", (1.9, y, 0.25), (0.0, y, FH - 0.35), 0.07, 0.07, Vector((0, 1, 0)), M['trim'], 0.01))
+    P.append(siding_ring("walls", [(x0, y0), (x1, y0), (x1, y1), (x0, y1)], FH, WZ, 7, 0.028, M['wall']))
+    for x, y in ((x0, y0), (x1, y0), (x1, y1), (x0, y1)):
+        P.append(bx("corner", (0.15, 0.15, WZ - FH + 0.05), (x, y, (FH + WZ) / 2), M['trim'], 0.035, 1))
+    pitch = math.radians(36)
+    t = math.tan(pitch)
+    yc = (py + y1) / 2
+    hw = (y1 - py) / 2 + 0.4
+    zr = WZ + (y1 - yc) * t + 0.1
+    gable_roof(P, M, (-2.45, yc, zr), (2.45, yc, zr), hw, pitch, 6, horns=('a', 'b'), horn_len=0.4)
+    ym = (y0 + y1) / 2
+    for sx in (-1, 1):
+        P.append(vplank_panel("gable", (sx * x1, ym, 0), facing_rot((sx, 0)), -1.2, 1.2, lambda xx: WZ - 0.05,
+                              lambda xx: max(WZ, zr - 0.2 - max(abs(ym + xx - yc), abs(ym - xx - yc)) * t),
+                              0.26, 0.025, M['wall'], breaks=(0.0,)))
+    for sx in (-1, 1):   # verandah posts carrying the roof
+        P.append(bx("porch_post", (0.14, 0.14, WZ - FH), (sx * 1.95, py + 0.1, (FH + WZ) / 2), M['trim'], 0.03, 1))
+    railing(P, M, (-1.95, py + 0.1), (1.0, py + 0.1), FH, spacing=0.22)
+    railing(P, M, (-1.95, py + 0.1), (-1.95, y0 - 0.1), FH, spacing=0.22, posts=False)
+    railing(P, M, (1.95, py + 0.1), (1.95, y0 - 0.1), FH, spacing=0.22, posts=False)
+    steps(P, M, 1.55, py, 0.8, FH, 6, depth=0.24)
+    door(P, M, (0.9, y0, 0), 0.0, FH)
+    window(P, M, (-0.9, y0, 0), 0.0, FH + 1.0, w=0.9, shutters=True, shut='roof')
+    window(P, M, (x1, 0.2, 0), facing_rot((1, 0)), FH + 1.0)
+    window(P, M, (x0, 0.2, 0), facing_rot((-1, 0)), FH + 1.0)
+    window(P, M, (0.0, y1, 0), facing_rot((0, 1)), FH + 1.0, cross=False)
+    # a water jar and a firewood stack under the house
+    P.append(rod("tempayan", (-1.0, 0.3, 0.0), (-1.0, 0.3, 0.55), 0.26, mat("M_Jar", "#8a4a2e"), 12, r2=0.2, smooth=True))
+    for k in range(4):
+        P.append(rod("firewood", (0.4, 0.8 - k * 0.14, 0.08 + (k % 2) * 0.12), (1.3, 0.8 - k * 0.14, 0.08 + (k % 2) * 0.12),
+                     0.06, M['trim'], 6))
+    finish(root, P, name)
+    center_root(root)
+    return root
+
+
+def build_rumah_e():
+    """Rumah limas: square plan under a steep pyramid (limas) roof on low stilts, with a
+    front porch under its own little gable, two carved posts and a flower box."""
+    name = "rumah_e"
+    root = empty(name)
+    M = house_materials("#b8543a", "#f1e2c2", "#7a4d2e")
+    P = []
+    WZ = FZ + WALL_H
+    x0, x1, y0, y1 = -1.9, 1.9, -1.6, 1.6
+    P.append(bx("floor", (x1 - x0 + 0.1, y1 - y0 + 0.1, 0.18), (0, 0, FZ - 0.09), M['trim'], 0.05, 2))
+    P.append(bx("porch_floor", (2.6, 1.1, 0.16), (0, y0 - 0.55, FZ - 0.08), M['trim'], 0.05, 2))
+    stilts(P, M, (-1.8, 0.0, 1.8), (-1.5, 0.0, 1.5), FZ - 0.18)
+    stilts(P, M, (-1.2, 1.2), (y0 - 1.0,), FZ - 0.18)
+    P.append(siding_ring("walls", [(x0, y0), (x1, y0), (x1, y1), (x0, y1)], FZ, WZ, 7, 0.028, M['wall']))
+    for x, y in ((x0, y0), (x1, y0), (x1, y1), (x0, y1)):
+        P.append(bx("corner", (0.15, 0.15, WALL_H + 0.05), (x, y, FZ + WALL_H / 2), M['trim'], 0.035, 1))
+    pitch = math.radians(40)
+    t = math.tan(pitch)
+    H = 1.9 + 0.45
+    hip_roof(P, M, 0, 0, H, H + 0.05, WZ + 0.12 - 0.45 * t, pitch, 6)
+    cp = math.radians(33)
+    zc = WZ + 0.05 + 1.3 * math.tan(cp)
+    gable_roof(P, M, (0, y0 + 0.2, zc), (0, y0 - 1.25, zc), 1.3, cp, 3, ridge_r=0.1, balls=False, horns=('b',),
+               horn_len=0.3, barge_h=0.2)
+    for sx in (-1, 1):
+        P.append(bx("porch_col", (0.17, 0.17, WZ - FZ + 0.05), (sx * 1.15, y0 - 1.0, (FZ + WZ) / 2), M['trim'], 0.04, 1))
+        railing(P, M, (sx * 1.15, y0 - 1.0), (sx * 1.15, y0 - 0.1), FZ, spacing=0.26, posts=False)
+    P.append(beam("porch_beam", (-1.25, y0 - 1.0, WZ - 0.05), (1.25, y0 - 1.0, WZ - 0.05), 0.14, 0.14, Z, M['trim']))
+    steps(P, M, 0.0, y0 - 1.1, 1.1, FZ, 3)
+    door(P, M, (0.0, y0, 0), 0.0, FZ, glass_top=True)
+    for sx in (-1, 1):
+        window(P, M, (sx * 1.25, y0, 0), 0.0, FZ + 1.05, w=0.6, shutters=True, shut='roof')
+        window(P, M, (sx * x1, 0.0, 0), facing_rot((sx, 0)), FZ + 1.05)
+    window(P, M, (0.0, y1, 0), facing_rot((0, 1)), FZ + 1.05, cross=False)
+    box_m = mat("M_FlowerBox", "#7a4d2e")
+    flo = mat("M_Petal", "#e0572a")
+    for sx in (-1, 1):
+        P.append(bx("flower_box", (0.7, 0.2, 0.16), (sx * 1.25, y0 - 0.14, FZ + 0.62), box_m, 0.02, 1))
+        for k in range(4):
+            P.append(add_ico("bloom", 0.08, loc=(sx * 1.25 - 0.27 + k * 0.18, y0 - 0.14, FZ + 0.76), material=flo, subdiv=1))
+    finish(root, P, name)
+    center_root(root)
+    return root
+
+
+def build_rumah_f():
+    """Rumah bata: a ground-level brick-and-plaster house (no stilts) with a front-facing
+    zinc gable, a tiled front terrace under a lean-to roof on two posts and a low wall."""
+    name = "rumah_f"
+    root = empty(name)
+    M = dict(roof=mat("M_Roof", "#6f8ea6"), wall=mat("M_Wall", "#f0e6cf"), trim=mat("M_Trim", "#8a5a36"),
+             base=mat("M_Plinth", "#9a8f7c"), glass=glass_mat())
+    P = []
+    FB = 0.28
+    WZ = FB + 2.3
+    x0, x1, y0, y1 = -2.2, 2.2, -1.4, 1.8
+    P.append(bx("plinth", (x1 - x0 + 0.1, y1 - y0 + 0.1, FB), (0, (y0 + y1) / 2, FB / 2), M['base'], 0.03, 1))
+    P.append(bx("terrace", (x1 - x0 + 0.3, 1.5, FB - 0.08), (0, y0 - 0.75, (FB - 0.08) / 2), M['base'], 0.03, 1))
+    P.append(siding_ring("walls", [(x0, y0), (x1, y0), (x1, y1), (x0, y1)], FB, WZ, 3, 0.012, M['wall']))
+    P.append(beam("wall_band", (x0 - 0.03, y0 - 0.03, FB + 0.5), (x1 + 0.03, y0 - 0.03, FB + 0.5), 0.06, 0.08, Z, M['base'], 0.01))
+    pitch = math.radians(28)
+    t = math.tan(pitch)
+    zr = WZ + 2.2 * t + 0.1
+    gable_roof(P, M, (0, y1 + 0.45, zr), (0, y0 - 0.3, zr), 2.6, pitch, 3, lip=None, trim='trim', tile_kw=ZINC,
+               ridge_r=0.12, ridge_verts=4, balls=False, barge_h=0.2, wear=new_wear('zinc', rust=0.7, moss=0.4, seed=11))
+    for oy, fy in ((y0, -1), (y1, 1)):
+        P.append(vplank_panel("gable", (0, oy, 0), facing_rot((0, fy)), x0, x1, lambda xx: WZ - 0.05,
+                              lambda xx: max(WZ, zr - 0.12 - abs(xx) * t), 0.32, 0.02, M['wall'], breaks=(0.0,)))
+    # terrace lean-to on two posts, a low front wall with a gap
+    shed_roof(P, M, Vector((0, y0 - 0.02, WZ - 0.1)), (0, -1, 0), (1, 0, 0), x0 - 0.2, x1 + 0.2, 1.6,
+              math.radians(14), 2, tile_kw=ZINC, wear=new_wear('zinc', rust=0.9, moss=0.3, seed=12))
+    for sx in (-1, 1):
+        P.append(bx("terrace_post", (0.16, 0.16, WZ - 0.4), (sx * 2.1, y0 - 1.4, (WZ - 0.4) / 2 + 0.1), M['trim'], 0.03, 1))
+        P.append(bx("low_wall", (1.2, 0.16, 0.55), (sx * 1.55, y0 - 1.45, FB + 0.2), M['wall'], 0.03, 1))
+    door(P, M, (-0.6, y0, 0), 0.0, FB, h=1.9)
+    window(P, M, (1.1, y0, 0), 0.0, FB + 1.35, w=1.1, h=0.9)
+    for sx in (-1, 1):
+        window(P, M, (sx * x1, 0.2, 0), facing_rot((sx, 0)), FB + 1.35)
+    window(P, M, (0.0, y1, 0), facing_rot((0, 1)), FB + 1.35, cross=False)
+    # potted plants on the terrace
+    pot = mat("M_Pot", "#b8643a")
+    leaf = mat("M_PlantLeaf", "#5f8a3c")
+    for px_ in (-1.6, 1.6, 0.6):
+        P.append(rod("pot", (px_, y0 - 1.1, FB - 0.08), (px_, y0 - 1.1, FB + 0.22), 0.14, pot, 10, r2=0.11))
+        P.append(add_ico("plant", 0.26, loc=(px_, y0 - 1.1, FB + 0.42), material=leaf, subdiv=1, scale=(1, 1, 0.8)))
+    finish(root, P, name)
+    center_root(root)
+    return root
+
+
+def build_rumah_g():
+    """Pondok: a long low wooden hut on short stilts under a single lean-to zinc roof, a side
+    verandah with a bench and a clothesline pole - the simplest home in the hamlets."""
+    name = "rumah_g"
+    root = empty(name)
+    M = house_materials("#8c8f86", "#b98a58", "#5e4028")
+    P = []
+    F = 0.45
+    x0, x1, y0, y1 = -2.4, 1.0, -1.1, 1.2
+    zf, zb = F + 2.35, F + 1.75       # front high, back low
+    P.append(bx("floor", (4.9, y1 - y0 + 0.2, 0.16), (-0.65 + 0.75, (y0 + y1) / 2, F - 0.08), M['trim'], 0.04, 2))
+    stilts(P, M, (-2.3, -0.7, 0.9, 2.5), (y0 + 0.05, y1 - 0.05), F - 0.16)
+    wall_top = lambda xx: zf
+    for (ox, oy, fx, fy, a_, b_) in ((-0.7, y0, 0, -1, -1.7, 1.7), (-0.7, y1, 0, 1, -1.7, 1.7)):
+        top = zf if fy < 0 else zb
+        P.append(vplank_panel("wall", (ox, oy, 0), facing_rot((fx, fy)), a_, b_, lambda xx: F, lambda xx, tt=top: tt - 0.1,
+                              0.3, 0.03, M['wall']))
+    for sx, xx in ((-1, x0), (1, x1)):
+        P.append(vplank_panel("wall", (xx, (y0 + y1) / 2, 0), facing_rot((sx, 0)), -1.15, 1.15, lambda q: F,
+                              lambda q, s=sx: zb + (zf - zb) * (0.5 - q / 2.3 * (1 if s > 0 else -1)) - 0.1,
+                              0.3, 0.03, M['wall']))
+    pitch = math.atan((zf - zb) / (y1 - y0))
+    shed_roof(P, M, Vector((0, y0 - 0.45, zf + 0.05 + 0.45 * math.tan(pitch))), (0, 1, 0), (1, 0, 0), x0 - 0.35, 2.75,
+              (y1 - y0) + 0.9, pitch, 2, tile_kw=ZINC, wear=new_wear('zinc', rust=1.0, moss=0.5, seed=21))
+    for y in (y0 + 0.05, y1 - 0.05):
+        P.append(bx("verandah_post", (0.13, 0.13, 1.8), (2.5, y, F + 0.9), M['trim'], 0.03, 1))
+    railing(P, M, (2.5, y0 + 0.05), (2.5, y1 - 0.05), F, spacing=0.3, posts=False)
+    bench(P, M, 1.75, y1 - 0.35, F, 1.1)
+    door(P, M, (0.2, y0, 0), 0.0, F)
+    window(P, M, (-1.4, y0, 0), 0.0, F + 1.05, w=0.8, shutters=True, shut='trim')
+    steps(P, M, 0.2, y0, 0.9, F, 2)
+    P.append(rod("clothes_pole", (3.4, -0.6, 0), (3.4, -0.6, 1.7), 0.05, M['trim'], 6))
+    P.append(rod("clothes_line", (3.4, -0.6, 1.62), (1.0, -1.2, F + 1.9), 0.012, M['trim'], 4))
+    cloth = [mat("M_Cloth1", "#d5543d"), mat("M_Cloth2", "#4f86b8"), mat("M_Cloth3", "#f2c14e")]
+    for k in range(3):
+        f_ = 0.25 + k * 0.25
+        cx = 3.4 + (1.0 - 3.4) * f_
+        cy = -0.6 + (-1.2 + 0.6) * f_
+        cz = 1.62 + (F + 1.9 - 1.62) * f_ - 0.3
+        P.append(bx("cloth", (0.34, 0.03, 0.45), (cx, cy, cz), cloth[k], 0.0, 1, rotz=math.atan2(-0.6, -2.4)))
+    finish(root, P, name)
+    center_root(root)
+    return root
+
+
+# ------------------------------------------------------------ bridges (map v3)
+def _bridge(name, concrete):
+    """14 m bridge along X (deck 0.55 m above the banks, 2.5 m ramps at each end), 3.2 m wide."""
+    root = empty(name)
+    L, W, HD, RAMP = 14.0, 3.2, 0.55, 2.5
+    if concrete:
+        M = dict(deck=mat("M_Concrete", "#c9c2b0"), rail=mat("M_Rail", "#e8e0cc"), trim=mat("M_Paint", "#d5543d"),
+                 pier=mat("M_Pier", "#a39c8c"))
+    else:
+        M = dict(deck=mat("M_Wood", "#a8703f"), rail=mat("M_WoodDark", "#6e4a2c"), trim=mat("M_WoodDark", "#6e4a2c"),
+                 pier=mat("M_WoodDark", "#6e4a2c"))
+    P = []
+    hx = L / 2
+
+    def zdeck(x):
+        a = abs(x)
+        if a <= hx - RAMP:
+            return HD
+        return HD * max(0.0, (hx - a) / RAMP)
+
+    if concrete:
+        # slab: top follows the ramps, 0.35 m thick, bevelled
+        xs = [-hx, -hx + RAMP, hx - RAMP, hx]
+        verts, faces = [], []
+        for x in xs:
+            zt = zdeck(x) + 0.02
+            for y in (-W / 2, W / 2):
+                verts.append((x, y, zt))
+                verts.append((x, y, zt - 0.35 if abs(x) < hx - 0.01 else -0.2))
+        n = len(xs)
+        for i in range(n - 1):
+            a, b = i * 4, (i + 1) * 4
+            faces += [(a, b, b + 2, a + 2), (a + 1, a + 3, b + 3, b + 1), (a, a + 1, b + 1, b), (a + 2, b + 2, b + 3, a + 3)]
+        faces += [(0, 2, 3, 1), ((n - 1) * 4, (n - 1) * 4 + 1, (n - 1) * 4 + 3, (n - 1) * 4 + 2)]
+        P.append(mesh_from_data("slab", verts, faces, M['deck']))
+        for x in (-hx + RAMP + 1.2, 0.0, hx - RAMP - 1.2):
+            P.append(bx("pier", (0.6, W - 0.4, 2.0), (x, 0, HD - 1.3), M['pier'], 0.05, 1))
+        for sy in (-1, 1):
+            y = sy * (W / 2 - 0.1)
+            for x in [(-hx + RAMP) + k * (L - 2 * RAMP) / 6 for k in range(7)]:
+                P.append(bx("rail_post", (0.18, 0.18, 0.8), (x, y, HD + 0.4), M['rail'], 0.03, 1))
+            P.append(beam("rail_top", (-hx + RAMP - 0.1, y, HD + 0.82), (hx - RAMP + 0.1, y, HD + 0.82), 0.16, 0.12, Z, M['trim'], 0.03))
+            P.append(beam("rail_mid", (-hx + RAMP, y, HD + 0.45), (hx - RAMP, y, HD + 0.45), 0.08, 0.08, Z, M['rail'], 0.02))
+            for sx in (-1, 1):   # sloped end rails down the ramps
+                xa, xb = sx * (hx - RAMP), sx * (hx - 0.4)
+                P.append(beam("rail_ramp", (xa, y, HD + 0.82), (xb, y, zdeck(xb) + 0.7), 0.14, 0.1, Z, M['trim'], 0.03))
+                P.append(bx("rail_end", (0.2, 0.2, 0.75), (xb, y, zdeck(xb) + 0.37), M['rail'], 0.03, 1))
+    else:
+        # plank deck on log stringers, log piers, rope-and-pole railings
+        n = int(L / 0.28)
+        for i in range(n):
+            x = -hx + (i + 0.5) * L / n
+            z = zdeck(x)
+            nx_ = x + L / n
+            slope = math.atan2(zdeck(min(nx_, hx)) - z, L / n) if abs(x) > hx - RAMP - 0.2 else 0.0
+            P.append(bx("plank", (L / n - 0.03, W - (0.1 if i % 3 else 0.0), 0.07),
+                        (x, 0, max(z, 0.02) - 0.035), M['deck'], 0.01, 1, rot=(0, -slope, 0)))
+        for sy in (-1, 1):
+            y = sy * (W / 2 - 0.35)
+            P.append(rod("stringer", (-hx + RAMP - 0.3, y, HD - 0.16), (hx - RAMP + 0.3, y, HD - 0.16), 0.12, M['pier'], 8))
+        for x in (-hx + RAMP + 0.2, -1.5, 1.5, hx - RAMP - 0.2):
+            for sy in (-1, 1):
+                P.append(rod("pile", (x, sy * (W / 2 - 0.2), -1.4), (x, sy * (W / 2 - 0.2), HD + 0.95), 0.11, M['pier'], 8))
+            P.append(rod("cross", (x, -W / 2 + 0.1, HD - 0.2), (x, W / 2 - 0.1, HD - 0.2), 0.08, M['pier'], 6))
+        for sy in (-1, 1):
+            y = sy * (W / 2 - 0.2)
+            P.append(rod("handrail", (-hx + RAMP + 0.2, y, HD + 0.9), (hx - RAMP - 0.2, y, HD + 0.9), 0.055, M['rail'], 6))
+            for sx in (-1, 1):
+                P.append(rod("handrail_end", (sx * (hx - RAMP - 0.2), y, HD + 0.9), (sx * (hx - 0.3), y, 0.6), 0.05, M['rail'], 6))
+                P.append(rod("end_post", (sx * (hx - 0.3), y, -0.1), (sx * (hx - 0.3), y, 0.7), 0.08, M['pier'], 6))
+    finish(root, P, name)
+    center_root(root, ground=False)
+    return root
+
+
+def build_jembatan_kayu():
+    return _bridge("jembatan_kayu", False)
+
+
+def build_jembatan_beton():
+    return _bridge("jembatan_beton", True)
+
+
 def bench(P, M, xc, yc, z0, length=1.1, rotz=0.0, m='trim', back=True):
     fr = lambda x, y, z: fpt((xc, yc, z0), rotz, (x, y, z))
     P.append(bx("bench_seat", (length, 0.36, 0.07), fr(0, 0, 0.42), M[m], 0.025, 1, rotz))
@@ -1454,6 +1726,12 @@ BUILDERS = {
     "perahu": build_perahu,
     "truck": build_truck,
     "gudang": build_gudang,
+    "rumah_d": build_rumah_d,
+    "rumah_e": build_rumah_e,
+    "rumah_f": build_rumah_f,
+    "rumah_g": build_rumah_g,
+    "jembatan_kayu": build_jembatan_kayu,
+    "jembatan_beton": build_jembatan_beton,
 }
 # weather_bake kwargs per building (default: AO 1 m + a brown dirt band up to 0.45 m)
 WEATHER = {
@@ -1462,6 +1740,8 @@ WEATHER = {
     "truck": dict(dirt=0.6, dirt_h=0.75, distance=0.8),
     "pos_calo": dict(dirt=0.45, dirt_h=0.3, distance=0.8),
     "warung": dict(dirt=0.5, dirt_h=0.4),
+    "jembatan_kayu": dict(ground=False, dirt=0.0, distance=0.6),
+    "jembatan_beton": dict(ground=False, dirt=0.2, dirt_h=0.3, distance=0.6),
 }
 ICONS = {
     "truck": lambda root: render_icon(root, "icon_truk", pitch_deg=30, yaw_deg=42, margin=0.86),

@@ -28,7 +28,97 @@ const CHAT := {
 	"petani": ["Singkong dan cabai di kebun ini cukup buat makan sekeluarga.",
 		"Katanya sawit bikin kaya. Kaya siapa dulu?",
 		"Saya kerja dari subuh. Tanah ini keringat saya."],
+	# ---- map v3: the hamlets
+	"somad": ["Kopra saya dijual sampai Surabaya. Kamu jual apa? Oh, sawit. Hmm.",
+		"Kalau mau beli kebun saya, siapkan uang tunai. Saya tidak terima 'bagi hasil'.",
+		"Sepulang haji saya jadi lebih sabar. Tapi harga tanah saya tidak ikut sabar."],
+	"ucok": ["Naik perahu saya? Lima ribu sekali seberang. Jembatan? Ah, itu buat orang yang tak suka seni.",
+		"Sungai ini dulu jernih, Bang. Sekarang airnya warna teh susu.",
+		"Kalau malam saya nyanyi di perahu. Ikan-ikan suka. Katanya."],
+	"rian": ["Halo gaes, ini aku lagi sama Juragan Sawit! Coba Bang, senyum ke kamera.",
+		"Videoku soal sungai keruh ditonton 200 ribu kali. Mau jadi video berikutnya?",
+		"Aku cuma mau desa ini tetap hijau. Dan tetap ada sinyal."],
+	"wati": ["Jamu kunyit asam, Juragan? Biar kuat kerja. Atau biar kuat menghadapi warga?",
+		"Katanya Pak RT Bejo stempelnya bisa disewa. Eh, saya nggak bilang apa-apa ya.",
+		"Gosip terbaru: katanya ada juragan sawit yang suka nyuruh preman. Siapa ya?"],
+	"slamet": ["Getah karet saya harganya jatuh terus. Mungkin memang harus ganti sawit...",
+		"Pohon karet itu ditanam bapak saya. Tiap goresan pisau ada ceritanya.",
+		"Sabar itu kunci, Juragan. Tapi kunci rumah saya jangan diminta ya."],
+	"dullah": ["Tanah ini tanah ulayat, Nak. Bukan milik saya sendiri, milik anak cucu kami.",
+		"Batas kebun kami ditandai pohon durian tua. Nenek moyang yang menanamnya.",
+		"Orang kota datang bawa peta. Kami sudah di sini sebelum peta itu dibuat."],
+	"lastri": ["Anak-anak saya belajar bahwa hutan itu paru-paru dunia. Kamu dulu belajar apa?",
+		"Kalau ada surat, saya baca dulu sampai titik terakhir. Kebiasaan guru.",
+		"Gaji guru honorer itu kecil, Juragan. Tapi kebun ini membuat kami cukup."],
+	"romlah": ["Rempeyek, Cu? Masih hangat. Minyaknya... ya, minyak yang mahal itu.",
+		"Mata Nenek sudah rabun. Tulisan kecil-kecil itu Nenek tidak bisa baca.",
+		"Cucu Nenek bilang, jangan tanda tangan apa-apa. Tapi cucu Nenek jauh di kota."],
+	"darsih": ["Sejak sawit masuk dusun sebelah, sumur-sumur di sana kering. Mbok tidak bohong.",
+		"Mbok sudah bantu lahirkan separuh warga dusun ini. Termasuk yang sekarang kerja buatmu.",
+		"Jamu Mbok bisa sembuhkan masuk angin. Tapi bukan serakah."],
+	"yanto": ["Saya dulu kerja di pabrik sawit. Di-PHK gara-gara 'efisiensi'. Lucu ya.",
+		"Butuh uang buat biaya sekolah anak. Kalau harganya cocok, kita bicara.",
+		"Kerja apa saja saya mau, Juragan. Asal dibayar, jangan cuma dijanjikan."],
+	"karta": ["Kambing saya makan apa saja. Kemarin makan sandal Pak RT.",
+		"Kebun rumput buat kambing ini jangan diganggu. Kambing juga butuh makan.",
+		"Harga kambing naik pas Idul Adha. Harga kebun? Naik kalau kamu yang nanya."],
+	"bidan": ["Semua orang di desa ini saya yang bantu lahirkan. Saya tahu siapa yang jujur.",
+		"Posyandu butuh timbangan baru. Kalau mau CSR, itu lebih berguna dari foto-foto.",
+		"Surat tanah saya lengkap dan asli. Saya simpan di lemari obat."],
+	"rt": ["Surat keterangan domisili? Bisa. Surat keterangan tanah? Bisa juga... asal ada 'uang lelah'.",
+		"Warga Dusun Selatan ini penurut kok, Juragan. Asal RT-nya diperhatikan.",
+		"Saya ini RT teladan. Piagamnya saya beli... eh, saya dapat dari kecamatan."],
 }
+## map v3: named villagers without land (world.gd places them in their hamlet)
+const EXTRAS := {
+	"karim": {"name": "Pak Ustad Karim", "model": "char_kakek", "village": "selatan",
+		"lines": ["Assalamualaikum, Juragan. Jangan lupa, rezeki itu titipan. Tanah juga.",
+			"Musala kami bocor atapnya. Kalau mau sedekah, pintunya selalu terbuka.",
+			"Orang yang mengambil hak orang lain, hisabnya berat, Juragan. Saya cuma mengingatkan."]},
+	"tini": {"name": "Bu Tini", "model": "char_ibu", "village": "muara",
+		"lines": ["Sayur, sayur! Kangkung dari pinggir sungai, masih segar!",
+			"Dulu kangkung tumbuh di mana-mana. Sekarang sungainya keruh, kangkungnya kurus.",
+			"Juragan mau pesan sayur buat buruh-buruhmu? Harga teman."]},
+	"sari": {"name": "Dik Sari", "model": "char_anak", "village": "seberang", "radius": 6.0,
+		"lines": ["Kakak lihat burung rangkong nggak? Kata Kakek dulu banyak di hutan sana.",
+			"Aku mau jadi dokter kayak Bu Bidan! Atau jadi youtuber kayak Bang Rian.",
+			"Jembatan kayu itu goyang-goyang kalau dilewati. Seru!"]},
+	"budi": {"name": "Dik Budi", "model": "char_anak", "village": "barat", "radius": 6.0,
+		"lines": ["Om, main layangan yuk! Di lapangan dekat sungai anginnya kencang.",
+			"Kata Kakek Dullah, tanah ini punya kita semua. Om juga?",
+			"Aku berani lompat dari jembatan ke sungai. Tapi Ibu marah."]},
+	"eko": {"name": "Mas Eko (Ojek)", "model": "char_pemuda", "village": "sukamakmur",
+		"lines": ["Ojek, Bang? Ke dusun mana saja goceng. Nyeberang jembatan tambah goceng.",
+			"Jalan ke Dusun Utara becek kalau hujan. Kapan diaspal, ya?",
+			"Truk sawit lewat terus, jalan jadi rusak. Siapa yang tanggung jawab, Bang?"]},
+	"tigor": {"name": "Pak Mandor Tigor", "model": "char_buruh", "village": "utara",
+		"lines": ["Saya mandor kebun. Mau cari buruh? Bayar di muka ya, Bos.",
+			"Buruh sekarang susah dicari. Semua mau kerja di kota.",
+			"Kebun sawit itu kejam, Bos. Tapi gajinya pasti. Kadang."]},
+	"ipah": {"name": "Mak Ipah", "model": "char_nenek", "village": "bukit",
+		"lines": ["Mak dulu menganyam tikar dari pandan hutan. Sekarang pandannya habis.",
+			"Anak muda sekarang tidak mau ke hutan. Hutannya juga sudah tidak ada.",
+			"Mau tikar, Nak? Ini yang terakhir, dari pandan yang terakhir."]},
+	"rahmat": {"name": "Bang Rahmat (Nelayan)", "model": "char_petani", "village": "muara",
+		"lines": ["Ikan di muara makin sedikit, Bang. Airnya bau pupuk.",
+			"Perahu saya parkir di dermaga. Jangan disewa buat angkut TBS, ya.",
+			"Kalau musim hujan sungai meluap. Jembatan beton itu satu-satunya yang kuat."]},
+	"asep": {"name": "Kang Asep", "model": "char_buruh", "village": "barat",
+		"lines": ["Saya tukang kayu. Jembatan kayu di Kali Kecil itu saya yang bikin.",
+			"Kayu bagus sekarang mahal. Hutannya jadi kebun, kayunya jadi pagar.",
+			"Mau bikin rumah panggung? Saya bisa, asal kayunya ada."]},
+	"neneng": {"name": "Teh Neneng", "model": "char_ibu", "village": "utara",
+		"lines": ["Warung kopi saya buka dari subuh. Mampir, Juragan, kopinya pahit tapi jujur.",
+			"Pak Karta itu kambingnya sering masuk kebun orang. Pusing saya.",
+			"Katanya ada lisensi franchise sawit. Franchise itu apa sih, Juragan? Semacam arisan?"]},
+}
+## passers-by walking between the hamlets (world.gd), and what they say
+const WALKER_MODELS := ["char_petani", "char_ibu", "char_buruh", "char_pemuda", "char_nenek", "char_kakek",
+	"char_anak", "char_ibu", "char_petani", "char_buruh", "char_pemuda", "char_ibu"]
+const WALKER_LINES := ["Mau ke pasar dusun sebelah, Juragan. Jalan kaki, bensin mahal.",
+	"Permisi, Juragan. Lewat, lewat...", "Panas sekali hari ini. Pohon peneduhnya sudah ditebang semua.",
+	"Juragan dari kantor sawit itu, ya? Wah, orang penting.", "Saya mau jenguk saudara di seberang sungai.",
+	"Katanya harga minyak goreng naik lagi. Benar, Juragan?", "Jalan-jalan sore, Juragan. Mumpung belum jadi kebun sawit semua."]
 const CHAT_LANDLESS := ["Dulu saya punya kebun... sekarang punya tenda.", "Minyak goreng mahal, kebun tidak ada. Hidup makin berat.",
 	"Kalau ada kerjaan, saya mau kok. Apa saja.", "Anak-anak tanya kenapa kebun kita jadi sawit. Saya bingung jawabnya."]
 const KID := ["Om, kenapa pohonnya sama semua? Aku kangen pohon mangga.", "Om orang kaya ya? Bajunya batik mahal.",
@@ -98,9 +188,9 @@ func open_kantor() -> void:
 			"button": "Ubah", "cb": func():
 				GS.oil_price_level = (GS.oil_price_level + 1) % 3
 				ui.refresh_menu(open_kantor)})
-	var need := 7 - GS.controlled_parcels()
+	var need := GS.LICENSE_NEED - GS.controlled_parcels()
 	items.append({"icon": "icon_kunci", "text": "Lisensi Sawit The Franchise™",
-		"desc": ("Syarat: kuasai ke-7 lahan (kurang %d)." % need) if need > 0 else "Semua lahan sudah kamu kuasai. Saatnya jadi Raja Sawit!",
+		"desc": ("Syarat: kuasai %d lahan (kurang %d)." % [GS.LICENSE_NEED, need]) if need > 0 else "Lahanmu sudah cukup luas. Saatnya jadi Raja Sawit!",
 		"price": GS.fmt_short(GS.PRICE["lisensi"]), "enabled": need <= 0 and GS.money >= GS.PRICE["lisensi"],
 		"cb": func(): _buy_license()})
 	ui.menu("Kantor Sawit", "Uang: %s • Harga TBS hari ini: %s" % [GS.fmt_rp(GS.money), GS.fmt_rp(GS.tbs_price)], items, Callable(), "portrait_player")
@@ -161,7 +251,7 @@ func _csr() -> void:
 
 
 func _buy_license() -> void:
-	if GS.controlled_parcels() < 7 or not GS.spend(GS.PRICE["lisensi"]):
+	if GS.controlled_parcels() < GS.LICENSE_NEED or not GS.spend(GS.PRICE["lisensi"]):
 		return
 	GS.upgrades["lisensi"] = true
 	GS.check_quests()
@@ -403,7 +493,7 @@ func land_menu(vid: String) -> void:
 	choices.append({"text": "Tawarkan kemitraan franchise", "hint": "biaya " + GS.fmt_short(GS.PRICE["franchise_fee"]), "cb": func(): _offer_franchise(vid)})
 	choices.append({"text": "Batal", "cb": Callable()})
 	var mood := "percaya padamu" if v["trust"] >= 60 else ("ragu-ragu" if v["trust"] >= 35 else "curiga padamu")
-	ui.dialog(vp(vid), GS.vname(vid), "Kebun saya? Luasnya 12 petak, harganya sekitar %s. (Dia terlihat %s.)" % [GS.fmt_rp(value), mood],
+	ui.dialog(vp(vid), GS.vname(vid), "Kebun saya? Luasnya %d petak, harganya sekitar %s. (Dia terlihat %s.)" % [GS.tile_count(), GS.fmt_rp(value), mood],
 		choices, func(): _end_talk(vid))
 
 
@@ -493,7 +583,7 @@ func _evict(vid: String) -> void:
 	var house: Vector3 = world.door_points.get(GS.VILLAGERS[vid]["home"], world.player.global_position)
 	world.spawn_temp_actor("char_preman", "Bang Codet", house + Vector3(1.2, 0, 1.0), 2.5)
 	world.spawn_temp_actor("char_preman", "Anak buah Codet", house + Vector3(-1.4, 0, 1.4), 2.5)
-	var extra := " Mas Joko sempat live di media sosial... (Kecurigaan ekstra!)" if d.get("aktivis", false) else ""
+	var extra := (" %s sempat live di media sosial... (Kecurigaan ekstra!)" % GS.vname(vid)) if d.get("aktivis", false) else ""
 	ui.info_panel("Relokasi 'Sukarela'", ["Bang Codet dan kawan-kawan datang membawa pentungan dan senyum ramah.",
 		"%s dan keluarganya kini tinggal di tenda biru dekat warung." % GS.vname(vid),
 		"Kecurigaan +%d • Reputasi -30 • Semua warga makin tidak percaya padamu.%s" % [38 + (20 if d.get("aktivis", false) else 0), extra]], "...Lanjut", Callable(), ui.RED)
@@ -546,7 +636,7 @@ func _sign_franchise(vid: String) -> void:
 	v["debt"] += fee - paid
 	GS.add_money(paid)
 	p["plasma"] = true
-	for i in 12:
+	for i in p["tiles"].size():
 		p["tiles"][i] = {"s": "palm", "st": 0, "g": 0, "f": false, "fr": false, "fd": 0}
 	GS.stats["franchise"] += 1
 	GS.add_rep(2)
@@ -626,6 +716,21 @@ func _hire_villager(vid: String) -> void:
 func talk_extra(id: String) -> void:
 	if id == "anak":
 		say("portrait_anak", "Dik Udin", KID[rng.randi() % KID.size()])
+	elif EXTRAS.has(id):
+		var e: Dictionary = EXTRAS[id]
+		var lines: Array = e["lines"]
+		var n: Npc = world.extras.get(id)
+		if n:
+			n.talking = true
+			n.talk_target = world.player
+		say(_portrait(e["model"]), e["name"], lines[rng.randi() % lines.size()])
+
+
+func talk_walker(i: int) -> void:
+	var n: Npc = world.walkers[i]
+	n.talking = true
+	n.talk_target = world.player
+	say(_portrait(WALKER_MODELS[i % WALKER_MODELS.size()]), "Warga", WALKER_LINES[rng.randi() % WALKER_LINES.size()])
 
 
 func parcel_info(pid: int) -> void:

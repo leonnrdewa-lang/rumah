@@ -35,7 +35,7 @@ PREVIEW_DIR = os.path.join(ROOT, "blender", "previews")
 for d in (TEX_DIR, DATA_DIR, MODELS_DIR, PREVIEW_DIR):
     os.makedirs(d, exist_ok=True)
 
-N = 512
+N = 1024                    # mask resolution (map v3: 0.44 m / px over 450 m)
 W = L.WORLD_SIZE
 PX = W / N
 rng = np.random.default_rng(7)
@@ -69,15 +69,15 @@ def smoothstep(a, b, x):
 
 
 # ------------------------------------------------------------------ island
-CX, CZ = 2.0, -2.0
+CX, CZ = L.ISLAND_CX, L.ISLAND_CZ
 theta = np.arctan2(Z - CZ, X - CX)
-rho = np.sqrt(((X - CX) / 76.0) ** 2 + ((Z - CZ) / 60.0) ** 2)
-edge = (1 + 0.045 * np.sin(3 * theta + 0.7) + 0.03 * np.sin(5 * theta + 2.0)
-        + 0.018 * np.sin(9 * theta + 1.1) + 0.01 * np.sin(14 * theta + 0.3))
-# south-east cove, like the reference screenshot
-edge -= 0.16 * np.exp(-((theta - 0.62) / 0.16) ** 2)
-coast_noise = fractal_noise(N, (4, 40), 2.2, seed=3)
-edge += (coast_noise - 0.5) * 0.05
+rho = np.sqrt(((X - CX) / L.ISLAND_RX) ** 2 + ((Z - CZ) / L.ISLAND_RZ) ** 2)
+edge = (1 + 0.035 * np.sin(3 * theta + 0.7) + 0.025 * np.sin(5 * theta + 2.0)
+        + 0.015 * np.sin(9 * theta + 1.1) + 0.008 * np.sin(14 * theta + 0.3))
+# map v3: two shallow bays (north-west and south-east) break the ellipse
+edge -= 0.07 * np.exp(-((theta + 2.3) / 0.18) ** 2) + 0.06 * np.exp(-((theta - 0.75) / 0.15) ** 2)
+coast_noise = fractal_noise(N, (6, 80), 2.2, seed=3)
+edge += (coast_noise - 0.5) * 0.04
 land = rho < edge
 
 dist_in = ndimage.distance_transform_edt(land) * PX
@@ -90,11 +90,40 @@ beach = (sd >= 0) & (sd < 9)
 h[beach] = -0.55 + 0.55 * smoothstep(0, 9, sd[beach])
 sea = sd < 0
 h[sea] = -0.55 - 3.6 * (1 - np.exp(sd[sea] / 12.0))
+
+# map v3: rivers, the lagoon and the source pond cut channels through the land
+def _seg_dist_np(px, pz, a, b):
+    ax, az = a
+    bx, bz = b
+    vx, vz = bx - ax, bz - az
+    t = np.clip(((px - ax) * vx + (pz - az) * vz) / (vx * vx + vz * vz), 0, 1)
+    return np.hypot(px - (ax + t * vx), pz - (az + t * vz))
+
+
+river_wob = (fractal_noise(N, (20, 160), 1.6, seed=13) - 0.5) * 1.6
+river_d = np.full_like(X, 1e9)          # distance to open river water (< 0 in the water)
+for rv in L.RIVERS:
+    for a, b in zip(rv["pts"][:-1], rv["pts"][1:]):
+        river_d = np.minimum(river_d, _seg_dist_np(X, Z, a, b) - rv["hw"])
+for (lx, lz, lr) in L.LAGOONS + L.PONDS:
+    river_d = np.minimum(river_d, np.hypot(X - lx, Z - lz) - lr)
+# keep the banks straight under the bridges (no wobble within 10 m of one)
+near_bridge = np.zeros_like(X, bool)
+for br in L.BRIDGES:
+    near_bridge |= np.hypot(X - br["pos"][0], Z - br["pos"][1]) < 11.0
+river_d = river_d + np.where(near_bridge, 0.0, river_wob)
+river_h = -1.55 + 1.6 * smoothstep(-2.6, 1.8, river_d)
+h = np.where(land, np.minimum(h, river_h), h)
 h = ndimage.gaussian_filter(h, 0.8)
 
 # ------------------------------------------------------------------ masks
 n_mid = fractal_noise(N, (6, 60), 2.0, seed=11)
 sand = 1.0 - smoothstep(5.5, 7.5, sd + (n_mid - 0.5) * 4.0)
+# muddy-sandy river banks (narrow)
+sand = np.maximum(sand, 1.0 - smoothstep(0.6, 1.9, river_d + (n_mid - 0.5) * 1.2))
+# decoration and plants treat the rivers like the coast
+sd_sea = sd
+sd = np.minimum(sd, river_d)
 
 
 def seg_dist(px, pz, a, b):
@@ -135,17 +164,20 @@ for ex, ez in DEAD_ENDS:
     road_d = road_d + 1.9 * (1.0 - smoothstep(0.0, 4.5, np.hypot(X - ex, Z - ez)))
 wobble = (fractal_noise(N, (20, 120), 1.5, seed=5) - 0.5) * 0.9
 road = 1.0 - smoothstep(L.ROAD_WIDTH / 2 - 0.4, L.ROAD_WIDTH / 2 + 0.5, road_d + wobble)
-road *= (sd > 2).astype(float)
+road *= (sd_sea > 2).astype(float) * smoothstep(0.2, 1.0, river_d)
 
 # env fix round: worn dirt harvest paths (pasar pikul) run between the palm rows of
 # every parcel, ~1.1 m wide and a little wobbly, fading out past the parcel ends, so
 # the plantation floor reads as paths + undergrowth instead of a mowed lawn
 path_d = np.full_like(X, 1e9)
+PHX, PHZ = L.PARCEL_HALF          # tile-centre extents of a parcel
+TILE_OFFS = L.tile_offsets()
+SIGN_OFF = (-PHX - 2.9, PHZ + 2.6)
 for p in L.PARCELS:
     cx, cz = p["center"]
-    hx = L.PARCEL_COLS * L.TILE / 2 + 0.6
+    hx = PHX + 2.0
     for r in range(L.PARCEL_ROWS - 1):
-        zp = cz + (r + 0.5 - (L.PARCEL_ROWS - 1) * 0.5) * L.TILE
+        zp = cz + (r + 0.5 - (L.PARCEL_ROWS - 1) * 0.5) * L.ROW_STEP
         wob = 0.35 * np.sin(X * 0.45 + r * 1.7 + cx) + 0.2 * np.sin(X * 1.1 + cz)
         dz = np.abs(Z - zp - wob)
         dx = np.maximum(np.abs(X - cx) - hx, 0)
@@ -179,17 +211,23 @@ def sample(arr, x, z):
 parcel_rects = []
 for p in L.PARCELS:
     cx, cz = p["center"]
-    hw = L.PARCEL_COLS * L.TILE / 2 + 1.6
-    hd = L.PARCEL_ROWS * L.TILE / 2 + 1.6
+    hw = PHX + 4.0
+    hd = PHZ + 3.8
     parcel_rects.append((cx - hw, cz - hd, cx + hw, cz + hd))
     if sample(sd, cx, cz) < 12:
         print("WARNING parcel near coast", p["name"], sample(sd, cx, cz))
 
 BUILDING_R = {"kantor": 6.5, "toko": 6, "warung": 5, "pabrik": 11, "pos_calo": 4.5, "rumah_a": 5.5,
               "rumah_b": 5.5, "rumah_c": 5.5, "dermaga": 0,
-              "gudang": 4.2}
+              "gudang": 4.2, "rumah_d": 5.3, "rumah_e": 5.3, "rumah_f": 5.3, "rumah_g": 5.3}
+# map v3: the hamlets' houses are buildings too (with their colours)
+ALL_BUILDINGS = L.BUILDINGS + [dict(h) for h in L.HOUSES]
 circles = []
-for b in L.BUILDINGS:
+for br in L.BRIDGES:
+    for k in (-5.0, 0.0, 5.0):
+        th = math.radians(br["rot"])
+        circles.append((br["pos"][0] + math.cos(th) * k, br["pos"][1] - math.sin(th) * k, 3.4))
+for b in ALL_BUILDINGS:
     r = BUILDING_R.get(b["model"], 5)
     if r:
         circles.append((b["pos"][0], b["pos"][1] + 1.0, r))
@@ -197,6 +235,8 @@ for b in L.BUILDINGS:
             print("WARNING building near coast", b["id"], sample(sd, *b["pos"]))
 for m, pos, _ in L.PROPS:
     circles.append((pos[0], pos[1], 1.6 if m != "truck" else 3.5))
+for m, pos, _ in L.FENCES:
+    circles.append((pos[0], pos[1], 1.2))
 for pos in L.TENT_SPOTS:
     circles.append((pos[0], pos[1], 2.5))
 def snap_to_coast(pos, target=1.5):
@@ -241,8 +281,8 @@ TALL = ("tree_big", "sawit_wild", "banana", "coconut")
 
 # approximate building footprints (half extents, local x/z) - measured from the GLBs
 BUILDING_HALF = {"kantor": (2.7, 2.4), "toko": (3.0, 2.1), "warung": (2.1, 1.8), "pabrik": (7.1, 5.1),
-                 "pos_calo": (1.7, 1.7), "rumah_a": (2.9, 2.5), "rumah_b": (2.5, 2.7), "rumah_c": (2.9, 2.2),
-                 "gudang": (2.8, 1.8)}
+                 "pos_calo": (1.7, 1.7), "gudang": (2.8, 1.8)}
+BUILDING_HALF.update(L.HOUSE_HALF)
 
 
 def door_point(b):
@@ -253,7 +293,7 @@ def door_point(b):
 
 
 # villagers wander ~5 m around their door (Npc radius) and the player talks to them there
-DOOR_PTS = [door_point(b) for b in L.BUILDINGS if b["model"] in BUILDING_HALF]
+DOOR_PTS = [door_point(b) for b in ALL_BUILDINGS if b["model"] in BUILDING_HALF]
 
 
 def tall_block(x, z):
@@ -264,7 +304,7 @@ def tall_block(x, z):
     for (x0, z0, x1, z1) in parcel_rects:
         if x0 - 2.5 < x < x1 + 2.5 and z0 < z < z1 + 9.0:
             return True
-    for b in L.BUILDINGS:
+    for b in ALL_BUILDINGS:
         bx, bz = b["pos"]
         if abs(x - bx) < 8.0 and bz - 3.0 < z < bz + 10.0:
             return True
@@ -282,8 +322,8 @@ def try_place(model, count, r_self, sd_min, sd_max, region=None, scale=(0.85, 1.
     gap = r_self if min_gap is None else min_gap
     while n < count and t < tries:
         t += 1
-        x = prng.uniform(-95, 95)
-        z = prng.uniform(-95, 95)
+        x = prng.uniform(-W * 0.43, W * 0.43)
+        z = prng.uniform(-W * 0.36, W * 0.36)
         if region and not region(x, z):
             continue
         s = sample(sd, x, z)
@@ -304,20 +344,40 @@ def try_place(model, count, r_self, sd_min, sd_max, region=None, scale=(0.85, 1.
     return n
 
 
+# map v3: the hamlets' yard plants first (they stay by their houses)
+for m, pos, rot, sc in L.HOUSE_PLANT_DECOR:
+    if sample(sd, *pos) < 2.5:
+        continue
+    decor.append({"model": m, "pos": [pos[0], round(sample(enc_h, *pos) * 7.0 - 5.0, 3), pos[1]], "rot": rot, "scale": sc})
+    placed.append((pos[0], pos[1], 1.0))
 north = lambda x, z: z < -30 or abs(x) > 50
+# the wild land between the hamlets: forest patches (big trees and old wild palms)
+wild = lambda x, z: not (-75 < x < 80 and -60 < z < 48)
+forest_n = fractal_noise(N, (3, 24), 2.0, seed=17)
+forest = lambda x, z: wild(x, z) and sample(forest_n, x, z) > 0.52
 try_place("tree_big", 22, 3.5, 12, 999, region=north, pad=1.5)
 try_place("tree_big", 10, 3.5, 12, 999, pad=2.0)
 # v2: more big trees so forest patches have edges, and old wild oil palms
 # ("sawit_wild" = sawit_3 without its fruit bunches) in groves between the roads
 try_place("tree_big", 14, 3.2, 14, 999, pad=1.5, tries=12000)
+try_place("tree_big", 150, 3.4, 12, 999, region=forest, pad=1.5, tries=60000)
+try_place("tree_big", 40, 3.4, 12, 999, region=wild, pad=2.0, tries=30000)
 try_place("sawit_wild", 26, 2.6, 11, 999, scale=(0.9, 1.15), pad=1.2, tries=20000)
+try_place("sawit_wild", 80, 2.6, 11, 999, region=wild, scale=(0.9, 1.15), pad=1.2, tries=40000)
 try_place("coconut", 34, 2.0, 4.0, 10.0, scale=(0.85, 1.15), pad=0.5)
+try_place("coconut", 110, 2.0, 4.0, 10.0, region=wild, scale=(0.85, 1.15), pad=0.5, tries=40000)
 try_place("banana", 16, 1.4, 10, 999, pad=0.8)
+try_place("banana", 50, 1.4, 10, 999, region=wild, pad=0.8, tries=20000)
 try_place("bush_a", 34, 1.2, 9, 999, pad=0.4)
 try_place("bush_b", 34, 1.2, 9, 999, pad=0.4)
+try_place("bush_a", 110, 1.2, 9, 999, region=wild, pad=0.4, tries=30000)
+try_place("bush_b", 110, 1.2, 9, 999, region=wild, pad=0.4, tries=30000)
 try_place("rock_b", 14, 1.0, 6, 999, pad=0.3)
+try_place("rock_b", 45, 1.0, 6, 999, region=wild, pad=0.3, tries=20000)
 try_place("rock_a", 26, 0.5, 2, 999, pad=0.2)
+try_place("rock_a", 80, 0.5, 2, 999, region=wild, pad=0.2, tries=20000)
 try_place("rock_c", 4, 1.8, 3, 12, pad=0.5)
+try_place("rock_c", 14, 1.8, 3, 12, region=wild, pad=0.5, tries=20000)
 try_place("banana", 10, 1.4, 10, 999, pad=0.8)
 # (v1 grass_tuft / flowers decor is replaced by the dense undergrowth below)
 
@@ -351,7 +411,7 @@ def to_local(b, x, z):
 bld_dist = np.full_like(X, 1e9)      # distance to the nearest building footprint
 door_block = np.zeros_like(X, bool)
 door_low = np.zeros_like(X, bool)     # around the doorway: only low grass / flowers
-for b in L.BUILDINGS:
+for b in ALL_BUILDINGS:
     if b["model"] not in BUILDING_HALF:
         continue
     hx, hz = BUILDING_HALF[b["model"]]
@@ -376,12 +436,11 @@ parcel_in = np.zeros_like(X, bool)    # planting grid of a parcel (+ margin)
 parcel_ring = np.full_like(X, 1e9)    # distance outside the parcel rectangle
 for p in L.PARCELS:
     cx, cz = p["center"]
-    for idx in range(L.PARCEL_COLS * L.PARCEL_ROWS):
-        col, row = idx % L.PARCEL_COLS, idx // L.PARCEL_COLS
-        tile_pts.append((cx + (col - (L.PARCEL_COLS - 1) * 0.5) * L.TILE, cz + (row - (L.PARCEL_ROWS - 1) * 0.5) * L.TILE))
-    sign_pts.append((cx - (L.PARCEL_COLS * L.TILE) * 0.5 - 0.6, cz + (L.PARCEL_ROWS * L.TILE) * 0.5 + 0.8))
-    hx = L.PARCEL_COLS * L.TILE / 2 + 0.4
-    hz = L.PARCEL_ROWS * L.TILE / 2 + 0.4
+    for (ox, oz) in TILE_OFFS:
+        tile_pts.append((cx + ox, cz + oz))
+    sign_pts.append((cx + SIGN_OFF[0], cz + SIGN_OFF[1]))
+    hx = PHX + 2.2
+    hz = PHZ + 2.2
     qx = np.maximum(np.abs(X - cx) - hx, 0)
     qz = np.maximum(np.abs(Z - cz) - hz, 0)
     parcel_in |= (np.abs(X - cx) < hx) & (np.abs(Z - cz) < hz)
@@ -410,6 +469,12 @@ for b in L.BUILDINGS:          # jetty and its road end
         keep_out.append((b["pos"][0], b["pos"][1], 4.0))
 for m, pos, _ in L.PROPS:
     keep_out.append((pos[0], pos[1], 3.2 if m == "truck" else (0.6 if m == "lampu" else 1.1)))
+for m, pos, _ in L.FENCES:
+    keep_out.append((pos[0], pos[1], 0.9))
+for br in L.BRIDGES:           # the bridge ends (ramps)
+    th = math.radians(br["rot"])
+    for k in (-7.5, -5.0, 5.0, 7.5):
+        keep_out.append((br["pos"][0] + math.cos(th) * k, br["pos"][1] - math.sin(th) * k, 2.2))
 for d in decor:
     r = {"tree_big": 0.9, "sawit_wild": 0.8, "coconut": 0.5, "banana": 0.6, "bush_a": 0.7, "bush_b": 0.7,
          "rock_b": 0.8, "rock_c": 1.6, "rock_a": 0.35, "cliff_a": 4.5}.get(d["model"], 0.5)
@@ -443,7 +508,7 @@ def near_tile(x, z, r):
     return False
 
 
-land_ok = (sd > 3.0) & (sand < 0.5)
+land_ok = (sd_sea > 3.0) & (river_d > 1.4) & (sand < 0.5)
 road_edge = road_d - L.ROAD_WIDTH / 2
 # polish round: the v2 review measured undergrowth on only ~30-35% of the land pixels
 # against ~2/3 in the target (and the player's parcel read as lawn with brown discs), so
@@ -518,6 +583,10 @@ zone_id[blocked_px] = -1
 # thickets: 2.4x the big plants and a little less carpet; elsewhere the reverse
 thick = 0.55 + 1.9 * clump
 vary = (0.85 + 0.3 * n_mid) * DENSITY
+# map v3: the wild land between the hamlets carries a lighter carpet (the old village
+# keeps its density), which keeps the undergrowth data and load time in check
+core_k = 1.0 - smoothstep(0.0, 25.0, np.maximum(np.maximum(-75 - X, X - 80), np.maximum(-60 - Z, Z - 48)))
+vary = vary * (0.5 + 0.5 * core_k)
 # glades: the carpet thins out in soft patches, so the ground reads as lawn with
 # plant masses (like the target) instead of an even field of small plants. The
 # plantation floor (in and around the parcels) keeps milder glades (fix round: without
@@ -628,16 +697,14 @@ for p in L.PARCELS:
     if p["owner"] == "player":
         continue
     cx, cz = p["center"]
-    hx = L.PARCEL_COLS * L.TILE / 2 + 0.4
-    hz = L.PARCEL_ROWS * L.TILE / 2 + 0.4
+    hx = PHX + 2.2
+    hz = PHZ + 2.2
     vg_in |= (np.abs(X - cx) < hx) & (np.abs(Z - cz) < hz)
     qx = np.maximum(np.abs(X - cx) - hx, 0)
     qz = np.maximum(np.abs(Z - cz) - hz, 0)
     vg_ring = np.minimum(vg_ring, np.sqrt(qx ** 2 + qz ** 2))
-    for idx in range(L.PARCEL_COLS * L.PARCEL_ROWS):
-        col, row = idx % L.PARCEL_COLS, idx // L.PARCEL_COLS
-        vg_tiles.append((cx + (col - (L.PARCEL_COLS - 1) * 0.5) * L.TILE,
-                         cz + (row - (L.PARCEL_ROWS - 1) * 0.5) * L.TILE))
+    for (ox, oz) in TILE_OFFS:
+        vg_tiles.append((cx + ox, cz + oz))
 vg_near = vg_ring < 8.0
 # ring: plant masses (glade_n high) and open glades (low), a lawn border next to the
 # parcel, back to the full carpet by ~7 m out
@@ -652,7 +719,11 @@ vrng = random.Random(123)
 
 
 def vg_tile_d(x, z):
-    return min(math.hypot(x - tx, z - tz) for tx, tz in vg_tiles)
+    # (all parcels' spots, via the 4 m tile grid; only used inside villager gardens)
+    best = 9.0
+    for (tx, tz) in tile_grid.get((int(math.floor(x / 4)), int(math.floor(z / 4))), ()):
+        best = min(best, math.hypot(x - tx, z - tz))
+    return best
 
 
 def vg_keeps(m, x, z):
@@ -770,10 +841,23 @@ out = {
     "tile": L.TILE,
     "parcel_cols": L.PARCEL_COLS,
     "parcel_rows": L.PARCEL_ROWS,
+    # map v3: staggered planting spots (index = row * cols + col), the parcel sign's offset
+    # and the half extents of the planting spots, all relative to the parcel centre
+    "tile_offsets": [list(o) for o in TILE_OFFS],
+    "sign_offset": [round(SIGN_OFF[0], 3), round(SIGN_OFF[1], 3)],
+    "parcel_half": [round(PHX, 3), round(PHZ, 3)],
     "parcels": [{"id": p["id"], "name": p["name"], "owner": p["owner"], "center": list(p["center"])}
                 for p in L.PARCELS],
-    "buildings": [{"id": b["id"], "model": b["model"], "pos": [b["pos"][0], height_at(*b["pos"]), b["pos"][1]],
-                   "rot": b["rot"]} for b in L.BUILDINGS],
+    "buildings": [dict({"id": b["id"], "model": b["model"], "pos": [b["pos"][0], height_at(*b["pos"]), b["pos"][1]],
+                        "rot": b["rot"]}, **({"wall": b["wall"], "roof": b["roof"]} if "wall" in b else {}))
+                  for b in ALL_BUILDINGS],
+    "bridges": [{"model": br["model"], "pos": [br["pos"][0], 0.0, br["pos"][1]], "rot": br["rot"],
+                 "len": L.BRIDGE_LEN, "width": L.BRIDGE_W} for br in L.BRIDGES],
+    "fences": [{"model": m, "pos": [pos[0], height_at(*pos), pos[1]], "rot": r} for m, pos, r in L.FENCES],
+    "villages": [{"id": v["id"], "name": v["name"], "center": list(v["center"]),
+                  "houses": [h["id"] for h in L.HOUSES if h["village"] == v["id"]]} for v in L.VILLAGES],
+    "villager_homes": L.VILLAGER_HOMES,
+    "rivers": [{"name": rv["name"], "hw": rv["hw"], "pts": [list(q) for q in rv["pts"]]} for rv in L.RIVERS],
     "props": [{"model": m, "pos": [p[0], height_at(*p), p[1]], "rot": r} for m, p, r in L.PROPS],
     "tent_spots": [list(p) for p in L.TENT_SPOTS],
     "roads": [[list(pt) for pt in line] for line in L.ROADS],
@@ -812,10 +896,17 @@ def to_px(x, z):
 
 for (x0, z0, x1, z1) in parcel_rects:
     dr.rectangle([to_px(x0, z0), to_px(x1, z1)], outline=(120, 60, 20), width=2)
-for b in L.BUILDINGS:
+for b in ALL_BUILDINGS:
     x, y = to_px(*b["pos"])
-    dr.rectangle([x - 8, y - 8, x + 8, y + 8], fill=(200, 90, 60))
-    dr.text((x + 10, y - 6), b["id"], fill=(0, 0, 0))
+    dr.rectangle([x - 5, y - 5, x + 5, y + 5], fill=(200, 90, 60) if "wall" not in b else (230, 150, 60))
+    if "wall" not in b or b["id"].count("_") == 1:
+        dr.text((x + 7, y - 6), b["id"], fill=(0, 0, 0))
+for br in L.BRIDGES:
+    x, y = to_px(*br["pos"])
+    dr.rectangle([x - 7 * S, y - 1.6 * S, x + 7 * S, y + 1.6 * S], fill=(120, 80, 40))
+for m, pos, _ in L.FENCES:
+    x, y = to_px(*pos)
+    dr.point((x, y), fill=(90, 60, 30))
 dcol = {"tree_big": (30, 80, 30), "coconut": (120, 160, 40), "banana": (90, 170, 60), "rock_a": (150, 150, 150),
         "rock_b": (130, 130, 130), "rock_c": (100, 100, 100), "cliff_a": (70, 70, 70)}
 ucol = {"shrub_a": (60, 110, 40), "shrub_b": (60, 110, 40), "fern_a": (80, 140, 50), "fern_b": (80, 140, 50),
@@ -846,8 +937,32 @@ under = h < L.WATER_LEVEL
 depth = np.clip((L.WATER_LEVEL - h) / 3.0, 0, 1)
 mm[under, :3] = (np.array([0.55, 0.84, 0.78])[None, :] * (1 - depth[under, None]) + np.array([0.30, 0.62, 0.66])[None, :] * depth[under, None])
 mm[under, 3] = 1.0 - 0.75 * depth[under]
-Image.fromarray((np.clip(mm, 0, 1) * 255).astype(np.uint8), "RGBA").resize((256, 256), Image.LANCZOS).save(
-    os.path.join(TEX_DIR, "minimap.png"))
+# map v3: house roofs and the bridges drawn into the map (the hamlets read at a glance)
+mimg = Image.fromarray((np.clip(mm, 0, 1) * 255).astype(np.uint8), "RGBA").resize((512, 512), Image.LANCZOS)
+mdr = ImageDraw.Draw(mimg)
+MS = 512 / W
+
+
+def _mm_px(x, z):
+    return ((x + W / 2) * MS, (z + W / 2) * MS)
+
+
+for b in ALL_BUILDINGS:
+    if b["model"] not in BUILDING_HALF:
+        continue
+    hx, hz = BUILDING_HALF[b["model"]]
+    th = math.radians(b["rot"])
+    pts = []
+    for sx, sz in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
+        lx, lz = sx * hx * 0.85, sz * hz * 0.85
+        pts.append(_mm_px(b["pos"][0] + lx * math.cos(th) + lz * math.sin(th),
+                          b["pos"][1] - lx * math.sin(th) + lz * math.cos(th)))
+    col = b.get("roof", "#c2714a").lstrip("#")
+    mdr.polygon(pts, fill=tuple(int(col[i:i + 2], 16) for i in (0, 2, 4)) + (255,), outline=(90, 60, 40, 255))
+for br in L.BRIDGES:
+    x, y = _mm_px(*br["pos"])
+    mdr.rectangle([x - 7 * MS, y - 1.8 * MS, x + 7 * MS, y + 1.8 * MS], fill=(150, 105, 60, 255))
+mimg.save(os.path.join(TEX_DIR, "minimap.png"))
 
 # ------------------------------------------------------------------ terrain mesh (Blender)
 if "--no-mesh" not in sys.argv:
@@ -855,34 +970,66 @@ if "--no-mesh" not in sys.argv:
     from common import reset_scene, mat, set_mat, export_glb, empty  # noqa: E402
 
     reset_scene()
-    SEG = 160
-    xs = np.linspace(-W / 2, W / 2, SEG + 1)
-    hs = ndimage.map_coordinates(h, [[(z + W / 2) / PX - 0.5 for z in xs for x in xs],
-                                     [(x + W / 2) / PX - 0.5 for z in xs for x in xs]], order=1, mode="nearest")
-    verts = []
-    k = 0
-    for z in xs:
-        for x in xs:
-            verts.append((x, -z, float(hs[k])))  # blender y = -godot z
-            k += 1
-    faces = []
-    for i in range(SEG):
-        for j in range(SEG):
-            a = i * (SEG + 1) + j
-            faces.append((a, a + SEG + 1, a + SEG + 2, a + 1))
-    me = bpy.data.meshes.new("TerrainMesh")
-    me.from_pydata(verts, [], faces)
-    me.update()
-    # flip to face up (+Z) if needed
-    me.calc_loop_triangles()
-    if me.polygons[0].normal.z < 0:
-        for p in me.polygons:
-            p.flip()
-    for p in me.polygons:
-        p.use_smooth = True
+    # map v3: 450 m at the old 1.25 m spacing would be 260k triangles. The island is flat
+    # away from the beaches and river banks, so the terrain is built from 18.75 m cells:
+    # a cell whose heights vary gets the fine 1.25 m grid, a flat land cell 2 triangles and
+    # a sea cell a coarse 3.75 m grid. The cells are grouped into 3 x 3 meshes so the
+    # renderer culls what is off screen. (Flat cells meet their neighbours along flat
+    # edges, so the coarse/fine borders do not crack.)
+    NC = 24                   # cells per side
+    CS = W / NC
+    FINE = 15                 # 1.25 m
     root = empty("terrain")
-    o = bpy.data.objects.new("Ground", me)
-    bpy.context.scene.collection.objects.link(o)
-    o.parent = root
-    set_mat(o, mat("M_Ground", "grass"))
+    gm = mat("M_Ground", "grass")
+
+    def hsample(xx, zz):
+        return ndimage.map_coordinates(h, [(np.asarray(zz) + W / 2) / PX - 0.5, (np.asarray(xx) + W / 2) / PX - 0.5],
+                                       order=1, mode="nearest")
+
+    groups = {}
+    ntri = 0
+    for ci in range(NC):
+        for cj in range(NC):
+            x0, z0 = -W / 2 + cj * CS, -W / 2 + ci * CS
+            gx, gz = np.meshgrid(np.linspace(x0, x0 + CS, FINE + 1), np.linspace(z0, z0 + CS, FINE + 1))
+            hh = hsample(gx.ravel(), gz.ravel())
+            if hh.max() < -2.0:
+                seg = 5
+            elif hh.max() - hh.min() < 0.004:
+                seg = 1
+            else:
+                seg = FINE
+            xs = np.linspace(x0, x0 + CS, seg + 1)
+            zs = np.linspace(z0, z0 + CS, seg + 1)
+            gx, gz = np.meshgrid(xs, zs)
+            hs = hsample(gx.ravel(), gz.ravel())
+            key = (ci * 3 // NC, cj * 3 // NC)
+            vs, fs = groups.setdefault(key, ([], []))
+            base = len(vs)
+            for (x, z, y) in zip(gx.ravel(), gz.ravel(), hs):
+                vs.append((float(x), float(-z), float(y)))   # blender y = -godot z
+            for i in range(seg):
+                for j in range(seg):
+                    a = base + i * (seg + 1) + j
+                    fs.append((a, a + 1, a + seg + 2, a + seg + 1))
+            ntri += seg * seg * 2
+    for (gi, gj), (vs, fs) in groups.items():
+        me = bpy.data.meshes.new("TerrainMesh_%d_%d" % (gi, gj))
+        me.from_pydata(vs, [], fs)
+        me.update()
+        import bmesh as _bm
+        bm = _bm.new()
+        bm.from_mesh(me)
+        _bm.ops.remove_doubles(bm, verts=bm.verts, dist=0.001)   # shared cell borders: smooth normals
+        bm.to_mesh(me)
+        bm.free()
+        for p in me.polygons:
+            if p.normal.z < 0:
+                p.flip()
+            p.use_smooth = True
+        o = bpy.data.objects.new("Ground_%d_%d" % (gi, gj), me)
+        bpy.context.scene.collection.objects.link(o)
+        o.parent = root
+        set_mat(o, gm)
+    print("terrain triangles:", ntri)
     export_glb(root, "terrain")
