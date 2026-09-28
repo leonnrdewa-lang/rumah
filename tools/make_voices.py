@@ -4,7 +4,8 @@ speaker's own voice (Indonesian neural TTS + WORLD vocoder character transforms)
     python3 tools/make_voices.py extract        # game scripts -> game/data/voice_manifest.json
     python3 tools/make_voices.py survey         # analyse the 83 TTS speakers (pitch, brightness, ASR)
     python3 tools/make_voices.py cast           # casting table -> game/data/voice_cast.json
-    python3 tools/make_voices.py render [--jobs=4] [--only=a,b] [--force]
+    python3 tools/make_voices.py render [--jobs=4] [--only=a,b] [--force] [--retry]   # --retry: more takes for clips over 0.25 WER
+    python3 tools/make_voices.py react          # more melody for the flattest clips (same takes)
     python3 tools/make_voices.py pack           # -> game/voices/<bank>.ogg + index.json (+ res://data copy)
     python3 tools/make_voices.py qa             # loudness / peaks / silences / pitch per character / ASR
     python3 tools/make_voices.py all
@@ -225,7 +226,11 @@ def money_words(num_text, unit=""):
         return _num(s) + " juta"
     if unit in ("rb", "ribu"):
         return _num(s) + " ribu"
-    return _num(int(s))
+    v = int(s)
+    if v >= 1000000 and v % 1000000 == 500000 and v < 20000000:
+        # 2.500.000 is "dua setengah juta" in speech
+        return ("satu" if v // 1000000 == 1 else _num(v // 1000000)) + " setengah juta"
+    return _num(v)
 
 
 def canon(text):
@@ -338,15 +343,23 @@ GENERIC = {
 }
 # lines the recogniser (and so probably a listener) found hard, re-worded for the voice
 # only: the dialog box keeps the written text
+CHAR_OVERRIDE = {  # (character, display text) -> what that voice says
+    ("romlah", "Uang saya habis... catat sebagai utang dulu ya, Juragan."):
+        "Aduh, uang saya habis... catat sebagai utang dulu ya, Juragan.",
+    ("rahmat", "Yah... mau bagaimana lagi."): "Yah... ya sudah lah, mau apa lagi.",
+}
 SPOKEN_OVERRIDE = {
+    "Halo, Juragan! Selamat, kamu resmi jadi pewaralaba Sawit The Franchise™ di Desa Sukamakmur!":
+        "Halo, Juragan! Selamat! Kamu resmi jadi pe-waralaba, Sawit de Frencais, di Desa Sukamakmur!",
 }
 BARKS = {  # per character: mood -> line (the fallback for a line that has no clip); whole
     # short phrases rather than "Hmm." / "Wah!" / "Hahaha!", which the TTS cannot act
-    "neutral": "Oh, begitu ya.", "yes": "Iya, Juragan. Baik.", "surprise": "Wah, masa sih?",
-    "annoyed": "Lho, apa-apaan ini?", "sad": "Yah... mau bagaimana lagi.", "laugh": "Haha, bisa saja!",
+    "neutral": "Oh, begitu ya, saya mengerti.", "yes": "Iya, iya, saya siap, Juragan.",
+    "surprise": "Wah, masa sih? Yang benar saja!", "annoyed": "Lho, apa-apaan ini?",
+    "sad": "Yah... mau bagaimana lagi.", "laugh": "Hahaha, bisa saja kamu ini!",
 }
-BARK_ADDRESS = {"udin": "Om", "sari": "Kak", "budi": "Om", "warga_anak": "Om", "hq": "Juragan", "player": "Pak",
-                "calo": "Bos", "tigor": "Bos", "pemuda": "Bang", "rian": "Bang", "wartawan": "Pak"}
+BARK_ADDRESS = {"udin": "Om", "sari": "Kak", "budi": "Om", "warga_anak": "Om", "hq": "Juragan", "player": "Bos",
+                "calo": "Bos", "tigor": "Bos", "pemuda": "Bang", "rian": "Bang"}
 
 
 def _load_sources():
@@ -384,7 +397,7 @@ def extract():
         if k in seen:
             return text_key(text)
         seen.add(k)
-        sp = spoken or SPOKEN_OVERRIDE.get(canon(text)) or normalize(text)
+        sp = spoken or CHAR_OVERRIDE.get((cid, canon(text))) or SPOKEN_OVERRIDE.get(canon(text)) or normalize(text)
         if not re.search(r"[A-Za-z]", sp):
             return None
         lines.append({"char": cid, "text": canon(text), "key": text_key(text), "spoken": sp, "src": src_tag})
@@ -704,6 +717,9 @@ class Engine:
 # words the g2p gets wrong for this model (checked with ASR)
 LEXICON = {
     "lho": "lo", "hmm": "hm", "sih": "sih",
+    # a velar nasal between vowels comes out as "m" ("sumai", "jemuk"); with the g after it
+    # Whisper hears "sungai" 12/12 times instead of 2/12 (not a general rule: "angin" gets worse)
+    "sungai": "suŋɡai", "jenguk": "dʒəŋɡuk", "ngebul": "ŋɡəbul",
 }
 
 
@@ -713,6 +729,8 @@ def _digits(txt):
 
 def wer_words(t):
     t = t.lower()
+    t = re.sub(r"(\d+)[.,]5\s*(?:juta|jt)", lambda m: m.group(1) + " juta lima ratus ribu", t)
+    t = t.replace("setengah juta", "juta lima ratus ribu")
     # how the recogniser writes amounts: "Rp 6.500.000", "Rp4,500,000", "200 ribu", "25%"
     t = re.sub(r"rp\.?\s?(\d{1,3}(?:[.,]\d{3})+|\d+)", lambda m: " " + _digits(m.group(1)) + " rupiah ", t)
     t = re.sub(r"\d{1,3}(?:[.,]\d{3})+", lambda m: " " + _digits(m.group(0)) + " ", t)
@@ -731,7 +749,9 @@ ASR_EQUIV = {  # how Whisper may write what the voice said -> the normalised spe
     "phk": "pe ha ka", "sd": "es de", "gaes": "gais", "guys": "gais", "whatsapp": "wasap", "enggak": "nggak",
     "gak": "nggak", "ga": "nggak", "hm": "hmm", "mm": "hmm", "hmmm": "hmm", "youtuber": "yutuber",
     "followers": "folowers", "the": "de", "ok": "oke", "okay": "oke", "rp": "rupiah", "persen": "persen",
-    "dipehaka": "dipehaka", "haha": "hahaha", "hahahaha": "hahaha", "ha": "hahaha",
+    "dipehaka": "dipehaka", "hahaha": "haha", "hahahaha": "haha", "aha": "haha", "hahha": "haha",
+    "iya": "ya", "ia": "ya", "wa": "wah", "waw": "wah", "masasih": "masa sih", "masasi": "masa sih", "si": "sih",
+    "lho": "lo", "loh": "lo", "boss": "bos",
 }
 
 
@@ -938,11 +958,30 @@ def act(wav, marks, cast, emotion, seed=0):
     lf = np.zeros(n)
     lf[voiced] = np.log2(f0[voiced])
     if voiced.sum() > 10:
-        # smooth tiny octave glitches, then widen the melody around each phrase's own mean
+        # widen the melody around the line's own mean: only its smooth contour (60 ms
+        # moving average), so the micro-jitter is not amplified; flat readings get more
+        # gain, up to a minimum spread (the fix for "datar")
+        # octave errors of the pitch tracker (creaky ends read at half pitch) fold back
+        vi = np.where(voiced)[0]
+        lv = lf[vi].copy()
+        for _ in range(2):
+            med = np.array([np.median(lv[max(0, j - 15):j + 16]) for j in range(len(lv))])
+            lv = np.where(lv - med < -0.55, lv + 1.0, np.where(lv - med > 0.55, lv - 1.0, lv))
+        lf[vi] = lv
         mu = np.median(lf[voiced])
-        dev = lf - mu
-        dev[voiced] = np.clip(dev[voiced], -0.8, 0.8)
-        lf[voiced] = mu + dev[voiced] * cast.get("range", 1.0) * (1.0 + (emo["rng"] - 1.3) * 0.5)
+        dev = np.zeros(n)
+        dev[voiced] = np.clip(lf[voiced] - mu, -0.8, 0.8)
+        k = 13
+        num = np.convolve(np.where(voiced, dev, 0.0), np.ones(k), "same")
+        den = np.convolve(voiced.astype(float), np.ones(k), "same")
+        smooth = np.where(voiced, num / np.maximum(den, 1e-9), 0.0)
+        resid = dev - smooth
+        gain = cast.get("range", 1.0) * (1.0 + (emo["rng"] - 1.3) * 0.5)
+        sd = float(np.std(smooth[voiced])) * 12.0
+        target = cast.get("melody", 2.2 if emotion == "sad" else 3.0)
+        if sd * gain < target:
+            gain = min(target / max(sd, 0.4), gain * 1.8, 2.4)
+        lf[voiced] = mu + np.clip(smooth[voiced] * gain + resid[voiced], -0.6, 0.9)
         # phrase intonation
         for a, b, p, wh in marks:
             fa, fb = int(a / SR * 1000 / fp), min(n, int(b / SR * 1000 / fp))
@@ -1065,7 +1104,7 @@ def master(y, gain_db=0.0, lufs=-18.0):
 # phone (band-limited like a phone call).
 CASTING = {
     # the phone boss: slick and fast, heard through a phone
-    "hq":       dict(speaker="ardi", pitch=1.0, formant=1.0, rate=0.86, range=1.25, pause=0.7, phone=True,
+    "hq":       dict(speaker="ardi", pitch=1.0, formant=1.0, rate=0.9, range=1.25, pause=0.7, phone=True,
                      feel="slick corporate boss on the phone, fast"),
     "player":   dict(speaker="wibowo", pitch=0.0, formant=1.0, rate=0.97, range=1.05, feel="the Juragan: confident young man"),
     "kades":    dict(speaker="JV-00027", pitch=-1.5, formant=0.94, rate=1.15, range=1.45, pause=1.2,
@@ -1177,6 +1216,46 @@ def _sig(line, c):
     return hashlib.md5(json.dumps(payload, sort_keys=True).encode()).hexdigest()[:10]
 
 
+def react(jobs=4):
+    """Re-act the flattest clips with the adaptive melody gain: the same TTS take (same
+    seed), new WORLD intonation; kept when the recogniser still understands it."""
+    from multiprocessing import Pool
+    man = json.load(open(MANIFEST, encoding="utf-8"))
+    cast_ = json.load(open(CAST, encoding="utf-8"))["cast"]
+    todo = []
+    for l in man["lines"]:
+        out = os.path.join(WORK, "clips", l["char"], l["key"])
+        if not os.path.exists(out + ".json"):
+            continue
+        q = json.load(open(out + ".json"))
+        thr = 2.0 if l["emotion"] == "sad" else 2.8
+        if q.get("f0_sd_st", 0) < thr and q["dur"] > 1.5 and not q.get("reacted"):
+            todo.append((l, cast_[l["char"]], out))
+    print("react: %d flat clips" % len(todo), flush=True)
+    better = 0
+    with Pool(jobs, maxtasksperchild=50) as p:
+        for r in p.imap_unordered(_react_one, todo):
+            better += int(r)
+    print("react: %d re-acted clips kept" % better)
+
+
+def _react_one(job):
+    import numpy as np
+    import soundfile as sf
+    line, c, out = job
+    q = json.load(open(out + ".json"))
+    t = perform(_engine(), line, c, q["seed"], q["careful"])
+    q["reacted"] = 1
+    keep = t is not None and t["wer"] <= max(0.25, wer(line["spoken"], q["hyp"]))
+    if keep:
+        sf.write(out + ".wav", t["wav"], SR, subtype="PCM_16")
+        st = voice_stats(t["wav"])
+        q.update({"hyp": t["hyp"], "wer": t["wer"], "dur": len(t["wav"]) / SR, "f0_med": st["f0_med"],
+                  "f0_sd_st": st["f0_sd_st"], "peak_db": float(20 * np.log10(np.max(np.abs(t["wav"])) + 1e-9))})
+    json.dump(q, open(out + ".json", "w"), ensure_ascii=False)
+    return keep
+
+
 def phone_fx(y):
     import numpy as np
     from scipy import signal
@@ -1211,10 +1290,17 @@ FEATURED = {"intro", "CHAT", "EXTRAS", "KID", "WALKER_LINES", "_greeting", "CHAT
 def _render_one(job):
     import numpy as np
     import soundfile as sf
-    line, c, out = job
+    line, c, out, retry = job
     e = _engine()
     takes = []
     plan = [(1, False), (2, False), (3, False), (4, True), (5, True), (6, True)]
+    if retry:  # a line that failed the recogniser: six more performances, the old one competes
+        y0, _ = sf.read(out + ".wav", dtype="float32")
+        q0 = json.load(open(out + ".json"))
+        takes.append({"wav": y0, "hyp": q0["hyp"], "wer": wer(line["spoken"], q0["hyp"]), "seed": q0["seed"],
+                      "careful": q0["careful"]})
+        s0 = 7 + 6 * int(q0.get("retried", 0))
+        plan = [(s0 + k, k % 2 == 1) for k in range(6)]
     is_bark = line["src"].startswith("bark")
     # the lines players hear most get at least two performances to choose from
     min_takes = 2 if line["src"] in FEATURED else 1
@@ -1224,6 +1310,10 @@ def _render_one(job):
             continue
         takes.append(t)
         best_w = min(x["wer"] for x in takes)
+        if retry:
+            if best_w <= 0.2:
+                break
+            continue
         if len(takes) >= min_takes and best_w <= 0.1:
             break
         if len(takes) >= 2 and best_w <= 0.2:
@@ -1241,7 +1331,7 @@ def _render_one(job):
     qa = {"key": line["key"], "char": line["char"], "spoken": line["spoken"], "hyp": best["hyp"], "wer": best["wer"],
           "takes": len(takes), "seed": best["seed"], "careful": best["careful"], "dur": len(y) / SR,
           "peak_db": float(20 * np.log10(np.max(np.abs(y)) + 1e-9)), "sig": _sig(line, c), "emotion": line["emotion"],
-          "src": line["src"], **{k: v for k, v in voice_stats(y).items() if k in ("f0_med", "f0_sd_st")}}
+          "src": line["src"], "retried": (int(q0.get("retried", 0)) + 1) if retry else 0, **{k: v for k, v in voice_stats(y).items() if k in ("f0_med", "f0_sd_st")}}
     json.dump(qa, open(out + ".json", "w"), ensure_ascii=False)
     return qa
 
@@ -1253,7 +1343,7 @@ def _f0_sd(y):
         return 0.0
 
 
-def render(jobs=4, only=None, force=False, limit=None):
+def render(jobs=4, only=None, force=False, limit=None, retry=False):
     from multiprocessing import Pool
     man = json.load(open(MANIFEST, encoding="utf-8"))
     cast_ = json.load(open(CAST, encoding="utf-8"))["cast"]
@@ -1265,13 +1355,17 @@ def render(jobs=4, only=None, force=False, limit=None):
         d = os.path.join(WORK, "clips", l["char"])
         os.makedirs(d, exist_ok=True)
         out = os.path.join(d, l["key"])
+        again = False
         if not force and os.path.exists(out + ".json") and os.path.exists(out + ".wav"):
             try:
-                if json.load(open(out + ".json")).get("sig") == _sig(l, c):
-                    continue
+                q = json.load(open(out + ".json"))
+                if q.get("sig") == _sig(l, c):
+                    if not (retry and wer(l["spoken"], q["hyp"]) > 0.25 and q.get("retried", 0) < 2):
+                        continue
+                    again = True
             except Exception:
                 pass
-        todo.append((l, c, out))
+        todo.append((l, c, out, again))
     if limit:
         todo = todo[:limit]
     print("render: %d clips to do" % len(todo), flush=True)
@@ -1292,7 +1386,24 @@ def render(jobs=4, only=None, force=False, limit=None):
 # ================================================================== pack: one Ogg bank per character + index
 
 GAP = 0.12        # silence between clips inside a bank (the player seeks to each start)
+CORE_SRC = {"intro", "CHAT", "EXTRAS", "KID", "WALKER_LINES", "_greeting", "CHAT_LANDLESS", "open_calo", "_sleep"}
 OGG_QUALITY = 2   # libvorbis -q:a (22 kHz mono speech: ~30 kbit/s)
+
+
+def tidy(y):
+    """<= 70 ms before the first and <= 120 ms after the last audible sample (-40 dBFS)."""
+    import numpy as np
+    on = np.where(np.abs(y) > 0.01)[0]
+    if len(on) == 0:
+        return y
+    a, b = max(0, on[0] - int(0.07 * SR)), min(len(y), on[-1] + int(0.12 * SR))
+    if b - a == len(y):
+        return y
+    y = y[a:b].copy()
+    f = int(0.006 * SR)
+    y[:f] *= np.linspace(0, 1, f)
+    y[-f:] *= np.linspace(1, 0, f)
+    return y
 
 
 def pack():
@@ -1309,8 +1420,15 @@ def pack():
     banks, report, missing = {}, [], []
     total_bytes = 0
     qa_all = []
+    for f in os.listdir(VOICES):
+        if f.endswith(".ogg"):
+            os.remove(os.path.join(VOICES, f))
     for cid, lines in by_char.items():
-        parts, clips, t = [], {}, 0.0
+        # land owners get two files: what is heard on meeting them (greetings, chat, barks)
+        # loads when the player comes near, the business talk only once a conversation starts
+        split = man["characters"][cid]["kind"] == "villager"
+        files = [cid + ".ogg"] + ([cid + "_2.ogg"] if split else [])
+        parts, clips, t = [[] for _ in files], {}, [0.0 for _ in files]
         for l in lines:
             base = os.path.join(WORK, "clips", cid, l["key"])
             if not os.path.exists(base + ".wav"):
@@ -1318,28 +1436,33 @@ def pack():
                 continue
             y, sr = sf.read(base + ".wav", dtype="float32")
             assert sr == SR
+            y = tidy(y)
             qa = json.load(open(base + ".json"))
             qa["wer"] = wer(qa["spoken"], qa["hyp"])  # re-scored with the current metric
             qa_all.append(qa)
-            clips[l["key"]] = [round(t, 3), round(len(y) / SR, 3)]
-            parts.append(y)
-            parts.append(np.zeros(int(GAP * SR), np.float32))
-            t += len(y) / SR + GAP
-        if not parts:
+            fi = 0 if (not split or l["src"] in CORE_SRC or l["src"].startswith("bark")) else 1
+            clips[l["key"]] = [fi, round(t[fi], 3), round(len(y) / SR, 3)]
+            parts[fi].append(y)
+            parts[fi].append(np.zeros(int(GAP * SR), np.float32))
+            t[fi] += len(y) / SR + GAP
+        sizes = []
+        for fi, name in enumerate(files):
+            if not parts[fi]:
+                sizes.append(0)
+                continue
+            tmp = os.path.join(WORK, "bank_%s.wav" % name)
+            sf.write(tmp, np.concatenate(parts[fi]), SR, subtype="PCM_16")
+            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", tmp, "-ac", "1", "-ar", str(SR),
+                            "-c:a", "libvorbis", "-q:a", str(OGG_QUALITY), os.path.join(VOICES, name)], check=True)
+            os.remove(tmp)
+            sizes.append(os.path.getsize(os.path.join(VOICES, name)))
+        if not clips:
             continue
-        wav = np.concatenate(parts)
-        tmp = os.path.join(WORK, "bank_%s.wav" % cid)
-        sf.write(tmp, wav, SR, subtype="PCM_16")
-        out = os.path.join(VOICES, cid + ".ogg")
-        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", tmp, "-ac", "1", "-ar", str(SR),
-                        "-c:a", "libvorbis", "-q:a", str(OGG_QUALITY), out], check=True)
-        os.remove(tmp)
-        size = os.path.getsize(out)
-        total_bytes += size
+        total_bytes += sum(sizes)
         barks = {mood: text_key(txt) for mood, txt in man["barks"].get(cid, {}).items()
                  if text_key(txt) in clips}
-        banks[cid] = {"file": cid + ".ogg", "bytes": size, "dur": round(t, 2), "clips": clips, "barks": barks}
-        report.append((cid, len(clips), t, size))
+        banks[cid] = {"files": files, "bytes": sizes, "dur": [round(x, 2) for x in t], "clips": clips, "barks": barks}
+        report.append((cid, len(clips), sum(t), sum(sizes), sizes))
     portraits = {k: v for k, v in PORTRAIT_VOICE.items() if v in banks}
     index = {"version": RENDER_VERSION, "generated_by": "tools/make_voices.py pack", "sample_rate": SR,
              "speakers": man["speakers"], "portraits": portraits, "banks": banks,
@@ -1356,9 +1479,10 @@ def pack():
         passed, len(wers), 100.0 * passed / max(1, len(wers)), float(np.mean(wers)) if wers else 0, sum(1 for w in wers if w == 0)))
     peaks = [q["peak_db"] for q in qa_all]
     print("  peak max %.2f dBFS, clips over -1 dBFS: %d" % (max(peaks), sum(1 for p in peaks if p > -1.0)))
-    for cid, n, t, size in sorted(report, key=lambda r: -r[3]):
+    for cid, n, t, size, sizes in sorted(report, key=lambda r: -r[3]):
         c = cast_.get(cid, {})
-        print("  %-13s %3d clips %6.1fs %7.0f KB  %s" % (cid, n, t, size / 1024, c.get("speaker", "")))
+        print("  %-13s %3d clips %6.1fs %7.0f KB (%s)  %s" % (cid, n, t, size / 1024,
+              " + ".join("%.0f" % (x / 1024) for x in sizes), c.get("speaker", "")))
     if missing:
         print("  MISSING %d clips (run render):" % len(missing), missing[:10])
     fails = [q for q in qa_all if q["wer"] > 0.25]
@@ -1388,6 +1512,7 @@ def qa(png=True):
         if not os.path.exists(base + ".wav"):
             continue
         y, _ = sf.read(base + ".wav", dtype="float64")
+        y = tidy(y)
         q = json.load(open(base + ".json"))
         q["wer"] = wer(q["spoken"], q["hyp"])
         if len(y) / SR >= 0.6:
@@ -1463,7 +1588,10 @@ def main():
     if cmd in ("cast", "all"):
         cast()
     if cmd in ("render", "all"):
-        render(jobs, only, bool(opt.get("force", False)), int(opt["limit"]) if "limit" in opt else None)
+        render(jobs, only, bool(opt.get("force", False)), int(opt["limit"]) if "limit" in opt else None,
+               bool(opt.get("retry", False)))
+    if cmd == "react":
+        react(jobs)
     if cmd in ("pack", "all"):
         pack()
     if cmd in ("qa", "all"):

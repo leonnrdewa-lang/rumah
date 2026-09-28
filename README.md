@@ -24,10 +24,13 @@ mereka dengan harga yang kamu atur sendiri.
   hantu, ayam jago di pagi hari. Air dan satwa bersuara 3D dari arahnya; di dalam rumah teredam.
   Semua disintesis dari nol (`tools/make_ambience.py`: noise spektro-temporal, model gelembung Minnaert,
   model kicau/katak/tokek), loop mulus, ~1,2 MB Ogg
-- **Suara (voice acting):** setiap baris dialog diisi suara, tiap tokoh punya suara sendiri (42 tokoh):
-  TTS neural bahasa Indonesia (VITS multi-speaker) + transformasi vokoder WORLD (nada, formant, napas,
-  getar suara lansia, serak), intonasi ekspresif per kalimat, 2–3 take per baris dipilih dengan Whisper
-  (`tools/make_voices.py`). Audionya di luar paket game (`game/voices/`, diunduh per tokoh saat didekati)
+- **Suara (voice acting):** setiap baris dialog diisi suara, tiap tokoh punya suara sendiri (42 tokoh,
+  1.077 klip, ±93 menit): TTS neural bahasa Indonesia (VITS multi-speaker, 42 penutur dasar berbeda) +
+  transformasi vokoder WORLD (nada, formant, napas, getar suara lansia, serak), intonasi ekspresif per
+  kalimat (rentang nada diperlebar, naik di akhir pertanyaan, tekanan di seruan, jeda di "..."), beberapa take
+  per baris dipilih dengan Whisper (semua klip WER ≤ 0,25), -18 LUFS (`tools/make_voices.py`). Audionya di luar
+  paket game (`game/voices/`, ±24 MB Ogg): bank tiap tokoh diunduh saat didekati, obrolan bisnisnya saat
+  percakapan dimulai
 
 ## Main
 

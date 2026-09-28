@@ -259,7 +259,7 @@
    "char": "hq",
    "text": "Halo, Juragan! Selamat, kamu resmi jadi pewaralaba Sawit The Franchise™ di Desa Sukamakmur!",
    "key": "bcf2b0946cf7",
-   "spoken": "Halo, Juragan! Selamat, kamu resmi jadi pewaralaba Sawit de Frencais di Desa Sukamakmur!",
+   "spoken": "Halo, Juragan! Selamat! Kamu resmi jadi pe-waralaba, Sawit de Frencais, di Desa Sukamakmur!",
    "src": "intro",
    "emotion": "excited"
   },
@@ -2667,7 +2667,7 @@
    "char": "nenek",
    "text": "Kebun saya? Luasnya 20 petak, harganya sekitar Rp 3.500.000.",
    "key": "d5fd22920849",
-   "spoken": "Kebun saya? Luasnya dua puluh petak, harganya sekitar tiga juta lima ratus ribu rupiah.",
+   "spoken": "Kebun saya? Luasnya dua puluh petak, harganya sekitar tiga setengah juta rupiah.",
    "src": "land_menu",
    "emotion": "neutral"
   },
@@ -2675,7 +2675,7 @@
    "char": "pemuda",
    "text": "Kebun saya? Luasnya 20 petak, harganya sekitar Rp 4.500.000.",
    "key": "40d6e5f1b74c",
-   "spoken": "Kebun saya? Luasnya dua puluh petak, harganya sekitar empat juta lima ratus ribu rupiah.",
+   "spoken": "Kebun saya? Luasnya dua puluh petak, harganya sekitar empat setengah juta rupiah.",
    "src": "land_menu",
    "emotion": "neutral"
   },
@@ -2691,7 +2691,7 @@
    "char": "somad",
    "text": "Kebun saya? Luasnya 20 petak, harganya sekitar Rp 7.500.000.",
    "key": "8c0332aeae69",
-   "spoken": "Kebun saya? Luasnya dua puluh petak, harganya sekitar tujuh juta lima ratus ribu rupiah.",
+   "spoken": "Kebun saya? Luasnya dua puluh petak, harganya sekitar tujuh setengah juta rupiah.",
    "src": "land_menu",
    "emotion": "neutral"
   },
@@ -2699,7 +2699,7 @@
    "char": "ucok",
    "text": "Kebun saya? Luasnya 20 petak, harganya sekitar Rp 4.500.000.",
    "key": "40d6e5f1b74c",
-   "spoken": "Kebun saya? Luasnya dua puluh petak, harganya sekitar empat juta lima ratus ribu rupiah.",
+   "spoken": "Kebun saya? Luasnya dua puluh petak, harganya sekitar empat setengah juta rupiah.",
    "src": "land_menu",
    "emotion": "neutral"
   },
@@ -2779,7 +2779,7 @@
    "char": "bidan",
    "text": "Kebun saya? Luasnya 20 petak, harganya sekitar Rp 5.500.000.",
    "key": "b78e5b0ffbaa",
-   "spoken": "Kebun saya? Luasnya dua puluh petak, harganya sekitar lima juta lima ratus ribu rupiah.",
+   "spoken": "Kebun saya? Luasnya dua puluh petak, harganya sekitar lima setengah juta rupiah.",
    "src": "land_menu",
    "emotion": "neutral"
   },
@@ -2787,7 +2787,7 @@
    "char": "rt",
    "text": "Kebun saya? Luasnya 20 petak, harganya sekitar Rp 6.500.000.",
    "key": "0a766927a39d",
-   "spoken": "Kebun saya? Luasnya dua puluh petak, harganya sekitar enam juta lima ratus ribu rupiah.",
+   "spoken": "Kebun saya? Luasnya dua puluh petak, harganya sekitar enam setengah juta rupiah.",
    "src": "land_menu",
    "emotion": "neutral"
   },
@@ -3875,7 +3875,7 @@
    "char": "kakek",
    "text": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi 60 untuk Juragan, 40 untuk saya? Biaya waralabanya Rp 2.500.000... saya cuma punya Rp 300.000.",
    "key": "e244a8c3e80b",
-   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua juta lima ratus ribu rupiah... saya cuma punya tiga ratus ribu rupiah.",
+   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua setengah juta rupiah... saya cuma punya tiga ratus ribu rupiah.",
    "src": "_offer_franchise",
    "emotion": "neutral"
   },
@@ -3883,7 +3883,7 @@
    "char": "ibu",
    "text": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi 60 untuk Juragan, 40 untuk saya? Biaya waralabanya Rp 2.500.000... saya cuma punya Rp 800.000.",
    "key": "240ed8a89a8f",
-   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua juta lima ratus ribu rupiah... saya cuma punya delapan ratus ribu rupiah.",
+   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua setengah juta rupiah... saya cuma punya delapan ratus ribu rupiah.",
    "src": "_offer_franchise",
    "emotion": "neutral"
   },
@@ -3891,7 +3891,7 @@
    "char": "kades",
    "text": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi 60 untuk Juragan, 40 untuk saya? Biaya waralabanya Rp 2.500.000... saya cuma punya Rp 2.500.000.",
    "key": "e55b8a996fa3",
-   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua juta lima ratus ribu rupiah... saya cuma punya dua juta lima ratus ribu rupiah.",
+   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua setengah juta rupiah... saya cuma punya dua setengah juta rupiah.",
    "src": "_offer_franchise",
    "emotion": "neutral"
   },
@@ -3899,7 +3899,7 @@
    "char": "nenek",
    "text": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi 60 untuk Juragan, 40 untuk saya? Biaya waralabanya Rp 2.500.000... saya cuma punya Rp 150.000.",
    "key": "a93c21626a33",
-   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua juta lima ratus ribu rupiah... saya cuma punya seratus lima puluh ribu rupiah.",
+   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua setengah juta rupiah... saya cuma punya seratus lima puluh ribu rupiah.",
    "src": "_offer_franchise",
    "emotion": "neutral"
   },
@@ -3907,7 +3907,7 @@
    "char": "pemuda",
    "text": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi 60 untuk Juragan, 40 untuk saya? Biaya waralabanya Rp 2.500.000... saya cuma punya Rp 400.000.",
    "key": "ff3acf118911",
-   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua juta lima ratus ribu rupiah... saya cuma punya empat ratus ribu rupiah.",
+   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua setengah juta rupiah... saya cuma punya empat ratus ribu rupiah.",
    "src": "_offer_franchise",
    "emotion": "neutral"
   },
@@ -3915,7 +3915,7 @@
    "char": "petani",
    "text": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi 60 untuk Juragan, 40 untuk saya? Biaya waralabanya Rp 2.500.000... saya cuma punya Rp 600.000.",
    "key": "163c01dd6266",
-   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua juta lima ratus ribu rupiah... saya cuma punya enam ratus ribu rupiah.",
+   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua setengah juta rupiah... saya cuma punya enam ratus ribu rupiah.",
    "src": "_offer_franchise",
    "emotion": "neutral"
   },
@@ -3923,7 +3923,7 @@
    "char": "somad",
    "text": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi 60 untuk Juragan, 40 untuk saya? Biaya waralabanya Rp 2.500.000... saya cuma punya Rp 3.000.000.",
    "key": "f8432ea6743b",
-   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua juta lima ratus ribu rupiah... saya cuma punya tiga juta rupiah.",
+   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua setengah juta rupiah... saya cuma punya tiga juta rupiah.",
    "src": "_offer_franchise",
    "emotion": "neutral"
   },
@@ -3931,7 +3931,7 @@
    "char": "ucok",
    "text": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi 60 untuk Juragan, 40 untuk saya? Biaya waralabanya Rp 2.500.000... saya cuma punya Rp 350.000.",
    "key": "d5b1ad5b7e4a",
-   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua juta lima ratus ribu rupiah... saya cuma punya tiga ratus lima puluh ribu rupiah.",
+   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua setengah juta rupiah... saya cuma punya tiga ratus lima puluh ribu rupiah.",
    "src": "_offer_franchise",
    "emotion": "neutral"
   },
@@ -3939,7 +3939,7 @@
    "char": "rian",
    "text": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi 60 untuk Juragan, 40 untuk saya? Biaya waralabanya Rp 2.500.000... saya cuma punya Rp 250.000.",
    "key": "4dd53cf354d6",
-   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua juta lima ratus ribu rupiah... saya cuma punya dua ratus lima puluh ribu rupiah.",
+   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua setengah juta rupiah... saya cuma punya dua ratus lima puluh ribu rupiah.",
    "src": "_offer_franchise",
    "emotion": "neutral"
   },
@@ -3947,7 +3947,7 @@
    "char": "wati",
    "text": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi 60 untuk Juragan, 40 untuk saya? Biaya waralabanya Rp 2.500.000... saya cuma punya Rp 500.000.",
    "key": "d23e489df1be",
-   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua juta lima ratus ribu rupiah... saya cuma punya lima ratus ribu rupiah.",
+   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua setengah juta rupiah... saya cuma punya lima ratus ribu rupiah.",
    "src": "_offer_franchise",
    "emotion": "neutral"
   },
@@ -3955,7 +3955,7 @@
    "char": "slamet",
    "text": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi 60 untuk Juragan, 40 untuk saya? Biaya waralabanya Rp 2.500.000... saya cuma punya Rp 450.000.",
    "key": "3cfe043c94e9",
-   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua juta lima ratus ribu rupiah... saya cuma punya empat ratus lima puluh ribu rupiah.",
+   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua setengah juta rupiah... saya cuma punya empat ratus lima puluh ribu rupiah.",
    "src": "_offer_franchise",
    "emotion": "neutral"
   },
@@ -3963,7 +3963,7 @@
    "char": "dullah",
    "text": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi 60 untuk Juragan, 40 untuk saya? Biaya waralabanya Rp 2.500.000... saya cuma punya Rp 200.000.",
    "key": "ade90a6d8dbc",
-   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua juta lima ratus ribu rupiah... saya cuma punya dua ratus ribu rupiah.",
+   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua setengah juta rupiah... saya cuma punya dua ratus ribu rupiah.",
    "src": "_offer_franchise",
    "emotion": "neutral"
   },
@@ -3971,7 +3971,7 @@
    "char": "lastri",
    "text": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi 60 untuk Juragan, 40 untuk saya? Biaya waralabanya Rp 2.500.000... saya cuma punya Rp 700.000.",
    "key": "443448d04515",
-   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua juta lima ratus ribu rupiah... saya cuma punya tujuh ratus ribu rupiah.",
+   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua setengah juta rupiah... saya cuma punya tujuh ratus ribu rupiah.",
    "src": "_offer_franchise",
    "emotion": "neutral"
   },
@@ -3979,7 +3979,7 @@
    "char": "romlah",
    "text": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi 60 untuk Juragan, 40 untuk saya? Biaya waralabanya Rp 2.500.000... saya cuma punya Rp 120.000.",
    "key": "8023d87ac58a",
-   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua juta lima ratus ribu rupiah... saya cuma punya seratus dua puluh ribu rupiah.",
+   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua setengah juta rupiah... saya cuma punya seratus dua puluh ribu rupiah.",
    "src": "_offer_franchise",
    "emotion": "neutral"
   },
@@ -3987,7 +3987,7 @@
    "char": "darsih",
    "text": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi 60 untuk Juragan, 40 untuk saya? Biaya waralabanya Rp 2.500.000... saya cuma punya Rp 180.000.",
    "key": "1dceb92f4c87",
-   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua juta lima ratus ribu rupiah... saya cuma punya seratus delapan puluh ribu rupiah.",
+   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua setengah juta rupiah... saya cuma punya seratus delapan puluh ribu rupiah.",
    "src": "_offer_franchise",
    "emotion": "neutral"
   },
@@ -3995,7 +3995,7 @@
    "char": "yanto",
    "text": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi 60 untuk Juragan, 40 untuk saya? Biaya waralabanya Rp 2.500.000... saya cuma punya Rp 150.000.",
    "key": "a93c21626a33",
-   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua juta lima ratus ribu rupiah... saya cuma punya seratus lima puluh ribu rupiah.",
+   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua setengah juta rupiah... saya cuma punya seratus lima puluh ribu rupiah.",
    "src": "_offer_franchise",
    "emotion": "neutral"
   },
@@ -4003,7 +4003,7 @@
    "char": "karta",
    "text": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi 60 untuk Juragan, 40 untuk saya? Biaya waralabanya Rp 2.500.000... saya cuma punya Rp 600.000.",
    "key": "163c01dd6266",
-   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua juta lima ratus ribu rupiah... saya cuma punya enam ratus ribu rupiah.",
+   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua setengah juta rupiah... saya cuma punya enam ratus ribu rupiah.",
    "src": "_offer_franchise",
    "emotion": "neutral"
   },
@@ -4011,7 +4011,7 @@
    "char": "bidan",
    "text": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi 60 untuk Juragan, 40 untuk saya? Biaya waralabanya Rp 2.500.000... saya cuma punya Rp 1.500.000.",
    "key": "b64367a883dc",
-   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua juta lima ratus ribu rupiah... saya cuma punya satu juta lima ratus ribu rupiah.",
+   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua setengah juta rupiah... saya cuma punya satu setengah juta rupiah.",
    "src": "_offer_franchise",
    "emotion": "neutral"
   },
@@ -4019,7 +4019,7 @@
    "char": "rt",
    "text": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi 60 untuk Juragan, 40 untuk saya? Biaya waralabanya Rp 2.500.000... saya cuma punya Rp 1.800.000.",
    "key": "1c9fd7534065",
-   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua juta lima ratus ribu rupiah... saya cuma punya satu juta delapan ratus ribu rupiah.",
+   "spoken": "Jadi saya tetap pemilik, tapi kebunnya ditanami sawit, hasilnya dibagi enam puluh untuk Juragan, empat puluh untuk saya? Biaya waralabanya dua setengah juta rupiah... saya cuma punya satu juta delapan ratus ribu rupiah.",
    "src": "_offer_franchise",
    "emotion": "neutral"
   },
@@ -5195,7 +5195,7 @@
    "char": "romlah",
    "text": "Uang saya habis... catat sebagai utang dulu ya, Juragan.",
    "key": "b6a7fc13d9a2",
-   "spoken": "Uang saya habis... catat sebagai utang dulu ya, Juragan.",
+   "spoken": "Aduh, uang saya habis... catat sebagai utang dulu ya, Juragan.",
    "src": "_sell_oil",
    "emotion": "sad"
   },
@@ -6377,25 +6377,25 @@
   },
   {
    "char": "kakek",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "kakek",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "kakek",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -6417,33 +6417,33 @@
   },
   {
    "char": "kakek",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "ibu",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "ibu",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "ibu",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -6465,33 +6465,33 @@
   },
   {
    "char": "ibu",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "kades",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "kades",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "kades",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -6513,33 +6513,33 @@
   },
   {
    "char": "kades",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "nenek",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "nenek",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "nenek",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -6561,33 +6561,33 @@
   },
   {
    "char": "nenek",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "pemuda",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "pemuda",
-   "text": "Iya, Bang. Baik.",
-   "key": "320b9e9cbfcd",
-   "spoken": "Iya, Bang. Baik.",
+   "text": "Iya, iya, saya siap, Bang.",
+   "key": "fbf3344a8884",
+   "spoken": "Iya, iya, saya siap, Bang.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "pemuda",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -6609,33 +6609,33 @@
   },
   {
    "char": "pemuda",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "petani",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "petani",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "petani",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -6657,33 +6657,33 @@
   },
   {
    "char": "petani",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "somad",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "somad",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "somad",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -6705,33 +6705,33 @@
   },
   {
    "char": "somad",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "ucok",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "ucok",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "ucok",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -6753,33 +6753,33 @@
   },
   {
    "char": "ucok",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "rian",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "rian",
-   "text": "Iya, Bang. Baik.",
-   "key": "320b9e9cbfcd",
-   "spoken": "Iya, Bang. Baik.",
+   "text": "Iya, iya, saya siap, Bang.",
+   "key": "fbf3344a8884",
+   "spoken": "Iya, iya, saya siap, Bang.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "rian",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -6801,33 +6801,33 @@
   },
   {
    "char": "rian",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "wati",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "wati",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "wati",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -6849,33 +6849,33 @@
   },
   {
    "char": "wati",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "slamet",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "slamet",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "slamet",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -6897,33 +6897,33 @@
   },
   {
    "char": "slamet",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "dullah",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "dullah",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "dullah",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -6945,33 +6945,33 @@
   },
   {
    "char": "dullah",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "lastri",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "lastri",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "lastri",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -6993,33 +6993,33 @@
   },
   {
    "char": "lastri",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "romlah",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "romlah",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "romlah",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -7041,33 +7041,33 @@
   },
   {
    "char": "romlah",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "darsih",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "darsih",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "darsih",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -7089,33 +7089,33 @@
   },
   {
    "char": "darsih",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "yanto",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "yanto",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "yanto",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -7137,33 +7137,33 @@
   },
   {
    "char": "yanto",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "karta",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "karta",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "karta",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -7185,33 +7185,33 @@
   },
   {
    "char": "karta",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "bidan",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "bidan",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "bidan",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -7233,33 +7233,33 @@
   },
   {
    "char": "bidan",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "rt",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "rt",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "rt",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -7281,33 +7281,33 @@
   },
   {
    "char": "rt",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "karim",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "karim",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "karim",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -7329,33 +7329,33 @@
   },
   {
    "char": "karim",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "tini",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "tini",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "tini",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -7377,33 +7377,33 @@
   },
   {
    "char": "tini",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "sari",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "sari",
-   "text": "Iya, Kak. Baik.",
-   "key": "a83ba5687b74",
-   "spoken": "Iya, Kak. Baik.",
+   "text": "Iya, iya, saya siap, Kak.",
+   "key": "062b0726697a",
+   "spoken": "Iya, iya, saya siap, Kak.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "sari",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -7425,33 +7425,33 @@
   },
   {
    "char": "sari",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "budi",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "budi",
-   "text": "Iya, Om. Baik.",
-   "key": "463ce1893df2",
-   "spoken": "Iya, Om. Baik.",
+   "text": "Iya, iya, saya siap, Om.",
+   "key": "6c665025e471",
+   "spoken": "Iya, iya, saya siap, Om.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "budi",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -7473,33 +7473,33 @@
   },
   {
    "char": "budi",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "eko",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "eko",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "eko",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -7521,33 +7521,33 @@
   },
   {
    "char": "eko",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "tigor",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "tigor",
-   "text": "Iya, Bos. Baik.",
-   "key": "67a7f191bf1c",
-   "spoken": "Iya, Bos. Baik.",
+   "text": "Iya, iya, saya siap, Bos.",
+   "key": "2da9deee7905",
+   "spoken": "Iya, iya, saya siap, Bos.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "tigor",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -7569,33 +7569,33 @@
   },
   {
    "char": "tigor",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "ipah",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "ipah",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "ipah",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -7617,33 +7617,33 @@
   },
   {
    "char": "ipah",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "rahmat",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "rahmat",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "rahmat",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -7659,39 +7659,39 @@
    "char": "rahmat",
    "text": "Yah... mau bagaimana lagi.",
    "key": "39d615f79bce",
-   "spoken": "Yah... mau bagaimana lagi.",
+   "spoken": "Yah... ya sudah lah, mau apa lagi.",
    "src": "bark:sad",
    "emotion": "sad"
   },
   {
    "char": "rahmat",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "asep",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "asep",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "asep",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -7713,33 +7713,33 @@
   },
   {
    "char": "asep",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "neneng",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "neneng",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "neneng",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -7761,33 +7761,33 @@
   },
   {
    "char": "neneng",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "udin",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "udin",
-   "text": "Iya, Om. Baik.",
-   "key": "463ce1893df2",
-   "spoken": "Iya, Om. Baik.",
+   "text": "Iya, iya, saya siap, Om.",
+   "key": "6c665025e471",
+   "spoken": "Iya, iya, saya siap, Om.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "udin",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -7809,33 +7809,33 @@
   },
   {
    "char": "udin",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "hq",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "hq",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "hq",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -7857,33 +7857,33 @@
   },
   {
    "char": "hq",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "player",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "player",
-   "text": "Iya, Pak. Baik.",
-   "key": "6d7c7dcbfc57",
-   "spoken": "Iya, Pak. Baik.",
+   "text": "Iya, iya, saya siap, Bos.",
+   "key": "2da9deee7905",
+   "spoken": "Iya, iya, saya siap, Bos.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "player",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -7905,33 +7905,33 @@
   },
   {
    "char": "player",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "wartawan",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "wartawan",
-   "text": "Iya, Pak. Baik.",
-   "key": "6d7c7dcbfc57",
-   "spoken": "Iya, Pak. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "wartawan",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -7953,33 +7953,33 @@
   },
   {
    "char": "wartawan",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "calo",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "calo",
-   "text": "Iya, Bos. Baik.",
-   "key": "67a7f191bf1c",
-   "spoken": "Iya, Bos. Baik.",
+   "text": "Iya, iya, saya siap, Bos.",
+   "key": "2da9deee7905",
+   "spoken": "Iya, iya, saya siap, Bos.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "calo",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -8001,33 +8001,33 @@
   },
   {
    "char": "calo",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "mak",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "mak",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "mak",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -8049,33 +8049,33 @@
   },
   {
    "char": "mak",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "warga_petani",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "warga_petani",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "warga_petani",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -8097,33 +8097,33 @@
   },
   {
    "char": "warga_petani",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "warga_ibu",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "warga_ibu",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "warga_ibu",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -8145,33 +8145,33 @@
   },
   {
    "char": "warga_ibu",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "warga_buruh",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "warga_buruh",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "warga_buruh",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -8193,33 +8193,33 @@
   },
   {
    "char": "warga_buruh",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "warga_pemuda",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "warga_pemuda",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "warga_pemuda",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -8241,33 +8241,33 @@
   },
   {
    "char": "warga_pemuda",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "warga_nenek",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "warga_nenek",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "warga_nenek",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -8289,33 +8289,33 @@
   },
   {
    "char": "warga_nenek",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "warga_kakek",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "warga_kakek",
-   "text": "Iya, Juragan. Baik.",
-   "key": "5e7280266a8a",
-   "spoken": "Iya, Juragan. Baik.",
+   "text": "Iya, iya, saya siap, Juragan.",
+   "key": "588bea0f26cf",
+   "spoken": "Iya, iya, saya siap, Juragan.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "warga_kakek",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -8337,33 +8337,33 @@
   },
   {
    "char": "warga_kakek",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
   {
    "char": "warga_anak",
-   "text": "Oh, begitu ya.",
-   "key": "bf951bfffd6c",
-   "spoken": "Oh, begitu ya.",
+   "text": "Oh, begitu ya, saya mengerti.",
+   "key": "f2d5c1dba847",
+   "spoken": "Oh, begitu ya, saya mengerti.",
    "src": "bark:neutral",
    "emotion": "neutral"
   },
   {
    "char": "warga_anak",
-   "text": "Iya, Om. Baik.",
-   "key": "463ce1893df2",
-   "spoken": "Iya, Om. Baik.",
+   "text": "Iya, iya, saya siap, Om.",
+   "key": "6c665025e471",
+   "spoken": "Iya, iya, saya siap, Om.",
    "src": "bark:yes",
    "emotion": "warm"
   },
   {
    "char": "warga_anak",
-   "text": "Wah, masa sih?",
-   "key": "c1b951081fe7",
-   "spoken": "Wah, masa sih?",
+   "text": "Wah, masa sih? Yang benar saja!",
+   "key": "6812bb1cd8b8",
+   "spoken": "Wah, masa sih? Yang benar saja!",
    "src": "bark:surprise",
    "emotion": "excited"
   },
@@ -8385,9 +8385,9 @@
   },
   {
    "char": "warga_anak",
-   "text": "Haha, bisa saja!",
-   "key": "492bd2eeafa2",
-   "spoken": "Haha, bisa saja!",
+   "text": "Hahaha, bisa saja kamu ini!",
+   "key": "597211f57091",
+   "spoken": "Hahaha, bisa saja kamu ini!",
    "src": "bark:laugh",
    "emotion": "laugh"
   },
@@ -9094,340 +9094,340 @@
  ],
  "barks": {
   "kakek": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "ibu": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "kades": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "nenek": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "pemuda": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Bang. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Bang.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "petani": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "somad": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "ucok": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "rian": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Bang. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Bang.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "wati": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "slamet": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "dullah": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "lastri": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "romlah": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "darsih": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "yanto": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "karta": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "bidan": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "rt": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "karim": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "tini": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "sari": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Kak. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Kak.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "budi": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Om. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Om.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "eko": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "tigor": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Bos. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Bos.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "ipah": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "rahmat": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "asep": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "neneng": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "udin": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Om. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Om.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "hq": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "player": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Pak. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Bos.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "wartawan": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Pak. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "calo": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Bos. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Bos.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "mak": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "warga_petani": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "warga_ibu": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "warga_buruh": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "warga_pemuda": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "warga_nenek": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "warga_kakek": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Juragan. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Juragan.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   },
   "warga_anak": {
-   "neutral": "Oh, begitu ya.",
-   "yes": "Iya, Om. Baik.",
-   "surprise": "Wah, masa sih?",
+   "neutral": "Oh, begitu ya, saya mengerti.",
+   "yes": "Iya, iya, saya siap, Om.",
+   "surprise": "Wah, masa sih? Yang benar saja!",
    "annoyed": "Lho, apa-apaan ini?",
    "sad": "Yah... mau bagaimana lagi.",
-   "laugh": "Haha, bisa saja!"
+   "laugh": "Hahaha, bisa saja kamu ini!"
   }
  }
 }

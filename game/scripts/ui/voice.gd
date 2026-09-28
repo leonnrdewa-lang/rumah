@@ -21,7 +21,7 @@ static var _index: Dictionary = {}
 static var _templates: Array = []   # [{chars: {id: true}, re: RegEx, group, variants, default, by_capture}]
 
 const INDEX_PATH := "res://data/voice_index.json"
-const CACHE_BANKS := 14
+const CACHE_BANKS := 18   # bank files kept in memory (~0.3-0.9 MB each)
 
 
 static func _ensure() -> bool:
@@ -155,8 +155,12 @@ static func speak(who_key: String, speaker: String, text: String) -> void:
 		stop()
 		return
 	var bank: Dictionary = _index["banks"][r["char"]]
-	var seg: Array = bank["clips"][r["clip"]]
-	_node.request(str(r["char"]), str(bank.get("file", r["char"] + ".ogg")), float(seg[0]), float(seg[1]))
+	var seg: Array = bank["clips"][r["clip"]]   # [file index, start, duration]
+	var files: Array = bank["files"]
+	_node.request(str(files[int(seg[0])]), float(seg[1]), float(seg[2]))
+	# a conversation has started: the rest of this person's lines (the business talk) too
+	for f in files:
+		_node.fetch(str(f))
 
 
 static func stop() -> void:
@@ -173,17 +177,21 @@ static func is_pending() -> bool:
 	return _node != null and is_instance_valid(_node) and not _node.want.is_empty()
 
 
-## load a character's bank ahead of time (the world calls this for people nearby)
+## load a character's first bank (greetings, chat, barks) ahead of time: voice.gd does
+## this for the people near the player; the rest comes when a conversation starts
 static func prefetch(char_id: String) -> void:
 	if not enabled or char_id == "" or not _ensure():
 		return
 	var bank: Dictionary = _index["banks"].get(char_id, {})
 	if not bank.is_empty():
-		_node.fetch(char_id, str(bank.get("file", char_id + ".ogg")))
+		_node.fetch(str(bank["files"][0]))
 
 
 static func bank_ready(char_id: String) -> bool:
-	return _node != null and is_instance_valid(_node) and _node.has_bank(char_id)
+	if _node == null or not is_instance_valid(_node) or not _ensure():
+		return false
+	var bank: Dictionary = _index["banks"].get(char_id, {})
+	return not bank.is_empty() and _node.has_bank(str(bank["files"][0]))
 
 
 ## every line of the manifest (res://data/voice_manifest.json, source tree only) that
@@ -213,10 +221,10 @@ static func check_manifest() -> Array:
 class _VoiceNode:
 	extends Node
 	var player: AudioStreamPlayer
-	var banks := {}          # char id -> AudioStreamOggVorbis
+	var banks := {}          # bank file -> AudioStreamOggVorbis
 	var order: Array = []    # LRU of loaded banks
-	var loading := {}        # char id -> true
-	var want := {}           # the line waiting for its bank: {char, start, dur, t}
+	var loading := {}        # bank file -> true
+	var want := {}           # the line waiting for its bank: {file, start, dur, t}
 	var stop_at := -1.0
 	var _poll := 0.0
 	var _ducked := false
@@ -234,16 +242,16 @@ class _VoiceNode:
 	func speaking() -> bool:
 		return player != null and player.playing and stop_at > 0.0
 
-	func has_bank(cid: String) -> bool:
-		return banks.has(cid)
+	func has_bank(file: String) -> bool:
+		return banks.has(file)
 
-	func request(cid: String, file: String, start: float, dur: float) -> void:
+	func request(file: String, start: float, dur: float) -> void:
 		halt()
-		want = {"char": cid, "start": start, "dur": dur, "t": Time.get_ticks_msec()}
-		if banks.has(cid):
+		want = {"file": file, "start": start, "dur": dur, "t": Time.get_ticks_msec()}
+		if banks.has(file):
 			_play_want()
 		else:
-			fetch(cid, file)
+			fetch(file)
 
 	func halt() -> void:
 		want = {}
@@ -260,69 +268,69 @@ class _VoiceNode:
 			Sfx.duck_voice(on)
 
 	func _play_want() -> void:
-		if want.is_empty() or not banks.has(want["char"]) or player == null or not is_inside_tree():
+		if want.is_empty() or not banks.has(want["file"]) or player == null or not is_inside_tree():
 			return
 		# a line whose bank arrived too late is dropped rather than talking over the next one
 		if Time.get_ticks_msec() - int(want["t"]) > 4000:
 			want = {}
 			return
-		var cid: String = want["char"]
-		order.erase(cid)
-		order.append(cid)
-		player.stream = banks[cid]
+		var file: String = want["file"]
+		order.erase(file)
+		order.append(file)
+		player.stream = banks[file]
 		player.play(float(want["start"]))
 		stop_at = float(want["start"]) + float(want["dur"])
 		Voice.stats["played"] = int(Voice.stats.get("played", 0)) + 1
 		want = {}
 		_duck(true)
 
-	func fetch(cid: String, file: String) -> void:
-		if banks.has(cid) or loading.has(cid):
+	func fetch(file: String) -> void:
+		if banks.has(file) or loading.has(file):
 			return
 		if not is_inside_tree():
 			# the node joins the tree deferred: the very first line (the intro call) comes
 			# earlier, so retry once it is in
-			fetch.call_deferred(cid, file)
+			fetch.call_deferred(file)
 			return
-		loading[cid] = true
+		loading[file] = true
 		if OS.has_feature("web"):
 			var url := str(JavaScriptBridge.eval("new URL('voices/%s', document.baseURI).href" % file, true))
 			var http := HTTPRequest.new()
 			add_child(http)
 			http.request_completed.connect(func(result: int, code: int, _h: PackedStringArray, body: PackedByteArray):
 				http.queue_free()
-				_loaded(cid, body if result == HTTPRequest.RESULT_SUCCESS and code == 200 else PackedByteArray()))
+				_loaded(file, body if result == HTTPRequest.RESULT_SUCCESS and code == 200 else PackedByteArray()))
 			if http.request(url) != OK:
 				http.queue_free()
-				_loaded(cid, PackedByteArray())
+				_loaded(file, PackedByteArray())
 			return
 		var bytes := PackedByteArray()
 		for p in ["res://voices/" + file, OS.get_executable_path().get_base_dir().path_join("voices/" + file)]:
 			if FileAccess.file_exists(p):
 				bytes = FileAccess.get_file_as_bytes(p)
 				break
-		_loaded.call_deferred(cid, bytes)
+		_loaded.call_deferred(file, bytes)
 
-	func _loaded(cid: String, bytes: PackedByteArray) -> void:
-		loading.erase(cid)
+	func _loaded(file: String, bytes: PackedByteArray) -> void:
+		loading.erase(file)
 		var s: AudioStreamOggVorbis = null
 		if not bytes.is_empty():
 			s = AudioStreamOggVorbis.load_from_buffer(bytes)
 		if s == null:
-			push_warning("voice bank %s could not be loaded" % cid)
-			if not want.is_empty() and want["char"] == cid:
+			push_warning("voice bank %s could not be loaded" % file)
+			if not want.is_empty() and want["file"] == file:
 				want = {}
 			return
 		s.loop = false
-		banks[cid] = s
-		order.append(cid)
+		banks[file] = s
+		order.append(file)
 		while order.size() > Voice.CACHE_BANKS:
 			var old: String = order.pop_front()
 			if player.stream == banks.get(old) and player.playing:
 				order.append(old)
 				break
 			banks.erase(old)
-		if not want.is_empty() and want["char"] == cid:
+		if not want.is_empty() and want["file"] == file:
 			_play_want()
 
 	func _process(delta: float) -> void:

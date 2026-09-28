@@ -1428,11 +1428,14 @@ func _voice_check() -> void:
 	var idx: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/voice_index.json"))
 	var missing: Array = []
 	var clips := 0
+	var nfiles := 0
 	for cid in idx["banks"]:
 		clips += idx["banks"][cid]["clips"].size()
-		if not FileAccess.file_exists("res://voices/" + str(idx["banks"][cid]["file"])):
-			missing.append(cid)
-	check(missing.is_empty(), "%d banks / %d clips on disk %s" % [idx["banks"].size(), clips, missing])
+		for f in idx["banks"][cid]["files"]:
+			nfiles += 1
+			if not FileAccess.file_exists("res://voices/" + str(f)):
+				missing.append(f)
+	check(missing.is_empty(), "%d characters / %d bank files / %d clips on disk %s" % [idx["banks"].size(), nfiles, clips, missing])
 	var r := Voice.resolve("player", "Kamu", "Masih jam 10:20. Yakin mau tidur sekarang?")
 	check(r["char"] == "player" and r["kind"] == "template", "clock line -> the hour's clip %s" % r)
 	r = Voice.resolve("petani", "Pak Tarno", "Pohon dewasa di kebun saya: 7. Utang saya ke Juragan: Rp 1.234.567. Bunganya kok cepat sekali naiknya ya...")
