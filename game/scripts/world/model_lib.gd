@@ -14,6 +14,7 @@ const WORLD_CUTOUT_SHADER := preload("res://shaders/world_cutout.gdshader")
 const FOLIAGE_SHADER := preload("res://shaders/foliage.gdshader")
 const FOLIAGE_CUTOUT_SHADER := preload("res://shaders/foliage_cutout.gdshader")
 const NOISE_TEX := preload("res://assets/textures/noise.png")
+const OUTLINE_SHADER := preload("res://shaders/outline.gdshader")
 const FOLIAGE_WORDS := ["Frond", "Leaf", "Leaves", "Grass", "Foliage", "Canopy", "Bush", "Fern", "Petal", "Flower", "Plant"]
 const GLOW_WORDS := ["Glass", "Lamp", "Window", "Bulb"]
 ## small ground plants: their normals are bent towards the sky so alpha cards
@@ -34,6 +35,11 @@ static var _scenes := {}
 static var _label_font: FontVariation
 static var _materials := {}
 static var _merged := {}
+## anime ink outlines (inverted hull, one extra draw per surface). Mass-instanced decor
+## (MultiMesh rocks, bushes, undergrowth) only gets them on its trunks and fruit, and
+## "Hemat baterai" turns them off (world.gd -> set_outlines)
+static var outlines_on := true
+const OUTLINE_MERGED_WORDS := ["Trunk", "Bark", "Fruit", "Stump"]
 
 
 static func label_font() -> FontVariation:
@@ -133,7 +139,7 @@ static func material_key(m: Material) -> String:
 	return k
 
 
-static func convert_material(m: Material, fade := true, rim := 0.0) -> Material:
+static func convert_material(m: Material, fade := true, rim := 0.0, outline := true) -> Material:
 	var mname := m.resource_name if m else ""
 	var col := Color(0.8, 0.8, 0.8)
 	var tex: Texture2D = null
@@ -144,7 +150,7 @@ static func convert_material(m: Material, fade := true, rim := 0.0) -> Material:
 		col = bm.albedo_color
 		tex = bm.albedo_texture
 		threshold = bm.alpha_scissor_threshold if bm.transparency == BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR else 0.5
-	var key := "%s|%s|%.2f" % [material_key(m), fade, rim]
+	var key := "%s|%s|%.2f|%s" % [material_key(m), fade, rim, outline]
 	if _materials.has(key):
 		return _materials[key]
 	var sm := ShaderMaterial.new()
@@ -221,6 +227,9 @@ static func convert_material(m: Material, fade := true, rim := 0.0) -> Material:
 				sm.set_shader_parameter("night_emission", 1.0)
 		if rim > 0.0:
 			sm.set_shader_parameter("rim_strength", rim)
+		if not cut and outline:
+			# anime ink line around the solid models (characters get a bolder one)
+			sm.next_pass = _outline(2.4 if rim > 0.0 else 1.6, fade)
 	sm.set_shader_parameter("albedo", col)
 	if tex:
 		sm.set_shader_parameter("albedo_tex", tex)
@@ -231,6 +240,27 @@ static func convert_material(m: Material, fade := true, rim := 0.0) -> Material:
 	sm.set_shader_parameter("fade_enabled", 1.0 if fade else 0.0)
 	_materials[key] = sm
 	return sm
+
+
+static func set_outlines(on: bool) -> void:
+	## Shows / hides every outline pass at once (the next_pass materials are shared).
+	outlines_on = on
+	for k in _materials:
+		if String(k).begins_with("outline|"):
+			var o: ShaderMaterial = _materials[k]
+			o.set_shader_parameter("enabled", 1.0 if on else 0.0)
+
+
+static func _outline(width: float, fade: bool) -> ShaderMaterial:
+	var key := "outline|%.2f|%s" % [width, fade]
+	if not _materials.has(key):
+		var o := ShaderMaterial.new()
+		o.shader = OUTLINE_SHADER
+		o.set_shader_parameter("width", width)
+		o.set_shader_parameter("fade_enabled", 1.0 if fade else 0.0)
+		o.set_shader_parameter("enabled", 1.0 if outlines_on else 0.0)
+		_materials[key] = o
+	return _materials[key]
 
 
 static func retuned(m: Material, tag: String, params: Dictionary) -> Material:
@@ -314,7 +344,11 @@ static func merged_mesh(name: String, fade := true, only_under := "", exclude_un
 			(tools[mk] as SurfaceTool).append_from(mi.mesh, i, xf)
 	for mk in tools:
 		var st: SurfaceTool = tools[mk]
-		st.set_material(convert_material(mats[mk], fade))
+		var mn: String = mats[mk].resource_name if mats[mk] else ""
+		var ol := false
+		for w in OUTLINE_MERGED_WORDS:
+			ol = ol or mn.findn(w) >= 0
+		st.set_material(convert_material(mats[mk], fade, 0.0, ol))
 		st.commit(mesh)
 	root.free()
 	_merged[key] = mesh

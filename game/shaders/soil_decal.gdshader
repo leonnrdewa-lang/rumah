@@ -2,7 +2,9 @@
 // the piringan model is missing: a lit, alpha-blended soft disc of reddish-brown
 // mulch with noisy edges and a few darker frond bits.
 shader_type spatial;
-render_mode cull_disabled, depth_draw_never, blend_mix, diffuse_lambert_wrap, specular_disabled;
+render_mode cull_disabled, depth_draw_never, blend_mix, specular_disabled;
+
+#include "res://shaders/toon_light.gdshaderinc"
 
 uniform vec3 mulch : source_color = vec3(0.47, 0.33, 0.22);
 uniform vec3 mulch_dark : source_color = vec3(0.30, 0.20, 0.13);

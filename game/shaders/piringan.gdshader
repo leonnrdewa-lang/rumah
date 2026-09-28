@@ -4,7 +4,9 @@
 // ending in a hard alpha-scissor edge, so it reads as bare earth under the palm rather
 // than a brown sticker on the lawn.
 shader_type spatial;
-render_mode blend_mix, depth_draw_never, cull_disabled, diffuse_lambert_wrap, specular_disabled;
+render_mode blend_mix, depth_draw_never, cull_disabled, specular_disabled;
+
+#include "res://shaders/toon_light.gdshaderinc"
 
 uniform sampler2D albedo_tex : source_color, hint_default_white, filter_linear_mipmap;
 uniform sampler2D noise_tex : hint_default_white, filter_linear_mipmap, repeat_enable;

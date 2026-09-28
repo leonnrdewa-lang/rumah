@@ -29,28 +29,38 @@ async function press(page, re, touch, fallback) {
     pt = fallback; label = `(${fallback}) no probe`;
   }
   if (!pt) return null;
-  if (touch) await page.touchscreen.tap(pt[0], pt[1]);
+  if (touch) {
+    // a held tap (~120 ms): at the software-GL frame rate an instant tap can start and
+    // end inside one engine frame and never reach the button
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: pt[0], y: pt[1] }] });
+    await page.waitForTimeout(120);
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+    await cdp.detach();
+  }
   else await page.mouse.click(pt[0], pt[1]);
   return label;
 }
 
 // Clicks through the intro call and the help panel; true once the help panel was closed.
 async function skipIntro(page, name, touch, lanjutAt, siapAt) {
-  const LANJUT = /^Lanjut$/, SIAP = /Siap, Juragan/;
+  const LANJUT = /^(\d+ )?Lanjut$/, SIAP = /Siap, (Juragan|Pak Bos)/;
   let steps = 0;
   for (let i = 0; i < 40; i++) {
     await page.waitForTimeout(700);
     const list = await buttons(page);
-    if (list && list.some((b) => SIAP.test(b.text))) {
-      await press(page, SIAP, touch, null);
-      console.log(`${name}: intro done after ${steps} x Lanjut, help panel closed`);
-      await page.waitForTimeout(800);
-      const left = await buttons(page);
-      if (left && left.some((b) => SIAP.test(b.text) || LANJUT.test(b.text))) break;
+    if (!list) {
+      // old build without the probe: fixed coordinates
+      await press(page, LANJUT, touch, i < 12 ? lanjutAt : siapAt);
+      if (i >= 12) { await page.waitForTimeout(800); return true; }
+      continue;
+    }
+    const open = list.some((b) => SIAP.test(b.text) || LANJUT.test(b.text));
+    if (!open && steps > 0) {
+      console.log(`${name}: intro done after ${steps} presses, dialogs closed`);
       return true;
     }
-    if (await press(page, LANJUT, touch, list ? null : (i < 12 ? lanjutAt : siapAt))) steps++;
-    if (!list && i >= 12) { await page.waitForTimeout(800); return true; }
+    if (await press(page, SIAP, touch, null) || await press(page, LANJUT, touch, null)) steps++;
   }
   console.log(`${name}: FAIL - intro/help panel still open`);
   failures++;
@@ -104,9 +114,16 @@ async function run(name, contextOpts, steps) {
     await page.waitForTimeout(4000);
     await page.screenshot({ path: `${out}/web_phone_title.png` });
     const vp = page.viewportSize();
-    const hit = await press(page, /^Main Baru$/, true, [vp.width / 2, vp.height * 0.62]);
+    let hit = null;
+    // the first tap on a fresh page can be eaten by the browser (audio unlock / focus):
+    // tap again while the title menu is still up
+    for (let k = 0; k < 3; k++) {
+      hit = await press(page, /^Main Baru$/, true, k ? null : [vp.width / 2, vp.height * 0.62]) || hit;
+      await page.waitForTimeout(3000);
+      const l = await buttons(page);
+      if (!l || !l.some((b) => /^Main Baru$/.test(b.text))) break;
+    }
     console.log(`android: title -> ${hit}`);
-    await page.waitForTimeout(3000);
     await page.screenshot({ path: `${out}/web_phone_game.png` });
     await skipIntro(page, "android", true, [707, 352], [457, 372]);
     await page.screenshot({ path: `${out}/web_phone_play.png` });

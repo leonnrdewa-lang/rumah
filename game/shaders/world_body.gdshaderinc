@@ -43,7 +43,8 @@ void fragment() {
 	vec3 c = albedo.rgb * tex.rgb * (1.0 - tint_strength * 0.5 + tint_strength * n);
 	c *= mix(vec3(1.0), COLOR.rgb, vcol_strength);
 	// soft cream rim on silhouettes (characters) so they pop off the foliage
-	float rim = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 3.0) * rim_strength;
+	// (cel look: a hard-edged anime rim band instead of a soft falloff)
+	float rim = smoothstep(0.62, 0.68, 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0)) * rim_strength * 0.6;
 	ALBEDO = c + vec3(1.0, 0.94, 0.8) * rim * (1.0 - night * 0.8);
 	ROUGHNESS = 1.0;
 	EMISSION = emission_color * night_emission * night * 1.6;

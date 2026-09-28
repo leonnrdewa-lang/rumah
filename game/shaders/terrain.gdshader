@@ -14,7 +14,9 @@
 // textureGrad with derivatives taken outside them (implicit derivatives are
 // undefined in non-uniform control flow).
 shader_type spatial;
-render_mode cull_back, diffuse_lambert_wrap, specular_disabled;
+render_mode cull_back, specular_disabled;
+
+#include "res://shaders/toon_light.gdshaderinc"
 
 uniform sampler2D data_tex : filter_linear, repeat_disable;
 uniform sampler2D shade_tex : hint_default_black, filter_linear, repeat_disable;

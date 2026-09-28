@@ -3,7 +3,9 @@
 // Instance colour tints each critter; COLOR.a of the mesh marks the wing (1) vs
 // body (0) so the body stays rigid.
 shader_type spatial;
-render_mode cull_disabled, diffuse_lambert_wrap, specular_disabled;
+render_mode cull_disabled, specular_disabled;
+
+#include "res://shaders/toon_light.gdshaderinc"
 
 uniform float flap_speed = 9.0;
 uniform float flap_amp = 0.9;

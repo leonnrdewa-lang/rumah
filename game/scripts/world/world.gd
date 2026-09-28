@@ -24,16 +24,19 @@ const GROUND_TEX := ["grass", "grass_dry", "dirt", "sand", "mulch"]
 ## sunlit mids / highlights 0.50 / 0.48 against 0.55 / 0.53. A bluer sky light and a
 ## yellower sun pull the two apart (shade cooler and softer, sunlit greens richer and
 ## warmer), a little more of both keeps the frame's brightness.
-const SUN_DAY := Color("fff0a8")
-const SUN_ENERGY := 1.42
-const AMBIENT_DAY := Color("94bfe2")
-const AMBIENT_ENERGY := 0.77
+## Cel-shading pass (anime look): the toon light() in shaders/toon_light.gdshaderinc
+## gives flat lit / shade bands, so the sun is warmer and the sky fill a cooler, lower
+## blue for crisp anime contrast, and the post pass saturates more.
+const SUN_DAY := Color("fff1cf")
+const SUN_ENERGY := 1.38
+const AMBIENT_DAY := Color("86a8e8")
+const AMBIENT_ENERGY := 0.66
 ## Fix round 3 (closer camera): the hero frame measured V 0.51 / S 0.55 against the
 ## target's 0.57 / 0.50 (the palm row's crowns and their shade fill more of it now). A
 ## little post brightness, less post saturation and slightly lighter cast shadows lift it
 ## to ~0.55 / 0.51; the crowns get their own saturation back in model_lib.gd.
-const POST_SATURATION := 0.96
-const POST_BRIGHTNESS := 1.05
+const POST_SATURATION := 1.1
+const POST_BRIGHTNESS := 1.04
 const SHADOW_OPACITY := 0.72
 ## "Hemat baterai" turns the sun's shadows off. In the Compatibility renderer that
 ## moves the sun from its own additive pass into the base pass, where our custom-shader
@@ -240,7 +243,7 @@ func _build_environment() -> void:
 	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_ADDITIVE
 	env.adjustment_enabled = true
 	env.adjustment_brightness = POST_BRIGHTNESS
-	env.adjustment_contrast = 1.05
+	env.adjustment_contrast = 1.1
 	env.adjustment_saturation = POST_SATURATION
 	we.environment = env
 	add_child(we)
@@ -272,6 +275,7 @@ func _apply_quality() -> void:
 	get_viewport().msaa_3d = Viewport.MSAA_2X if quality_high else Viewport.MSAA_DISABLED
 	get_viewport().scaling_3d_scale = 1.0 if quality_high else 0.75
 	env.glow_enabled = quality_high
+	ModelLib.set_outlines(quality_high)
 	# the additive glow brightens the frame a little; keep "Hemat baterai" as bright
 	env.tonemap_exposure = 1.0 if quality_high else 1.07
 	# without shadows the frame is flatter and read greyer (S 0.45 against 0.52 at full

@@ -290,7 +290,7 @@ static func _cover_material(mat_name: String, tex: Texture2D) -> Material:
 	sm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
 	sm.alpha_scissor_threshold = 0.5
 	sm.cull_mode = BaseMaterial3D.CULL_DISABLED
-	return ModelLib.convert_material(sm, false)
+	return ModelLib.convert_material(sm, false, 0.0, false)
 
 
 static func _fern_rosette(mesh: ArrayMesh, tex: Texture2D) -> void:
