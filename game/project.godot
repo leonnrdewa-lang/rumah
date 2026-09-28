@@ -127,3 +127,7 @@ player_pos={
 "type": "vec3",
 "value": Vector3(0, -1000, 0)
 }
+
+[physics]
+
+common/physics_interpolation=true

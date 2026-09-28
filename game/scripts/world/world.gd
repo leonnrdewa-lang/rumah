@@ -108,6 +108,11 @@ var state := "title"
 var target: Dictionary = {}
 var _ring: MeshInstance3D
 var _title_t := 0.0
+## adaptive resolution (holds ~60 fps): measured frame time -> 3D render scale
+var _fps_acc := 0.0
+var _fps_frames := 0
+var _res_scale := 1.0
+var _slow_secs := 0.0
 var _t := 0.0
 var night_k := 0.0   # 0 = day, 1 = night (read by ambient_life.gd)
 ## The target's three-quarter view: 44 deg pitch, 12 m (about 13.5 m of ground across
@@ -138,6 +143,9 @@ var _tile_grid := {}   # 4 m cell -> planting spots (xz) in it and its neighbour
 
 
 func _ready() -> void:
+	# physics interpolation only for the player (moves on the physics tick); the
+	# camera, NPCs and props move per frame and must not be interpolated
+	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	layout = GS.load_layout()
 	world_size = layout.get("world_size", 200.0)
 	water_level = layout.get("water_level", -0.3)
@@ -329,7 +337,8 @@ func _apply_quality() -> void:
 		RenderingServer.directional_shadow_atlas_set_size(1024, true)
 	sun.shadow_enabled = quality_high
 	get_viewport().msaa_3d = Viewport.MSAA_2X if quality_high else Viewport.MSAA_DISABLED
-	get_viewport().scaling_3d_scale = 1.0 if quality_high else 0.75
+	_res_scale = 1.0 if quality_high else 0.75
+	get_viewport().scaling_3d_scale = _res_scale
 	env.glow_enabled = quality_high
 	ModelLib.set_outlines(quality_high)
 	# the additive glow brightens the frame a little; keep "Hemat baterai" as bright
@@ -905,6 +914,8 @@ func _update_sign(pid: int) -> void:
 
 func _build_player() -> void:
 	player = Player.new()
+	player.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_ON
+	player.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_ON
 	player.world = self
 	var sp: Array = layout.get("player_spawn", [0, 0])
 	add_child(player)
@@ -1096,7 +1107,42 @@ func enter_title() -> void:
 	ui.show_title()
 
 
+func _govern_fps(delta: float) -> void:
+	## Every second: below ~55 fps the 3D resolution steps down (to 0.55), above ~59
+	## it creeps back up. Nothing else changes (same shadows, outlines, NPCs, detail).
+	_fps_acc += delta
+	_fps_frames += 1
+	if _fps_acc < 1.0:
+		return
+	var fps := _fps_frames / _fps_acc
+	_fps_acc = 0.0
+	_fps_frames = 0
+	var top := 1.0 if quality_high else 0.75
+	if fps < 55.0:
+		_res_scale = maxf(0.55, _res_scale - (0.1 if fps < 40.0 else 0.05))
+	elif fps > 59.0:
+		_res_scale = minf(top, _res_scale + 0.05)
+	_res_scale = minf(_res_scale, top)
+	get_viewport().scaling_3d_scale = _res_scale
+
+
+func _apply_lod(n: Node) -> void:
+	## Small scenery (houses, fences, props, decor) is not drawn beyond ~75 m: the play
+	## camera sees ~40 m around the player, and the 5x island has thousands of pieces.
+	if n is GeometryInstance3D and not (n is MultiMeshInstance3D):
+		var g := n as GeometryInstance3D
+		var ab := g.get_aabb()
+		if ab.size.length() * g.global_transform.basis.get_scale().x < 30.0:
+			g.visibility_range_end = 75.0
+			g.visibility_range_end_margin = 6.0
+	for c in n.get_children():
+		if c == player or c is Camera3D:
+			continue
+		_apply_lod(c)
+
+
 func start_game(load_save: bool) -> void:
+	_apply_lod(self)
 	if load_save:
 		if not GS.load_game():
 			GS.new_game()
@@ -1333,6 +1379,7 @@ func float_text(pos: Vector3, text: String, color: Color) -> void:
 # ------------------------------------------------------------------ per frame
 func _process(delta: float) -> void:
 	_t += delta
+	_govern_fps(delta)
 	RenderingServer.global_shader_parameter_set("wind_time", _t)
 	if state == "play" and not ui.is_blocking():
 		GS.advance(delta)
@@ -1424,7 +1471,9 @@ func _update_camera(delta: float) -> void:
 	var vel: Vector3 = player.velocity
 	vel.y = 0.0
 	_move_lead = _move_lead.lerp((vel * CAM_MOVE_LEAD).limit_length(2.4), 1.0 - exp(-delta * 2.0))
-	var target_pos := player.global_position + Vector3(0, 0.5, -cam_lead) + _move_lead
+	# the interpolated transform: the player moves at the 60 Hz physics tick, frames can
+	# come at any rate; following the raw position made the view judder ("patah-patah")
+	var target_pos := player.get_global_transform_interpolated().origin + Vector3(0, 0.5, -cam_lead) + _move_lead
 	var k := 1.0 - exp(-delta * 4.0)
 	cam_rig.global_position = cam_rig.global_position.lerp(target_pos, k)
 	var dist := cam_distance

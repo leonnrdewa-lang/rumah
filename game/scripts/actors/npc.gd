@@ -75,6 +75,8 @@ var _route: Array[Vector3] = []   # waypoints still to walk after _target
 var _away := false       # out on a trip: walk back (to _trip_from) when done
 var _trip_from := Vector3.ZERO
 var _trip_cd := 0.0
+var _lod_acc := 0.0
+var _lod_n := 0
 var _night_nav := false  # following a route home after dark
 
 
@@ -189,6 +191,14 @@ func is_idle() -> bool:
 
 
 func _process(delta: float) -> void:
+	# far from the player (off screen): think and animate at ~1/5 rate, same pace
+	_lod_acc += delta
+	if player_dist > 42.0 and not talking:
+		_lod_n += 1
+		if _lod_n % 5 != 0:
+			return
+	delta = _lod_acc
+	_lod_acc = 0.0
 	_t += delta
 	if _emote_t > 0.0:
 		_emote_t -= delta

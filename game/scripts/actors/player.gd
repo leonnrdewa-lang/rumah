@@ -120,6 +120,8 @@ func _physics_process(delta: float) -> void:
 	var hv := Vector3(velocity.x, 0, velocity.z)
 	if global_position.distance_to(_last_pos) > 2.5:
 		hv = Vector3.ZERO   # teleported (new day, cutscene, debug): no momentum
+		reset_physics_interpolation()
+		reset_physics_interpolation()
 	var cur := hv.length()
 	var target := want.length()
 	var new_speed := move_toward(cur, target, (ACCEL if target > cur else DECEL) * delta)
