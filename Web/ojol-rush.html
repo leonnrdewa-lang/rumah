@@ -90,6 +90,12 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
 #title{justify-content:flex-start;padding-top:calc(40px + env(safe-area-inset-top,0px));
   background:linear-gradient(180deg,rgba(20,12,6,.1) 0%,rgba(20,12,6,.0) 35%,rgba(20,12,6,.55) 62%,rgba(20,12,6,.88) 100%),url(assets/keyart.webp) center/cover no-repeat,#b5663a;}
 #title .spacer{flex:1;}
+#players{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:calc(14px + env(safe-area-inset-right,0px));text-align:right;padding:8px 14px;border-radius:14px;
+  background:rgba(15,12,10,.62);box-shadow:0 4px 0 rgba(0,0,0,.3);}
+#players b{display:block;font:400 34px/1 var(--display);color:var(--yellow);text-shadow:0 3px 0 rgba(0,0,0,.4);}
+#players span{font:800 12px var(--body);letter-spacing:.06em;opacity:.9;}
+#credit{margin-top:6px;margin-bottom:calc(10px + env(safe-area-inset-bottom,0px));padding:8px 16px;border-radius:999px;color:#fff;text-decoration:none;font:600 15px var(--body);
+  background:linear-gradient(90deg,#f58529,#dd2a7b,#8134af);box-shadow:0 4px 0 rgba(0,0,0,.3);pointer-events:auto;}
 .logo{font:400 clamp(56px,17vw,104px)/.92 var(--display);letter-spacing:.01em;text-shadow:0 6px 0 rgba(0,0,0,.45);}
 .logo .o{color:var(--green);} .logo .r{color:var(--yellow);}
 .tag{font:700 20px/1.3 var(--body);max-width:28ch;}
@@ -138,6 +144,7 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
   </div>
 
   <div id="title" class="screen">
+    <div id="players" hidden><b id="playersN">0</b><span>orang sudah main</span></div>
     <span class="plate">DRIVER APP · NgoJek-in</span>
     <div class="logo"><span class="o">OJOL</span><br><span class="r">RUSH</span></div>
     <p class="tag">Kamu bukan yang tercepat. Kamu jagonya nyelip.</p>
@@ -146,6 +153,7 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
     <button class="btn alt ctrlBtn" id="ctrlTitle">Kontrol: SERET</button>
     <div class="best" id="bestTitle"></div>
     <p class="hint">Seret jempol = arah motor · Tahan tombol REM (Spasi di PC) = rem<br>Salip mepet = poin · Antar sebelum waktu habis</p>
+    <a id="credit" href="https://www.instagram.com/leonrdewa/" target="_blank" rel="noopener">Dibuat oleh <b>@leonrdewa</b></a>
   </div>
 
   <div id="pause" class="screen" hidden>
@@ -1488,7 +1496,7 @@ const START=[2*PITCH-LANE*1.5, PITCH+14];
 const game={
   state:'title', paused:false, hitStop:0, popCd:0, overT:0, best:+store.get('ojol_best',0)||0, newBest:false, reason:'',
   title(){ this.state='title'; player.reset(START[0]-CORR+1.2+LANE*1.5,START[1],180); player.park(); cam.snap(); rush.reset(); hazards.reset(rush.level); traffic.reset(rush.level); orders.reset(); this.screens(); },
-  start(){
+  start(){ players.count();
     audio.init(); this.state='play'; this.paused=false; this.hitStop=0; this.newBest=false;
     score.reset(); combo.reset(); rating.reset(); rush.reset(); player.reset(START[0],START[1],0); cam.snap();
     hazards.reset(rush.level); traffic.reset(rush.level); orders.reset(); fx.clear(); hud.clear(); hud.big('GAS!','Shift dimulai - antar semua order!');
@@ -1580,6 +1588,16 @@ $('musicBtn').onclick=()=>{ audio.init(); $('musicBtn').classList.toggle('off',!
 $('musicBtn').classList.toggle('off',store.get('ojol_music','1')!=='1');
 for(const b of document.querySelectorAll('.ctrlBtn')) b.onclick=()=>{ input.mode=input.mode==='drag'?'joy':'drag'; store.set('ojol_ctrl',input.mode); game.screens(); };
 document.addEventListener('visibilitychange',()=>{ if(document.hidden&&game.state==='play'&&!game.paused) game.togglePause(); });
+
+// ---------------------------------------------------------------- player counter (server: /api/plays on the hosting site)
+const players={
+  show(n){ if(typeof n!=='number'||!(n>0)) return; $('playersN').textContent=n.toLocaleString('id-ID'); $('players').hidden=false; },
+  load(){ fetch('/api/plays').then(r=>r.ok?r.json():null).then(d=>d&&this.show(d.players)).catch(()=>{}); },
+  // each device is counted once, the first time it starts a shift
+  count(){ if(store.get('ojol_counted','0')==='1') return; store.set('ojol_counted','1');
+    fetch('/api/plays',{method:'POST'}).then(r=>r.ok?r.json():null).then(d=>d&&this.show(d.players)).catch(()=>{}); }
+};
+players.load();
 
 // ---------------------------------------------------------------- boot & loop
 function resize(){ const w=gameEl.clientWidth||innerWidth, h=gameEl.clientHeight||innerHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
