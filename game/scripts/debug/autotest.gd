@@ -195,6 +195,12 @@ func _run() -> void:
 			await shot("night", 40)
 			GS.sleep()
 			await shot("morning", 20)
+		"music":
+			await _music_check()
+		"voice":
+			await _voice_check()
+		"ambience":
+			await _ambience_check()
 		"logic":
 			world.start_game(false)
 			world.ui.close()
@@ -985,7 +991,7 @@ func _features_logic() -> void:
 	var j: Vector3 = world.building_nodes["dermaga"].global_position
 	check(find_fish_spot(j, "sea"), "found a sea fishing spot near the jetty")
 	world._update_target()
-	check(world.target.get("fish", false) and world.target["prompt"].call() == "Mancing", "prompt at the water is Mancing")
+	check(world.target.get("fish", false) and String(world.target["prompt"].call()).begins_with("Mancing"), "prompt at the water is Mancing")
 	var e0: float = GS.energy
 	var res: String = await _fish_once(true)
 	check(res.begins_with("caught:"), "sea catch (%s)" % res)
@@ -1110,6 +1116,10 @@ func _house_of_type(t: String) -> String:
 
 func _logic_fish_and_rooms() -> void:
 	var ui: Node = world.ui
+	# --- bait: 10 at the start, one per cast, none left -> no fishing
+	GS.inv["umpan"] = 0
+	check(not world.fishing.start(world.player.global_position + Vector3(0, 0, 3), "river"), "no bait -> cannot cast")
+	GS.inv["umpan"] = 500   # plenty for the casts below
 	# --- 20 species in four rarity tiers
 	check(GS.FISH.size() == 20, "20 fish species (%d)" % GS.FISH.size())
 	var tiers := {"N": 0, "R": 0, "SR": 0, "SSR": 0}
@@ -1324,3 +1334,359 @@ func _features_shots() -> void:
 	world.ui.show_fish_collection("ikan_kerapu")
 	await shot("fish_collection_unknown", 10)
 	world.ui.close()
+
+
+# ------------------------------------------------------------------ soundtrack (sfx.gd)
+func _music_check() -> void:
+	## context tracks, crossfades, voice ducking, stingers and the music toggle; the
+	## fades are stepped by hand (Sfx._process) so the check is quick and deterministic
+	var S: Node = Sfx
+	for n in ["title", "day", "evening", "night", "indoor", "rare", "newday"]:
+		check(ResourceLoader.exists("res://assets/audio/music_%s.ogg" % n), "music_%s.ogg" % n)
+	var mb := AudioServer.get_bus_index("Music")
+	var ab := AudioServer.get_bus_index("Ambience")
+	check(mb != -1 and ab != -1, "Music and Ambience buses")
+
+	var settle := func(sec: float) -> void:
+		for i in int(sec / 0.25):
+			S._process(0.25)
+	var audible := func() -> Array:
+		var out := []
+		for i in S._decks.size():
+			if S._decks[i].playing and S._decks[i].volume_db > S.MUSIC_DB - 3.0:
+				out.append(S._deck_track[i])
+		return out
+	S._update_context()
+	settle.call(2.0)
+	check(S.current_track() == "title" and audible.call() == ["title"], "title music on the title screen %s" % [audible.call()])
+	world.start_game(false)
+	world.ui.close()
+	for c in [[8.0, "day"], [17.6, "evening"], [21.0, "night"], [12.0, "day"]]:
+		GS.hour = c[0]
+		S._update_context()
+		S._process(0.5)
+		var mid := 0
+		for d in S._decks:
+			if d.playing:
+				mid += 1
+		check(mid == 2, "%s: two decks crossfading (%d)" % [c[1], mid])
+		settle.call(S.XFADE + 0.5)
+		check(audible.call() == [c[1]], "%.1f h -> %s music %s" % [c[0], c[1], audible.call()])
+	world.inside = "rumah_juragan"
+	S._update_context()
+	settle.call(S.XFADE + 0.5)
+	check(audible.call() == ["indoor"], "indoor music inside a house %s" % [audible.call()])
+	world.inside = ""
+	S._update_context()
+	settle.call(S.XFADE + 0.5)
+	check(audible.call() == ["day"], "back outside -> day %s" % [audible.call()])
+	# voice ducking: music -7 dB, ambience -4 dB, both back afterwards
+	world.ui.close()
+	settle.call(1.0)
+	var m0 := AudioServer.get_bus_volume_db(mb)
+	var a0 := AudioServer.get_bus_volume_db(ab)
+	S.duck_voice(true)
+	settle.call(0.5)
+	check(absf(AudioServer.get_bus_volume_db(mb) - (m0 - 7.0)) < 0.3 and absf(AudioServer.get_bus_volume_db(ab) - (a0 - 4.0)) < 0.3,
+		"voice ducks music/ambience: %.1f / %.1f dB" % [AudioServer.get_bus_volume_db(mb) - m0, AudioServer.get_bus_volume_db(ab) - a0])
+	S.duck_voice(false)
+	settle.call(0.5)
+	check(absf(AudioServer.get_bus_volume_db(mb) - m0) < 0.05 and absf(AudioServer.get_bus_volume_db(ab) - a0) < 0.05, "voice duck released")
+	# stingers duck the loop and hand it back
+	S.stinger("rare")
+	check(S._stinger.playing and str(S._stinger.stream.resource_path).ends_with("music_rare.ogg"), "rare-catch stinger plays")
+	settle.call(0.5)
+	check(audible.call().is_empty(), "loop ducked under the stinger")
+	settle.call(4.0)
+	check(audible.call() == ["day"], "loop back after the stinger %s" % [audible.call()])
+	GS.sleep()
+	world.ui.close()
+	check(S._stinger.playing and str(S._stinger.stream.resource_path).ends_with("music_newday.ogg"), "new-day jingle when the day starts")
+	# the music toggle
+	S.set_music(false)
+	settle.call(1.0)
+	var any := false
+	for d in S._decks:
+		any = any or d.playing
+	check(not any and S.current_track() == "", "music off stops every deck")
+	S.set_music(true)
+	settle.call(2.5)
+	check(audible.call().size() == 1, "music back on %s" % [audible.call()])
+	print("music check: %s (%d failed)" % ["OK" if _fails == 0 else "FAILED", _fails])
+	await wait(0.5)   # let the audio thread pick up the last play() calls before quitting
+
+
+# ------------------------------------------------------------------ voice acting (voice.gd)
+func _voice_check() -> void:
+	## Every line of the voice manifest resolves to a clip in its own speaker's voice,
+	## every bank exists, the game's real dialog paths never fall back to silence, and
+	## speaking a line starts its clip on the Voice bus (the native file path).
+	var bad: Array = Voice.check_manifest()
+	for b in bad.slice(0, 12):
+		print("  unresolved: ", b)
+	check(bad.is_empty(), "every manifest line has its own clip (%d unresolved)" % bad.size())
+	var idx: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/voice_index.json"))
+	var missing: Array = []
+	var clips := 0
+	for cid in idx["banks"]:
+		clips += idx["banks"][cid]["clips"].size()
+		if not FileAccess.file_exists("res://voices/" + str(idx["banks"][cid]["file"])):
+			missing.append(cid)
+	check(missing.is_empty(), "%d banks / %d clips on disk %s" % [idx["banks"].size(), clips, missing])
+	var r := Voice.resolve("player", "Kamu", "Masih jam 10:20. Yakin mau tidur sekarang?")
+	check(r["char"] == "player" and r["kind"] == "template", "clock line -> the hour's clip %s" % r)
+	r = Voice.resolve("petani", "Pak Tarno", "Pohon dewasa di kebun saya: 7. Utang saya ke Juragan: Rp 1.234.567. Bunganya kok cepat sekali naiknya ya...")
+	check(r["char"] == "petani" and r["kind"] == "template", "open-ended debt line -> generic clip %s" % r)
+	r = Voice.resolve("ibu", "Bu Sari", "Kalimat baru yang belum pernah direkam!")
+	check(r["char"] == "ibu" and r["kind"] == "bark", "unknown line -> the speaker's own bark %s" % r)
+	r = Voice.resolve("petani", "Warga", "Permisi, Juragan. Lewat, lewat...")
+	check(r["char"] == "warga_petani" and r["kind"] == "line", "passer-by voice by portrait %s" % r)
+	r = Voice.resolve("preman", "Orang Asing", "Minggir!")
+	check(r["kind"] != "none", "unknown speaker falls back to a portrait voice %s" % r)
+	# the real dialog paths (as in the logic scenario) resolve to exact or template clips
+	for k in Voice.stats:
+		Voice.stats[k] = 0
+	world.start_game(false)
+	await wait(0.4)
+	var node: Node = get_tree().root.get_node_or_null("VoicePlayer")
+	check(node != null and Voice.bank_ready("hq"), "HQ bank loaded from voices/")
+	var p: AudioStreamPlayer = node.player if node else null
+	check(p != null and p.bus == "Voice", "voice player on the Voice bus")
+	check(p != null and p.playing and Voice.is_speaking(), "the intro phone call is spoken")
+	var pos0: float = p.get_playback_position() if p else 0.0
+	await wait(0.6)
+	var pos1: float = p.get_playback_position() if p else 0.0
+	print("  intro clip position %.2f -> %.2f s" % [pos0, pos1])
+	check(p != null and p.playing and pos1 > pos0, "the clip advances")
+	world.ui.close()
+	check(p != null and not p.playing and not Voice.is_speaking(), "closing the dialog stops the voice")
+	var d: Node = world.deals
+	GS.money = 60000000
+	GS.inv["surat"] = 3
+	GS.upgrades["preman"] = 2
+	d.rng.seed = 3
+	for vid in GS.VILLAGERS:
+		d.talk(vid)
+		await wait(0.05)
+		world.ui.close()
+		d._chat(vid)
+		world.ui.close()
+		d.land_menu(vid)
+		world.ui.close()
+		d._offer_franchise(vid)
+		world.ui.close()
+	d._buy_fair("kakek")
+	world.ui.close()
+	d._lowball("ibu")
+	world.ui.close()
+	d._fraud("nenek")
+	world.ui.close()
+	d._bribe_kades("kades", 5500000)
+	world.ui.close()
+	d._sign_franchise("petani")
+	world.ui.close()
+	d.plasma_menu("petani")
+	world.ui.close()
+	GS.upgrades["mesin"] = true
+	GS.add_item("minyak", 30)
+	for vid in GS.VILLAGERS:
+		d._sell_oil(vid)
+		world.ui.close()
+	d._extort("somad")
+	world.ui.close()
+	d._hire_villager("kakek")
+	world.ui.close()
+	d._seize_for_debt("petani")
+	world.ui.close()
+	for eid in d.EXTRAS:
+		d.talk_extra(eid)
+		world.ui.close()
+	d.talk_extra("anak")
+	world.ui.close()
+	for i in world.walkers.size():
+		d.talk_walker(i)
+		world.ui.close()
+	d.open_warung()
+	world.ui.close()
+	d.open_calo()
+	world.ui.close()
+	GS.hour = 10.3
+	d._sleep()
+	world.ui.close()
+	for ev in ["demo", "wartawan", "harga_naik", "hujan"]:
+		GS.pending_events = [ev]
+		d.run_morning_events()
+		world.ui.close()
+	print("  voice lines resolved: ", Voice.stats)
+	check(int(Voice.stats["none"]) == 0 and int(Voice.stats["bark"]) == 0,
+		"every dialog of the game plays its own clip (none=%d, bark=%d)" % [Voice.stats["none"], Voice.stats["bark"]])
+	# a villager on the native path: bank loads, the line plays, ducking follows
+	d.talk("dullah")
+	await wait(0.4)
+	check(Voice.bank_ready("dullah") and p.playing, "villager greeting plays (Kakek Dullah)")
+	world.ui.close()
+	Voice.enabled = false
+	d.talk("dullah")
+	await wait(0.2)
+	check(not p.playing, "'Suara warga: Mati' silences dialog")
+	world.ui.close()
+	Voice.enabled = true
+	print("voice check: %s (%d failed)" % ["OK" if _fails == 0 else "FAILED", _fails])
+
+
+# ------------------------------------------------------------------ nature ambience (ambience.gd)
+func _land_near(x: float, z: float, r := 12.0) -> Vector2:
+	## a walkable, free spot at or near (x, z)
+	var rr := 0.0
+	while rr <= r:
+		var n := maxi(1, int(rr * 2.0))
+		for i in n:
+			var a := TAU * i / n
+			var px := x + cos(a) * rr
+			var pz := z + sin(a) * rr
+			if world.is_walkable(px, pz) and world.is_free(px, pz, 0.4):
+				return Vector2(px, pz)
+		rr += 1.0
+	return Vector2(x, z)
+
+
+func _ambience_check() -> void:
+	## Teleports to typical places at day and at night, prints the ambience mix heard
+	## there (dB per loop, -80 = silent) and checks that it follows the place: the river
+	## at its bank, the surf at the beach, the forest bed in the forest, muffled indoors.
+	var A: Node = world.ambience
+	check(A != null, "ambience node exists")
+	var frames := 0
+	while not A.geo_ready and frames < 600:
+		await get_tree().process_frame
+		frames += 1
+	check(A.geo_ready, "island analysed over %d frames" % frames)
+	for n in ["sea", "river", "lake", "forest", "field", "village", "night", "frogs", "bird_kutilang", "bird_takur",
+			"frog_a", "tokek", "owl", "rooster", "chicken", "splash_a", "tonggeret"]:
+		check(ResourceLoader.exists("res://assets/audio/amb_%s.ogg" % n), "amb_%s.ogg" % n)
+	var inf: Dictionary = A.info
+	print("  island: %d coast, %d river bank, %d lagoon/pond bank points (analysed in %.0f ms)" % [inf["coast_points"],
+		inf["river_points"], inf["pool_points"], inf.get("island_ms", 0.0)])
+	check(int(inf["coast_points"]) > 200 and int(inf["river_points"]) > 100 and int(inf["pool_points"]) > 5, "sea / river / lagoon shores found")
+	world.start_game(false)
+	world.ui.close()
+	var jr: Array = world.walk_rects[0] if world.walk_rects.size() > 0 else [73, 13, 73, 13]
+	# the jetty's far end: the end of its long side that is over deeper water
+	var ja := Vector2(jr[0] + 0.8, (jr[1] + jr[3]) * 0.5) if jr[2] - jr[0] > jr[3] - jr[1] else Vector2((jr[0] + jr[2]) * 0.5, jr[1] + 0.8)
+	var jb := Vector2(jr[2] - 0.8, (jr[1] + jr[3]) * 0.5) if jr[2] - jr[0] > jr[3] - jr[1] else Vector2((jr[0] + jr[2]) * 0.5, jr[3] - 0.8)
+	var jetty := ja if world.terrain_height(ja.x, ja.y) < world.terrain_height(jb.x, jb.y) else jb
+	var br: Array = world.bridges[0]
+	var spots := [
+		["river bank", _land_near(83, -40)],
+		["bridge", Vector2(br[0], br[1])],
+		["beach", _land_near(0, 123, 4.0)],
+		["jetty", jetty],
+		["forest", _land_near(-80, 100)],
+		["village", _land_near(0, 6)],
+		["kebun (open)", _land_near(-80, 72)],
+	]
+	var beds: Array = A.BEDS.keys()
+	var rows := {}
+	# --dwell=<s>: stay that long at each place (to listen, or to record the mix with
+	# --write-movie; the "[listen]" lines give each place's start in movie seconds)
+	var dwell := 0.0
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--dwell="):
+			dwell = float(a.get_slice("=", 1))
+	var listen := func(label: String) -> void:
+		if dwell > 0.0:
+			print("[listen] %s frame %d" % [label, Engine.get_process_frames()])
+			await wait(dwell)
+	var head := "  %-16s" % "place"
+	for b in beds:
+		head += "%8s" % b
+	head += "   sea m  riv m  lag m  trees  vill  lowpass"
+	for hour in [10.0, 21.5]:
+		GS.hour = hour
+		await get_tree().process_frame
+		await get_tree().process_frame
+		for s in spots:
+			var at: Vector2 = s[1]
+			tp(at.x, at.y)
+			await get_tree().process_frame
+			A.snap()
+			rows["%s %s" % [s[0], "day" if hour < 12.0 else "night"]] = _amb_row(A)
+			await listen.call("%s %s" % [s[0], "day" if hour < 12.0 else "night"])
+		# inside the player's house (heard from its door, muffled)
+		world.enter_house("rumah_juragan", true)
+		await get_tree().process_frame
+		A.snap()
+		rows["house %s" % ("day" if hour < 12.0 else "night")] = _amb_row(A)
+		await listen.call("house %s" % ("day" if hour < 12.0 else "night"))
+		var door: Vector3 = world.door_points["rumah_juragan"]
+		world.exit_house(true)
+		tp(door.x, door.z)
+		await get_tree().process_frame
+		A.snap()
+		rows["house door %s" % ("day" if hour < 12.0 else "night")] = _amb_row(A)
+	print("ambience mix (dB per loop as heard; -80 = silent):")
+	print(head)
+	for k in rows:
+		var r: Dictionary = rows[k]
+		var line := "  %-16s" % k
+		for b in beds:
+			line += "%8.1f" % r[b]
+		line += "  %6.0f %6.0f %6.0f  %5.2f %5.2f  %s" % [minf(r["d_sea"], 999), minf(r["d_river"], 999), minf(r["d_pool"], 999),
+			r["forest_density"], r["near_houses"], "ON %.0f Hz" % r["cutoff"] if r["lowpass"] else "off"]
+		print(line)
+	var R := func(k: String, b: String) -> float: return float(rows[k][b])
+	check(R.call("river bank day", "river") > -12.0 and R.call("river bank day", "river") > R.call("village day", "river") + 15.0,
+		"river loud at its bank (%.1f dB) and quiet in the village (%.1f dB)" % [R.call("river bank day", "river"), R.call("village day", "river")])
+	check(R.call("bridge day", "river") > -12.0, "river under the bridge (%.1f dB)" % R.call("bridge day", "river"))
+	check(R.call("beach day", "sea") > -8.0 and R.call("beach day", "sea") > R.call("river bank day", "sea") + 12.0
+		and R.call("beach day", "sea") > R.call("house door day", "sea") + 20.0, "surf loud at the beach (%.1f dB)" % R.call("beach day", "sea"))
+	check(R.call("beach day", "sea") > R.call("beach day", "river"), "at the beach the sea is louder than the river")
+	check(R.call("jetty day", "lake") > -12.0, "lapping water at the jetty (%.1f dB)" % R.call("jetty day", "lake"))
+	check(R.call("forest day", "forest") > -8.0 and R.call("forest day", "forest") > R.call("village day", "forest") + 12.0
+		and R.call("forest day", "forest") > R.call("beach day", "forest") + 6.0, "forest bed in the forest (%.1f dB)" % R.call("forest day", "forest"))
+	check(R.call("village day", "village") > -10.0 and R.call("village day", "village") > R.call("forest day", "village") + 6.0, "village bed in the village")
+	check(R.call("forest night", "forest") <= -79.0 and R.call("forest night", "night") > -12.0, "at night the day birds stop and the crickets start")
+	check(R.call("river bank night", "frogs") > R.call("village night", "frogs") + 6.0, "frogs by the water at night")
+	check(bool(rows["house day"]["lowpass"]) and not bool(rows["house door day"]["lowpass"]), "low-pass on only inside the house")
+	for b in ["village", "field"]:
+		check(R.call("house day", b) < R.call("house door day", b) - 6.0, "%s quieter inside the house" % b)
+	# the water emitters are on the right side: river bank spot is west of the river
+	tp(spots[0][1].x, spots[0][1].y)
+	A.snap()
+	var rp: Vector3 = A._players["river"].global_position
+	check(rp.x > spots[0][1].x, "river emitter east of the west bank (%.1f > %.1f)" % [rp.x, spots[0][1].x])
+	# players actually start (streams load) and stop again when silent
+	GS.hour = 10.0
+	await get_tree().process_frame
+	tp(spots[2][1].x, spots[2][1].y)
+	A.snap()
+	await get_tree().process_frame
+	check(A._players["sea"].playing and A._players["sea"].stream != null, "the surf loop plays at the beach")
+	# one-shots: force every scheduler once and see a 3D emitter start
+	for k in A._timers:
+		A._timers[k] = 0.0
+	tp(spots[4][1].x, spots[4][1].y)
+	A.snap()
+	A._tick_shots(0.1)
+	var started: Array = []
+	for sp in A._shots:
+		if sp.playing:
+			started.append(str(sp.stream.resource_path).get_file().get_basename())
+	check(started.any(func(n): return n.begins_with("amb_bird_")), "a bird calls from a tree in the forest %s" % [started])
+	# cost of one analysis (10 Hz)
+	var t0 := Time.get_ticks_usec()
+	for i in 20:
+		A._analyse()
+	print("  analysis: %.2f ms" % ((Time.get_ticks_usec() - t0) / 20000.0))
+	print("ambience check: %s (%d failed)" % ["OK" if _fails == 0 else "FAILED", _fails])
+	await wait(0.3)
+
+
+func _amb_row(A: Node) -> Dictionary:
+	var r := {}
+	for b in A.BEDS:
+		r[b] = A.level_db(b)
+	for k in ["d_sea", "d_river", "d_pool", "forest_density", "lowpass", "cutoff"]:
+		r[k] = A.info.get(k, 0.0)
+	r["near_houses"] = A.info.get("village", 0.0)
+	return r

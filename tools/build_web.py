@@ -73,6 +73,20 @@ def godot_config():
     return cfg
 
 
+def copy_voices(out):
+    """Voice acting (tools/make_voices.py) is not in the pack: one Ogg bank per character,
+    fetched by the game when that character is near (voice.gd). Served as plain files
+    (audio/ogg is a standard web type) next to index.html, with index.json kept as JSON."""
+    src = os.path.join(GAME, "voices")
+    if not os.path.isdir(src):
+        return
+    dst = os.path.join(out, "voices")
+    os.makedirs(dst, exist_ok=True)
+    for f in sorted(os.listdir(src)):
+        if f.endswith(".ogg") or f == "index.json":
+            shutil.copy(os.path.join(src, f), os.path.join(dst, f))
+
+
 def package():
     cfg = godot_config()
     shell = open(SHELL, encoding="utf-8").read()
@@ -92,6 +106,17 @@ def package():
             if name == "artifact":
                 # the Artifact host only serves known web types: ship gzip bytes as base64 text
                 data = base64.b64encode(gz)
+                # the host caps each file at 16 MB: split the text into ~12 MB parts
+                # (index.pck.gz.part0.txt, ...) that the shell fetches and joins
+                part = 12 * 1024 * 1024
+                if len(data) > part:
+                    fname = []
+                    for i in range(0, len(data), part):
+                        pn = "%s.gz.part%d.txt" % (f, i // part)
+                        open(os.path.join(out, pn), "wb").write(data[i:i + part])
+                        fname.append(pn)
+                    packed[f] = {"src": fname, "size": len(data), "b64": True}
+                    continue
                 fname = f + ".gz.txt"
             else:
                 data = gz
@@ -111,11 +136,15 @@ def package():
                 shutil.copy(icon, os.path.join(out, "favicon.png"))
             open(os.path.join(out, ".nojekyll"), "w").close()
         open(os.path.join(out, "index.html"), "w", encoding="utf-8").write(page)
-        sizes = {f: os.path.getsize(os.path.join(out, f)) for f in os.listdir(out)}
+        copy_voices(out)
+        sizes = {f: os.path.getsize(os.path.join(out, f)) for f in os.listdir(out) if os.path.isfile(os.path.join(out, f))}
+        vdir = os.path.join(out, "voices")
+        if os.path.isdir(vdir):
+            sizes["voices/"] = sum(os.path.getsize(os.path.join(vdir, f)) for f in os.listdir(vdir))
         print(name, {k: f"{v / 1e6:.2f}MB" for k, v in sorted(sizes.items())})
-        total[name] = sum(sizes.values())
+        total[name] = sum(v for k, v in sizes.items() if k != "voices/")
     for name, t in total.items():
-        print(f"{name}: {t / 1e6:.2f} MB to download ({TARGETS[name]})")
+        print(f"{name}: {t / 1e6:.2f} MB to download ({TARGETS[name]}; voices/ load on demand)")
 
 
 if __name__ == "__main__":

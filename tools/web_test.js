@@ -76,6 +76,9 @@ async function run(name, contextOpts, steps) {
   const logs = [];
   page.on("console", (m) => logs.push(`[${m.type()}] ${m.text()}`));
   page.on("pageerror", (e) => logs.push(`[pageerror] ${e.message}`));
+  // voice acting banks are fetched from voices/ on demand (voice.gd)
+  const voices = [];
+  page.on("response", (r) => { if (r.url().includes("/voices/")) voices.push(`${r.status()} ${r.url().split("/voices/")[1]}`); });
   const t0 = Date.now();
   await page.goto(url, { waitUntil: "load" });
   try {
@@ -86,6 +89,11 @@ async function run(name, contextOpts, steps) {
     failures++;
   }
   await steps(page);
+  console.log(`${name}: voice banks fetched: ${voices.join(", ") || "none"}`);
+  if (!voices.some((v) => v.startsWith("200 hq.ogg"))) {
+    console.log(`${name}: FAIL - the intro phone call's voice bank (voices/hq.ogg) was not loaded`);
+    failures++;
+  }
   const errs = logs.filter((l) => /\[(error|pageerror)\]/.test(l));
   if (errs.length) console.log(`${name}: ${errs.length} console errors`);
   console.log(logs.filter((l) => !l.includes("[verbose]")).slice(-25).join("\n"));

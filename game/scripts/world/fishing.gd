@@ -220,8 +220,15 @@ func start(spot_pos: Vector3, water_kind: String) -> bool:
 	if int(GS.inv.get("pancing", 0)) <= 0:
 		ui.toast("Kamu belum punya pancing. Beli di Koperasi Desa.", "bad")
 		return false
+	if int(GS.inv.get("umpan", 0)) <= 0:
+		ui.toast("Umpan habis! Beli umpan cacing di Koperasi Desa.", "bad")
+		return false
 	if not GS.use_energy(GS.ENERGY_COST["fish"]):
 		return false
+	# every cast uses one bait
+	GS.inv["umpan"] = int(GS.inv["umpan"]) - 1
+	if int(GS.inv["umpan"]) <= 3:
+		ui.toast("Umpan tinggal %d." % GS.inv["umpan"] if int(GS.inv["umpan"]) > 0 else "Itu umpan terakhir!", "info")
 	if _bar == null:
 		_build_bar()
 	active = true
@@ -326,7 +333,10 @@ func _catch(perfect: bool) -> void:
 	var first := int(GS.fish_log.get(id, 0)) == 0
 	GS.catch_fish(id)
 	var rare := rar == "SR" or rar == "SSR"
-	Sfx.play("quest" if rare else "harvest")
+	if rare:
+		Sfx.stinger("rare")   # fanfare over the ducked music ("quest" sfx when the music is off)
+	else:
+		Sfx.play("harvest")
 	var pl: Player = world.player
 	world.float_text(pl.global_position + Vector3(0, 0.4, 0), "+" + str(f["name"]), Color(GS.RARITY[rar]["col"]).darkened(0.25) if rar != "N" else Color("2f6d2a"))
 	var msg := "Dapat %s [%s]! (laku %s di warung)" % [f["name"], rar, GS.fmt_short(int(f["price"]))]

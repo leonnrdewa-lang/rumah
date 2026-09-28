@@ -134,4 +134,4 @@ common/physics_interpolation=true
 
 [audio]
 
-general/text_to_speech=true
+general/text_to_speech=false

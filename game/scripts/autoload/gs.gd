@@ -23,7 +23,7 @@ const PRICE := {
 	"surat": 400000, "preman": 1500000, "amplop": 2000000,
 	"gerobak": 750000, "truk": 4000000, "mesin": 4000000, "csr": 1500000,
 	"buruh_upah": 150000, "buruh_murah": 60000, "lisensi": 20000000,
-	"olah": 10000, "minyak_grosir": 30000, "franchise_fee": 2500000, "pancing": 50000,
+	"olah": 10000, "minyak_grosir": 30000, "franchise_fee": 2500000, "pancing": 50000, "umpan": 10000,
 }
 ## Fish (mancing): where they bite ("sea" = the coast, the lagoon and the jetty;
 ## "river" = the rivers and under the bridges), how often (weight), when (hours, empty =
@@ -91,6 +91,7 @@ const ITEMS := {
 	"minyak": {"name": "Minyak goreng", "icon": "icon_minyak", "desc": "Jerigen hasil olahan pabrik. Jual ke warga atau ke warung."},
 	"surat": {"name": "Surat tanah palsu", "icon": "icon_surat", "desc": "Dipakai untuk 'membeli' kebun warga yang kurang teliti."},
 	"pancing": {"name": "Pancing bambu", "icon": "icon_pancing", "desc": "Hadap ke air (pantai, sungai, dermaga, jembatan) lalu tekan aksi: Mancing."},
+	"umpan": {"name": "Umpan cacing", "icon": "icon_umpan", "desc": "Satu umpan untuk sekali lempar kail. Beli lagi di Koperasi (10 umpan Rp 10.000)."},
 }
 const TOOLS := [
 	{"name": "Parang", "icon": "icon_parang", "desc": "Untuk menebas semak di lahanmu."},
@@ -226,7 +227,7 @@ func new_game() -> void:
 	max_energy = 100.0
 	rep = 0.0
 	heat = 0.0
-	inv = {"bibit": 6, "pupuk": 3, "tbs": 0, "minyak": 0, "surat": 0, "pancing": 1}
+	inv = {"bibit": 6, "pupuk": 3, "tbs": 0, "minyak": 0, "surat": 0, "pancing": 1, "umpan": 10}
 	upgrades = {"gerobak": false, "truk": false, "mesin": false, "preman": 0, "lisensi": false}
 	oil_price_level = 1
 	tbs_price = 150000
@@ -837,6 +838,8 @@ func load_game() -> bool:
 	heat = float(data["heat"])
 	for k in data["inv"]:
 		inv[k] = int(data["inv"][k])
+	if not data["inv"].has("umpan"):
+		inv["umpan"] = 10   # saves from before bait existed start with a fresh tin
 	for k in data["upgrades"]:
 		upgrades[k] = data["upgrades"][k]
 	upgrades["preman"] = int(upgrades["preman"])

@@ -12,6 +12,7 @@ const AMBIENT_SCRIPT := preload("res://scripts/world/ambient_life.gd")
 const RING_SHADER := preload("res://shaders/ring.gdshader")
 const FISHING_SCRIPT := preload("res://scripts/world/fishing.gd")
 const INTERIOR_SCRIPT := preload("res://scripts/world/interior.gd")
+const AMBIENCE_SCRIPT := preload("res://scripts/world/ambience.gd")
 ## x beyond this is the house interior (interior.gd ORIGIN), off the island
 const INTERIOR_X := 300.0
 const SHADE_TEX_PATH := "res://assets/textures/world_shade.png"
@@ -147,6 +148,7 @@ var _tile_grid := {}   # 4 m cell -> planting spots (xz) in it and its neighbour
 ## fishing (fishing.gd) and house interiors (interior.gd)
 var fishing: Node3D
 var interior: Node3D
+var ambience: Node3D           # nature sounds by place and hour (ambience.gd)
 var inside := ""               # house id the player is in ("" = outdoors)
 var _inside_vid := ""
 var _fish_spot := {}           # {"pos", "water"} in front of the player, or {}
@@ -197,6 +199,10 @@ func _ready() -> void:
 	interior.name = "Interior"
 	interior.world = self
 	add_child(interior)
+	ambience = AMBIENCE_SCRIPT.new()
+	ambience.name = "Ambience"
+	ambience.world = self
+	add_child(ambience)
 	deals = DEALS_SCRIPT.new()
 	deals.name = "Deals"
 	deals.world = self
@@ -1706,8 +1712,9 @@ func _fish_target() -> Dictionary:
 		return {}
 	var sp: Dictionary = _fish_spot
 	return {"pos": sp["pos"], "r": 5.0, "fish": true, "_pos": sp["pos"],
-		"prompt": func(): return "Mancing" if int(GS.inv.get("pancing", 0)) > 0 else "Butuh pancing (beli di Koperasi)",
-		"ok": func(): return int(GS.inv.get("pancing", 0)) > 0,
+		"prompt": func(): return ("Butuh pancing (beli di Koperasi)" if int(GS.inv.get("pancing", 0)) <= 0
+			else ("Umpan habis (beli di Koperasi)" if int(GS.inv.get("umpan", 0)) <= 0 else "Mancing (umpan %d)" % int(GS.inv.get("umpan", 0)))),
+		"ok": func(): return int(GS.inv.get("pancing", 0)) > 0 and int(GS.inv.get("umpan", 0)) > 0,
 		"act": func(): start_fishing()}
 
 

@@ -1,8 +1,7 @@
-"""Synthesises the game's sound effects, a looping island tune and a beach
-ambience with numpy, written as 16-bit mono WAV into game/assets/audio/.
-The two long loops (music, ambient) are written as Ogg Vorbis instead (needs
-`pip install soundfile`): as QOA-compressed WAV they cost ~500 KB of the web
-download, as Vorbis ~240 KB.
+"""Synthesises the game's sound effects with numpy, written as 16-bit mono WAV into
+game/assets/audio/ (save(..., vorbis=...) writes Ogg Vorbis instead, needs `pip install
+soundfile`). The soundtrack (music_*.ogg) is composed and rendered by tools/make_music.py,
+the nature ambience (amb_*.ogg) by tools/make_ambience.py.
 
 python3 tools/make_audio.py
 """
@@ -105,75 +104,3 @@ wh = lowpass(noise(0.45), 0.08) * np.sin(np.pi * sweep_t / 0.45) ** 2
 save("whoosh", wh, 0.5)
 save("step", lowpass(noise(0.06), 0.2) * env(int(SR * 0.06), 0.002, 0.015), 0.5)
 save("door", mix(tone(180, 0.12, 0.03, ((1, 1), (2.3, 0.4))), pad(tone(170, 0.14, 0.035, ((1, 1), (2.3, 0.4))), 0.13)))
-
-# ---------------------------------------------------------------- music: easy island loop
-BPM = 96
-beat = 60 / BPM
-bars = 16
-total = int(SR * beat * 4 * bars)
-music = np.zeros(total)
-
-
-def place(buf, sig, at_sec):
-    i = int(at_sec * SR) % len(buf)
-    n = len(sig)
-    end = i + n
-    if end <= len(buf):
-        buf[i:end] += sig
-    else:
-        k = len(buf) - i
-        buf[i:] += sig[:k]
-        buf[:n - k] += sig[k:]  # wrap so the loop is seamless
-
-
-def midi(n):
-    return 440.0 * 2 ** ((n - 69) / 12)
-
-
-chords = [(60, 64, 67), (57, 60, 64), (53, 57, 60), (55, 59, 62)]  # C Am F G
-melody = [
-    [72, None, 74, 76, None, 79, 76, None], [76, None, 74, 72, None, 69, 72, None],
-    [69, None, 72, 74, None, 72, 69, None], [67, None, 71, 74, None, 76, 74, None],
-    [72, None, 76, 79, None, 81, 79, 76], [76, None, 72, 74, None, 76, 72, None],
-    [69, 72, 74, None, 77, None, 76, 74], [74, None, 71, 67, None, 71, 74, None],
-]
-for bar in range(bars):
-    c = chords[bar % 4]
-    t0 = bar * 4 * beat
-    # bass: root on 1 and 3
-    for b in (0, 2):
-        place(music, tone(midi(c[0] - 24), beat * 1.6, 0.35, ((1, 1.0), (2, 0.3))) * 0.55, t0 + b * beat)
-    # soft marimba chords on off-beats
-    for b in (1, 3):
-        for n in c:
-            place(music, tone(midi(n), beat, 0.18, MARIMBA) * 0.13, t0 + b * beat + beat * 0.5)
-    # melody (eighth notes), second half of the song an octave-ish variation
-    mel = melody[bar % 8]
-    for k, n in enumerate(mel):
-        if n is None:
-            continue
-        if bar >= 8 and k % 4 == 3:
-            continue
-        place(music, tone(midi(n), beat * 1.2, 0.28, MARIMBA) * 0.32, t0 + k * beat * 0.5)
-    # shaker
-    for k in range(8):
-        s = lowpass(noise(0.05), 0.7) * env(int(SR * 0.05), 0.001, 0.012) * (0.07 if k % 2 else 0.04)
-        place(music, s, t0 + k * beat * 0.5)
-save("music", music, 0.55, vorbis=0.45)
-
-# ---------------------------------------------------------------- ambience: waves + birds
-amb_sec = 16.0
-n = int(SR * amb_sec)
-waves = lowpass(rng.uniform(-1, 1, n), 0.04)
-tt = np.arange(n) / SR
-swell = 0.55 + 0.45 * np.sin(2 * np.pi * tt / 8.0) ** 2
-waves *= swell
-amb = waves * 1.0
-for i in range(7):
-    at = rng.uniform(0, amb_sec)
-    f0 = rng.uniform(2400, 3600)
-    for k in range(rng.integers(2, 5)):
-        ct = t_axis(0.09)
-        chirp = np.sin(2 * np.pi * (f0 + 2500 * ct) * ct) * env(len(ct), 0.005, 0.03)
-        place(amb, chirp * 0.05, at + k * 0.13)
-save("ambient", amb, 0.5, vorbis=0.6)

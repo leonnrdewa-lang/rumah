@@ -86,6 +86,8 @@ var _stage_owner: Control
 var _last_money := -1
 var _bar_tweens := {}
 var _dialog_key := ""
+var _voice_talk := false    ## the open card's line is voiced: keep the portrait talking while it plays
+var _menu_refresh := false  ## refresh_menu() is rebuilding the same menu
 var _toast_home := Rect2()
 const TOAST_BAND := 66.0  ## room kept above tall cards for a toast
 const TOAST_PAD := 70.0   ## toast pill width minus its text (badge, gap, margins)
@@ -145,6 +147,7 @@ func _ready() -> void:
 	GS.toast.connect(func(t, k): toast(t, k))
 	get_viewport().size_changed.connect(_layout)
 	_layout()
+	Voice.prefetch("hq")  # the phone boss's voice bank downloads while the title screen shows
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--uidemo"):
 			var demo: Node = load("res://scripts/ui/ui_demo.gd").new()
@@ -1218,7 +1221,9 @@ func _center_modal() -> void:
 
 func _close_modal() -> void:
 	if modal:
-		Voice.stop()
+		if not _menu_refresh:
+			Voice.stop()
+			_voice_talk = false
 		modal.queue_free()
 		modal = null
 		_closed_frame = Engine.get_process_frames()
@@ -1274,8 +1279,9 @@ func dialog(portrait: String, speaker: String, text: String, choices: Array = []
 	_typing_full = text
 	_typing_t = 0.0
 	portrait_stage.talking = true
-	# every villager line is spoken (Bahasa Indonesia TTS, a stable voice per person)
+	# every line is voice-acted in the speaker's own voice (voice.gd, tools/make_voices.py)
 	Voice.speak(key, speaker, text)
+	_voice_talk = true
 
 
 func is_typing() -> bool:
@@ -1316,7 +1322,15 @@ func _process(delta: float) -> void:
 		_typing.visible_characters = n
 		if n >= total:
 			_typing.visible_characters = -1
-			portrait_stage.talking = false
+			portrait_stage.talking = Voice.is_speaking()
+	if _voice_talk and modal:
+		# the portrait's mouth moves while the text types and while the voice clip plays
+		# (a bank still downloading starts the clip a little later)
+		var on := is_typing() or Voice.is_speaking()
+		if on != portrait_stage.talking:
+			portrait_stage.talking = on
+		if not on and not Voice.is_pending():
+			_voice_talk = false
 	if hud.visible and world and world.state == "play":
 		clock_label.text = _clock_text()
 		# the key badge breathes while an action is available
@@ -1481,12 +1495,19 @@ func menu(title: String, subtitle: String, items: Array, on_close := Callable(),
 	close_b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	col.add_child(close_b)
 	_open_modal(panel, true, on_close)
+	# a shopkeeper's quoted line (Mak Inah's gossip, Bang Jeki) is spoken when the menu opens
+	if portrait != "" and subtitle.begins_with("\"") and not _menu_refresh:
+		Voice.speak(portrait_key(portrait, title), title, subtitle)
+		_voice_talk = true
 
 
 func refresh_menu(rebuild: Callable) -> void:
-	## Re-opens the current menu after a purchase without firing on_close.
+	## Re-opens the current menu after a purchase without firing on_close
+	## (and without cutting off or repeating the shopkeeper's spoken line).
 	_on_modal_close = Callable()
+	_menu_refresh = true
 	rebuild.call()
+	_menu_refresh = false
 
 
 func _divider() -> Control:
@@ -1729,7 +1750,7 @@ func show_help(on_close := Callable()) -> void:
 
 
 # ------------------------------------------------------------------ bag (tas)
-const BAG_ORDER := ["tbs", "bibit", "pupuk", "minyak", "surat", "pancing"]
+const BAG_ORDER := ["tbs", "bibit", "pupuk", "minyak", "surat", "pancing", "umpan"]
 
 
 func bag_entries() -> Array:

@@ -13,7 +13,21 @@ mereka dengan harga yang kamu atur sendiri.
 - **Engine:** Godot 4.5.1 (renderer *Compatibility* / WebGL 2 agar jalan di browser PC & Android)
 - **Aset 3D:** dimodelkan lewat skrip Python di Blender 4.5 (`blender/*.py`), diekspor ke GLB
 - **Referensi visual:** Higgsfield, model GPT Image 2.5 resolusi 1K (lihat `art/reference/README.md`)
-- **Audio:** disintesis dengan numpy (`tools/make_audio.py`)
+- **Audio:** efek suara disintesis dengan numpy (`tools/make_audio.py`); musik latar orisinal digubah
+  not demi not di `tools/make_music.py` (lagu judul, pagi/siang, senja ala keroncong, malam, lo-fi dalam
+  rumah, plus jingle ikan langka & hari baru; warna gamelan: imbal marimba, angklung, gong/kempul),
+  dirender dengan FluidSynth + SoundFont MuseScore General lalu di-mix/master ke -20 LUFS, loop mulus
+- **Suara alam (ambience):** berubah menurut tempat dan jam (`game/scripts/world/ambience.gd`): dekat
+  sungai terdengar gemericik sungai, di pantai debur ombak, di dermaga riak air, di hutan angin di dedaunan
+  + kicau kutilang, kacer, cucak rawa, takur, tekukur, perkutut, tuwur, cinenen dan tonggeret sore hari, di
+  dusun ayam, burung gereja dan lonceng bambu, malam hari jangkrik, kodok di dekat air, tokek dan burung
+  hantu, ayam jago di pagi hari. Air dan satwa bersuara 3D dari arahnya; di dalam rumah teredam.
+  Semua disintesis dari nol (`tools/make_ambience.py`: noise spektro-temporal, model gelembung Minnaert,
+  model kicau/katak/tokek), loop mulus, ~1,2 MB Ogg
+- **Suara (voice acting):** setiap baris dialog diisi suara, tiap tokoh punya suara sendiri (42 tokoh):
+  TTS neural bahasa Indonesia (VITS multi-speaker) + transformasi vokoder WORLD (nada, formant, napas,
+  getar suara lansia, serak), intonasi ekspresif per kalimat, 2–3 take per baris dipilih dengan Whisper
+  (`tools/make_voices.py`). Audionya di luar paket game (`game/voices/`, diunduh per tokoh saat didekati)
 
 ## Main
 
@@ -87,6 +101,9 @@ python3 blender/characters.py     # 12 karakter chibi + potret dialog
 python3 tools/make_ui_icons.py
 python3 tools/make_item_icons.py   # ikon ikan, pancing, tas, kasur
 python3 tools/make_audio.py
+python3 tools/make_music.py       # butuh fluidsynth, ffmpeg, musescore-general-soundfont (apt), mido pyloudnorm soundfile (pip)
+python3 tools/make_ambience.py    # suara alam (amb_*.ogg): butuh ffmpeg (libvorbis), numpy scipy soundfile pyloudnorm
+python3 tools/make_voices.py all  # suara tokoh: butuh model TTS di /opt/idtts, Whisper di /opt/asr (lihat docstring)
 python3 tools/build_web.py        # ekspor Godot → docs/ dan dist/artifact/
 ```
 
@@ -94,6 +111,9 @@ Uji otomatis (butuh Xvfb untuk screenshot):
 
 ```bash
 godot --headless --path game -- --autotest=logic          # semua jalur gameplay
+godot --headless --path game -- --autotest=music          # musik: konteks, crossfade, ducking, jingle
+godot --headless --path game -- --autotest=voice          # suara: tiap baris punya klip, pemutaran di bus Voice
+godot --headless --path game -- --autotest=ambience       # suara alam: tabel mix di sungai/jembatan/pantai/dermaga/hutan/dusun/rumah, siang & malam
 xvfb-run godot --path game --rendering-driver opengl3 -- --autotest=basic --shots=/tmp/shots
 NODE_PATH=$(npm root -g) node tools/web_test.js http://127.0.0.1:8060/ /tmp/shots
 ```
@@ -101,4 +121,10 @@ NODE_PATH=$(npm root -g) node tools/web_test.js http://127.0.0.1:8060/ /tmp/shot
 ## Lisensi aset pihak ketiga
 
 - Font **Fredoka** — SIL Open Font License (`game/assets/fonts/OFL.txt`).
+- Musik dirender dari **MuseScore General SoundFont** (S. Christian Collins, lisensi MIT; cadangan: FluidR3 GM, MIT).
+  Komposisi, aransemen, dan mixing-nya dibuat di repo ini (`tools/make_music.py`).
+- Suara tokoh: model TTS **Indonesian VITS** oleh Wikidepia (github.com/Wikidepia/indonesian-tts; data Indonesian
+  TTS + dataset Jawa & Sunda OpenSLR), lisensinya **hanya untuk non-komersial** — demo gratis ini boleh, versi
+  komersial harus merekam/mengganti suaranya. Fonemisasi dengan `g2p_id` (Apache-2.0), cek kejelasan dengan
+  Whisper small (MIT, lewat sherpa-onnx), vokoder WORLD/pyworld (BSD).
 - Semua model, tekstur, ikon, dan audio lainnya dibuat secara prosedural di repo ini.

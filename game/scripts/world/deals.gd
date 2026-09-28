@@ -280,6 +280,8 @@ func open_toko() -> void:
 	if int(GS.inv.get("pancing", 0)) <= 0:
 		items.append({"icon": "icon_pancing", "text": "Pancing bambu", "desc": "Untuk mancing di pantai, sungai, dermaga & jembatan.",
 			"price": GS.fmt_short(GS.PRICE["pancing"]), "cb": func(): _buy("pancing", 1, GS.PRICE["pancing"], open_toko)})
+	items.append({"icon": "icon_umpan", "text": "Umpan cacing (10)", "desc": "Satu umpan untuk sekali lempar kail. Punya: %d." % int(GS.inv.get("umpan", 0)),
+		"price": GS.fmt_short(GS.PRICE["umpan"]), "cb": func(): _buy("umpan", 10, GS.PRICE["umpan"], open_toko)})
 	_add_fish_sale(items, open_toko, "Koperasi menampung ikan untuk dijual ke kota.")
 	ui.menu("Koperasi Desa Sukamakmur", "Bibit: %d • Pupuk: %d • Uang: %s" % [GS.inv["bibit"], GS.inv["pupuk"], GS.fmt_rp(GS.money)], items, Callable(), "portrait_petani")
 

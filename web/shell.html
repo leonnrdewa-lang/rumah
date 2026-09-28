@@ -152,17 +152,21 @@
   }
 
   async function download(name, info) {
-    const res = await nativeFetch(info.src);
-    if (!res.ok) throw new Error("Gagal mengunduh " + info.src + " (" + res.status + ")");
-    const reader = res.body.getReader();
+    // src is one file, or a list of parts (big packs are split for the host) joined in order
+    const parts = Array.isArray(info.src) ? info.src : [info.src];
     const chunks = [];
     got[name] = 0;
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      chunks.push(value);
-      got[name] += value.length;
-      showProgress();
+    for (const src of parts) {
+      const res = await nativeFetch(src);
+      if (!res.ok) throw new Error("Gagal mengunduh " + src + " (" + res.status + ")");
+      const reader = res.body.getReader();
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        got[name] += value.length;
+        showProgress();
+      }
     }
     got[name] = info.size;
     showProgress();
