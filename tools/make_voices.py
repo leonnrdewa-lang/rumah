@@ -340,9 +340,10 @@ GENERIC = {
 # only: the dialog box keeps the written text
 SPOKEN_OVERRIDE = {
 }
-BARKS = {  # per character: mood -> line (the fallback for a line that has no clip)
-    "neutral": "Hmm, begitu.", "yes": "Iya, Juragan.", "surprise": "Wah!", "annoyed": "Hah? Apa-apaan ini?",
-    "sad": "Aduh... ya sudah.", "laugh": "Hahaha!",
+BARKS = {  # per character: mood -> line (the fallback for a line that has no clip); whole
+    # short phrases rather than "Hmm." / "Wah!" / "Hahaha!", which the TTS cannot act
+    "neutral": "Oh, begitu ya.", "yes": "Iya, Juragan. Baik.", "surprise": "Wah, masa sih?",
+    "annoyed": "Lho, apa-apaan ini?", "sad": "Yah... mau bagaimana lagi.", "laugh": "Haha, bisa saja!",
 }
 BARK_ADDRESS = {"udin": "Om", "sari": "Kak", "budi": "Om", "warga_anak": "Om", "hq": "Juragan", "player": "Pak",
                 "calo": "Bos", "tigor": "Bos", "pemuda": "Bang", "rian": "Bang", "wartawan": "Pak"}
@@ -476,7 +477,9 @@ def extract():
         elif fname == "_sell_oil" and text == "line":
             b = bodies["_sell_oil"]
             for m in re.finditer(r"(?:var\s+line\s*:=|line\s*=)\s*(.+)", b):
-                for lm in re.finditer(r"\"((?:[^\"\\]|\\.)*)\"", m.group(1)):
+                # the spoken literals of `line = "a" if x else "b"` / `line = "c" % ...`,
+                # not dictionary keys like v["debt"]
+                for lm in re.finditer(r"(?<!\[)\"((?:[^\"\\]|\\.)*)\"(?!\])", m.group(1)):
                     for c in who:
                         add(c, lm.group(1), "_sell_oil")
         elif lit is not None and fname == "_sleep":
@@ -704,8 +707,17 @@ LEXICON = {
 }
 
 
+def _digits(txt):
+    return _num(int(re.sub(r"[.,]", "", txt)))
+
+
 def wer_words(t):
-    t = t.lower().replace("-", " ")
+    t = t.lower()
+    # how the recogniser writes amounts: "Rp 6.500.000", "Rp4,500,000", "200 ribu", "25%"
+    t = re.sub(r"rp\.?\s?(\d{1,3}(?:[.,]\d{3})+|\d+)", lambda m: " " + _digits(m.group(1)) + " rupiah ", t)
+    t = re.sub(r"\d{1,3}(?:[.,]\d{3})+", lambda m: " " + _digits(m.group(0)) + " ", t)
+    t = re.sub(r"(\d+)\s?%", lambda m: " " + _num(m.group(1)) + " persen ", t)
+    t = t.replace("-", " ")
     t = re.sub(r"[^a-z0-9' ]", " ", t)
     t = re.sub(r"\d+", lambda m: " " + _num(m.group(0)) + " ", t)
     out = []
@@ -1265,7 +1277,8 @@ def render(jobs=4, only=None, force=False, limit=None):
     print("render: %d clips to do" % len(todo), flush=True)
     done = 0
     worst = []
-    with Pool(jobs) as p:
+    # workers are recycled now and then: the TTS + recogniser grow ~20 MB per clip
+    with Pool(jobs, maxtasksperchild=50) as p:
         for qa in p.imap_unordered(_render_one, todo, chunksize=1):
             done += 1
             if qa.get("wer", 1) > 0.25:
@@ -1306,6 +1319,7 @@ def pack():
             y, sr = sf.read(base + ".wav", dtype="float32")
             assert sr == SR
             qa = json.load(open(base + ".json"))
+            qa["wer"] = wer(qa["spoken"], qa["hyp"])  # re-scored with the current metric
             qa_all.append(qa)
             clips[l["key"]] = [round(t, 3), round(len(y) / SR, 3)]
             parts.append(y)
@@ -1375,6 +1389,7 @@ def qa(png=True):
             continue
         y, _ = sf.read(base + ".wav", dtype="float64")
         q = json.load(open(base + ".json"))
+        q["wer"] = wer(q["spoken"], q["hyp"])
         if len(y) / SR >= 0.6:
             louds.append(meter.integrated_loudness(y))
         peaks.append(20 * np.log10(np.max(np.abs(y)) + 1e-12))

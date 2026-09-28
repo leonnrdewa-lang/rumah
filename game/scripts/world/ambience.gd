@@ -30,7 +30,7 @@ const EMITTER_GLIDE := 0.6         # s, the water emitters sliding along the sho
 ## at about -26 LUFS): the sea at the water line, the river at its bank, a bed at weight 1
 const BEDS := {
 	"sea": 0.0, "river": -1.0, "lake": -4.0,
-	"forest": -5.0, "field": -9.0, "village": -6.0, "night": -7.0, "frogs": -6.0,
+	"forest": -5.0, "field": -9.0, "village": -6.0, "night": -9.0, "frogs": -6.0,
 }
 const EMITTERS := ["sea", "river", "lake"]
 const SEA_RANGE := 110.0           # m, fully faded out

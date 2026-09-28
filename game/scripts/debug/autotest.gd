@@ -1645,7 +1645,7 @@ func _ambience_check() -> void:
 	check(R.call("forest day", "forest") > -8.0 and R.call("forest day", "forest") > R.call("village day", "forest") + 12.0
 		and R.call("forest day", "forest") > R.call("beach day", "forest") + 6.0, "forest bed in the forest (%.1f dB)" % R.call("forest day", "forest"))
 	check(R.call("village day", "village") > -10.0 and R.call("village day", "village") > R.call("forest day", "village") + 6.0, "village bed in the village")
-	check(R.call("forest night", "forest") <= -79.0 and R.call("forest night", "night") > -12.0, "at night the day birds stop and the crickets start")
+	check(R.call("forest night", "forest") <= -79.0 and R.call("forest night", "night") > -14.0, "at night the day birds stop and the crickets start")
 	check(R.call("river bank night", "frogs") > R.call("village night", "frogs") + 6.0, "frogs by the water at night")
 	check(bool(rows["house day"]["lowpass"]) and not bool(rows["house door day"]["lowpass"]), "low-pass on only inside the house")
 	for b in ["village", "field"]:

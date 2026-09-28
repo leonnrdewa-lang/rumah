@@ -279,6 +279,11 @@ class _VoiceNode:
 	func fetch(cid: String, file: String) -> void:
 		if banks.has(cid) or loading.has(cid):
 			return
+		if not is_inside_tree():
+			# the node joins the tree deferred: the very first line (the intro call) comes
+			# earlier, so retry once it is in
+			fetch.call_deferred(cid, file)
+			return
 		loading[cid] = true
 		if OS.has_feature("web"):
 			var url := str(JavaScriptBridge.eval("new URL('voices/%s', document.baseURI).href" % file, true))

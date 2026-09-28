@@ -1134,7 +1134,7 @@ def bed_night(sec, rng):
     ins = np.zeros(n)
     ts = np.arange(n) / SR
     # field crickets: each sings in bouts with its own rhythm, then rests
-    for c in range(4):
+    for c in range(3):                                   # review: 4 -> 3 voices, more rests (was a near-constant pulse wall)
         f = rng.uniform(3100, 4200)
         period = rng.uniform(0.4, 0.8)
         pulses = int(rng.integers(3, 5))
@@ -1142,7 +1142,7 @@ def bed_night(sec, rng):
         chirp = cricket_chirp(rng, f, pulses)
         tc = rng.uniform(0, T)
         sung = 0.0
-        while sung < T * rng.uniform(0.45, 0.7):
+        while sung < T * rng.uniform(0.3, 0.5):
             bout = rng.uniform(4, 11)
             k = 0.0
             while k < bout:
@@ -1150,7 +1150,7 @@ def bed_night(sec, rng):
                 place(ins, chirp * a * (0.5 + 0.5 * sw), tc + k)
                 k += period * rng.uniform(0.97, 1.03)
             sung += bout
-            tc += bout + rng.uniform(2.5, 8.0)
+            tc += bout + rng.uniform(5.0, 12.0)
     # one tree cricket, a soft trill in long bouts
     tr = tree_cricket(rng, n, 2500.0, round(46.0 * T) / T)
     gate = np.zeros(n)

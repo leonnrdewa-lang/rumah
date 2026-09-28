@@ -49,6 +49,7 @@ var _music_bus := -1
 var _amb_bus := -1
 var _music_bus_db := 0.0
 var _amb_bus_db := 0.0
+var _voice_safety := 0.0
 
 
 func _ready() -> void:
@@ -124,6 +125,7 @@ func current_track() -> String:
 ## Lowers the music (~7 dB) and ambience (~4 dB) smoothly while a voice line plays.
 func duck_voice(on: bool) -> void:
 	_voice_on = on
+	_voice_safety = 25.0   # failsafe: a forgotten duck_voice(false) releases by itself
 
 
 ## Short jingle over the ducked loop: "rare" (SR/SSR catch), "newday". With the music
@@ -265,6 +267,10 @@ func _process(delta: float) -> void:
 			if _deck_track[i] != "":
 				var g := sin(_deck_pos[i] * PI * 0.5) * _duck
 				_decks[i].volume_db = MUSIC_DB + linear_to_db(maxf(g, 0.0001))
+	if _voice_on:
+		_voice_safety -= delta
+		if _voice_safety <= 0.0:
+			_voice_on = false
 	var vt := 1.0 if _voice_on else 0.0
 	if _voice_k != vt:
 		_voice_k = move_toward(_voice_k, vt, delta / VOICE_DUCK_TIME)
