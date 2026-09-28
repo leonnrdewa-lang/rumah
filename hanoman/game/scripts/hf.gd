@@ -55,12 +55,21 @@ func _fetch(url: String, cb: Callable) -> void:
 		var f := FileAccess.open(path, FileAccess.READ)
 		cb.call(f != null, f.get_buffer(f.get_length()) if f else PackedByteArray())
 		return
+	_request(url, cb, 0)
+
+
+## HTTP GET with retries (the host occasionally answers 503).
+func _request(url: String, cb: Callable, attempt: int) -> void:
 	var r := HTTPRequest.new()
 	r.download_chunk_size = 262144
 	add_child(r)
 	r.request_completed.connect(func(result, code, _h, body):
 		r.queue_free()
-		cb.call(result == HTTPRequest.RESULT_SUCCESS and code == 200, body))
+		var ok: bool = result == HTTPRequest.RESULT_SUCCESS and code == 200
+		if not ok and attempt < 4 and code != 404:
+			get_tree().create_timer(0.8 * (attempt + 1), true, false, true).timeout.connect(func(): _request(url, cb, attempt + 1))
+			return
+		cb.call(ok, body))
 	if r.request(url) != OK:
 		r.queue_free()
 		cb.call(false, PackedByteArray())

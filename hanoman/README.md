@@ -16,7 +16,22 @@ versi wayang Jawa** (Hanoman diutus Prabu Rama ke Alengka) dan **legenda Sura & 
 - **Audio:** gamelan disintesis (saron, bonang, gender, kenong, gong ageng, kendang) + FluidSynth,
   laras slendro/pelog; 7 musik, 30 SFX, 2 suasana (`tools/make_music.py`, `tools/make_sfx.py`)
 
-## Main
+## Versi Higgsfield (utama)
+
+**https://hanoman-duta.higgsfield.app**, terbit di komunitas Higgsfield. Versi ini memuat paket
+aset Higgsfield saat berjalan (`game/scripts/hf.gd` membaca `hf/manifest.json`):
+
+- **Karakter 3D beranimasi** (image-to-3D + auto-rig): Hanoman (idle, lari, sabetan, hantaman,
+  guling, ajian, kena pukul, gugur), Wil, Buto Cakil, Buto Ijo (jalan, serang, kena pukul),
+  Rama, Jembawan, Sugriwa (idle); Sura, Baya, Yuyu Kangkang, Kijang Kencana (model bertekstur,
+  gerak prosedural)
+- **Lantai arena dilukis** (GPT Image 2.5, tampak atas) untuk Dandaka, pelataran bata, Muara,
+  arena bos, dan Pancawati
+- **Potret lukis** tanpa latar untuk dialog dan pilihan anugerah dewa
+- **Suara (voice acting)**: 45 baris dialog berbahasa Indonesia, tiap tokoh suaranya berbeda
+- Alur pembuatannya: `tools/higgsfield/README.md`; daftar URL aset: `art/hf_assets.json`
+
+## Main (versi aset Blender)
 
 Web: `docs/hanoman/` (GitHub Pages → `<url-pages>/hanoman/`), atau lokal:
 

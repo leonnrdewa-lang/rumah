@@ -107,9 +107,22 @@
 </div>
 <div id="rotate">Putar HP ke mode landscape</div>
 
-<script src="index.js"></script>
 <script>
-(function () {
+// Load the engine script with retries: the host occasionally answers 503.
+(function loadEngine(attempt) {
+  const tag = document.createElement("script");
+  tag.src = "index.js" + (attempt ? "?r=" + attempt : "");
+  tag.onload = () => window.__startGame();
+  tag.onerror = () => {
+    tag.remove();
+    if (attempt < 5) setTimeout(() => loadEngine(attempt + 1), 800 * (attempt + 1));
+    else document.getElementById("status").textContent = "Gagal memuat. Muat ulang halaman.";
+  };
+  document.head.appendChild(tag);
+})(0);
+</script>
+<script>
+window.__startGame = function () {
   const GODOT_CONFIG = /*GODOT_CONFIG*/{};
   const PACKED = /*PACKED*/{};  // file -> {src, size, b64}
 
@@ -138,8 +151,13 @@
     const chunks = [];
     got[name] = 0;
     for (const src of parts) {
-      const res = await nativeFetch(src);
-      if (!res.ok) throw new Error("Gagal mengunduh " + src + " (" + res.status + ")");
+      let res = null;
+      for (let attempt = 0; attempt < 5; attempt++) {
+        res = await nativeFetch(src + (attempt ? "?r=" + attempt : "")).catch(() => null);
+        if (res && res.ok) break;
+        await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+      }
+      if (!res || !res.ok) throw new Error("Gagal mengunduh " + src + " (" + (res ? res.status : "jaringan") + ")");
       const reader = res.body.getReader();
       for (;;) {
         const { done, value } = await reader.read();
@@ -213,5 +231,5 @@
 
   const rotate = document.getElementById("rotate");
   if (matchMedia("(pointer: coarse)").matches) rotate.classList.add("show");
-})();
+};
 </script>
