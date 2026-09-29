@@ -54,7 +54,7 @@ audio)   # cue sheet -> licensed layers -> mix (narration + score + procedural/l
   ffmpeg -hide_banner -nostats -i master.wav -af ebur128=peak=true -f null - 2>&1 | tail -12; ffprobe -v error -show_entries format=duration -of csv=p=0 master.wav ;;
 final)   # concat parts -> video-only encode (kept: film_v.mp4) -> mux with the master -> film.mp4 (exactly 3600 frames / 120.000 s).  `final remux` skips the slow video encode.
   cd $W/out && if [ "$1" != "remux" ] || [ ! -f $W/film_v.mp4 ]; then ls part_*.mp4 | sort | sed "s/^/file '/;s/$/'/" > list.txt && ffmpeg -y -v error -f concat -safe 0 -i list.txt -c copy video_raw.mp4 && ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames,width,height,r_frame_rate -of csv=p=0 video_raw.mp4
-    ffmpeg -y -v error -i video_raw.mp4 -an -c:v libx264 -preset slow -crf 17 -pix_fmt yuv420p -colorspace bt709 -color_primaries bt709 -color_trc bt709 -g 60 -t 120 -movflags +faststart $W/film_v.mp4; fi
+    ffmpeg -y -v error -i video_raw.mp4 -an -c:v libx264 -preset medium -crf 20 -maxrate 12M -bufsize 24M -pix_fmt yuv420p -colorspace bt709 -color_primaries bt709 -color_trc bt709 -g 60 -t 120 -movflags +faststart $W/film_v.mp4; fi
   ffmpeg -y -v error -i $W/film_v.mp4 -i $W/audio/master.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 256k -ar 48000 -t 120 -movflags +faststart $W/film.mp4
   ffprobe -v error -count_frames -show_entries stream=codec_type,nb_read_frames,duration,width,height:format=duration -of default=nw=1 $W/film.mp4 | head -20; ls -la $W/film.mp4 ;;
 *) echo "unknown stage $stage"; exit 2 ;;
