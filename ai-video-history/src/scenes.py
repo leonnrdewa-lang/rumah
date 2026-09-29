@@ -186,7 +186,7 @@ def tl_node(ctx, t, k, u):
     tl_bar(c, k, u, 232, nd['col'])
     R.chip(c, 'ERA EXAMPLE · ' + m['label'], x, y - 50, 22, bga=.62, dot=nd['col'])
     if k == 2:
-        clk = src if src < 60 else 60; R.chip(c, f'SHOT CLOCK  0:{int(clk):02d}', x + w - 6, y + h - 60, 28, fg=(255, 255, 255), bg=(0, 0, 0), bga=.7, anchor='r', dot=D.RED)
+        clk = src if src < 60 else 60; R.chip(c, f'CLIP RUNTIME  0:{int(clk):02d} / 1:00', x + w - 6, y + h - 60, 28, fg=(255, 255, 255), bg=(0, 0, 0), bga=.7, anchor='r', dot=D.RED)
     if k == 3:
         ev = ctx.env(cid, tin, 200); n = 48; bx, by, bw = x + 24, y + h - 70, w - 48
         for i in range(n):
