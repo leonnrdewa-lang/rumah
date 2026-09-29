@@ -83,6 +83,32 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
 .ctrlSeg{display:flex;gap:6px;padding:5px;border-radius:16px;background:rgba(15,12,10,.55);pointer-events:auto;}
 .segB{border:0;border-radius:12px;padding:10px 16px;font:800 16px var(--body);color:#fff;background:transparent;cursor:pointer;opacity:.7;}
 .segB.on{background:var(--green);color:#10200f;opacity:1;box-shadow:0 3px 0 rgba(0,0,0,.35);}
+#wallet{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:calc(14px + env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:4px;align-items:flex-start;}
+#wallet span{padding:5px 12px;border-radius:12px;background:rgba(15,12,10,.62);font:800 16px var(--body);}
+#streakT:empty{display:none;}
+.menuRow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+.mbtn{pointer-events:auto;border:0;border-radius:14px;padding:10px 14px;font:800 15px var(--body);color:#fff;background:#3a3129;box-shadow:0 4px 0 #1c1612;cursor:pointer;}
+.mbtn.share{background:linear-gradient(90deg,#1faa55,#128c7e);}
+#dailyBox{max-width:340px;width:88vw;padding:8px 12px;border-radius:14px;background:rgba(15,12,10,.55);font:700 14px var(--body);text-align:left;}
+#dailyBox:empty{display:none;}
+.ms{display:flex;align-items:center;gap:8px;margin:3px 0;} .ms span{flex:0 0 58%;} .ms i{flex:1;height:7px;border-radius:4px;background:rgba(255,255,255,.18);overflow:hidden;position:relative;}
+.ms i b{position:absolute;inset:0 auto 0 0;background:var(--green);} .ms.done{opacity:.6;} .ms em{font-style:normal;color:var(--yellow);}
+#coinGain{font:800 20px var(--body);color:var(--yellow);} #coinGain:empty,#rankT:empty{display:none;}
+#rankT{font:800 17px var(--body);color:#7dff9f;}
+#boardForm{display:flex;gap:6px;} #boardForm[hidden]{display:none;}
+#nameIn{pointer-events:auto;width:170px;border:0;border-radius:12px;padding:10px;font:700 16px var(--body);-webkit-user-select:text;user-select:text;}
+#panel{position:fixed;inset:0;z-index:50;background:rgba(10,8,6,.72);display:flex;align-items:center;justify-content:center;padding:16px;}
+#panel[hidden]{display:none;}
+.pbox{position:relative;width:min(440px,100%);max-height:86vh;overflow:auto;background:#241d18;border-radius:20px;padding:18px 16px;box-shadow:0 8px 0 rgba(0,0,0,.4);color:#fff;}
+#pClose{position:absolute;right:10px;top:10px;border:0;border-radius:10px;width:36px;height:36px;background:#3a3129;color:#fff;font:800 18px var(--body);cursor:pointer;}
+.pbox h2{margin:0 0 10px;font:400 26px var(--display);color:var(--yellow);}
+.tabs{display:flex;gap:6px;margin-bottom:10px;} .tabs button{flex:1;border:0;border-radius:10px;padding:8px;font:800 14px var(--body);background:#3a3129;color:#fff;cursor:pointer;} .tabs button.on{background:var(--green);color:#10200f;}
+.lb{width:100%;border-collapse:collapse;font:700 16px var(--body);} .lb td{padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.08);} .lb td:last-child{text-align:right;color:var(--yellow);font-family:var(--display);font-weight:400;}
+.lb tr.me td{color:#7dff9f;}
+.skins{display:grid;grid-template-columns:1fr 1fr;gap:10px;} .sk{border-radius:14px;background:#3a3129;padding:10px;text-align:center;font:700 15px var(--body);}
+.sk .sw{width:54px;height:54px;border-radius:50%;margin:4px auto 8px;border:3px solid rgba(255,255,255,.6);} .sk button{margin-top:6px;border:0;border-radius:10px;padding:7px 10px;font:800 14px var(--body);cursor:pointer;background:var(--green);color:#10200f;}
+.sk button[disabled]{background:#6b625a;color:#ddd;} .sk.on{outline:3px solid var(--yellow);}
+@media (orientation:landscape) and (max-height:520px){ #dailyBox{display:none;} }
 #stick{position:absolute;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;border:3px solid rgba(255,255,255,.55);left:0;top:0;}
 #knob{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;background:rgba(255,255,255,.6);}
 #crack{position:absolute;left:50%;top:44%;width:180px;height:180px;margin:-90px 0 0 -90px;}
@@ -123,6 +149,7 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
   <canvas id="c"></canvas>
   <div id="lines" class="layer"></div>
   <div id="flash" class="layer"></div>
+  <div id="bolt" class="layer" style="background:#eef4ff;opacity:0"></div>
   <div id="pops" class="layer"></div>
   <div id="arrow"><svg viewBox="0 0 40 40"><path id="arrowPath" d="M20 3 L37 34 L20 25 L3 34Z" fill="#ff8a1f" stroke="#2a1a0a" stroke-width="2" stroke-linejoin="round"/></svg><span id="arrowDist"></span></div>
   <div id="hud" hidden>
@@ -148,11 +175,14 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
 
   <div id="title" class="screen">
     <div id="players" hidden><b id="playersN">0</b><span>orang sudah main</span></div>
+    <div id="wallet"><span id="coinsT">🪙 0</span><span id="streakT"></span></div>
     <span class="plate">DRIVER APP · NgoJek-in</span>
     <div class="logo"><span class="o">OJOL</span><br><span class="r">RUSH</span></div>
     <p class="tag">Kamu bukan yang tercepat. Kamu jagonya nyelip.</p>
     <div class="spacer"></div>
+    <div id="dailyBox"></div>
     <button class="btn" id="startBtn">MULAI SHIFT</button>
+    <div class="menuRow"><button class="mbtn" id="boardBtn">🏆 JUARA</button><button class="mbtn" id="missionBtn">🎯 MISI</button><button class="mbtn" id="garageBtn">🛵 GARASI</button></div>
     <div class="ctrlSeg"><button class="segB" data-m="drag">👆 SENTUH</button><button class="segB" data-m="joy">🕹️ JOYSTICK</button></div>
     <div class="best" id="bestTitle"></div>
     <p class="hint">Seret jempol = arah motor · Tahan tombol REM (Spasi di PC) = rem<br>Salip mepet = poin · Antar sebelum waktu habis</p>
@@ -172,11 +202,16 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
     <div><div class="plate">SKOR</div><div class="big-score" id="finalScore">0</div></div>
     <div class="best" id="bestOver"></div>
     <dl class="stats" id="stats"></dl>
+    <div id="coinGain"></div>
+    <div id="boardForm" hidden><input id="nameIn" maxlength="16" placeholder="Nama / IG kamu" autocomplete="off"><button class="mbtn" id="sendBtn">KIRIM KE JUARA</button></div>
+    <div id="rankT"></div>
     <button class="btn" id="againBtn">LAGI</button>
+    <div class="menuRow"><button class="mbtn share" id="shareBtn">📤 PAMER SKOR</button><button class="mbtn" id="boardBtn2">🏆 JUARA</button><button class="mbtn" id="garageBtn2">🛵 GARASI</button></div>
     <div class="ctrlSeg"><button class="segB" data-m="drag">👆 SENTUH</button><button class="segB" data-m="joy">🕹️ JOYSTICK</button></div>
   </div>
 </div>
 
+<div id="panel" hidden><div class="pbox"><button id="pClose">✕</button><div id="pBody"></div></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script>
@@ -198,11 +233,14 @@ const CFG = {
   pickMin:60, pickMax:170, dropMin:110, dropMax:260, raziaStop:2.5, raziaPenalty:8, hitStop:0.06,
 };
 const LEVELS = [
-  {title:"Santai", at:0, traffic:28, speedMul:1, w:{car:.35,angkot:.15,bajaj:.1,bus:.05,bike:.35}, pax:5, timer:1.55, rain:0, always:false, flood:0, razia:0, cat:10, honk:.2, green:9},
-  {title:"Mulai Padat", at:2, traffic:40, speedMul:1, w:{car:.3,angkot:.22,bajaj:.1,bus:.05,bike:.35}, pax:14, timer:1.3, rain:0, always:false, flood:0, razia:0, cat:8, honk:.35, green:9},
-  {title:"Hujan Lokal", at:4, traffic:50, speedMul:1, w:{car:.3,angkot:.2,bajaj:.1,bus:.05,bike:.35}, pax:14, timer:1.12, rain:.45, always:false, flood:0, razia:1, cat:7, honk:.5, green:9},
-  {title:"Jam Pulang Kantor", at:6, traffic:64, speedMul:1, w:{car:.28,angkot:.2,bajaj:.1,bus:.12,bike:.3}, pax:16, timer:1.0, rain:.5, always:false, flood:2, razia:2, cat:6, honk:.8, green:7},
-  {title:"MACET TOTAL", at:9, traffic:95, speedMul:.75, w:{car:.3,angkot:.2,bajaj:.1,bus:.14,bike:.26}, pax:22, timer:.75, rain:0, always:true, flood:4, razia:3, cat:4, honk:1.6, green:5},
+  {title:"Santai", at:0, traffic:45, speedMul:1, w:{car:.35,angkot:.15,bajaj:.1,bus:.05,bike:.35}, pax:8, timer:1.55, rain:0, always:false, flood:0, razia:0, cat:10, honk:.2, green:9},
+  {title:"Mulai Padat", at:2, traffic:62, speedMul:1, w:{car:.3,angkot:.22,bajaj:.1,bus:.05,bike:.35}, pax:18, timer:1.3, rain:0, always:false, flood:0, razia:0, cat:8, honk:.35, green:9},
+  {title:"Hujan Lokal", at:4, traffic:75, speedMul:1, w:{car:.3,angkot:.2,bajaj:.1,bus:.05,bike:.35}, pax:18, timer:1.15, rain:.45, always:false, flood:1, razia:1, cat:7, honk:.5, green:9},
+  {title:"Jam Pulang Kantor", at:6, traffic:95, speedMul:1, w:{car:.28,angkot:.2,bajaj:.1,bus:.12,bike:.3}, pax:20, timer:1.05, rain:.5, always:false, flood:2, razia:2, jam:1, cat:6, honk:.8, green:7},
+  {title:"Kabut Asap", at:8, traffic:90, speedMul:.95, w:{car:.3,angkot:.2,bajaj:.12,bus:.1,bike:.28}, pax:20, timer:1.0, rain:0, always:false, flood:1, razia:2, jam:1, smog:1, cat:6, honk:.9, green:7},
+  {title:"Banjir Kiriman", at:10, traffic:100, speedMul:.9, w:{car:.28,angkot:.2,bajaj:.1,bus:.12,bike:.3}, pax:22, timer:.95, rain:1, always:true, flood:6, razia:1, jam:1, storm:true, cat:5, honk:1.1, green:6},
+  {title:"Macet Horor", at:12, traffic:140, speedMul:.75, w:{car:.3,angkot:.2,bajaj:.1,bus:.14,bike:.26}, pax:24, timer:.85, rain:.3, always:false, flood:3, razia:3, jam:3, cat:4, honk:1.6, green:5},
+  {title:"MACET TOTAL", at:15, traffic:150, speedMul:.7, w:{car:.3,angkot:.2,bajaj:.1,bus:.14,bike:.26}, pax:26, timer:.72, rain:1, always:true, flood:5, razia:3, jam:3, smog:.6, storm:true, cat:4, honk:1.8, green:5},
 ];
 
 // ---------------------------------------------------------------- math
@@ -224,13 +262,15 @@ const store = {
 
 // ---------------------------------------------------------------- city map
 const PITCH=60, LANE=3.5, ROAD_HALF=7, CORR=10, SW_H=0.12, GANG_HALF=1.75, STOP_BACK=3.5;
-const NX=5, NZ=7;
+const NX=7, NZ=8;
 const DIRS=[[1,0],[0,1],[-1,0],[0,-1]];
 const leftOf=d=>(d+1)&3, rightOf=d=>(d+3)&3, opp=d=>(d+2)&3, isH=d=>(d&1)===0;
 const MINX=-CORR, MAXX=(NX-1)*PITCH+CORR, MINY=-CORR, MAXY=(NZ-1)*PITCH+CORR;
 const GANGS=[
   {x0:1.5*PITCH-GANG_HALF, y0:PITCH, x1:1.5*PITCH+GANG_HALF, y1:3*PITCH},
   {x0:2*PITCH, y0:4.5*PITCH-GANG_HALF, x1:4*PITCH, y1:4.5*PITCH+GANG_HALF},
+  {x0:4.5*PITCH-GANG_HALF, y0:5*PITCH, x1:4.5*PITCH+GANG_HALF, y1:7*PITCH},
+  {x0:5*PITCH, y0:1.5*PITCH-GANG_HALF, x1:6*PITCH, y1:1.5*PITCH+GANG_HALF},
 ];
 const SB=0, SROAD=1, SSIDE=2, SGANG=3;
 function axisDist(v,n){ const k=clamp(Math.round(v/PITCH),0,n-1); return Math.abs(v-k*PITCH); }
@@ -250,8 +290,8 @@ function edgeLane(i,j,d,lane){
   const f=DIRS[d], k=(lane+0.5)*LANE, ox=-f[1]*k, oy=f[0]*k, nx=i*PITCH, ny=j*PITCH;
   return {ax:nx+f[0]*CORR+ox, ay:ny+f[1]*CORR+oy, bx:nx+f[0]*(PITCH-CORR)+ox, by:ny+f[1]*(PITCH-CORR)+oy};
 }
-const H_STREETS=["Jl. Kenanga","Jl. Pasar Lama","Jl. Melati","Jl. Kebon Kacang","Jl. Cempaka","Jl. Rawa Belong","Jl. Mangga Dua-an"];
-const V_STREETS=["Jl. Pahlawan","Jl. Kramat","Jl. Salemba Kecil","Jl. Tanah Abang Ria","Jl. Cikini Raya-ish"];
+const H_STREETS=["Jl. Kenanga","Jl. Pasar Lama","Jl. Melati","Jl. Kebon Kacang","Jl. Cempaka","Jl. Rawa Belong","Jl. Mangga Dua-an","Jl. Juanda Kecil"];
+const V_STREETS=["Jl. Pahlawan","Jl. Kramat","Jl. Salemba Kecil","Jl. Tanah Abang Ria","Jl. Cikini Raya-ish","Jl. Kemang Bawah","Jl. Senen Baru"];
 function streetName(x,y){
   if(axisDist(y,NZ)<=axisDist(x,NX)) return H_STREETS[clamp(Math.round(y/PITCH),0,NZ-1)];
   return V_STREETS[clamp(Math.round(x/PITCH),0,NX-1)];
@@ -293,7 +333,7 @@ const lowEnd=/Android|iPhone|iPad/i.test(navigator.userAgent);
 const renderer=new T.WebGLRenderer({canvas,antialias:!lowEnd,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, lowEnd?1.5:2));
 const scene=new T.Scene();
-const SKY=new T.Color(0xf6b877), SKY_RAIN=new T.Color(0x7d8794);
+const SKY=new T.Color(0xf6b877), SKY_RAIN=new T.Color(0x7d8794), SMOG=new T.Color(0xb9ad8f);
 scene.background=SKY.clone();
 scene.fog=new T.Fog(0xf2b27a,75,175);
 const camera=new T.PerspectiveCamera(55,1,1,300);
@@ -929,7 +969,7 @@ const traffic={
             if(g<1.2&&v.speed<1){ v.stopTime=2.2+Math.random(); v.stopFor=ps; ps.claimed=true; if(Math.hypot(v.px-px,v.py-py)<30) audio.play('shout'); } } }
       }
       if(v.stuck>4&&v.ghost<=0){ v.ghost=2; v.stuck=0; if(v.honkCd<=0&&Math.hypot(v.px-px,v.py-py)<40){ v.honkCd=3; audio.horn(v); } }
-      limit*=this.level.speedMul*hazards.floodFactor(v.px,v.py);
+      limit*=this.level.speedMul*hazards.floodFactor(v.px,v.py)*hazards.jamFactor(v.px,v.py);
       if(hazards.bumpAhead(v.px,v.py,v.fx,v.fy,9)) limit=Math.min(limit,4.5);
       v.tick(dt,gap,limit,hard,t);
       if(v.canChangeLane()&&Math.random()<v.spec.lc*(v.braking?4:1)*dt){ const to=v.lane===0?1:0; if(laneFree(v,L,to)){ v.lcTo=to; v.lcBlink=v.type==='bike'?0.4:1.0; } }
@@ -948,11 +988,11 @@ function dropMesh(m){ if(!m) return; m.parent&&m.parent.remove(m); if(m.geometry
 function roadPoint(i,j,d,along,off){ const f=DIRS[d]; return [i*PITCH+f[0]*(CORR+along)-f[1]*off, j*PITCH+f[1]*(CORR+along)+f[0]*off]; }
 function randEdge(){ let i,j,d; do{ i=RI(NX); j=RI(NZ); d=RI(2); } while(!hasEdge(i,j,d)); return [i,j,d]; }
 const hazards={
-  puddles:[], rainPuddles:[], potholes:[], bumps:[], gerobaks:[], cats:[], chickens:[], kids:[], pax:[], floods:[], razias:[],
+  puddles:[], rainPuddles:[], potholes:[], bumps:[], gerobaks:[], cats:[], chickens:[], kids:[], pax:[], floods:[], razias:[], jams:[],
   bumpMesh:null, paxTarget:5, catT:10, raziaCd:0, splashT:0, time:0, level:LEVELS[0], inFlood:false,
   clear(list){ for(const h of list){ dropMesh(h.mesh); if(h.extra) dropMesh(h.extra); } list.length=0; },
   reset(l){
-    for(const k of ['puddles','rainPuddles','potholes','gerobaks','cats','pax','floods','razias','chickens','kids']) this.clear(this[k]);
+    for(const k of ['puddles','rainPuddles','potholes','gerobaks','cats','pax','floods','razias','chickens','kids','jams']) this.clear(this[k]);
     this.bumps.length=0; dropMesh(this.bumpMesh); this.inFlood=false; this.raziaCd=0;
     for(let k=0;k<16;k++) this.puddles.push(this.makePuddle(false));
     for(let k=0;k<14;k++){ const [i,j,d]=randEdge(), p=roadPoint(i,j,d,R(3,37),R(-6,6)), r=R(.6,.9), g=new GB();
@@ -999,6 +1039,7 @@ const hazards={
     while(this.pax.length<this.paxTarget) this.pax.push(this.makePax());
     while(this.floods.length<l.flood){ const z=this.makeFlood(); if(!z) break; this.floods.push(z); hud.banner('BANJIR di '+z.street+'!'); }
     while(this.razias.length<l.razia){ const z=this.makeRazia(); if(!z) break; this.razias.push(z); hud.banner('RAZIA di '+z.street+'! Cari jalan lain'); }
+    while(this.jams.length<(l.jam||0)){ const z=this.makeJam(); if(!z) break; this.jams.push(z); hud.banner('MACET PARAH di '+z.street+'!'); }
   },
   makePax(){
     let i,j,d; do{ i=RI(NX); j=RI(NZ); d=RI(4); } while(!hasEdge(i,j,d));
@@ -1008,7 +1049,7 @@ const hazards={
   },
   edgeRect(i,j,d,from,to){ const a=roadPoint(i,j,d,from,0), b=roadPoint(i,j,d,to,0), h=isH(d);
     return {x0:Math.min(a[0],b[0])-(h?0:CORR),y0:Math.min(a[1],b[1])-(h?CORR:0),x1:Math.max(a[0],b[0])+(h?0:CORR),y1:Math.max(a[1],b[1])+(h?CORR:0)}; },
-  overlaps(r){ for(const z of [...this.floods,...this.razias]){ const q=z.r; if(q.x1>r.x0&&q.x0<r.x1&&q.y1>r.y0&&q.y0<r.y1) return true; } return false; },
+  overlaps(r){ for(const z of [...this.floods,...this.razias,...this.jams]){ const q=z.r; if(q.x1>r.x0&&q.x0<r.x1&&q.y1>r.y0&&q.y0<r.y1) return true; } return false; },
   makeFlood(){
     for(let t=0;t<30;t++){ const [i,j,d]=randEdge(), r=this.edgeRect(i,j,d,0,40), cx=(r.x0+r.x1)/2, cy=(r.y0+r.y1)/2;
       if(Math.hypot(cx-player.x,cy-player.y)<50||this.overlaps(r)) continue;
@@ -1034,6 +1075,14 @@ const hazards={
     }
     return null;
   },
+  makeJam(){
+    for(let t=0;t<30;t++){ const [i,j,d]=randEdge(), r=this.edgeRect(i,j,d,0,40), cx=(r.x0+r.x1)/2, cy=(r.y0+r.y1)/2;
+      if(Math.hypot(cx-player.x,cy-player.y)<45||this.overlaps(r)) continue;
+      const sign=signMesh('MACET',3.4,1,'#ffd21f','#1a1a1a'); sign.position.set(cx,4.2,-cy); hazGroup.add(sign);
+      return {r,street:streetName(cx,cy),mesh:sign}; }
+    return null;
+  },
+  jamFactor(x,y){ for(const z of this.jams){ const r=z.r; if(x>=r.x0&&x<r.x1&&y>=r.y0&&y<r.y1) return .18; } return 1; },
   setRain(on){ if(on&&!this.rainPuddles.length){ for(let k=0;k<14;k++) this.rainPuddles.push(this.makePuddle(true)); } else if(!on) this.clear(this.rainPuddles); },
   floodFactor(x,y){ for(const z of this.floods){ const r=z.r; if(x>=r.x0&&x<r.x1&&y>=r.y0&&y<r.y1) return CFG.floodF; } return 1; },
   bumpAhead(x,y,fx,fy,dist){ for(const b of this.bumps){ if(Math.abs(fx*b.dx+fy*b.dy)<0.7) continue; const rx=b.x-x, ry=b.y-y, al=rx*fx+ry*fy; if(al<-1||al>dist) continue; if(Math.abs(-rx*fy+ry*fx)<ROAD_HALF+.5) return true; } return false; },
@@ -1100,9 +1149,10 @@ const player={
     for(let i=0;i<16;i++){ const a0=i/16*Math.PI*2, a1=(i+1)/16*Math.PI*2; ring.beam(Math.cos(a0)*1.25,.05,Math.sin(a0)*1.25,Math.cos(a1)*1.25,.05,Math.sin(a1)*1.25,.16,0xffeb33); }
     root.add(ring.mesh(M_VC_GLOW));
     const pivot=new T.Group(); root.add(pivot);
-    this.spr=sprite('ojol',2.1,0.38,0.6); pivot.add(this.spr);
+    this.spr=sprite('ojol',2.1,0.38,0.6); pivot.add(this.spr); this.pivot=pivot; this.setSkin(meta.skinTint());
     scene.add(root); this.group=root; this.pivot=pivot;
   },
+  setSkin(tint){ if(!MDL.ojol||!this.pivot) return; this.pivot.remove(this.spr); this.spr=model('ojol',2.1,0.6,tint||null); this.pivot.add(this.spr); },
   fwd(){ return [Math.sin(this.heading*DEG),Math.cos(this.heading*DEG)]; },
   get s01(){ return clamp(this.speed/CFG.maxSpeed,0,1); },
   reset(x,y,h){ Object.assign(this,{x,y,heading:h,speed:0,vx:0,vy:0,helmets:CFG.helmets,invuln:0,air:0,bounce:0,slide:0,frozen:0,wob:0,wobV:0,lean:0,active:true}); this.group.visible=true; this.visual(0,0); },
@@ -1209,11 +1259,12 @@ const orders={
 
 // ---------------------------------------------------------------- rush levels & weather
 const rush={
-  idx:0, raining:false, rain:0, rainT:0, check:20, firstRain:false,
+  idx:0, raining:false, rain:0, rainT:0, check:20, firstRain:false, smog:0, boltT:9,
   get level(){ return LEVELS[this.idx]; },
-  reset(){ this.idx=0; this.raining=false; this.rain=0; this.check=20; this.firstRain=false; audio.setRain(false); this.weather(); },
+  reset(){ this.idx=0; this.raining=false; this.rain=0; this.smog=0; this.check=20; this.firstRain=false; audio.setRain(false); this.weather(); },
   deliveries(n){ let lv=0; LEVELS.forEach((l,i)=>{ if(n>=l.at) lv=i; }); if(lv<=this.idx) return; this.idx=lv; const l=this.level;
-    traffic.setLevel(l); hazards.setLevel(l,false); hud.big('RUSH '+(lv+1)+'!',l.title); audio.play('levelup'); if(l.rain>0&&!this.raining) this.firstRain=true; },
+    traffic.setLevel(l); hazards.setLevel(l,false); hud.big('RUSH '+(lv+1)+'!',l.title); audio.play('levelup'); if(l.rain>0&&!this.raining) this.firstRain=true;
+    if(l.smog) setTimeout(()=>hud.banner('KABUT ASAP! Jarak pandang pendek'),2600); meta.track('rush',lv+1); },
   tick(dt){
     if(dt<=0) return; const l=this.level;
     if(game.state==='play'){
@@ -1221,11 +1272,13 @@ const rush={
       if(this.raining){ this.rainT-=dt; if(this.rainT<=0&&!l.always) this.stop(); }
       else if(l.rain>0){ this.check-=dt; if(this.firstRain&&this.check>6) this.check=6; if(this.check<=0){ this.check=20; if(this.firstRain||Math.random()<l.rain){ this.firstRain=false; this.start(22+Math.random()*12); } } }
     }
-    this.rain=mt(this.rain,this.raining?1:0,dt*.5); this.weather();
+    this.rain=mt(this.rain,this.raining?1:0,dt*.5); this.smog=mt(this.smog,game.state==='play'?(l.smog||0):0,dt*.25); this.weather();
+    if(l.storm&&this.raining&&game.state==='play'){ this.boltT-=dt; if(this.boltT<=0){ this.boltT=R(7,15); hud.bolt(); audio.thunder(); } }
   },
   start(d){ this.raining=true; this.rainT=d; hazards.setRain(true); hud.banner('HUJAN! Jalanan licin'); audio.setRain(true); },
   stop(){ this.raining=false; hazards.setRain(false); hud.banner('Hujan reda'); audio.setRain(false); },
-  weather(){ const r=this.rain; scene.background.copy(SKY).lerp(SKY_RAIN,r); scene.fog.color.set(0xf2b27a).lerp(new T.Color(0x808c99),r); scene.fog.near=lerp(75,35,r);
+  weather(){ const r=this.rain, k=this.smog; scene.background.copy(SKY).lerp(SKY_RAIN,r).lerp(SMOG,k*.85); scene.fog.color.set(0xf2b27a).lerp(new T.Color(0x808c99),r).lerp(SMOG,k);
+    scene.fog.near=lerp(lerp(75,35,r),8,k); scene.fog.far=lerp(175,62,k);
     sun.color.copy(SUN_C).lerp(RAIN_C,r*.8); for(const m of TEXMATS) m.color.setRGB(1-r*.35,1-r*.3,1-r*.25); sun.intensity=lerp(.95,.45,r); hemi.intensity=lerp(.78,.6,r); }
 };
 
@@ -1374,6 +1427,7 @@ const audio={
     tick(); setInterval(tick,60);
   },
   toggleMusic(){ const on=store.get('ojol_music','1')!=='1'; store.set('ojol_music',on?'1':'0'); if(this.musicG) this.musicG.gain.value=on?.34:0; return on; },
+  thunder(){ if(!this.ctx) return; this.hiss(.25,.6,'highpass',2000); this.hiss(3,.9,'lowpass',400,1,.25,50); this.tone(45,2.5,'sine',.5,.3,30); },
   hornTone(a,b,d,v){ this.tone(a,d,'square',v*.5); this.tone(b,d,'square',v*.5); },
   horn(veh){ if(!this.ctx) return; const d=Math.hypot(veh.px-player.x,veh.py-player.y), v=clamp(1-d/50,0,1)*.5; if(v<.03) return;
     const p=.9+Math.random()*.2; if(veh.type==='bus') this.hornTone(233*p,294*p,.5,v); else if(veh.type==='bike'||veh.type==='bajaj') this.hornTone(620*p,740*p,.22,v); else this.hornTone(415*p,523*p,.35,v); },
@@ -1431,6 +1485,7 @@ const hud={
   big(t,s){ $('bigT').textContent=t; $('bigS').textContent=s; $('big').hidden=false; this.bigT=2.4; },
   notify(t,b){ $('nTitle').textContent=t; $('nBody').textContent=b; $('notify').hidden=false; this.notifyT=2.8; },
   flash(heavy){ this.flashT=heavy?.5:.2; if(heavy) this.crackT=.9; },
+  bolt(){ const b=$('bolt'); b.style.transition='none'; b.style.opacity=.85; requestAnimationFrame(()=>requestAnimationFrame(()=>{ b.style.transition='opacity .6s'; b.style.opacity=0; })); cam.shake=Math.max(cam.shake,.2); },
   lines(){ this.linesT=.35; },
   clear(){ for(const p of this.pops) p.el.remove(); this.pops.length=0; this.bannerT=this.bigT=this.notifyT=this.flashT=this.linesT=this.crackT=0; $('banner').hidden=$('big').hidden=$('notify').hidden=true; },
   tick(dt){
@@ -1499,7 +1554,7 @@ const START=[2*PITCH-LANE*1.5, PITCH+14];
 const game={
   state:'title', paused:false, hitStop:0, popCd:0, overT:0, best:+store.get('ojol_best',0)||0, newBest:false, reason:'',
   title(){ this.state='title'; player.reset(START[0]-CORR+1.2+LANE*1.5,START[1],180); player.park(); cam.snap(); rush.reset(); hazards.reset(rush.level); traffic.reset(rush.level); orders.reset(); this.screens(); },
-  start(){ players.count();
+  start(){ players.count(); meta.startShift();
     audio.init(); this.state='play'; this.paused=false; this.hitStop=0; this.newBest=false;
     score.reset(); combo.reset(); rating.reset(); rush.reset(); player.reset(START[0],START[1],0); cam.snap();
     hazards.reset(rush.level); traffic.reset(rush.level); orders.reset(); fx.clear(); hud.clear(); hud.big('GAS!','Shift dimulai - antar semua order!');
@@ -1508,6 +1563,7 @@ const game={
   over(reason){
     if(this.state!=='play') return; this.state='over'; this.reason=reason; this.overT=0; player.park();
     if(score.score>this.best){ this.best=score.score; this.newBest=true; store.set('ojol_best',String(this.best)); }
+    meta.endShift(); board.submitAuto();
     audio.play('gameover'); this.screens();
   },
   togglePause(){ if(this.state!=='play') return; this.paused=!this.paused; input.touching=false; this.screens(); },
@@ -1515,6 +1571,8 @@ const game={
     $('title').hidden=this.state!=='title'; $('hud').hidden=this.state!=='play'; $('pause').hidden=!(this.state==='play'&&this.paused); $('over').hidden=this.state!=='over';
     $('bestTitle').textContent=this.best?'Skor terbaik: '+fmt(this.best):'Belum ada skor. Gas!';
     for(const b of document.querySelectorAll('.segB')) b.classList.toggle('on',b.dataset.m===input.mode);
+    if(this.state==='title') meta.render();
+    $('coinGain').textContent=this.state==='over'&&meta.earned?'+'+fmt(meta.earned)+' 🪙 koin':'';
     if(this.state==='over'){
       $('reason').textContent=this.reason; $('finalScore').textContent=fmt(score.score);
       $('bestOver').textContent=this.newBest?'REKOR BARU!':'Terbaik: '+fmt(this.best);
@@ -1542,7 +1600,7 @@ const game={
     }
   },
   nearMiss(v){
-    const m=combo.reg(), pts=CFG.nearPts*m; score.score+=pts; score.near++;
+    const m=combo.reg(), pts=CFG.nearPts*m; score.score+=pts; score.near++; meta.track('near',1); meta.track('combo',m); meta.track('score',score.score);
     const col=m>=5?'#ff6ef0':m>1?'#ffd23f':'#fff17a';
     hud.popup(v.px,v.py,2.5,(m>1?'SALIP x'+m+'! +':'SALIP! +')+pts,col,.8+Math.min(m,8)*.06); hud.lines(); cam.kick=Math.max(cam.kick,.6); audio.play('whoosh',.9,.9+Math.min(m,10)*.05);
   },
@@ -1573,6 +1631,7 @@ const game={
   delivered(o,stars){
     const pts=Math.round((CFG.deliveryBase+Math.max(0,o.left)*CFG.speedBonus)*(stars/3)), tip=CFG.tips[clamp(stars,0,5)];
     score.score+=pts+tip; score.tips+=tip; score.deliveries++; rating.rec(stars);
+    meta.track('deliveries',1); meta.track('tips',tip); meta.track('score',score.score); if(o.food) meta.track('food',1); if(stars>=5) meta.track('five',1);
     fx.emit('confetti',o.dropoff.x,2,o.dropoff.y,40); audio.play('chaching');
     hud.popup(o.dropoff.x,o.dropoff.y,2,'PESANAN SAMPAI! +'+fmt(pts),'#4dff88',1.1);
     hud.screenPop(.5,.52,'★'.repeat(stars)+(stars===5?' MANTAP!':''),'#ffd23f',1.3); if(tip) hud.screenPop(.5,.58,'TIP +'+tip,'#b8ff9e',1);
@@ -1601,6 +1660,122 @@ const players={
     fetch('/api/plays',{method:'POST'}).then(r=>r.ok?r.json():null).then(d=>d&&this.show(d.players)).catch(()=>{}); }
 };
 players.load();
+
+// ---------------------------------------------------------------- meta: coins, skins, daily missions, streak
+const SKINS=[
+  {id:'hijau',name:'Hijau NgoJek-in',price:0,tint:null,sw:'#27c05a'},
+  {id:'oranye',name:'Oranye Senja',price:300,tint:0xffb070,sw:'#ff9a3c'},
+  {id:'biru',name:'Biru Laut',price:600,tint:0x9cc0ff,sw:'#4d8dff'},
+  {id:'pink',name:'Pink Sakura',price:900,tint:0xffa6d0,sw:'#ff6fb5'},
+  {id:'hitam',name:'Hitam Sultan',price:1500,tint:0x77778a,sw:'#3b3b48'},
+  {id:'emas',name:'Emas Juragan',price:2500,tint:0xffd54a,sw:'#ffc21a'},
+];
+const MISSIONS=[
+  {id:'antar',t:'Antar {n} order',key:'deliveries',sum:true,n:[3,6,10]},
+  {id:'salip',t:'SALIP {n} kali',key:'near',sum:true,n:[15,35,60]},
+  {id:'combo',t:'Combo SALIP x{n}',key:'combo',n:[3,5,8]},
+  {id:'skor',t:'Skor {n} dalam 1 shift',key:'score',n:[3000,7000,12000]},
+  {id:'rush',t:'Tembus RUSH {n}',key:'rush',n:[3,4,6]},
+  {id:'makan',t:'Antar {n} pesanan makanan',key:'food',sum:true,n:[2,4,7]},
+  {id:'bintang',t:'Bintang 5 sebanyak {n}x',key:'five',sum:true,n:[2,4,6]},
+  {id:'tip',t:'Kumpulkan tip {n}',key:'tips',sum:true,n:[300,800,1500]},
+];
+const MREWARD=[60,110,180];
+const today=(o=0)=>new Date(Date.now()+7*3600e3+o*864e5).toISOString().slice(0,10); // WIB date
+const jget=(k,d)=>{ try{ const v=store.get(k,null); return v?JSON.parse(v):d; }catch(e){ return d; } };
+const meta={
+  coins:+store.get('ojol_coins',0)||0, skin:store.get('ojol_skin','hijau'), owned:jget('ojol_owned',['hijau']), shift:{}, earned:0,
+  save(){ store.set('ojol_coins',String(this.coins)); store.set('ojol_skin',this.skin); store.set('ojol_owned',JSON.stringify(this.owned)); },
+  skinTint(){ const s=SKINS.find(k=>k.id===this.skin); return s?s.tint:null; },
+  // 3 missions per day, the same for every player (picked from the date), easy / medium / hard
+  daily(){ let d=jget('ojol_daily',null); const t=today();
+    if(!d||d.date!==t){ let h=7; for(const c of t) h=(h*31+c.charCodeAt(0))>>>0; const pool=MISSIONS.slice(), ms=[];
+      for(let k=0;k<3;k++){ h=(h*1103515245+12345)>>>0; ms.push(pool.splice(h%pool.length,1)[0].id); }
+      d={date:t,ms,prog:{},done:{}}; store.set('ojol_daily',JSON.stringify(d)); }
+    return d; },
+  mission(d,k){ const M=MISSIONS.find(m=>m.id===d.ms[k]); return {M,n:M.n[k],reward:MREWARD[k]}; },
+  value(d,M){ const base=d.prog[M.id]||0, cur=this.shift[M.key]||0; return M.sum?base+cur:Math.max(base,cur); },
+  startShift(){ this.shift={}; this.earned=0; const st=jget('ojol_streak',{last:'',n:0}), t=today();
+    if(st.last!==t){ st.n=st.last===today(-1)?st.n+1:1; st.last=t; store.set('ojol_streak',JSON.stringify(st)); if(st.n>1) setTimeout(()=>hud.banner('🔥 STREAK '+st.n+' HARI! Pertahankan!'),2600); } },
+  track(key,v){ if(game.state!=='play') return; const M0=MISSIONS.find(m=>m.key===key), sum=M0?M0.sum:false;
+    this.shift[key]=sum?(this.shift[key]||0)+v:Math.max(this.shift[key]||0,v);
+    const d=this.daily();
+    for(let k=0;k<3;k++){ const {M,n,reward}=this.mission(d,k); if(M.key!==key||d.done[M.id]) continue;
+      if(this.value(d,M)>=n){ d.done[M.id]=1; this.coins+=reward; this.save(); store.set('ojol_daily',JSON.stringify(d));
+        hud.screenPop(.5,.44,'MISI SELESAI! +'+reward+' 🪙','#7dff9f',1.2); audio.play('levelup'); } } },
+  endShift(){ const d=this.daily(); for(const M of MISSIONS){ if(d.ms.includes(M.id)) d.prog[M.id]=this.value(d,M); } store.set('ojol_daily',JSON.stringify(d));
+    this.earned=Math.round(score.score/40)+score.deliveries*5; this.coins+=this.earned; this.save(); this.shift={}; },
+  render(){ $('coinsT').textContent='🪙 '+fmt(this.coins); const st=jget('ojol_streak',{last:'',n:0});
+    $('streakT').textContent=(st.last===today()||st.last===today(-1))&&st.n>0?'🔥 streak '+st.n+' hari':'';
+    const d=this.daily(); let h='<div style="margin-bottom:4px;color:var(--yellow)">🎯 MISI HARI INI</div>';
+    for(let k=0;k<3;k++){ const {M,n,reward}=this.mission(d,k), v=Math.min(n,this.value(d,M)), done=!!d.done[M.id];
+      h+=`<div class="ms${done?' done':''}"><span>${done?'✅':'⬜'} ${M.t.replace('{n}',fmt(n))}</span><i><b style="width:${100*v/n}%"></b></i><em>+${reward}</em></div>`; }
+    $('dailyBox').innerHTML=h; }
+};
+
+// ---------------------------------------------------------------- panels: garage, missions, leaderboard
+const panel={
+  open(html){ $('pBody').innerHTML=html; $('panel').hidden=false; },
+  close(){ $('panel').hidden=true; game.screens(); },
+  garage(){ let h='<h2>GARASI</h2><div style="margin-bottom:10px;font:800 16px var(--body)">🪙 '+fmt(meta.coins)+' koin</div><div class="skins">';
+    for(const k of SKINS){ const own=meta.owned.includes(k.id), on=meta.skin===k.id;
+      h+=`<div class="sk${on?' on':''}"><div class="sw" style="background:${k.sw}"></div>${k.name}<br>${own?(on?'<button disabled>DIPAKAI</button>':`<button data-use="${k.id}">PAKAI</button>`):`<button data-buy="${k.id}" ${meta.coins<k.price?'disabled':''}>🪙 ${fmt(k.price)}</button>`}</div>`; }
+    this.open(h+'</div><p style="opacity:.75;font:600 13px var(--body)">Koin didapat dari skor tiap shift dan dari misi harian.</p>'); },
+  missions(){ meta.render(); this.open('<h2>MISI HARIAN</h2>'+$('dailyBox').innerHTML+'<p style="opacity:.75;font:600 13px var(--body)">Misi baru setiap hari jam 00.00 WIB. Main tiap hari buat jaga 🔥 streak!</p>'); }
+};
+$('pClose').onclick=()=>panel.close(); $('panel').onclick=e=>{ if(e.target.id==='panel') panel.close(); };
+$('pBody').onclick=e=>{ const b=e.target.closest('button'); if(!b) return;
+  if(b.dataset.buy){ const k=SKINS.find(x=>x.id===b.dataset.buy); if(k&&meta.coins>=k.price&&!meta.owned.includes(k.id)){ meta.coins-=k.price; meta.owned.push(k.id); meta.skin=k.id; meta.save(); player.setSkin(k.tint); audio.play('chaching'); } panel.garage(); }
+  else if(b.dataset.use){ meta.skin=b.dataset.use; meta.save(); player.setSkin(meta.skinTint()); panel.garage(); }
+  else if(b.dataset.tab){ board.show(b.dataset.tab); } };
+$('garageBtn').onclick=$('garageBtn2').onclick=()=>{ audio.init(); panel.garage(); };
+$('missionBtn').onclick=()=>{ audio.init(); panel.missions(); };
+
+const board={
+  name:store.get('ojol_name',''), data:null, tab:'daily', sent:false,
+  clean(n){ return (n||'').replace(/[^A-Za-z0-9 _.@-]/g,'').trim().slice(0,16); },
+  esc(t){ return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); },
+  load(){ return fetch('/api/board').then(r=>r.ok?r.json():null).then(d=>{ if(d) this.data=d; return d; }).catch(()=>null); },
+  show(tab){ this.tab=tab||this.tab; const L=(this.data&&this.data[this.tab])||[];
+    let h='<h2>PAPAN JUARA</h2><div class="tabs"><button data-tab="daily" class="'+(this.tab==='daily'?'on':'')+'">Hari ini</button><button data-tab="all" class="'+(this.tab==='all'?'on':'')+'">Sepanjang masa</button></div>';
+    h+=L.length?'<table class="lb">'+L.map((e,i)=>`<tr class="${e.name===this.name?'me':''}"><td>${['🥇','🥈','🥉'][i]||(i+1)+'.'}</td><td>${this.esc(e.name)}</td><td>${fmt(e.score)}</td></tr>`).join('')+'</table>':'<p>Belum ada skor. Jadilah yang pertama!</p>';
+    panel.open(h); },
+  open(){ audio.init(); panel.open('<h2>PAPAN JUARA</h2><p>Memuat…</p>'); this.load().then(()=>this.show()); },
+  send(){ const n=this.clean($('nameIn').value); if(!n){ $('nameIn').focus(); return; } this.name=n; store.set('ojol_name',n); $('boardForm').hidden=true; this.post(); },
+  submitAuto(){ this.sent=false; $('rankT').textContent=''; if(score.score<=0){ $('boardForm').hidden=true; return; }
+    if(this.name){ $('boardForm').hidden=true; this.post(); } else { $('boardForm').hidden=false; $('nameIn').value=''; } },
+  post(){ if(this.sent) return; this.sent=true;
+    fetch('/api/board',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name:this.name,score:Math.round(score.score)})})
+      .then(r=>r.ok?r.json():null).then(d=>{ if(!d) return; this.data=d;
+        $('rankT').textContent=d.rankDaily?('🏆 Peringkat #'+d.rankDaily+' hari ini'+(d.rankAll?' · #'+d.rankAll+' sepanjang masa':'')):'Belum masuk 20 besar hari ini — gas lagi!'; }).catch(()=>{}); }
+};
+$('boardBtn').onclick=$('boardBtn2').onclick=()=>board.open();
+$('sendBtn').onclick=()=>board.send();
+$('nameIn').addEventListener('keydown',e=>{ e.stopPropagation(); if(e.key==='Enter') board.send(); });
+
+// ---------------------------------------------------------------- share card (image + link) for WA / IG story
+const share={
+  url:'https://ojol-rush.higgsfield.app',
+  card(){ const c=document.createElement('canvas'); c.width=1080; c.height=1350; const x=c.getContext('2d'), B='"Barlow Semi Condensed", Arial, sans-serif', D='Bungee, "Arial Black", sans-serif';
+    const g=x.createLinearGradient(0,0,0,1350); g.addColorStop(0,'#f6b877'); g.addColorStop(.55,'#b85c38'); g.addColorStop(1,'#2a1a12'); x.fillStyle=g; x.fillRect(0,0,1080,1350);
+    x.textAlign='center'; x.fillStyle='rgba(0,0,0,.35)'; x.fillRect(90,400,900,500);
+    x.font='130px '+D; x.fillStyle='#27c05a'; x.fillText('OJOL',540,200); x.fillStyle='#ffd23f'; x.fillText('RUSH',540,330);
+    x.fillStyle='#fff'; x.font='bold 46px '+B; x.fillText('SKOR SHIFT-KU',540,480);
+    x.font='140px '+D; x.fillStyle='#ffd23f'; x.fillText(fmt(score.score),540,645);
+    x.font='bold 44px '+B; x.fillStyle='#fff'; x.fillText(score.deliveries+' antaran · '+score.near+' salip · combo x'+combo.best,540,750);
+    x.fillText('Tembus RUSH '+(rush.idx+1)+' — '+LEVELS[rush.idx].title,540,820);
+    x.font='bold 58px '+B; x.fillText('Bisa kalahin aku? 😏',540,1040);
+    x.font='bold 44px '+B; x.fillStyle='#ffd23f'; x.fillText('ojol-rush.higgsfield.app',540,1120);
+    x.fillStyle='rgba(255,255,255,.85)'; x.font='bold 36px '+B; x.fillText('game by @leonrdewa',540,1275);
+    return new Promise(r=>c.toBlob(r,'image/png')); },
+  async go(){ audio.init(); const text='Skor Ojol Rush-ku '+fmt(score.score)+'! Bisa kalahin aku? 🛵💨 '+this.url;
+    try{ const blob=await this.card(), file=new File([blob],'ojol-rush-skor.png',{type:'image/png'});
+      if(navigator.canShare&&navigator.canShare({files:[file]})){ await navigator.share({files:[file],text,title:'Ojol Rush'}); return; }
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='ojol-rush-skor.png'; document.body.appendChild(a); a.click(); a.remove();
+    }catch(e){ if(e&&e.name==='AbortError') return; }
+    window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank'); }
+};
+$('shareBtn').onclick=()=>share.go();
 
 // ---------------------------------------------------------------- boot & loop
 function resize(){ const w=gameEl.clientWidth||innerWidth, h=gameEl.clientHeight||innerHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
