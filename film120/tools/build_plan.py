@@ -20,6 +20,7 @@ def main():
         p = prof.get(cid)
         if not p: print('NO PROFILE for', cid); continue
         plan['clips'][cid] = {**{k: v for k, v in c.items() if k != 'media_url'}, **p}
+        if 'overlays_override' in c: plan['clips'][cid]['overlays'] = c['overlays_override']            # authoritative list of watermarks/logos to keep visible (profiling is a heuristic)
     for eid, e in plan['excerpts'].items():
         c = plan['clips'].get(e['clip'])
         if not c: print('excerpt', eid, 'has no clip', e['clip']); continue
