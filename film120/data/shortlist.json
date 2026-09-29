@@ -1732,6 +1732,128 @@
     }
    ]
   },
+  "seq09": {
+   "cols": [
+    {
+     "name": "RUNWAY",
+     "sub": "GEN-4.5"
+    },
+    {
+     "name": "GOOGLE",
+     "sub": "VEO 3.1"
+    },
+    {
+     "name": "KLING",
+     "sub": "3.0"
+    },
+    {
+     "name": "SEEDANCE",
+     "sub": "2.5"
+    }
+   ],
+   "rows": [
+    {
+     "name": "EDIT REAL FOOTAGE",
+     "cells": [
+      {
+       "has": true,
+       "since": "2023",
+       "src": "research.runwayml.com Gen-1, 2023-02-06"
+      },
+      {
+       "has": true,
+       "since": "2024",
+       "src": "deepmind.google Veo, 2024-05-14 (masked editing, private preview)"
+      },
+      {
+       "has": true,
+       "since": "2025",
+       "src": "kling.ai release notes VIDEO O1, 2025-12-01"
+      },
+      {
+       "has": true,
+       "since": "2026",
+       "src": "seed.bytedance.com Seedance 2.0, 2026-02-12"
+      }
+     ]
+    },
+    {
+     "name": "REFERENCE IMAGES",
+     "cells": [
+      {
+       "has": true,
+       "since": "2025",
+       "src": "runwayml.com/research/introducing-runway-gen-4, 2025-03-31"
+      },
+      {
+       "has": true,
+       "since": "2025",
+       "src": "blog.google Flow, 2025-05-20"
+      },
+      {
+       "has": true,
+       "since": "2025",
+       "src": "kling.ai release notes VIDEO O1, 2025-12-01"
+      },
+      {
+       "has": true,
+       "since": "2026",
+       "src": "seed.bytedance.com Seedance 2.0, 2026-02-12"
+      }
+     ]
+    },
+    {
+     "name": "CAMERA CONTROL",
+     "cells": [
+      {
+       "has": true,
+       "since": "2024",
+       "src": "runwayml.com/changelog Gen-3 Alpha Turbo, 2024-11-01"
+      },
+      {
+       "has": true,
+       "since": "2025",
+       "src": "blog.google Flow camera controls, 2025-05-20"
+      },
+      {
+       "has": true,
+       "since": "2024",
+       "src": "x.com/Kling_ai KLING 1.5, 2024-11-22"
+      },
+      {
+       "has": true,
+       "since": "2026",
+       "src": "seed.bytedance.com Seedance 2.5 (clay-render references for blocking and camera), 2026-07-31"
+      }
+     ]
+    },
+    {
+     "name": "NATIVE AUDIO",
+     "cells": [
+      {
+       "has": true,
+       "since": "2025",
+       "src": "runwayml.com/research/introducing-runway-gwm-1 Gen-4.5, 2025-12-11"
+      },
+      {
+       "has": true,
+       "since": "2025",
+       "src": "blog.google Veo 3, 2025-05-20"
+      },
+      {
+       "has": true,
+       "since": "2025",
+       "src": "kling.ai release notes VIDEO 2.6, 2025-12-03"
+      },
+      {
+       "has": true,
+       "since": "2025",
+       "src": "seed.bytedance.com Seedance 1.5 pro, 2025-12-16"
+      }
+     ]
+    }
+   ]
+  },
   "seq10": {
    "tiles": [
     "tgan_mnist",

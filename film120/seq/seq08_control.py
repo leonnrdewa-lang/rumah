@@ -106,6 +106,7 @@ def item_scene(ctx, i, t, ts):
     ui.spine(c, reveal=1.0, years=range(2016, 2027), highlight=int(it['date'][-4:]) if str(it.get('date', ''))[-4:].isdigit() else None, t=t, alpha=.85)
     DIAGRAMS[it['type']](c, ctx, it, u); _header(c, it, u)
     if it.get('src'): G.draw_text(c, 'SOURCE · ' + it['src'], 'monor', 17, MARGIN, 1490, GREY, track=.04, alpha=clamp((u - 1.2) / .4))
+    ui.chip(c, 'ILLUSTRATIVE DIAGRAM · FOOTAGE IS NOT A DEMO OF THIS FEATURE', MARGIN, 1436, 17, alpha=clamp((u - 1.0) / .4) * .9)
     return c
 
 

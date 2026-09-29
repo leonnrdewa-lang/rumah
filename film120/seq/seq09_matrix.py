@@ -44,4 +44,4 @@ def render(ctx, t):
 
 def events(ctx):
     rows = ctx.cast('seq09', 'rows', []); ts = ctx.cue('s9.rows') or [T0 + 1.0 + i * .55 for i in range(len(rows))]
-    return [('type_hit', T0 + .1, dict(size=.7))] + [('tick', tt, {}) for tt in ts] + [('lock', T1 - 1.2, dict(size=.9))]
+    return [('type_hit', T0 + .1, dict(size=.7))] + [('tick', tt, {}) for tt in ts[:len(rows)]] + [('lock', T1 - 1.2, dict(size=.9))]
