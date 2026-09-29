@@ -18,7 +18,7 @@ def bandpass(x, f0, q=2.0): return fft_shape(x, lambda f: 1 / (1 + ((f - f0) / (
 def tarr(n): return np.arange(n, dtype=np.float32) / SR
 def exp_env(n, tau): return np.exp(-tarr(n) / tau)
 def fade(x, a=.003, b=.01):
-    x = x.copy(); na, nb = int(a * SR), int(b * SR)
+    x = x.copy(); na, nb = min(int(a * SR), len(x) // 2), min(int(b * SR), len(x) // 2)              # very short files: fades never longer than half the file
     if na: x[:na] *= np.linspace(0, 1, na)
     if nb: x[-nb:] *= np.linspace(1, 0, nb)
     return x
