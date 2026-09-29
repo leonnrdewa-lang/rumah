@@ -1,0 +1,987 @@
+{
+  "agent": "V-H4",
+  "source_file": "/home/user/rumah/film120/data/candidates/H4.json",
+  "verified_on": "2026-09-29",
+  "method": "Independent re-check in the Higgsfield sandbox: live Commons API for all 20 file pages (wikitext, extmetadata, full revision history, upload/deletion logs, talk pages, deletion-request searches, sha1/size), curl -sIL of every media_url (all HTTP 200, Content-Length equal to Commons imageinfo size), rendered Template:PD-algorithm and the VulcanSphere licence template with history, Wayback captures of the three YouTube source pages (CC BY labels, upload dates), OpenAI's Wayback Sora page plus HEAD/ffprobe of the developer CDN originals, DeepMind's hosted Owl clip, the Calhoun Press blog capture, generator terms (Runway ToS live + Wayback 2023-03-31, Hailuo payment policy live + Wayback 2024-12-09, CompVis LICENSE, CogVideoX MODEL_LICENSE, LTX 0.9.5 licence) and primary release pages (Google Research, blog.google, Runway, Stability GitHub, MiniMax, xAI, THUDM/Lightricks READMEs). Watermark/overlay statements come from temporal-median/temporal-std/Sobel pixel analysis; no video frame was viewed by me. Uploader credibility read from Commons user records.",
+  "global_notes": [
+    "All 20 media URLs return HTTP 200 with the stated content-type and a Content-Length equal to the Commons imageinfo size; sha1 of every Commons file is recorded in corrected_fields.commons_sha1 for archiving.",
+    "The PD-algorithm tag is a Commons assertion (importer/uploader), not a legal finding; its rendered text itself warns that the UK and Hong Kong give computer-generated works 50 years and that AI outputs may be derivative of training data. No developer (OpenAI, Google) publishes a reuse licence for these demo clips; where a verdict rests on PD-algorithm it is 'clear_with_conditions' with an explicit residual-risk acceptance, and vendor promotional clips that are YouTube rips or possibly assembled sequences are rejected.",
+    "Explicit creator grants (CC0 by uploader-generator, CC BY / CC BY-SA by the creator) are the strongest tier: DeepDream Ouroboros, VulcanSphere clips, Benlisquare, Lwneal, Oronbb, Sorelius Beats, Vincent Chang Deng. Their limits are upstream inputs and generator terms, recorded per clip.",
+    "Deletion exposure: Commons deletes unused AI files on scope grounds (Sora clip Suv-in-the-dust deleted 2026-07-04; Hailuo 'Drone View of Night Cyberpunk City' deleted 2026-04-25). Files unused on any wiki: DeepDream x2, EXECUTE, Sora pigeon, CogVideoX, Veo 2 clock, Veo 3.1 Kei. Archive masters now.",
+    "Corrections to the hunter: (1) EXECUTE's CC BY label IS verifiable via Wayback 2024-10-04; (2) DeepMind's Veo page does state the Owl clip was generated 'without modifications' and hosts the identical 22.667 s file; (3) the Veo 2 clock's CC0 tag was added 11 months after upload; (4) the Sora train import was an 'uploads:' stash import, not cdn.openai.com; (5) the Stability 'Aug 22' post has a 2022-08-22 Wayback capture; (6) the VideoPoet clip lacks provenance (asset hash differs from the current site) and carries a burned-in overlay; (7) the Hailuo clip carries a burned-in overlay and free-tier terms.",
+    "No frame was viewed; every visual statement is metadata or pixel analysis. Watermark heuristics are weak on near-static scenes (Veo 2 clock, Sora train, CogVideoX swans, Gen-2 dog)."
+  ],
+  "verdicts": [
+    {
+      "cand_id": "deepdream_arcimboldo_gif_2015",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: Calhoun Press, 'Deep dreams of Arcimboldo's La Primavera' (animated GIF, 10 Nov 2015), CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0), via Wikimedia Commons (page URL); indicate any changes (crop, retime, slow-down).",
+        "ShareAlike applies: any adaptation of the GIF (cropped, slowed, recoloured) must be offered under CC BY-SA 4.0 or a compatible licence. Production counsel to decide whether embedding it in the film makes the film adapted material; safest is to keep it a clearly separable shot with its own credit card.",
+        "Label as 'DeepDream-style neural filter (Google technique, 2015), made with the Deep Dreamer app' - it is a 7-frame still-image effect, not a video model; never say Google generated it.",
+        "Only 0.7 s at 590x787 (about 2.4x upscale to fill 1920 px height): hold/step frames, do not pretend it is smooth motion.",
+        "Download and archive the master now with its Commons sha1 (unused or thinly used Commons files can be deleted on scope grounds; sibling AI clips were deleted 2026-04-25 and 2026-07-04)."
+      ],
+      "issues_found": [
+        "Licence tag re-verified live: {{cc-by-sa-4.0}}; Commons extmetadata LicenseShortName 'CC BY-SA 4.0', Artist 'Calhoun Press', AttributionRequired true; no deletion request, no file talk page; upload log 2015-11-10 by Calhounpress (registered 2015-10-06, 17 edits, 2 uploads).",
+        "The licence is a self-declaration by the uploader. The source blog post (Wayback capture http://web.archive.org/web/2015id_/http://calhounpress.net/blogs/blog/72629699-call-for-submissions-deep-dreams-of-electric-sheep, dated 'November 09, 2015') says 'I used Deep Dreamer to make all the images in this post' and shows the GIF as 'Deep dreams of Arcimboldo's La Primavera.' but states no licence for it (the post's 'CC-BY-SA' credit belongs to a different sheep image by 3268zauber). Uploader account name matches the blog; identity is not otherwise proven.",
+        "Tool is the paid Mac app 'Deep Dreamer' (per the blog), not Google's own code; hunter's 'network not stated' is accurate but the tool is documented on the source page.",
+        "Not video generation: ffprobe 7 frames, 0.7 s, 590x787; hunter's own 'prehistory' framing is correct.",
+        "Underlying artwork (Arcimboldo, La Primavera; Google Art Project photo listed as 'other versions') is public domain, so only the DeepDream layer is licensed.",
+        "Pixel analysis of the 590x788 median frame: no static overlay/logo in any corner (static-edge fraction ~0). Frames not visually inspected.",
+        "Unused on any Wikimedia project (globalusage 0) - deletion exposure."
+      ],
+      "corrected_fields": {
+        "created": "2015-11-09/10 (blog post dated Nov 09, 2015; Commons |date=2015-11-10; upload 2015-11-10T10:38:09Z)",
+        "model_version": "DeepDream-style renders made with the 'Deep Dreamer' Mac app (per source blog); underlying technique published by Google 2015-06-18",
+        "watermark_notes": "none detected by pixel analysis (not visually inspected)",
+        "license_verified": {
+          "id": "CC BY-SA 4.0",
+          "url": "https://commons.wikimedia.org/wiki/File:Deepdream-arcimboldo.gif",
+          "quote": "This file is licensed under the Creative Commons Attribution-Share Alike 4.0 International license.",
+          "retrieved": true
+        },
+        "commons_sha1": "95d1247dbf5a00134ce5092d855746e71fd84081",
+        "media_verified": {
+          "duration_s": 0.7,
+          "frames": 7,
+          "width": 590,
+          "height": 787,
+          "format": "gif",
+          "has_audio": false
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 2673977,
+        "content_type": "image/gif"
+      },
+      "model_date_corroboration": {
+        "claim": "DeepDream technique (Google 'Inceptionism') published 2015-06-18; GIF made Nov 2015",
+        "source_url": "https://research.google/blog/inceptionism-going-deeper-into-neural-networks/",
+        "quote": "Inceptionism: Going Deeper into Neural Networks June 18, 2015"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "deepdream_ouroboros_2021",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Do not use the opening frames until the base image is identified: the page never says what image is rotated per frame, so the hunter's suggested 0-4 s excerpt would expose an image of unknown provenance. Either pick a window after the base has dissolved into DeepDream structure, or ask the uploader (PantheraLeo1359531) to name the source image.",
+        "Label 'DeepDream (Google technique, 2015) - render by PantheraLeo1359531, 2021'; never present it as a 2015 clip.",
+        "CC0 needs no attribution; courtesy credit 'PantheraLeo1359531, Wikimedia Commons, CC0 1.0'.",
+        "Download and archive the master now with its Commons sha1 (unused or thinly used Commons files can be deleted on scope grounds; sibling AI clips were deleted 2026-04-25 and 2026-07-04). 103 MB original; 480p/360p/240p transcodes exist for editing."
+      ],
+      "issues_found": [
+        "CC0 re-verified live: {{self|cc-zero}}, source {{own}}, author PantheraLeo1359531; extmetadata 'CC0', AttributionRequired false; five revisions only (upload, structured-data bot, category moves); no DR. Uploader is long-standing and reviewed (image-reviewer group).",
+        "Base image is not stated anywhere on the page (description: 'an image is rotated by a certain number of degrees per frame and the DeepDream structures are further calculated by one iteration per frame'); provenance of that image is the only open licence question.",
+        "Category 'Schiller-Gymnasium Hof' indicates a school-project upload; nothing suggests people in the clip.",
+        "Technical facts confirmed: 24.0 s, 1000x912, 5 fps VP9, 103,277,371 bytes.",
+        "Pixel analysis (854x778 transcode): no static overlay in any corner.",
+        "Unused on any Wikimedia project - deletion exposure."
+      ],
+      "corrected_fields": {
+        "created": "2021-09-26 (Commons |date=2021-09-26 12:31:56; upload 2021-09-26T10:50:18Z)",
+        "model_version": "DeepDream (Google, 2015 algorithm; network not stated); rotated-feedback render by uploader",
+        "watermark_notes": "none detected by pixel analysis (not visually inspected)",
+        "license_verified": {
+          "id": "CC0 1.0",
+          "url": "https://commons.wikimedia.org/wiki/File:DeepDream_Ouroboros20210926_02.webm",
+          "quote": "has dedicated the work to the public domain by waiving all of their rights to the work worldwide under copyright law",
+          "retrieved": true
+        },
+        "commons_sha1": "48cf61f0b863a85a5409362f16860d2c3556fd5d",
+        "media_verified": {
+          "duration_s": 24.0,
+          "width": 1000,
+          "height": 912,
+          "fps": 5,
+          "has_audio": false
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 103277371,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "DeepDream is Google's 2015 technique; this render is from 2021",
+        "source_url": "https://research.google/blog/inceptionism-going-deeper-into-neural-networks/",
+        "quote": "Inceptionism: Going Deeper into Neural Networks June 18, 2015"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "sd14_animator_park_2022",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: Benlisquare, 'Algorithmically-generated animation of young woman in park' (2 Oct 2022), CC BY-SA 4.0 (dual-licensed GFDL; use the CC BY-SA leg), via Wikimedia Commons; indicate changes. ShareAlike applies to adaptations (crop to 9:16, retime, grade).",
+        "Mandatory visual review before use (content not viewed by any agent): drop the clip if the framing is sexualised (Commons editors categorised it 'Cleavage of young women' / 'Cleavage in AI art') or if the synthetic face resembles a real person (BRIEF rule 3).",
+        "Do not name Greg Rutkowski / Alphonse Mucha in captions; label 'Stable Diffusion v1.4 img2img frame chain (AUTOMATIC1111 + Animator script), settings published by uploader'.",
+        "OpenRAIL-M use restrictions bind users of the model, not the film; CompVis licence section 6 gives no rights to the licensor in outputs (quote in issues).",
+        "Download and archive the master now with its Commons sha1 (unused or thinly used Commons files can be deleted on scope grounds; sibling AI clips were deleted 2026-04-25 and 2026-07-04). 104 MB original; 480p/360p/240p transcodes exist."
+      ],
+      "issues_found": [
+        "Licence re-verified live: wikitext ends {{self|cc-by-sa-4.0|GFDL}}, source {{own}}, author Benlisquare (registered 2008, 6,575 edits); extmetadata 'CC BY-SA 4.0', AttributionRequired true. No PD-algorithm tag on this file. Uploader statement on the page: 'As the creator of the output video, I release this video under the licence displayed within the template below.'",
+        "Deletion history: nominated 2022-12-27 (GPSLeo, derivative-work worry); revision 2023-05-31 by Holly Cheng cites 'Commons:Deletion requests/Files uploaded by Benlisquare', which closed 'Kept' on 2023-05-31 (Howcheng: 'Apart from the three images that go against COM:FAN, there is no specific copyright being violated.'). The discussion raised the risk of prompts naming living artists; this file's prompt contains 'art by greg rutkowski and Alphonse Mucha' (Rutkowski is living).",
+        "Sexual-framing precaution stands: Commons categories 'Cleavage of young women' and 'Cleavage in AI art' were added by editors (2022-12-27); prompt words include 'collarbones'; negative prompt lists 'nipples, pubic hair'. Frames not viewed.",
+        "Model as stated by uploader ('Stable Diffusion V1-4', AUTOMATIC1111, Animator script, 300 frames at 30 fps, denoise 0.4). Release corroboration: CompVis LICENSE header 'CreativeML Open RAIL-M dated August 22, 2022' and Stability post 'Stable Diffusion Public Release ... Aug 22' (Wayback capture stability.ai/blog/stable-diffusion-public-release exists at 2022-08-22, which fixes the year the hunter could not print). Uploader's OpenRAIL-M paraphrase checked against the licence: 'Except as set forth herein, Licensor claims no rights in the Output You generate using the Model. You are accountable for the Output you generate and its subsequent uses.'",
+        "Pixel analysis (854x854 transcode): no static overlay in any corner.",
+        "Only GlobalUsage is a Wikimedia tracking page (meta:User:Dronebogus/Global_AI_use_tracking) - effectively unused."
+      ],
+      "corrected_fields": {
+        "created": "2022-10-02 (Commons |Date=2022-10-02; upload 2022-10-02T11:04:18Z; ffmpeg log stamp 20221002045131)",
+        "risk_flags": [
+          "sexual_precaution",
+          "living_artist_style_prompt",
+          "synthetic_face_check"
+        ],
+        "watermark_notes": "none detected by pixel analysis (not visually inspected)",
+        "license_verified": {
+          "id": "CC BY-SA 4.0 (dual GFDL)",
+          "url": "https://commons.wikimedia.org/wiki/File:Algorithmically-generated_animation_of_young_woman_in_park.webm",
+          "quote": "As the creator of the output video, I release this video under the licence displayed within the template below.",
+          "retrieved": true
+        },
+        "commons_deletion_history": "Nominated 2022-12-27; kept (DR 'Files uploaded by Benlisquare', closed 2023-05-31)",
+        "commons_sha1": "11431067a650f94423020fc475f336b8490ce235",
+        "media_verified": {
+          "duration_s": 10.0,
+          "width": 1024,
+          "height": 1024,
+          "fps": 30,
+          "has_audio": false
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 104379671,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Stable Diffusion v1-4 public release 2022-08-22",
+        "source_url": "https://raw.githubusercontent.com/CompVis/stable-diffusion/main/LICENSE",
+        "quote": "CreativeML Open RAIL-M dated August 22, 2022"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "sd_morph_fantasy_2023",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "Licence chain itself holds: independent Wayback capture (http://web.archive.org/web/20240308211449id_/https://www.youtube.com/watch?v=D-Y9GJ39sK4, taken the day of the Commons import) shows metadata row 'Creative Commons Attribution license (reuse allowed)', channel 'Vlad Pluzhnikov', uploadDate/publishDate 2023-05-16T02:32:34-07:00, 435 s, title '01 animation of stable diffusion generation, AI, dehancer, relax video'. Commons wikitext {{YouTube CC-BY|Vlad Pluzhnikov}} + {{LicenseReview}} still pending ('License review needed (video)'). The rejection is NOT for the licence.",
+        "Model/method cannot be established: the only description is 'fantasy art #stablediffusion #Deliberate #LowRa #dehancer'. Nothing says whether the 7:15 clip is a video model, an img2img frame chain, a latent walk or a slideshow morph; the SD base version is unstated; 'Deliberate' (checkpoint) and 'LowRA' (LoRA) are community assets; '#dehancer' means a film-emulation post-process. The Commons title ('gradual generative conceptual manifestation into fantasy art works') is a Commons editor's wording, not the creator's.",
+        "A source label ('Stable Diffusion, 2023') would be a guess and the clip is not evidence of any video model's capability - mislabel risk in a film about generative VIDEO. Hunter's 'SD-1.5-era' family label has no source.",
+        "435 s of content, no audio, unvetted by anyone (portrait-oriented fantasy checkpoint: nudity or real-person likeness cannot be excluded); hunter supplied no excerpts.",
+        "Uploader's channel category on YouTube is 'Howto & Style'; used on es.wikipedia Stable_Diffusion (durable)."
+      ],
+      "corrected_fields": {
+        "model_version": "Stable Diffusion (base version unstated), 'Deliberate' checkpoint + 'LowRA' LoRA per creator hashtags; generation method unknown",
+        "created": "2023-05-16 (YouTube publishDate 2023-05-16T02:32:34-07:00; Commons import 2024-03-08)",
+        "license_verified": {
+          "id": "CC BY 3.0 (YouTube CC BY)",
+          "url": "http://web.archive.org/web/20240308211449id_/https://www.youtube.com/watch?v=D-Y9GJ39sK4",
+          "quote": "Creative Commons Attribution license (reuse allowed)",
+          "retrieved": true
+        },
+        "reuse_verdict": "reject",
+        "commons_sha1": "b5c6d889c0139376b18071e69a901648e68e888f",
+        "salvage_path": "Only if the uploader states the method and a reviewer profiles the whole 435 s; otherwise drop."
+      },
+      "http": {
+        "status": 200,
+        "content_length": 151430319,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Stable Diffusion with Deliberate checkpoint and LowRA LoRA, published 2023-05-16",
+        "source_url": "http://web.archive.org/web/20240308211449id_/https://www.youtube.com/watch?v=D-Y9GJ39sK4",
+        "quote": "fantasy art #stablediffusion #Deliberate #LowRa #dehancer"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "runway_gen1_elephants_watercolor_2023",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: Oronbb, 'Gen-1 IMG 9350 - Watercolor painting, scenic landscape, soft' (9 Apr 2023), CC BY-SA 4.0, via Wikimedia Commons; indicate changes; ShareAlike applies to adaptations (crop/retime/grade).",
+        "Label 'Runway Gen-1 (video-to-video style transfer), 2023 - model per uploader/file name'; never call it text-to-video - the motion and structure come from the uploader's own footage.",
+        "Input provenance is unverified: before use, ask the uploader (or explicitly accept the residual risk) to confirm he filmed the Tanzania elephant input; CC BY-SA covers only what he owns.",
+        "Visually profile for a Runway corner mark before use (none found by pixel analysis).",
+        "Download and archive the master now with its Commons sha1 (unused or thinly used Commons files can be deleted on scope grounds; sibling AI clips were deleted 2026-04-25 and 2026-07-04)."
+      ],
+      "issues_found": [
+        "Licence re-verified live: {{self|cc-by-sa-4.0}}, source {{own}}, author Oronbb (registered 2013, 308 edits, 81 uploads); extmetadata 'CC BY-SA 4.0'; no DR.",
+        "Input footage ('a video of elephants in Tanzania', file name 'IMG_9350') is not on Commons and its author is not stated; Oronbb's other 80 uploads (drones, defence, AI graphics) contain no Tanzania or wildlife material, so the own-footage claim cannot be checked.",
+        "Model claim rests only on the file name 'Gen-1 IMG 9350 - Watercolor painting, scenic landscape, soft' plus the Hebrew word 'RunwayML'; Commons editors filed it under 'AI-generated images by unidentified software' / 'unidentified prompts'.",
+        "Runway terms: current https://runwayml.com/terms-of-use 4.4 'The Company does not claim ownership of any of your Inputs or Outputs. Subject to your compliance with the Agreement, the Company does not restrict your commercial use of your Outputs.'; Wayback 2023-03-31 capture (Last Updated Date: February 15, 2023) 4.2 'Your Content. Company does not claim ownership of Your Content.'",
+        "Gen-1 date: runwayml.com/research/gen-1 is a research announcement ('Feb 2023'); public-availability date not corroborated by a primary source; the only clip date is the Commons upload 2023-04-09.",
+        "Pixel analysis (896x512): no static overlay in any corner (no Runway watermark found); very high frame-to-frame variance (mean std ~60/255) consistent with strong stylisation flicker. Frames not viewed.",
+        "Used only on he.wikipedia 'AI art' article."
+      ],
+      "corrected_fields": {
+        "created": "2023-04-09 (Commons upload/date; generation date could be earlier)",
+        "model_version": "Runway Gen-1 (inferred from file name; page text says only 'RunwayML')",
+        "watermark_notes": "none detected by pixel analysis (not visually inspected)",
+        "license_verified": {
+          "id": "CC BY-SA 4.0",
+          "url": "https://commons.wikimedia.org/wiki/File:Gen-1_IMG_9350_-_Watercolor_painting,_scenic_landscape,_soft.webm",
+          "quote": "This file is licensed under the Creative Commons Attribution-Share Alike 4.0 International license.",
+          "retrieved": true
+        },
+        "commons_sha1": "b864503f3852ed4fdc0798a204be6b80696a9069",
+        "media_verified": {
+          "duration_s": 5.12,
+          "width": 896,
+          "height": 512,
+          "fps": 25,
+          "has_audio": false
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 5148736,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Runway Gen-1 announced Feb 2023",
+        "source_url": "https://runwayml.com/research/gen-1",
+        "quote": "Gen-1 uses words and images to generate new videos out of existing ones. Anastasis Germanidis Feb 2023"
+      },
+      "confidence": "low"
+    },
+    {
+      "cand_id": "runway_gen2_dog_podium_2023",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: Lwneal, 'Gen2-Example-Dog-Podium' (4 Aug 2023), CC BY-SA 4.0, via Wikimedia Commons; indicate changes; ShareAlike applies to adaptations.",
+        "Caption neutrally ('golden retriever in a suit at a podium'); do not add political framing about the White House press corps; no real person is depicted.",
+        "Label 'Runway Gen-2 (text-to-video), clip uploaded Aug 2023; prompt and seed per uploader'. Only 896x512 / 4 s: heavy upscale for 9:16.",
+        "Download and archive the master now with its Commons sha1 (unused or thinly used Commons files can be deleted on scope grounds; sibling AI clips were deleted 2026-04-25 and 2026-07-04)."
+      ],
+      "issues_found": [
+        "Licence re-verified live: {{self|cc-by-sa-4.0}}, source {{own}}, author Lwneal; description names the generator, prompt and seed ('Video generated by Runway Gen2 from the prompt \"A golden retriever in a suit sitting at a podium giving a speech to the white house press corp\", seed 839976695'). Uploader is a low-activity account (22 edits, 7 uploads since 2018), so prompt/seed are uncorroborated self-declarations.",
+        "Runway terms: current https://runwayml.com/terms-of-use 4.4 'The Company does not claim ownership of any of your Inputs or Outputs. Subject to your compliance with the Agreement, the Company does not restrict your commercial use of your Outputs.'; Wayback 2023-03-31 capture (Last Updated Date: February 15, 2023) 4.2 'Your Content. Company does not claim ownership of Your Content.'",
+        "Model corroboration is the Runway Gen-2 research page ('Feb 2023' announcement); public availability date not corroborated; clip date is the Commons upload 2023-08-04.",
+        "Content flags: dog at a White House podium with a US flag (categories 'Videos of the national flag of the United States', 'AI slop'); satirical political-adjacent but no named person, no election or partisan content - acceptable with neutral captioning.",
+        "Pixel analysis: no static overlay found; the scene is almost static (median temporal std 1.8) so detection sensitivity is limited; bottom-right crop shows scene content only (no text).",
+        "5 pages use it (en/he/uk Wikipedia, meta tracking)."
+      ],
+      "corrected_fields": {
+        "created": "2023-08-04 (Commons |date and upload)",
+        "watermark_notes": "none detected (low sensitivity: near-static scene); not visually inspected",
+        "license_verified": {
+          "id": "CC BY-SA 4.0",
+          "url": "https://commons.wikimedia.org/wiki/File:Gen2-Example-Dog-Podium.webm",
+          "quote": "This file is licensed under the Creative Commons Attribution-Share Alike 4.0 International license.",
+          "retrieved": true
+        },
+        "commons_sha1": "e3906b84657097076f72333c85b435ea8106c382",
+        "media_verified": {
+          "duration_s": 4.0,
+          "width": 896,
+          "height": 512,
+          "fps": 24,
+          "has_audio": false
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 267637,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Runway Gen-2 announced Feb 2023",
+        "source_url": "https://runwayml.com/research/gen-2",
+        "quote": "Gen-2 is a multimodal AI system that can generate novel videos with text, images or video clips."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "videopoet_dog_popcorn_audio_2023",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "Licence rests solely on {{PD-algorithm}} added by the importer (Yacàwotçã, video2commons import 2024-02-21) with {{LicenseReview}} still open since the import (category 'License review needed (video)'). Google's VideoPoet page (fetched 2026-09-29) contains no reuse licence and no statement that the clip is unmodified model output. Rendered Template:PD-algorithm (fetched 2026-09-29): 'This file is in the public domain because it is the work of a computer algorithm or artificial intelligence and does not contain sufficient human authorship to support a copyright claim. The United Kingdom and Hong Kong provide a limited term of copyright protection for computer-generated works of 50 years from creation.' plus an 'AI derivative works' legal disclaimer (models trained on copyrighted works can output derivative content).",
+        "Provenance mismatch found: the current VideoPoet page lists 'dog_popcorn_with_audio_B75FD15C.mp4', but the Commons file was imported from an older asset 'dog_popcorn_with_audio_6781BD0C.mp4' on storage.googleapis.com/googwebreview.appspot.com (HEAD 200, 115,581 bytes, last-modified Wed, 20 Dec 2023 01:25:27 GMT). The Commons page has no caption; the hunter mapped the caption 'A dog eating popcorn at the cinema' by file name only.",
+        "The demo section is 'Video-to-audio: VideoPoet can also output audio to match an input video without using any text as guidance.' It does not say the picture was generated by VideoPoet, so the clip cannot be shown as VideoPoet video generation, and the hunter's 'earliest native-audio-style demo' framing is unsupported (audio was added to an existing video).",
+        "Burned-in overlay found: a static high-contrast block at bottom-right (bbox about x 73-98 %, y 87-99 % of the 512x896 frame; 3,266 static edge pixels; looks like a text/caption box, text not read). Any 9:16 use must keep it; content of the text unknown. Hunter recorded 'unknown'.",
+        "Technical: 2.184 s, 17 frames at 8 fps, 512x896, mono Opus; 241,051 bytes - extremely low value as a hero excerpt.",
+        "A sibling VideoPoet file's deletion request (Cat piano with audio 3EB0CD1F, closed 'Kept' 2025-12-30 on scope grounds) contains an IP comment 'This doesn't seem generated by uploader'; no licence finding either way.",
+        "Model release date itself is corroborated (Google Research blog dated December 19, 2023); the rejection is for licence basis + provenance + overlay."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "reject",
+        "created": "2023-12-19/20 (blog dated 2023-12-19; Google asset last-modified 2023-12-20T01:25:27Z); clip-specific creation claim otherwise unverified",
+        "watermark_notes": "burned-in static box bottom-right, approx x 73-98 %, y 87-99 % of frame (pixel analysis; text unread)",
+        "prompt": "unverified - caption 'A dog eating popcorn at the cinema' matched by file name only; current site asset hash differs (B75FD15C vs Commons 6781BD0C)",
+        "commons_sha1": "93ce85133df34464aef92ad891b09dc0b5dbc6d7",
+        "media_verified": {
+          "duration_s": 2.184,
+          "width": 512,
+          "height": 896,
+          "fps": 8,
+          "has_audio": true
+        },
+        "salvage_path": "Ask Google Research for written permission or use only a clip whose page carries a licence."
+      },
+      "http": {
+        "status": 200,
+        "content_length": 241051,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "VideoPoet announced Dec 2023",
+        "source_url": "https://research.google/blog/videopoet-a-large-language-model-for-zero-shot-video-generation/",
+        "quote": "VideoPoet: A large language model for zero-shot video generation December 19, 2023"
+      },
+      "confidence": "high"
+    },
+    {
+      "cand_id": "svd_robo_knightwolf_2023",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: Sorelius Beats, 'Robo Knightwolf - AI Animation - Stable Video Diffusion - Original Music' (YouTube, 20 Dec 2023), CC BY 3.0, via Wikimedia Commons, with the Commons URL and YouTube source (kvpj4Dqib_0) and the licence link; identify that the work was excerpted/adapted (CC BY 3.0 section 4(b)). No ShareAlike.",
+        "Use the VIDEO only: the music is 'Original Music' by the uploader and the description quotes a Phil Collins lyric ('I can feel it the air tonight'), so the track may echo third-party work; the YouTube CC BY label was not checked separately for audio.",
+        "Frame-review the chosen excerpt for recognisable Knight Rider / Airwolf designs (hashtags #knightrider #airwolf, title 'Robo Knightwolf'); drop shots with a recognisable KITT-style car or Airwolf helicopter.",
+        "Label per creator: 'Stable Diffusion + Stable Video Diffusion (SD model Juggernaut Final), Dec 2023 - creator-stated pipeline; SVD vs SVD-XT unknown'. Keep the Wayback capture URL in the credits file.",
+        "Download and archive the master now with its Commons sha1 (unused or thinly used Commons files can be deleted on scope grounds; sibling AI clips were deleted 2026-04-25 and 2026-07-04)."
+      ],
+      "issues_found": [
+        "Licence verified independently from a Wayback capture of the original page taken the same day as the Commons import (http://web.archive.org/web/20240308202159id_/https://www.youtube.com/watch?v=kvpj4Dqib_0): metadata row 'Creative Commons Attribution license (reuse allowed)', channel 'Sorelius Beats', uploadDate 2023-12-20T17:36:13-08:00 (= 2023-12-21 01:36 UTC, which explains Commons |date=2023-12-21), 102 s, category 'Film & Animation'. Commons carries {{YouTube CC-BY|Sorelius Beats}} + {{LicenseReview}} (pending). The live YouTube label today cannot be re-read; a later change by the uploader would not show.",
+        "Model claim is the creator's: 'Tech used for animation: Stable Diffusion/Stable Video Diffusion; SD Model: Juggernaut Final' - a mixed SD-image + SVD pipeline, not pure SVD. SVD release corroborated by Stability's README ('November 21, 2023') and arXiv 2311.15127 (submitted 25 Nov 2023); upload 2023-12-20 is consistent.",
+        "IP flag stands: 1980s TV pastiche by hashtag and title; not viewed, so neither confirmed nor cleared.",
+        "3840x2160, 102.1 s, 30 fps, 212.6 MB; pixel analysis on the 480p transcode found no static overlay (heuristic only).",
+        "Used on ru.wikipedia Stability_AI."
+      ],
+      "corrected_fields": {
+        "created": "2023-12-20 (YouTube uploadDate 2023-12-20T17:36:13-08:00); Commons |date 2023-12-21 is the UTC date",
+        "model_version": "Stable Diffusion checkpoint 'Juggernaut Final' + Stable Video Diffusion (variant unstated), per creator",
+        "license_verified": {
+          "id": "CC BY 3.0 (YouTube Creative Commons Attribution)",
+          "url": "http://web.archive.org/web/20240308202159id_/https://www.youtube.com/watch?v=kvpj4Dqib_0",
+          "quote": "Creative Commons Attribution license (reuse allowed)",
+          "retrieved": true
+        },
+        "watermark_notes": "none detected (heuristic on 480p transcode); not visually inspected",
+        "commons_sha1": "5a9ba3eb3338eaac27c8bdd9aa40d68311c665ba",
+        "media_verified": {
+          "duration_s": 102.101,
+          "width": 3840,
+          "height": 2160,
+          "fps": 30,
+          "has_audio": true
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 212611274,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Stable Video Diffusion released 2023-11-21; clip uploaded 2023-12-20",
+        "source_url": "https://raw.githubusercontent.com/Stability-AI/generative-models/main/README.md",
+        "quote": "November 21, 2023 - We are releasing Stable Video Diffusion, an image-to-video model, for research purposes"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "runway_gen2_execute_shortfilm_2024",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: Vincent Chang Deng, 'EXECUTE // dark Sci-Fi AI-short film' (YouTube, 26 Jun 2024), CC BY 3.0, via Wikimedia Commons with URLs (Commons page + YouTube Z346NFRSPg4) and licence link; identify that the excerpt is cropped/trimmed (CC BY 3.0 section 4(b)). No ShareAlike.",
+        "Use VIDEO ONLY: the soundtrack is the creator's music plus ElevenLabs synthetic voices ('Michael', 'Emily', 'Antoni'); the CC BY flag was not checked separately for audio and ElevenLabs voice terms apply.",
+        "Choose an excerpt without burnt-in subtitles (Commons categories 'Videos with English subtitles but without closed captioning in English' imply them; pixel heuristics cannot detect text) and frame-review for violence (dark sci-fi, unviewed).",
+        "Label 'Runway Gen-2 (per creator), published 2024-06-26' - a LATE Gen-2 work made around Gen-3 Alpha's announcement (2024-06-17), not a 2023 clip; do not imply the clip is raw model output (human-directed, edited, 10 min).",
+        "Keep the Wayback capture URL in the credits file (Commons {{LicenseReview}} still open); Download and archive the master now with its Commons sha1 (unused or thinly used Commons files can be deleted on scope grounds; sibling AI clips were deleted 2026-04-25 and 2026-07-04). 481.7 MB original; use the 480p/1080p transcodes for scanning."
+      ],
+      "issues_found": [
+        "Hunter could not verify the CC BY label; verified here: Wayback capture http://web.archive.org/web/20241004173249id_/https://www.youtube.com/watch?v=Z346NFRSPg4&gl=US&hl=en (taken 28 min after the Commons import) shows metadata row 'License: Creative Commons Attribution license (reuse allowed)', title 'EXECUTE // dark Sci-Fi AI-short film', dateText 'Jun 26, 2024', description 'Written and \"directed\" and music by Vincent Chang Deng ... Video generation: Runway Gen-2 ... Audio synthesis: ElevenLabs v.21'. Commons: {{YouTube CC-BY|Vincent Chang Deng}} + {{LicenseReview}} pending.",
+        "Model claim is creator-stated only ('Video generation: Runway Gen-2'); input images for any image-to-video shots are undisclosed.",
+        "Not raw output: a 603 s human-directed narrative; the CC BY grant is the human creator's licence over his edit and music; nothing states which shots are unedited Gen-2 output.",
+        "Content: dark sci-fi, categories 'AI misgeneration', 'AI-generated voice'; violence unviewed; fictional characters, no named real person.",
+        "Pixel analysis (854x480 transcode): no static overlay in any corner; hunter expected a Runway watermark - none detected (not visually inspected).",
+        "Unused on any Wikimedia project - deletion exposure."
+      ],
+      "corrected_fields": {
+        "created": "2024-06-26 (YouTube dateText 'Jun 26, 2024'); Commons import 2024-10-04T17:04:43Z",
+        "license_verified": {
+          "id": "CC BY 3.0 (YouTube Creative Commons Attribution)",
+          "url": "http://web.archive.org/web/20241004173249id_/https://www.youtube.com/watch?v=Z346NFRSPg4&gl=US&hl=en",
+          "quote": "Creative Commons Attribution license (reuse allowed)",
+          "retrieved": true,
+          "note": "hunter reported this as NOT verified; now verified via Wayback"
+        },
+        "model_version": "Runway Gen-2 (per creator)",
+        "watermark_notes": "none detected (heuristic on 480p transcode); burnt-in English subtitles likely (category) - not detectable by pixel heuristics",
+        "commons_sha1": "e84ff3dee8453ae7ef8bed72f79b37a1478e74ed",
+        "media_verified": {
+          "duration_s": 603.355,
+          "width": 1920,
+          "height": 1080,
+          "fps": 24,
+          "has_audio": true
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 481690068,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Runway Gen-2 (announced Feb 2023; Gen-3 Alpha announced 2024-06-17, nine days before this film's publication)",
+        "source_url": "https://runwayml.com/research/gen-2",
+        "quote": "Gen-2 is a multimodal AI system that can generate novel videos with text, images or video clips."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "sora_victoria_crowned_pigeon_2024",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "The project must accept in writing that clearance rests only on (a) the Commons {{PD-algorithm}} tag (an importer/community assertion of no human authorship) and (b) OpenAI's own page statement that the clips are unmodified Sora output; OpenAI has granted no reuse licence and the page footer reads '(c) 2015 - 2024 OpenAI'. Residual risks: UK/Hong Kong 50-year computer-generated-work protection and contractual claims. If a developer grant is required, request OpenAI press permission.",
+        "Source the master from the Commons file (sha1 in corrected_fields) or OpenAI's own CDN original, never from social media; archive it now - the file is unused on any wiki and a sibling 'First videos by Sora' file was deleted on 2026-07-04 as out of scope.",
+        "Label 'OpenAI Sora (research preview), 15 Feb 2024 - prompt written by OpenAI'; no legal attribution required, courtesy credit only. Present as a curated showcase clip, never as typical output.",
+        "Frame-review crest/feet/head-tilt consistency before choosing the window (unviewed)."
+      ],
+      "issues_found": [
+        "Licence basis re-verified: live wikitext {{PD-algorithm}} only (importer Yacàwotçã, video2commons import 2024-02-17 from https://cdn.openai.com/sora/videos/victoria-crowned-pigeon.mp4); no DR. Rendered Template:PD-algorithm (fetched 2026-09-29): 'This file is in the public domain because it is the work of a computer algorithm or artificial intelligence and does not contain sufficient human authorship to support a copyright claim. The United Kingdom and Hong Kong provide a limited term of copyright protection for computer-generated works of 50 years from creation.' plus an 'AI derivative works' legal disclaimer (models trained on copyrighted works can output derivative content).",
+        "Supporting primary facts verified: Wayback capture http://web.archive.org/web/20240216073515id_/https://openai.com/sora says 'Published February 15, MMXXIV' and 'All videos on this page were generated directly by Sora without modification.', lists this exact prompt next to the .mp4 with a 'Download video' link; footer 'OpenAI (c) 2015 - 2024 Terms & policies'. CDN original: HEAD 200, 53,258,780 bytes, last-modified Thu, 15 Feb 2024 16:48:31 GMT; ffprobe h264 720x1280 30 fps 40.02 s (with an AAC track); the Commons copy is VP9 720x1280 40.0 s with no audio track.",
+        "Counter-indicator: no OpenAI reuse grant anywhere; the statement 'generated without modification' supports the PD predicate but is not a licence.",
+        "Deletion exposure: file unused on any Wikimedia project; sibling Suv-in-the-dust.webm (same category) was deleted 2026-07-04 ('Unused OOS AI image').",
+        "Pixel analysis at 720x1280: no text overlay; a small static vertical-line pattern near the bottom right (y about 93 %) is also present in OpenAI's own CDN original and looks like scene detail.",
+        "Commons description is only the slug; prompt is from OpenAI's page (matches)."
+      ],
+      "corrected_fields": {
+        "created": "2024-02-15 (OpenAI page 'Published February 15, MMXXIV'; CDN mp4 last-modified 2024-02-15T16:48:31Z; Commons upload 2024-02-17)",
+        "watermark_notes": "none detected (pixel analysis of Commons copy and OpenAI CDN original); not visually inspected",
+        "openai_cdn_original": {
+          "url": "https://cdn.openai.com/sora/videos/victoria-crowned-pigeon.mp4",
+          "http": 200,
+          "content_length": 53258780,
+          "content_type": "video/mp4",
+          "last_modified": "Thu, 15 Feb 2024 16:48:31 GMT",
+          "ffprobe": "h264 720x1280 30 fps 40.02 s + aac"
+        },
+        "license_verified": {
+          "id": "PD-algorithm (Commons tag)",
+          "url": "https://commons.wikimedia.org/wiki/Template:PD-algorithm",
+          "quote": "in the public domain because it is the work of a computer algorithm or artificial intelligence and does not contain sufficient human authorship",
+          "retrieved": true
+        },
+        "commons_sha1": "e2491b37f9bff42126b88fbc45289a9751d0399d",
+        "media_verified": {
+          "duration_s": 40.0,
+          "width": 720,
+          "height": 1280,
+          "fps": 30,
+          "has_audio": false
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 29667755,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "OpenAI Sora previewed 2024-02-15",
+        "source_url": "http://web.archive.org/web/20240216073515id_/https://openai.com/sora",
+        "quote": "Published February 15, MMXXIV | All videos on this page were generated directly by Sora without modification."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "sora_photoreal_train_glenfinnan_2024",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Same written residual-risk acceptance as the other Sora clips: clearance rests only on the Commons {{PD-algorithm}} tag plus OpenAI's page statement 'All videos on this page were generated directly by Sora without modification.'; OpenAI granted no reuse licence (page footer '(c) 2015 - 2024 OpenAI'). Seek OpenAI press permission if a developer grant is needed.",
+        "Any 'errors' caption (second track, extra chimney, distorted carriage windows) is a Commons community claim, not OpenAI's: verify it by eye against the real Glenfinnan Viaduct before captioning, and word it 'appears to add'.",
+        "Label 'OpenAI Sora (research preview), 15 Feb 2024'; a curated showcase clip, not typical output. No legal attribution required.",
+        "Master from the Commons file (sha1 in corrected_fields) or OpenAI's CDN original; note the Commons copy is a re-encode (7.58 MB vs 5.89 MB original)."
+      ],
+      "issues_found": [
+        "Licence basis: live wikitext {{PD-algorithm}} only; no DR. Rendered Template:PD-algorithm (fetched 2026-09-29): 'This file is in the public domain because it is the work of a computer algorithm or artificial intelligence and does not contain sufficient human authorship to support a copyright claim. The United Kingdom and Hong Kong provide a limited term of copyright protection for computer-generated works of 50 years from creation.' plus an 'AI derivative works' legal disclaimer (models trained on copyrighted works can output derivative content).",
+        "Supporting facts verified: OpenAI Wayback page (2024-02-16) lists this exact prompt beside cdn.openai.com/sora/videos/photoreal-train.mp4 and says 'All videos on this page were generated directly by Sora without modification.' and 'Published February 15, MMXXIV'. CDN original: HEAD 200, 5,889,386 bytes, last-modified Thu, 15 Feb 2024 22:18:45 GMT; ffprobe h264 1920x1080 30 fps 8.533 s. Commons copy: VP9 1920x1080 8.533 s, 7,578,299 bytes.",
+        "Correction to hunter: the Commons upload (2024-03-22, DancingPhilosopher) was an 'uploads:' stash import, not a direct import from cdn.openai.com; the source URL is only cited in the source field. Content and length match the CDN original.",
+        "The error annotation in the Commons description (double track, extra chimney, warped fourth-carriage windows) is community text (secondary); the train 'resembles the Jacobian' per Commons, a real heritage service - harmless but keep captions factual.",
+        "Watermark: none expected on OpenAI's Feb 2024 site clips; my overlay heuristic is inconclusive here because the camera is static (median temporal std 2.8).",
+        "Durability: used on 19 Wikipedia pages (de.wikipedia Sora article, 'Hallucination (AI)' articles in many languages) - low deletion risk."
+      ],
+      "corrected_fields": {
+        "created": "2024-02-15 (OpenAI page; CDN mp4 last-modified 2024-02-15T22:18:45Z); Commons |date 2024-03-22 is the Commons description date",
+        "watermark_notes": "none expected; heuristic inconclusive (static scene); not visually inspected",
+        "openai_cdn_original": {
+          "url": "https://cdn.openai.com/sora/videos/photoreal-train.mp4",
+          "http": 200,
+          "content_length": 5889386,
+          "content_type": "video/mp4",
+          "last_modified": "Thu, 15 Feb 2024 22:18:45 GMT",
+          "ffprobe": "h264 1920x1080 30 fps 8.533 s"
+        },
+        "license_verified": {
+          "id": "PD-algorithm (Commons tag)",
+          "url": "https://commons.wikimedia.org/wiki/Template:PD-algorithm",
+          "quote": "in the public domain because it is the work of a computer algorithm or artificial intelligence and does not contain sufficient human authorship",
+          "retrieved": true
+        },
+        "commons_sha1": "0a36d655021f73eb58f382ed7849ad9d04cf8516",
+        "media_verified": {
+          "duration_s": 8.533,
+          "width": 1920,
+          "height": 1080,
+          "fps": 30,
+          "has_audio": false
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 7578299,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "OpenAI Sora previewed 2024-02-15",
+        "source_url": "http://web.archive.org/web/20240216073515id_/https://openai.com/sora",
+        "quote": "Published February 15, MMXXIV | All videos on this page were generated directly by Sora without modification."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "runway_gen3_cowboy_desert_2024",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "Contradictory licence/authorship statements on the page: wikitext {{self|cc-by-4.0}} plus {{PD-algorithm}} with author '[[User:Oronbb|Runway ML]]' and source {{own}}. Commons' machine-readable metadata therefore shows 'Public domain' / Artist 'Runway ML', while the only operative grant is Oronbb's CC BY 4.0. A downstream user cannot tell whom to credit or which regime applies.",
+        "Third-party input with unresolved terms: the file name 'Gen-3 Alpha 3480943356, A cowboy riding his , pikaso texttoimage C (1)' shows the first frame came from Freepik Pikaso (an AI text-to-image tool). Freepik's terms could not be retrieved (support.freepik.com is a JavaScript page, www.freepik.com/terms_of_use returns HTTP 403 from the sandbox); secondary search summaries say free-plan generations carry a watermark and require attribution / are personal-use only, paid plans include commercial licence. The plan used is unknown, and the uploader cannot license an input asset's terms.",
+        "Model claim rests only on the Runway-style file name (Gen-3 Alpha vs Turbo not stated); the Commons description is just 'Cowboy riding in the desert' and the prompt is truncated in the file name - there is no prompt to publish or label.",
+        "Runway's side is otherwise fine (current terms: 'The Company does not restrict your commercial use of your Outputs').",
+        "Gen-3 dating: runwayml.com/research/introducing-gen-3-alpha is dated June 17, 2024 (announcement); clip date is the Commons upload 2024-09-20 (generation date unknown).",
+        "Pixel analysis (1280x768): no static overlay in any corner; single continuous 10.542 s shot; used on he.wikipedia only."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "reject",
+        "created": "2024-09-20 (Commons upload; generation date could be earlier)",
+        "model_version": "Runway Gen-3 Alpha (inferred from file name only); start image from Freepik Pikaso text-to-image (per file name)",
+        "creator_credit": "Oronbb (Wikimedia Commons); page author label reads 'Runway ML' but links to User:Oronbb",
+        "license_verified": {
+          "id": "CC BY 4.0 + PD-algorithm (contradictory author label)",
+          "url": "https://commons.wikimedia.org/wiki/File:Gen-3_Alpha_3480943356,_A_cowboy_riding_his_,_pikaso_texttoimage_C_(1).webm",
+          "quote": "This file is licensed under the Creative Commons Attribution 4.0 International license.",
+          "retrieved": true
+        },
+        "commons_sha1": "d659df321152adf3029ec1295ffc99e1c47f0e5e",
+        "media_verified": {
+          "duration_s": 10.542,
+          "width": 1280,
+          "height": 768,
+          "fps": 24,
+          "has_audio": false
+        },
+        "salvage_path": "Ask Oronbb which Freepik plan produced the still (or add a Freepik credit if attribution suffices) and for the full prompt; or replace with a better-documented Gen-3 clip."
+      },
+      "http": {
+        "status": 200,
+        "content_length": 1596755,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Runway Gen-3 Alpha announced 2024-06-17",
+        "source_url": "https://runwayml.com/research/introducing-gen-3-alpha",
+        "quote": "Runway Gen-3 Alpha: AI Video Generation with Temporal Control June 17, 2024 by Anastasis Germanidis"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "cogvideox5b_swans_2024",
+      "final_verdict": "clear",
+      "conditions": [
+        "CC0 / PD: no attribution legally required; courtesy credit 'VulcanSphere, Wikimedia Commons, CC0 1.0' (the template says attribution is welcome, not mandatory).",
+        "Label 'CogVideoX (Zhipu AI / Tsinghua), text-to-video, via the THUDM CogVideoX-5B Hugging Face Space, clip made Dec 2024' - the 5B variant rests on the Space name only (2B and 5B share 720x480, 8 fps, 49 frames); do not imply the clip dates from the Aug 2024 model release.",
+        "Show it as a low-resolution open-model output (720x480, 8 fps); heavy upscale for 9:16.",
+        "Download and archive the master now with its Commons sha1 (unused or thinly used Commons files can be deleted on scope grounds; sibling AI clips were deleted 2026-04-25 and 2026-07-04)."
+      ],
+      "issues_found": [
+        "Licence re-verified: live wikitext transcludes {{User:VulcanSphere/AI-CC0-videos}}. User:VulcanSphere/AI-CC0-videos (single revision 2024-12-24, never edited): 'In countries where this video is eligible for copyright registration (United Kingdom, Mainland China): {{cc-zero}} In countries where this video is not eligible for copyright registration (United States): {{PD-algorithm}}' and 'You can attribute me ... but it is not mandatory.' Uploader is established (registered 2014, 43,862 edits, autopatrolled); no DR; extmetadata 'Public domain', categories CC-Zero + PD-algorithm.",
+        "Generator terms checked: CogVideoX LICENSE (raw.githubusercontent.com/THUDM/CogVideo/main/MODEL_LICENSE): 'The intellectual property rights of the generated content belong to the user to the extent permitted by applicable local laws.' The commercial-registration requirement (and 1M visits/month cap) applies to using the model commercially, not to distributing an output; restrictions bar military/illegal use. (README: CogVideoX-2B under Apache-2.0, 5B under the CogVideoX licence.)",
+        "Model version: page says 'CogVideoX' and source https://huggingface.co/spaces/THUDM/CogVideoX-5B-Space (now zai-org). Output spec 720x480, 8 fps, 6.125 s (=49 frames) is common to both 2B and 5B, so '5B' is inferred from the Space name.",
+        "Dates: clip 2024-12-24 (Commons); README '2024/8/27' 5B open-sourced, arXiv 2408.06072 submitted 12 Aug 2024.",
+        "Pixel analysis: no static overlay found (scene is near-static, median temporal std 2.9, so sensitivity is limited). Frames not viewed.",
+        "Unused on any Wikimedia project - deletion exposure."
+      ],
+      "corrected_fields": {
+        "created": "2024-12-24 (Commons |Date and upload)",
+        "model_version": "CogVideoX (5B per Hugging Face Space name THUDM/CogVideoX-5B-Space; 2B not excluded)",
+        "watermark_notes": "none detected (low sensitivity: near-static scene); not visually inspected",
+        "license_verified": {
+          "id": "CC0 1.0 (uploader dedication) + PD-algorithm",
+          "url": "https://commons.wikimedia.org/wiki/User:VulcanSphere/AI-CC0-videos",
+          "quote": "This artificial intelligence video was generated by VulcanSphere with text-to-image (txt2img) process and placed under CC-Zero.",
+          "retrieved": true
+        },
+        "commons_sha1": "1674d92bd2188c5f4c298f710637ed016e94795a",
+        "media_verified": {
+          "duration_s": 6.125,
+          "width": 720,
+          "height": 480,
+          "fps": 8,
+          "has_audio": false
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 274586,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "CogVideoX-5B open-sourced 2024-08-27 (paper 2024-08-12)",
+        "source_url": "https://raw.githubusercontent.com/THUDM/CogVideo/main/README.md",
+        "quote": "2024/8/27: We have open-sourced a larger model in the CogVideoX series, CogVideoX-5B."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "hailuo_cyberpunk_rain_2024",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "Burned-in overlay detected: pixel analysis of the 1280x720 median frame finds a static high-contrast text band at bottom-right (about y 92.6-94.8 %, x 75.7-98.8 % of the frame; temporal std ~0 with strong edges while the scene moves). This matches Hailuo's free-tier watermark; text not read, frames not viewed. Hunter recorded 'unknown'.",
+        "Generator terms cannot be satisfied by the uploader's CC0: hailuoai.video/doc/payment-policy.html (current) says 'Free Users ... download videos that include a watermark' and grants ownership/commercial-use statements only to paid plans ('We do not claim ownership over content you generate and download while on a paid subscription plan ... including the right to use it for commercial purposes'). The Dec-2024 version (Wayback 2024-12-09) says 'Free Users: Video downloads will include a watermark. Paid Users ... watermark-free downloads' and has no ownership clause; the general Hailuo user agreement in force on 2024-12-24 could not be retrieved (single-page app), and secondary sources state free-tier videos may not be used commercially. A watermarked free-tier output is therefore presumptively subject to upstream terms the uploader cannot override.",
+        "The Commons tag is not the defect: template as above (User:VulcanSphere/AI-CC0-videos (single revision 2024-12-24, never edited): 'In countries where this video is eligible for copyright registration (United Kingdom, Mainland China): {{cc-zero}} In countries where this video is not eligible for copyright registration (United States): {{PD-algorithm}}' and 'You can attribute me ... but it is not mandatory.'), uploader established, no DR on this file.",
+        "Model version: page says only 'Hailuo AI' (hailuoai.video); MiniMax's video-01 launch (2024.08.31) is corroborated but which version produced the clip is unstated (hunter flagged this too).",
+        "Deletion pattern: sibling VulcanSphere Hailuo file 'Drone View of Night Cyberpunk City (Hailuo AI).webm' was deleted 2026-04-25 as out of scope; this file is used on en.wikipedia MiniMax_Group and 9 other pages (durable).",
+        "Content: synthetic hooded figure in rain, no real person, no brand seen in the prompt; 5.64 s 1280x720 25 fps."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "reject",
+        "watermark_notes": "static text-like overlay bottom-right, approx y 92.6-94.8 %, x 75.7-98.8 % of 1280x720 (pixel analysis; not read)",
+        "license_verified": {
+          "id": "CC0 1.0 (uploader) + PD-algorithm - upstream free-tier terms unresolved",
+          "url": "https://commons.wikimedia.org/wiki/User:VulcanSphere/AI-CC0-videos",
+          "quote": "This artificial intelligence video was generated by VulcanSphere with text-to-image (txt2img) process and placed under CC-Zero.",
+          "retrieved": true
+        },
+        "commons_sha1": "be865b09e3826d1494b4f757ca02b0c783fc9946",
+        "media_verified": {
+          "duration_s": 5.64,
+          "width": 1280,
+          "height": 720,
+          "fps": 25,
+          "has_audio": false
+        },
+        "salvage_path": "MiniMax written permission, or a paid-plan (watermark-free) generation with a stated licence; if the production accepts residual risk it must keep the Hailuo watermark visible."
+      },
+      "http": {
+        "status": 200,
+        "content_length": 3117507,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "MiniMax video-01 (Hailuo AI) launched 2024-08-31; clip generated 2024-12",
+        "source_url": "https://www.minimax.io/news/video-01",
+        "quote": "2024.08.31 MiniMax officially releases the Video-01 video generation model"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "veo2_clock_2025",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "CC0/PD needs no attribution; courtesy credit 'FallingGravity (prompt), Google Veo 2 via Gemini Advanced, Wikimedia Commons, CC0'. Archive the licence history now: CC0 was added by the same uploader on 2026-04-12, eleven months after the 2025-05-19 upload, which was originally PD-algorithm only.",
+        "Label 'Google Veo 2 via Gemini Advanced, clip made May 2025 (model announced Dec 2024, in Gemini Apr 2025)'; silent 720p; not a capability hero - drop if frames show wrong clock hands (unviewed).",
+        "Google's terms on Gemini-generated output were not verified (the Generative AI Additional Terms page fetched contains no ownership statement either way); residual risk is the generator's terms.",
+        "Download and archive the master now with its Commons sha1 (unused or thinly used Commons files can be deleted on scope grounds; sibling AI clips were deleted 2026-04-25 and 2026-07-04)."
+      ],
+      "issues_found": [
+        "Licence re-verified live: {{PD-algorithm}} {{Cc-zero}}; author 'Veo 2; prompted by FallingGravity'; history shows the CC0 tag was added by FallingGravity on 2026-04-12 ('add cc-0'), the original upload 2025-05-19 carried PD-algorithm only. Uploader is established (registered 2012, 10,600 edits). No DR.",
+        "Model claim ('Veo 2', 'Gemini Advanced', prompt 'create a video of a working clock') is uploader-stated; corroborated that Veo 2 was rolled out in Gemini Advanced from April 15, 2025 (blog.google) and announced Dec 16, 2024; Google says Veo 2 videos carry the invisible SynthID mark only ('a digital watermark embedded in each frame'); the visible-watermark policy came later, and none was detected.",
+        "Pixel analysis (1280x720): scene is almost static (median temporal std 1.3), so overlay detection is inconclusive; bottom-right crop shows scene structure, no text.",
+        "Content trivial (one working clock, 8 s, 24 fps, 938 KB); unused on any Wikimedia project - deletion exposure."
+      ],
+      "corrected_fields": {
+        "created": "2025-05-18 (Commons |date; upload 2025-05-19T06:33:31Z)",
+        "license_history": "PD-algorithm at upload (2025-05-19); {{Cc-zero}} added by the uploader 2026-04-12",
+        "watermark_notes": "none detected; low sensitivity (static scene); not visually inspected",
+        "license_verified": {
+          "id": "CC0 1.0 + PD-algorithm",
+          "url": "https://commons.wikimedia.org/wiki/File:Clock_by_Veo_2.webm",
+          "quote": "in the public domain because it is the work of a computer algorithm or artificial intelligence and does not contain sufficient human authorship",
+          "retrieved": true
+        },
+        "commons_sha1": "5bd71ff245cda6b29e61d55c8145005e4a9bd06b",
+        "media_verified": {
+          "duration_s": 8.0,
+          "width": 1280,
+          "height": 720,
+          "fps": 24,
+          "has_audio": false
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 938048,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Veo 2 available in Gemini Advanced from 2025-04-15 (announced 2024-12-16)",
+        "source_url": "https://blog.google/products-and-platforms/products/gemini/video-generation/",
+        "quote": "Generate videos in Gemini and Whisk with Veo 2 Apr 15, 2025"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "veo3_owl_badger_2025",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "The Commons file is a yt-dlp rip of Google DeepMind's YouTube upload vv6Ryg5iyh8 (category 'Videos downloaded with yt-dlp with command included'; the command is printed on the page). BRIEF rule 3 bars YouTube downloads, and {{PD-algorithm}} was applied by the importer (VulcanSphere), not by Google.",
+        "No reuse licence exists. Google's own page https://deepmind.google/models/veo/ hosts the same video (https://storage.googleapis.com/gdm-deepmind-com-prod-public/media/media/veo__veo-3__owl.webm: HTTP 200, 4,065,596 bytes, VP9 1920x1080 24 fps + Opus, 22.667 s, last-modified 2026-01-28) and prints the prompt; its credits say 'All the clips were generated directly with Veo without modifications by ...'. This corrects the hunter (who said nothing states unmodified output) but is still not a licence or reuse term.",
+        "22.7 s is much longer than the eight-second clips Gemini's Veo produces (verified for Veo 2: 'eight-second videos'; Veo 3 length not verified here) and the prompt has three separately prompted parts, so the video is probably several generations arranged/mixed by Google; 'without modifications' refers to clips, so the 'no sufficient human authorship' predicate of PD-algorithm is unproven for the assembled work. Rendered Template:PD-algorithm (fetched 2026-09-29): 'This file is in the public domain because it is the work of a computer algorithm or artificial intelligence and does not contain sufficient human authorship to support a copyright claim. The United Kingdom and Hong Kong provide a limited term of copyright protection for computer-generated works of 50 years from creation.' plus an 'AI derivative works' legal disclaimer (models trained on copyrighted works can output derivative content).",
+        "Model date corroborated (Veo 3 announced May 20, 2025; first Veo with audio); the Commons |date 2025-05-21 is the importer's YouTube date and was not verified against the YouTube page.",
+        "Pixel analysis of the 3840x2160 rip: no static overlay in any corner.",
+        "Durable on Wikimedia (used on 11 Wikipedia pages incl. en.wikipedia Veo) - the rejection is about licence, not scope."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "reject",
+        "created": "2025-05 (Veo 3 launch window; exact upload day unconfirmed)",
+        "developer_hosted_original": {
+          "url": "https://storage.googleapis.com/gdm-deepmind-com-prod-public/media/media/veo__veo-3__owl.webm",
+          "http": 200,
+          "content_length": 4065596,
+          "content_type": "video/webm",
+          "last_modified": "Wed, 28 Jan 2026 14:49:30 GMT",
+          "ffprobe": "vp9 1920x1080 24 fps + opus, 22.667 s"
+        },
+        "watermark_notes": "none detected in the 4K rip (pixel analysis)",
+        "license_verified": {
+          "id": "PD-algorithm (importer's tag on a Google promotional video; no developer licence)",
+          "url": "https://commons.wikimedia.org/wiki/Template:PD-algorithm",
+          "quote": "in the public domain because it is the work of a computer algorithm or artificial intelligence and does not contain sufficient human authorship",
+          "retrieved": true
+        },
+        "commons_sha1": "257a2215446cee4f0babf0424b3904b81de0fa61",
+        "media_verified": {
+          "duration_s": 22.708,
+          "width": 3840,
+          "height": 2160,
+          "fps": 24,
+          "has_audio": true
+        },
+        "salvage_path": "Request written press/reuse permission from Google DeepMind for the hosted copy; if granted, source from Google's hosted file, not YouTube."
+      },
+      "http": {
+        "status": 200,
+        "content_length": 29293365,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Veo 3 announced 2025-05-20, first Veo with native audio",
+        "source_url": "https://blog.google/technology/ai/generative-media-models-io-2025/",
+        "quote": "May 20, 2025 | Veo 3 ... for the first time, can also generate videos with audio"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "veo3_chernobyl_room_2025",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Label 'Google Veo 3 (per uploader; tier and app unknown), Aug 2025' - the model claim is the uploader's word only; do not add 'Fast'/'Quality'/'Flow' or any capability claim from this clip.",
+        "State internally that the file was re-encoded by the uploader (24 to 30 fps, see issues) - it is not raw model output; treat as a low-confidence Veo 3 example and prefer better-documented Veo 3 clips if available.",
+        "CC0/PD needs no attribution; courtesy credit 'Global Donald, Wikimedia Commons, CC0'. Archive the master with sha1 (used only on pt.wikipedia).",
+        "Keep captions factual: a real place (Chernobyl) is named only in the prompt; no people in frame; doll's-head prop is creepy, not violent."
+      ],
+      "issues_found": [
+        "Licence re-verified live: {{self|cc-zero}} + {{PD-algorithm}}, source {{own}}, author 'Google Veo-3' (page label) by uploader Global Donald (registered 2022-11-01, 527 edits, 144 uploads); unchanged since 2025-08-10; no DR.",
+        "Model claim is uploader-only ('A video, with sound, generated with using Google's Veo-3'); tier, app (Gemini/Flow) and generation date are unstated; the prompt is conversational ('You can make the video a bit darker, it must sound creepy, you can also add dust'), implying chat-mediated generation.",
+        "Not raw output: the Commons upload log shows an overwrite on 2025-08-10 with the summary 'Framerate issues (fixed)'; the file is 1920x1080 at 30 fps while Veo outputs 24 fps, so the uploader converted/re-encoded it.",
+        "No visible Veo/sparkle watermark detected in any corner; press reports (secondary) say non-Ultra Gemini Veo 3 videos got a visible mark from late May 2025, so the tier is either Ultra/Flow or the mark was absent/removed - undeterminable.",
+        "Model date corroborated (Veo 3 announced May 20, 2025); audio present (Opus) per Commons metadata.",
+        "8.0 s, 24 to 30 fps, 13.2 MB; used on pt.wikipedia 'Veo' article."
+      ],
+      "corrected_fields": {
+        "created": "2025-08-10 (Commons upload/date; actual generation time unknown)",
+        "model_version": "Google Veo 3 (per uploader; tier/app unknown); file re-encoded to 30 fps by uploader",
+        "watermark_notes": "no visible mark detected in any corner (pixel analysis); not visually inspected",
+        "license_verified": {
+          "id": "CC0 1.0 + PD-algorithm",
+          "url": "https://commons.wikimedia.org/wiki/File:Veo-3_animation_example_-_Chernobyl_decaying_room.webm",
+          "quote": "has dedicated the work to the public domain by waiving all of their rights to the work worldwide under copyright law",
+          "retrieved": true
+        },
+        "commons_upload_log": [
+          "upload/upload 2025-08-10 'Uploaded own work with UploadWizard'",
+          "upload/overwrite 2025-08-10 'Framerate issues (fixed)'"
+        ],
+        "commons_sha1": "209a49f33be847499790c7e3f6fbf1f48fae0466",
+        "media_verified": {
+          "duration_s": 8.0,
+          "width": 1920,
+          "height": 1080,
+          "fps": 30,
+          "has_audio": true
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 13203697,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Veo 3 announced 2025-05-20 (clip uploaded 2025-08-10)",
+        "source_url": "https://blog.google/technology/ai/generative-media-models-io-2025/",
+        "quote": "May 20, 2025 | Veo 3 ... for the first time, can also generate videos with audio"
+      },
+      "confidence": "low"
+    },
+    {
+      "cand_id": "veo31_kei_lemonade_2025",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "CC0/PD needs no attribution; courtesy credit 'VulcanSphere, Google Veo 3.1 Fast via Flow, Wikimedia Commons, CC0'. Keep the small visible mark at the bottom-right corner if the excerpt includes it (see issues).",
+        "Label 'Google Veo 3.1 Fast in Flow (per uploader), 16 Oct 2025, upscaled to 1080p by the uploader'; not a controlled A/B against the Veo 3 sibling (prompts differ, 3.1 upscaled).",
+        "Check the synthetic lime-haired character does not resemble a real person before use (unviewed).",
+        "Google's Flow terms for generated output were not retrieved; residual generator-terms risk. Download and archive the master now with its Commons sha1 (unused or thinly used Commons files can be deleted on scope grounds; sibling AI clips were deleted 2026-04-25 and 2026-07-04)."
+      ],
+      "issues_found": [
+        "Licence re-verified: live wikitext transcludes {{User:VulcanSphere/AI-CC0-videos}} (User:VulcanSphere/AI-CC0-videos (single revision 2024-12-24, never edited): 'In countries where this video is eligible for copyright registration (United Kingdom, Mainland China): {{cc-zero}} In countries where this video is not eligible for copyright registration (United States): {{PD-algorithm}}' and 'You can attribute me ... but it is not mandatory.'); uploader established (43,862 edits); no DR; page says 'generated with Veo 3.1 Fast' ... 'upscaled to 1080p', source 'Generated in Google Flow'.",
+        "Model date: Veo 3.1 announced Oct 15, 2025 (blog.google 'Introducing Veo 3.1 and advanced capabilities in Flow'); clip uploaded 2025-10-16T05:47Z (about a day later) - plausible but the generation time is unverifiable.",
+        "Small static high-contrast mark at the bottom-right corner (about x 95.6-98.6 %, y 95.5-97.3 % of 1920x1088; 435 static edge pixels) consistent with Google's visible Veo/sparkle mark; not read. Hunter recorded 'unknown'.",
+        "Frame is 1920x1088 (uploader upscale), 8.0 s, 24 fps, stereo audio ('visual kei music' generated; no artist named).",
+        "Unused on any Wikimedia project - deletion exposure."
+      ],
+      "corrected_fields": {
+        "created": "2025-10-16 (Commons |Date; upload 2025-10-16T05:47:12Z)",
+        "watermark_notes": "small static overlay at bottom-right corner (about x 95.6-98.6 %, y 95.5-97.3 %); likely Google visible mark; keep it",
+        "license_verified": {
+          "id": "CC0 1.0 (uploader dedication) + PD-algorithm",
+          "url": "https://commons.wikimedia.org/wiki/User:VulcanSphere/AI-CC0-videos",
+          "quote": "This artificial intelligence video was generated by VulcanSphere with text-to-image (txt2img) process and placed under CC-Zero.",
+          "retrieved": true
+        },
+        "commons_sha1": "dfcbabb340207d5ab58f3295a692b4d0cd60466b",
+        "media_verified": {
+          "duration_s": 8.0,
+          "width": 1920,
+          "height": 1088,
+          "fps": 24,
+          "has_audio": true
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 10349973,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Veo 3.1 announced 2025-10-15",
+        "source_url": "https://blog.google/technology/ai/veo-updates-flow/",
+        "quote": "Introducing Veo 3.1 and advanced capabilities in Flow Oct 15, 2025"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "ltxv_cybertruck_2025",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit both: OWS Photography (source photos 'Tesla Cybertruck Washington DC Metro Area, USA.jpg' and '(7).jpg', CC BY 4.0) and Premeditated (LTXV prompting/generation), CC BY 4.0, via Wikimedia Commons; indicate changes. PD-algorithm does not remove the photographer's attribution duty (CC BY 4.0 section 3(a)(1)). No ShareAlike.",
+        "Frame-review for licence plates, readable logos, or bystanders (Washington DC street photos, unviewed); use editorially only, with no implied Tesla endorsement.",
+        "Label 'LTXV 2B (Lightricks, per uploader; checkpoint unknown), May 2025; generated from two CC BY photographs' - do not claim first/last-frame conditioning or a specific version (0.9.5 is the first with keyframes; the page does not say which was used).",
+        "Model-output terms: for checkpoint 0.9.5 the OpenRAIL-M section 6 says 'Licensor claims no rights in the Output You generate using the Model'; earlier checkpoints' terms were not checked."
+      ],
+      "issues_found": [
+        "Licences re-verified: source photos File:Tesla Cybertruck Washington DC Metro Area, USA.jpg (uploaded 2024-12-17, taken 2024-11-29) and (7).jpg (uploaded 2025-01-17, taken 2025-01-11) are {{self|cc-by-4.0}} 'Own work' by OWS Photography (registered 2024-09-14, 13,256 edits). The video wikitext is {{self|cc-by-4.0|author=OWS Photography}} + {{PD-algorithm}}; source 'Derived from' both files; uploader Premeditated (registered 2018, 15,640 edits, rollbacker); 'Imported media from uploads:' stash import; no DR.",
+        "Model: 'Generated using LTXV 2B' is the uploader's statement; checkpoint unknown. README: 'March, 5th, 2025: New checkpoint v0.9.5 - New license for commercial use (OpenRail-M)' implies earlier checkpoints had a different licence; v0.9.5 licence text (huggingface.co/Lightricks/LTX-Video/.../ltx-video-2b-v0.9.5.license.txt) section 6: 'Licensor claims no rights in the Output You generate using the Model. You are accountable for input you insert into the Model, the Output you generate and its subsequent uses.'",
+        "The two source photos were taken 6 weeks apart, so the clip is a two-photo morph/interpolation, not a natural camera move; the page does not say they were first/last frames (hunter inferred).",
+        "Brand/IP flag stands: real vehicle (Tesla Cybertruck) with possible logos/plates; not viewed.",
+        "Pixel analysis (1280x720): no static overlay in any corner.",
+        "5.042 s, 24 fps, 3.2 MB, no audio; used on en/id/ko Wikipedia (Lightricks) - durable."
+      ],
+      "corrected_fields": {
+        "created": "2025-05-12 (Commons |date; upload 2025-05-12T07:52:44Z)",
+        "watermark_notes": "none detected by pixel analysis; not visually inspected",
+        "license_verified": {
+          "id": "CC BY 4.0 (OWS Photography source photos; video tagged {{self|cc-by-4.0}} + PD-algorithm)",
+          "url": "https://commons.wikimedia.org/wiki/File:Tesla_Cybertruck_Washington_DC_Metro_Area,_USA_(AI-generated).webm",
+          "quote": "This file is licensed under the Creative Commons Attribution 4.0 International license.",
+          "retrieved": true
+        },
+        "source_photos": [
+          "https://commons.wikimedia.org/wiki/File:Tesla_Cybertruck_Washington_DC_Metro_Area,_USA.jpg",
+          "https://commons.wikimedia.org/wiki/File:Tesla_Cybertruck_Washington_DC_Metro_Area,_USA_(7).jpg"
+        ],
+        "commons_sha1": "1db5c3e0a44f861546172b98a55c620b5a2650c5",
+        "media_verified": {
+          "duration_s": 5.042,
+          "width": 1280,
+          "height": 720,
+          "fps": 24,
+          "has_audio": false
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 3217747,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "LTX-Video keyframe support from checkpoint v0.9.5 (2025-03-05); clip uploaded 2025-05-12",
+        "source_url": "https://raw.githubusercontent.com/Lightricks/LTX-Video/main/README.md",
+        "quote": "March, 5th, 2025: New checkpoint v0.9.5 ... Support keyframes and video extension"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "grok_imagine_corinth_2025",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Label only 'xAI Grok Imagine (version unverified), image-to-video, per uploader, ~Nov 2025'; do NOT print 'Grok 4.1' - 'Grok 4.1 Imagine mode' is not corroborated by any xAI primary source and Grok 4.1 is a chat-model name.",
+        "Credit: Lovis Corinth, 'Goetz von Berlichingen' (1917), public domain (Zeno.org scan via Wikimedia Commons); video by Achim Raschka with Grok, CC0 (no attribution legally required).",
+        "Visually profile for a Grok corner mark (none isolated by pixel analysis) and for the near-silent audio track; keep any mark if present.",
+        "Only 560x560, 6 s: use as a small 'painting begins to move' pair beside the source painting, not as a capability hero; xAI's output terms were not retrievable (HTTP 403), so record residual generator-terms risk.",
+        "Editorial: Grok has a documented deepfake controversy (Wikipedia 'Grok sexual deepfake scandal'); the clip itself is a harmless animation of a 16th-century painted figure - production to decide on brand association."
+      ],
+      "issues_found": [
+        "Licence re-verified live: {{PD-Art|PD-old-auto-1923|deathyear=1925}} {{self|Cc-zero}} {{PD-algorithm}}; uploader Achim Raschka (38,160 edits, autopatrolled); source painting File:Lovis Corinth Goetz von Berlichingen 1917.jpg is public domain (Corinth died 1925; Zeno.org scan; extmetadata 'Public domain'); no DR; used on de.wikipedia 'Grok' (durable).",
+        "Model claim NOT corroborated: page says 'Video generated with Grok 4.1 Imagine mode', date '2025-11' (uploaded 2026-01-13). xAI primary sources: x.ai/news/grok-4-1 (Nov 17, 2025) has no video/Imagine feature text; docs.x.ai release notes list 'Jan 28 Video Generation & Next-Gen Image Generation'; x.ai/news/grok-imagine-api is dated Jan 28, 2026. The consumer Grok Imagine launch (Aug 2025) appears only in secondary summaries. The uploaded clip therefore predates the first primary-source video announcement I could retrieve.",
+        "xAI Terms of Service could not be fetched (x.ai/legal/terms-of-service returns HTTP 403 from the sandbox) - ownership of outputs unverified.",
+        "Overlay analysis inconclusive: the painted content has many static edges, no clean corner box was isolated; a Grok mark cannot be excluded.",
+        "Media: 6.045 s, 560x560, 24 fps, stereo Opus audio (hunter measured mean about -55 dB; not re-measured)."
+      ],
+      "corrected_fields": {
+        "created": "2025-11 (uploader-stated; upload 2026-01-13T12:16:58Z)",
+        "model_version": "xAI Grok Imagine (version unverified); page wording 'Grok 4.1 Imagine mode' is not corroborated",
+        "watermark_notes": "inconclusive (painted content); profile visually",
+        "license_verified": {
+          "id": "CC0 1.0 + PD-algorithm; source painting PD-Art (PD-old-auto-1923)",
+          "url": "https://commons.wikimedia.org/wiki/File:Grok_AI_Lovis_Corinth_G%C3%B6tz_von_Berlichingen_1917.webm",
+          "quote": "has dedicated the work to the public domain by waiving all of their rights to the work worldwide under copyright law",
+          "retrieved": true
+        },
+        "commons_sha1": "eec04bad7bc1a665b1a78af6eb222c551d93fd87",
+        "media_verified": {
+          "duration_s": 6.045,
+          "width": 560,
+          "height": 560,
+          "fps": 24,
+          "has_audio": true
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 2125035,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Grok Imagine video generation (first primary-source announcement found: 2026-01-28); 'Grok 4.1 Imagine' claim uncorroborated",
+        "source_url": "https://x.ai/news/grok-imagine-api",
+        "quote": "Jan 28, 2026 Grok Imagine API ... Grok Imagine is our most powerful video-audio generative model yet."
+      },
+      "confidence": "low"
+    }
+  ],
+  "summary": {
+    "checked": 20,
+    "clear": 1,
+    "clear_with_conditions": 14,
+    "rejected": 5
+  }
+}

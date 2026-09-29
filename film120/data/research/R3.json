@@ -1,0 +1,3372 @@
+{
+ "agent": "R3",
+ "topic": "Runway, Luma, Pika, Midjourney, Adobe, Stability, Genmo, Lightricks, Meta, Amazon, xAI: video-model milestones, 2023 to 2026-09-29",
+ "milestones": [
+  {
+   "id": "stability_svd_2023_11_21",
+   "developer": "Stability AI",
+   "family": "Stable Video Diffusion",
+   "version": "Stable Video Diffusion (SVD, SVD-XT)",
+   "event": "open_weights",
+   "date": "2023-11-21",
+   "date_precision": "day",
+   "headline": "Stability's first video foundation model: open image-to-video weights making 14- or 25-frame clips, released for research only.",
+   "specs": {
+    "max_clip_s": 4,
+    "resolution": "576x1024",
+    "fps": "customizable, 3-30 fps",
+    "audio": null,
+    "notes": "Image-to-video only (cannot be controlled through text). Max ~4 s per the model card. Audio not stated. Research release: 'not intended for real-world or commercial applications at this stage'."
+   },
+   "claims": [
+    {
+     "claim": "Announcement page is dated 'Nov 21' (year not printed on the page).",
+     "quote": "Introducing Stable Video Diffusion Product Nov 21",
+     "source_url": "https://stability.ai/news-updates/stable-video-diffusion-open-ai-video-model",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Official repo changelog gives the full date 2023-11-21 for the SVD release.",
+     "quote": "November 21, 2023 - We are releasing Stable Video Diffusion, an image-to-video model, for research purposes",
+     "source_url": "https://raw.githubusercontent.com/Stability-AI/generative-models/main/README.md",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Companion paper arXiv 2311.15127 submitted 25 Nov 2023 (corroborates the year).",
+     "quote": "[Submitted on 25 Nov 2023]",
+     "source_url": "https://arxiv.org/abs/2311.15127",
+     "source_kind": "paper",
+     "retrieved": true
+    },
+    {
+     "claim": "Developer describes it as its first foundation model for generative video.",
+     "quote": "Today, we are releasing Stable Video Diffusion, our first foundation model for generative video based on the image model Stable Diffusion.",
+     "source_url": "https://stability.ai/news-updates/stable-video-diffusion-open-ai-video-model",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Two image-to-video models, 14 and 25 frames, 3-30 fps.",
+     "quote": "capable of generating 14 and 25 frames at customizable frame rates between 3 and 30 frames per second",
+     "source_url": "https://stability.ai/news-updates/stable-video-diffusion-open-ai-video-model",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "SVD-XT model card: 25 frames at 576x1024.",
+     "quote": "trained to generate 25 frames at resolution 576x1024 given a context frame of the same size",
+     "source_url": "https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt/raw/main/README.md",
+     "source_kind": "model_card",
+     "retrieved": true
+    },
+    {
+     "claim": "Stated as research-only at release.",
+     "quote": "this model is not intended for real-world or commercial applications at this stage",
+     "source_url": "https://stability.ai/news-updates/stable-video-diffusion-open-ai-video-model",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Overlaps R1 (svd_2023). Kept here because Stability is in R3's topic list."
+  },
+  {
+   "id": "stability_stable_virtual_camera_2025_03_18",
+   "developer": "Stability AI",
+   "family": "Stable Virtual Camera",
+   "version": "Stable Virtual Camera",
+   "event": "preview",
+   "date": "2025-03-18",
+   "date_precision": "day",
+   "headline": "Multi-view diffusion model that turns 2D images into 3D-camera-controlled videos along user-defined or preset camera paths; non-commercial research preview.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "Takes a single input image or up to 32; 14 preset dynamic camera paths (360, Lemniscate, Spiral, Dolly Zoom, Move, Pan, Roll). Research use under a Non-Commercial License."
+   },
+   "claims": [
+    {
+     "claim": "Announcement page dated 'Mar 18' (year not printed).",
+     "quote": "Mar 18",
+     "source_url": "https://stability.ai/news-updates/introducing-stable-virtual-camera-multi-view-video-generation-with-3d-camera-control",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Companion paper arXiv 2503.14489 submitted 18 Mar 2025 (corroborates the year).",
+     "quote": "[Submitted on 18 Mar 2025",
+     "source_url": "https://arxiv.org/abs/2503.14489",
+     "source_kind": "paper",
+     "retrieved": true
+    },
+    {
+     "claim": "Generates 3D videos following user-defined camera trajectories.",
+     "quote": "The model generates 3D videos from a single input image or up to 32, following user-defined camera trajectories",
+     "source_url": "https://stability.ai/news-updates/introducing-stable-virtual-camera-multi-view-video-generation-with-3d-camera-control",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Research use only, Non-Commercial License.",
+     "quote": "available for research use under a Non-Commercial License",
+     "source_url": "https://stability.ai/news-updates/introducing-stable-virtual-camera-multi-view-video-generation-with-3d-camera-control",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Camera-control milestone for the 'more control' chapter; weights are non-commercial so not usable as reusable footage."
+  },
+  {
+   "id": "runway_gen3_alpha_announcement_2024_06_17",
+   "developer": "Runway",
+   "family": "Gen-3 Alpha",
+   "version": "Gen-3 Alpha",
+   "event": "announcement",
+   "date": "2024-06-17",
+   "date_precision": "day",
+   "headline": "Runway shows Gen-3 Alpha, first model on new large-scale multimodal infrastructure: better fidelity, consistency and motion than Gen-2, with fine temporal control.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "Announcement page does not state clip length, resolution or fps. Page says the model 'will be released' and will power Text to Video, Image to Video and Text to Image."
+   },
+   "claims": [
+    {
+     "claim": "Research page is dated 17 June 2024.",
+     "quote": "June 17, 2024 by Anastasis Germanidis",
+     "source_url": "https://runwayml.com/research/introducing-gen-3-alpha",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Runway's own claim of improvement over Gen-2.",
+     "quote": "a major improvement in AI model fidelity, consistency and motion over Gen-2, and a step towards building General World Models",
+     "source_url": "https://runwayml.com/research/introducing-gen-3-alpha",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Trained with temporally dense captions; enables transitions and key-framing.",
+     "quote": "Gen-3 Alpha has been trained with highly descriptive, temporally dense captions, enabling imaginative transitions and precise key-framing of elements in the scene.",
+     "source_url": "https://runwayml.com/research/introducing-gen-3-alpha",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Future tense: Gen-3 Alpha 'will power' Runway's existing tools.",
+     "quote": "Gen-3 Alpha will power Runway's Text to Video, Image to Video and Text to Image tools",
+     "source_url": "https://runwayml.com/research/introducing-gen-3-alpha",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Ships with visual moderation and C2PA provenance.",
+     "quote": "including our new and improved in-house visual moderation system and C2PA provenance standards",
+     "source_url": "https://runwayml.com/research/introducing-gen-3-alpha",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Runway states the showcase videos are unmodified generations (still a curated selection of prompts).",
+     "quote": "All of the videos on this page were generated with Gen-3 Alpha with no modifications.",
+     "source_url": "https://runwayml.com/research/introducing-gen-3-alpha",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Announcement date only. Paid-plan availability of text-to-video is dated 2024-07-01 in Runway's changelog (next milestone)."
+  },
+  {
+   "id": "runway_gen3_alpha_text_to_video_release_2024_07_01",
+   "developer": "Runway",
+   "family": "Gen-3 Alpha",
+   "version": "Gen-3 Alpha Text to Video",
+   "event": "public_release",
+   "date": "2024-07-01",
+   "date_precision": "day",
+   "headline": "Gen-3 Alpha text-to-video goes live inside Runway for paid plans; extensions later stretch clips to 40 seconds.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "Extensions added 2024-09-04 let a Gen-3 Alpha generation be extended by 5 or 10 s up to 40 s total; base clip length not stated in primary sources retrieved."
+   },
+   "claims": [
+    {
+     "claim": "Runway changelog entry dated Jul 1, 2024 (Paid Plans).",
+     "quote": "Jul 1, 2024 Paid Plans Gen-3 Alpha Text to Video",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Changelog text: first of an upcoming series of models.",
+     "quote": "Gen-3 Alpha is the first of an upcoming series of models trained by Runway on a new infrastructure built for large-scale multimodal training.",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Extensions entry dated Sep 4, 2024.",
+     "quote": "Sep 4, 2024 Paid Plans Extensions in Gen-3 Alpha",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Extensions allow up to 40 s of generated video.",
+     "quote": "Gen-3 Alpha videos can be extended an additional 5 or 10 seconds to create up to 40s of generated video.",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Runway page on 2024-06-17 said 'will be released'; this changelog is the primary date for actual paid-plan availability."
+  },
+  {
+   "id": "runway_gen3_alpha_image_to_video_2024_07_29",
+   "developer": "Runway",
+   "family": "Gen-3 Alpha",
+   "version": "Gen-3 Alpha Image to Video",
+   "event": "version_release",
+   "date": "2024-07-29",
+   "date_precision": "day",
+   "headline": "Gen-3 Alpha image-to-video: any still becomes the first frame of a generation; last-frame control follows a week later.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Changelog entry dated Jul 29, 2024 (Paid Plans).",
+     "quote": "Jul 29, 2024 Paid Plans Gen-3 Alpha Image to Video Use any image as the first frame of your video generation",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Last-frame entry dated Aug 5, 2024.",
+     "quote": "Aug 5, 2024 Paid Plans Gen-3 Alpha last frame",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Image can be first or last frame.",
+     "quote": "Gen-3 Alpha Image to Video now supports using an image as either the first or last frame of your video generation.",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "id": "runway_gen3_alpha_turbo_2024_08_14",
+   "developer": "Runway",
+   "family": "Gen-3 Alpha",
+   "version": "Gen-3 Alpha Turbo",
+   "event": "version_release",
+   "date": "2024-08-14",
+   "date_precision": "day",
+   "headline": "Gen-3 Alpha Turbo: a cheaper, faster variant of Gen-3 Alpha available to all plans, claimed 7x faster at half the price.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "Turbo extensions up to 34 s (changelog 2024-09-23); vertical video 2024-09-20; keyframes 2024-10-08; camera control 2024-11-01."
+   },
+   "claims": [
+    {
+     "claim": "Changelog entry dated Aug 14, 2024 (All Plans).",
+     "quote": "Aug 14, 2024 All Plans Gen-3 Alpha Turbo",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Runway's speed/price claim.",
+     "quote": "Generate 7x faster for half the price of the original Gen-3 Alpha, while still matching performance across many use cases.",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "id": "runway_act_one_announcement_2024_10_22",
+   "developer": "Runway",
+   "family": "Act-One",
+   "version": "Act-One",
+   "event": "announcement",
+   "date": "2024-10-22",
+   "date_precision": "day",
+   "headline": "Act-One transfers an actor's single-camera performance, including eye-lines and micro-expressions, onto generated characters inside Gen-3 Alpha without motion capture.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": "voice performance can be used as input",
+    "notes": "Facial performance transfer; vertical video support added 2024-11-09; Gen-3 Alpha Turbo support 2024-11-23."
+   },
+   "claims": [
+    {
+     "claim": "Research page dated 22 October 2024.",
+     "quote": "October 22, 2024 by Runway",
+     "source_url": "https://runwayml.com/research/introducing-act-one",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Video and voice performances as inputs.",
+     "quote": "Act-One can create compelling animations using video and voice performances as inputs.",
+     "source_url": "https://runwayml.com/research/introducing-act-one",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Driven only by an actor's performance; no extra equipment.",
+     "quote": "Our approach uses a completely different pipeline, driven directly and only by a performance of an actor and requiring no extra equipment.",
+     "source_url": "https://runwayml.com/research/introducing-act-one",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Changelog entry dated Oct 25, 2024 (Paid Plans).",
+     "quote": "Oct 25, 2024 Paid Plans Act-One in Gen-3 Alpha",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Rollout was gradual at first.",
+     "quote": "Act-One is gradually rolling out to users and will soon be available to everyone.",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Announcement 2024-10-22; changelog dates the gradual paid-plan rollout 2024-10-25."
+  },
+  {
+   "id": "runway_gen4_announcement_2025_03_31",
+   "developer": "Runway",
+   "family": "Gen-4",
+   "version": "Gen-4",
+   "event": "announcement",
+   "date": "2025-03-31",
+   "date_precision": "day",
+   "headline": "Gen-4 pitched as 'world consistency': consistent characters, objects and locations across scenes from visual references, without fine-tuning.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "Clip length/resolution not stated on the research page."
+   },
+   "claims": [
+    {
+     "claim": "Research page structured metadata: datePublished 2025-03-31T16:22:35Z (not visible text).",
+     "quote": "2025-03-31T16:22:35",
+     "source_url": "https://runwayml.com/research/introducing-runway-gen-4",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Uses visual references plus instructions for consistent styles, subjects, locations.",
+     "quote": "Runway Gen-4 can utilize visual references, combined with instructions, to create new images and videos utilizing consistent styles, subjects, locations and more.",
+     "source_url": "https://runwayml.com/research/introducing-runway-gen-4",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "No fine-tuning or additional training needed.",
+     "quote": "All without the need for fine-tuning or additional training.",
+     "source_url": "https://runwayml.com/research/introducing-runway-gen-4",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Consistent characters from a single reference image is Runway's headline claim.",
+     "quote": "Generate consistent AI video characters across any lighting condition, location or treatment",
+     "source_url": "https://runwayml.com/research/introducing-runway-gen-4",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "The page describes references as a capability; the changelog shows References shipped separately on 2025-04-30."
+  },
+  {
+   "id": "runway_gen4_public_release_2025_04_01",
+   "developer": "Runway",
+   "family": "Gen-4",
+   "version": "Gen-4",
+   "event": "public_release",
+   "date": "2025-04-01",
+   "date_precision": "day",
+   "headline": "Gen-4 becomes available to paid Runway plans.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Changelog entry dated Apr 1, 2025 (Paid Plans): 'Gen-4 is now available'.",
+     "quote": "Apr 1, 2025 Paid Plans Gen-4 is now available",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "One day after the research-page date; changelog is the availability record."
+  },
+  {
+   "id": "runway_gen4_turbo_2025_04_07",
+   "developer": "Runway",
+   "family": "Gen-4",
+   "version": "Gen-4 Turbo",
+   "event": "version_release",
+   "date": "2025-04-07",
+   "date_precision": "day",
+   "headline": "Gen-4 Turbo: Runway's fastest, most efficient video model, opened to all users.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Changelog entry dated Apr 7, 2025 (All Plans).",
+     "quote": "Apr 7, 2025 All Plans Gen-4 Turbo Our fastest and most efficient video model. Now available to all users.",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "id": "runway_gen4_references_2025_04_30",
+   "developer": "Runway",
+   "family": "Gen-4",
+   "version": "Gen-4 References",
+   "event": "version_release",
+   "date": "2025-04-30",
+   "date_precision": "day",
+   "headline": "Gen-4 References ships: generate consistent characters and locations from reference images, for paid plans.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Changelog entry dated Apr 30, 2025 (Paid Plans).",
+     "quote": "Apr 30, 2025 Paid Plans Gen-4 References Generate consistent characters, locations and more. Now available for paid plans.",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "An improved object-consistency update followed on 2025-06-25 (changelog)."
+  },
+  {
+   "id": "runway_act_two_2025_07_17",
+   "developer": "Runway",
+   "family": "Act-Two",
+   "version": "Act-Two",
+   "event": "version_release",
+   "date": "2025-07-17",
+   "date_precision": "day",
+   "headline": "Act-Two: next-generation motion capture model adding head, face, body and hand tracking to performance-driven character animation.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Changelog entry dated Jul 17, 2025 (Paid Plans).",
+     "quote": "Jul 17, 2025 Paid Plans Act-Two",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Runway's description of Act-Two.",
+     "quote": "Next-generation motion capture model with major improvements in generation quality and support for head, face, body and hand tracking.",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "No separate Act-Two research page could be retrieved (the URL guessed returned a server error); the changelog is the primary source."
+  },
+  {
+   "id": "runway_aleph_announcement_2025_07_25",
+   "developer": "Runway",
+   "family": "Aleph",
+   "version": "Runway Aleph",
+   "event": "announcement",
+   "date": "2025-07-25",
+   "date_precision": "day",
+   "headline": "Aleph, an in-context video model that edits existing footage: add, remove or transform objects, generate new angles, change style and lighting.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Research page dated 25 July 2025.",
+     "quote": "July 25, 2025 by Runway",
+     "source_url": "https://runwayml.com/research/introducing-runway-aleph",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "State-of-the-art in-context video model for multi-task generation and editing.",
+     "quote": "Runway Aleph is a state-of-the-art in-context video model, setting a new frontier for multi-task visual generation",
+     "source_url": "https://runwayml.com/research/introducing-runway-aleph",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "id": "runway_aleph_paid_release_2025_07_31",
+   "developer": "Runway",
+   "family": "Aleph",
+   "version": "Runway Aleph",
+   "event": "public_release",
+   "date": "2025-07-31",
+   "date_precision": "day",
+   "headline": "Aleph available to all paid Runway plans.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Changelog entry dated Jul 31, 2025 (Paid Plans).",
+     "quote": "Jul 31, 2025 Paid Plans Aleph Aleph is now available for all paid plans.",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "id": "runway_gen4_5_announcement_2025_12_01",
+   "developer": "Runway",
+   "family": "Gen-4.5",
+   "version": "Runway Gen-4.5",
+   "event": "announcement",
+   "date": "2025-12-01",
+   "date_precision": "day",
+   "headline": "Gen-4.5 announced with a leaderboard-topping claim, stronger physical accuracy and motion, and at launch text-to-video only.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "Runway cites 1,247 Elo on the Artificial Analysis text-to-video board as of 2025-11-30 (developer-reported snapshot, not independently verified). Control modes were 'to be brought' to Gen-4.5."
+   },
+   "claims": [
+    {
+     "claim": "Research page dated 1 December 2025.",
+     "quote": "December 1, 2025 by Runway",
+     "source_url": "https://runwayml.com/research/introducing-runway-gen-4.5",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Runway's capability claim.",
+     "quote": "Gen-4.5 sets new standards for dynamic, controllable action generation, temporal consistency and precise controllability across diverse generation modes.",
+     "source_url": "https://runwayml.com/research/introducing-runway-gen-4.5",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Developer-reported ranking (treat as time-stamped claim).",
+     "quote": "ranked #1 on the Artificial Analysis Text-to-Video benchmark with 1,247 Elo points",
+     "source_url": "https://runwayml.com/research/introducing-runway-gen-4.5",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Image to Video, Keyframes and Video to Video were future work at announcement.",
+     "quote": "We’ll also be bringing all existing control modes (Image to Video, Keyframes, Video to Video and more) to Gen-4.5.",
+     "source_url": "https://runwayml.com/research/introducing-runway-gen-4.5",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Runway calls Gen-1 the first publicly available video generation model.",
+     "quote": "Two years ago, we released Gen-1, the first publicly available video generation model.",
+     "source_url": "https://runwayml.com/research/introducing-runway-gen-4.5",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Do not present the Elo figure as a current ranking."
+  },
+  {
+   "id": "runway_gen4_5_public_release_2025_12_11",
+   "developer": "Runway",
+   "family": "Gen-4.5",
+   "version": "Runway Gen-4.5",
+   "event": "public_release",
+   "date": "2025-12-11",
+   "date_precision": "day",
+   "headline": "Gen-4.5 opens to all paid plans; Runway's GWM-1 post says it now supports native audio generation/editing and multi-shot editing.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": "native audio generation and editing (per GWM-1 post)",
+    "notes": "The audio/multi-shot statement is on the GWM-1 announcement page dated 2025-12-11; exact go-live day of audio not separately dated in the changelog."
+   },
+   "claims": [
+    {
+     "claim": "Changelog entry dated Dec 11, 2025 (Paid Plans).",
+     "quote": "Dec 11, 2025 Paid Plans Gen-4.5 Introducing Gen-4.5, the world's best video model. Now available for all paid plans.",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "GWM-1 post: Gen-4.5 now supports native audio generation and editing.",
+     "quote": "Gen-4.5 now supports native audio generation and native audio editing.",
+     "source_url": "https://runwayml.com/research/introducing-runway-gwm-1",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Multi-shot editing across arbitrary-length videos.",
+     "quote": "Gen-4.5 has the ability to edit videos of arbitrary length applying consistent transformations across multiple shots of arbitrary duration.",
+     "source_url": "https://runwayml.com/research/introducing-runway-gwm-1",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "id": "runway_gwm1_announcement_2025_12_11",
+   "developer": "Runway",
+   "family": "GWM-1",
+   "version": "GWM-1",
+   "event": "announcement",
+   "date": "2025-12-11",
+   "date_precision": "day",
+   "headline": "GWM-1, Runway's first General World Model family: autoregressive, frame-by-frame, real-time, controllable by actions such as camera pose.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": "720p",
+    "fps": null,
+    "audio": null,
+    "notes": "Page lists 'Up to 2 minutes of video' and '720p' under the GWM-1 summary."
+   },
+   "claims": [
+    {
+     "claim": "Research page dated 11 December 2025.",
+     "quote": "December 11, 2025 by Runway",
+     "source_url": "https://runwayml.com/research/introducing-runway-gwm-1",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Built on top of Gen-4.5.",
+     "quote": "GWM-1 is an autoregressive model built on top of Gen-4.5.",
+     "source_url": "https://runwayml.com/research/introducing-runway-gwm-1",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Generates frame by frame in real time with interactive control.",
+     "quote": "It generates frame by frame, runs in real time, and can be controlled interactively with actions",
+     "source_url": "https://runwayml.com/research/introducing-runway-gwm-1",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Fits the 'moving worlds' payoff; three variants: Worlds, Avatars, Robotics."
+  },
+  {
+   "id": "runway_gen4_5_image_to_video_2026_01_21",
+   "developer": "Runway",
+   "family": "Gen-4.5",
+   "version": "Gen-4.5 Image to Video",
+   "event": "version_release",
+   "date": "2026-01-21",
+   "date_precision": "day",
+   "headline": "Gen-4.5 gains image-to-video: supply a first frame alongside the text prompt.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Changelog entry dated Jan 21, 2026 (Paid Plans).",
+     "quote": "Jan 21, 2026 Paid Plans Gen-4.5 Image to Video You can now supply a first frame image alongside your text prompt with Gen-4.5.",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Shows Gen-4.5 launched without image input."
+  },
+  {
+   "id": "runway_aleph_2_2026_05_21",
+   "developer": "Runway",
+   "family": "Aleph",
+   "version": "Aleph 2.0",
+   "event": "version_release",
+   "date": "2026-05-21",
+   "date_precision": "day",
+   "headline": "Aleph 2.0 upgrades video editing: change one frame and the rest of the video follows, up to 30 s at 1080p, across shots.",
+   "specs": {
+    "max_clip_s": 30,
+    "resolution": "1080p",
+    "fps": null,
+    "audio": null,
+    "notes": "30 s / 1080p is the editing input limit stated on the product page."
+   },
+   "claims": [
+    {
+     "claim": "Changelog entry dated May 21, 2026 (Paid Plans).",
+     "quote": "May 21, 2026 Paid Plans Aleph 2.0 & Edit Studio",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Edit one frame; the rest of the video is modified to match.",
+     "quote": "Edit one frame and Aleph 2.0 modifies the rest of your video to match",
+     "source_url": "https://runwayml.com/product/aleph-2",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Clips up to 30 seconds at 1080p.",
+     "quote": "You can now edit clips up to 30 seconds long at 1080p.",
+     "source_url": "https://runwayml.com/product/aleph-2",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Applies edits across multiple cuts.",
+     "quote": "In videos with multiple cuts or scene changes, Aleph 2.0 can apply your edit across relevant shots.",
+     "source_url": "https://runwayml.com/product/aleph-2",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Runway's claim that only requested changes are made.",
+     "quote": "Aleph 2.0 only changes what you asked for and keeps everything else just as it was.",
+     "source_url": "https://runwayml.com/product/aleph-2",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "id": "runway_ruby_2026_08_20",
+   "developer": "Runway",
+   "family": "Ruby",
+   "version": "Runway Ruby",
+   "event": "version_release",
+   "date": "2026-08-20",
+   "date_precision": "day",
+   "headline": "Ruby, an SDR-to-HDR color-grading model: converts any model's or camera footage to HDR10/HLG/ProRes/EXR masters. A finishing tool, not a video generator.",
+   "specs": {
+    "max_clip_s": 30,
+    "resolution": "up to 4K (SDR input)",
+    "fps": null,
+    "audio": "source audio kept",
+    "notes": "Product page: SDR input up to 30 s and up to 4K."
+   },
+   "claims": [
+    {
+     "claim": "Changelog entry dated Aug 20, 2026 (Max+ Plans).",
+     "quote": "Aug 20, 2026 Max+ Plans Runway Ruby",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Converts SDR video to true HDR.",
+     "quote": "Convert any SDR video into true HDR.",
+     "source_url": "https://runwayml.com/product/ruby",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Works on outputs from any model or existing footage.",
+     "quote": "Convert outputs from any model, first or third party, or your own existing video files",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "API docs: true HDR is Gen-4.5 only among generators.",
+     "quote": "true HDR on Gen-4.5",
+     "source_url": "https://docs.dev.runwayml.com/guides/models/",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Context for a 'pipeline maturity' beat; not a generation model."
+  },
+  {
+   "id": "runway_gwm_worlds_2_2026_09_03",
+   "developer": "Runway",
+   "family": "GWM Worlds",
+   "version": "GWM Worlds 2",
+   "event": "preview",
+   "date": "2026-09-03",
+   "date_precision": "day",
+   "headline": "GWM Worlds 2 research preview: interactive worlds generated in real time as 720p 24 fps video with audio, steered by text actions and camera.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": "720p",
+    "fps": "24",
+    "audio": "48,000 Hz generated audio",
+    "notes": "Subtitle on the research page gives 720p, 24 fps, 48 kHz audio; sessions have no preset length."
+   },
+   "claims": [
+    {
+     "claim": "Research page dated 3 September 2026.",
+     "quote": "September 3, 2026 by Runway",
+     "source_url": "https://runwayml.com/research/introducing-gwm-worlds-2",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Real-time interactive simulation from video and audio generation.",
+     "quote": "GWM Worlds 2 turns high-fidelity video and audio generation into real-time interactive simulation.",
+     "source_url": "https://runwayml.com/research/introducing-gwm-worlds-2",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "User steers with text actions and camera motion.",
+     "quote": "you steer the world with text actions addressed to any subject or to the scene itself, alongside continuous camera motion",
+     "source_url": "https://runwayml.com/research/introducing-gwm-worlds-2",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "The page mentions a 'foundational audio-video generation model' without naming it (see unverified leads)."
+  },
+  {
+   "id": "luma_dream_machine_launch_2024_06_12",
+   "developer": "Luma AI",
+   "family": "Dream Machine",
+   "version": "Dream Machine",
+   "event": "public_release",
+   "date": "2024-06-12",
+   "date_precision": "day",
+   "headline": "Luma opens Dream Machine to everyone: a transformer trained directly on video, generating 5-second shots from text or images.",
+   "specs": {
+    "max_clip_s": 5,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "Page states '120 frames in 120s' generation speed; fps and resolution not stated."
+   },
+   "claims": [
+    {
+     "claim": "Archived launch page: available to everyone now.",
+     "quote": "Dream Machine is our first step towards building a universal imagination engine and it is available to everyone now!",
+     "source_url": "https://web.archive.org/web/20240612171544id_/https://lumalabs.ai/dream-machine",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Describes a scalable transformer trained directly on videos.",
+     "quote": "It is a highly scalable and efficient transformer model trained directly on videos making it capable of generating physically accurate, consistent and eventful shots.",
+     "source_url": "https://web.archive.org/web/20240612171544id_/https://lumalabs.ai/dream-machine",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Generates 5-second shots.",
+     "quote": "Dream Machine generates 5s shots with a realistic smooth motion, cinematography, and drama.",
+     "source_url": "https://web.archive.org/web/20240612171544id_/https://lumalabs.ai/dream-machine",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Speed claim: 120 frames in 120 seconds.",
+     "quote": "Dream Machine is an incredibly fast video generator! 120 frames in 120s.",
+     "source_url": "https://web.archive.org/web/20240612171544id_/https://lumalabs.ai/dream-machine",
+     "source_kind": "archived_official",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Date from Wayback capture 2024-06-12T17:15:44Z of lumalabs.ai/dream-machine, the earliest capture of the page; the same text is on later captures. Other outlets (secondary) also give 12 June 2024."
+  },
+  {
+   "id": "luma_ray2_2025_01_15",
+   "developer": "Luma AI",
+   "family": "Ray",
+   "version": "Ray2",
+   "event": "public_release",
+   "date": "2025-01-15",
+   "date_precision": "day",
+   "headline": "Ray2: Luma's large-scale video model trained with 10x the compute of Ray1, aiming at coherent motion and photorealism; paid Dream Machine users first.",
+   "specs": {
+    "max_clip_s": 10,
+    "resolution": "540p, 720p, 1080p",
+    "fps": null,
+    "audio": null,
+    "notes": "5-10 s base clips, extendable to 30 s."
+   },
+   "claims": [
+    {
+     "claim": "Luma changelog post dated January 15, 2025.",
+     "quote": "Introducing Ray2 January 15, 2025",
+     "source_url": "https://lumalabs.ai/changelog/introducing-ray2",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "10x the compute of Ray1, new multimodal architecture.",
+     "quote": "Ray2 is our most advanced video generation model, built on Luma's new multi-modal architecture with 10x the compute power of Ray1.",
+     "source_url": "https://lumalabs.ai/changelog/introducing-ray2",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "5-10 second base clips.",
+     "quote": "Video length : 5-10 second base clips",
+     "source_url": "https://lumalabs.ai/changelog/introducing-ray2",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "540p / 720p / 1080p options.",
+     "quote": "Resolution options : 540p, 720p, 1080p",
+     "source_url": "https://lumalabs.ai/changelog/introducing-ray2",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Extensions up to 30 seconds.",
+     "quote": "Extension capability : Up to 30 seconds",
+     "source_url": "https://lumalabs.ai/changelog/introducing-ray2",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "id": "luma_ray2_adobe_firefly_2025_04_24",
+   "developer": "Luma AI",
+   "family": "Ray",
+   "version": "Ray2 in Adobe Firefly",
+   "event": "announcement",
+   "date": "2025-04-24",
+   "date_precision": "day",
+   "headline": "Adobe announces Luma's Ray2 is coming to Firefly and Firefly Boards: an early sign of video models sold through third-party platforms.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Luma post dated April 24, 2025.",
+     "quote": "April 24, 2025",
+     "source_url": "https://lumalabs.ai/news/ray2-is-coming-to-adobe-firefly",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Adobe announcement at MAX London that Ray2 joins Firefly.",
+     "quote": "Adobe announced today at MAX London that Luma's next frontier generative video model Ray2 is coming to the Firefly web app and Firefly Boards.",
+     "source_url": "https://lumalabs.ai/news/ray2-is-coming-to-adobe-firefly",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "id": "luma_modify_video_2025_06_02",
+   "developer": "Luma AI",
+   "family": "Dream Machine",
+   "version": "Modify Video",
+   "event": "version_release",
+   "date": "2025-06-02",
+   "date_precision": "day",
+   "headline": "Modify Video: extract motion or performance from any clip and restyle, retexture or swap the world around it while keeping the performance.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Luma post dated June 2, 2025.",
+     "quote": "June 2, 2025",
+     "source_url": "https://lumalabs.ai/news/introducing-modify-video",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Motion and lip-sync extraction to drive new characters, props or camera paths.",
+     "quote": "Extract full-body, facial, or lip-sync motion from any video clip and drive new characters, props, or camera-blocked paths in perfect sync.",
+     "source_url": "https://lumalabs.ai/news/introducing-modify-video",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "API version dated 2025-06-24 on Luma's changelog (Ray2, max 10 s input, 24 fps)."
+  },
+  {
+   "id": "luma_ray3_2025_09_18",
+   "developer": "Luma AI",
+   "family": "Ray",
+   "version": "Ray3",
+   "event": "public_release",
+   "date": "2025-09-18",
+   "date_precision": "day",
+   "headline": "Ray3: Luma's 'reasoning' video model with native 10/12/16-bit HDR EXR output and a fast Draft Mode; Adobe Firefly is the first outside partner.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": "HDR (10/12/16-bit EXR); 4K polish stage",
+    "fps": null,
+    "audio": null,
+    "notes": "'Reasoning', 'first HDR' and '20x faster' are Luma's own claims."
+   },
+   "claims": [
+    {
+     "claim": "Press release dated September 18, 2025.",
+     "quote": "September 18, 2025",
+     "source_url": "https://lumalabs.ai/news/ray3",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Luma's claim that Ray3 reasons in visuals and concepts.",
+     "quote": "Ray3 is the first system that can reason in visuals and concepts, evaluate its own outputs, and refine its results on the fly.",
+     "source_url": "https://lumalabs.ai/news/ray3",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Claimed first model to output true HDR EXR.",
+     "quote": "the first model to produce video in true 10-, 12-, and 16-bit High Dynamic Range (HDR) ACES2065-1 EXR format",
+     "source_url": "https://lumalabs.ai/news/ray3",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Draft Mode for fast exploration.",
+     "quote": "with its new Draft Mode, creatives can explore dozens of ideas up to 20x faster",
+     "source_url": "https://lumalabs.ai/news/ray3",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Best drafts are polished into 4K HDR.",
+     "quote": "select and polish the best options into cinematic 4k quality HDR",
+     "source_url": "https://lumalabs.ai/news/ray3",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Adobe Firefly was first outside launch partner.",
+     "quote": "Adobe becomes the first partner to launch Ray3 outside of Luma AI's Dream Machine platform.",
+     "source_url": "https://lumalabs.ai/news/ray3",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Available in Dream Machine on the announcement day per the release."
+  },
+  {
+   "id": "luma_ray3_modify_2025_12_18",
+   "developer": "Luma AI",
+   "family": "Ray",
+   "version": "Ray3 Modify",
+   "event": "version_release",
+   "date": "2025-12-18",
+   "date_precision": "day",
+   "headline": "Ray3 Modify adds start/end-frame control and character reference to video-to-video, so a performance can be re-cast as a locked identity.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Luma post dated December 18, 2025.",
+     "quote": "December 18, 2025",
+     "source_url": "https://lumalabs.ai/news/ray3-modify",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Start and End Frame control in video-to-video.",
+     "quote": "Now introduces Start and End Frame control to the video-to-video workflow for the first time.",
+     "source_url": "https://lumalabs.ai/news/ray3-modify",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Character reference locks likeness, costume and identity across a clip.",
+     "quote": "lock likeness, costume, and identity continuity of a specific character across an entire modified clip",
+     "source_url": "https://lumalabs.ai/news/ray3-modify",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "id": "luma_ray3_14_2026_01_26",
+   "developer": "Luma AI",
+   "family": "Ray",
+   "version": "Ray3.14",
+   "event": "version_release",
+   "date": "2026-01-26",
+   "date_precision": "day",
+   "headline": "Ray3.14: native 1080p, claimed 4x faster and 3x cheaper than Ray3 at 720p, with better Modify consistency.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": "1080p",
+    "fps": null,
+    "audio": null,
+    "notes": "'Modify Video up to 18s' per the post (an editing limit); base generation length is not stated in the post."
+   },
+   "claims": [
+    {
+     "claim": "Luma post dated January 26, 2026.",
+     "quote": "January 26, 2026",
+     "source_url": "https://lumalabs.ai/news/ray3_14",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Native 1080p; 4x faster and 3x cheaper (Luma claims).",
+     "quote": "Ray3.14 is our most professional and powerful model, now with native 1080p video generation. It is 4x faster and 3x cheaper",
+     "source_url": "https://lumalabs.ai/news/ray3_14",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "id": "luma_ray3_2_2026_06_09",
+   "developer": "Luma AI",
+   "family": "Ray",
+   "version": "Ray3.2",
+   "event": "version_release",
+   "date": "2026-06-09",
+   "date_precision": "day",
+   "headline": "Ray3.2 adds up to 16 keyframes per clip, 20-second 1080p generations, multi-face performance tracking and a public API.",
+   "specs": {
+    "max_clip_s": 20,
+    "resolution": "1080p",
+    "fps": null,
+    "audio": null,
+    "notes": "Also HDR generation and 16-bit EXR export."
+   },
+   "claims": [
+    {
+     "claim": "Luma post dated June 9, 2026.",
+     "quote": "June 9, 2026",
+     "source_url": "https://lumalabs.ai/news/introducing-ray-3-2",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Up to 16 keyframes in one clip.",
+     "quote": "By enabling the placement of up to 16 keyframes within a single clip",
+     "source_url": "https://lumalabs.ai/news/introducing-ray-3-2",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Clips up to 20 seconds long at 1080p.",
+     "quote": "Delivering clips up to 20 seconds long at 1080p",
+     "source_url": "https://lumalabs.ai/news/introducing-ray-3-2",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Performance tracking for up to eight faces.",
+     "quote": "tracking the full expressive state for up to eight faces simultaneously, frame by frame",
+     "source_url": "https://lumalabs.ai/news/introducing-ray-3-2",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "First time the Ray model's control surface is offered as an API.",
+     "quote": "For the first time, Ray3.2 is available as an API",
+     "source_url": "https://lumalabs.ai/news/introducing-ray-3-2",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "No 'Ray4' page exists in Luma's news index retrieved 2026-09-29; latest Ray model found is Ray3.2."
+  },
+  {
+   "id": "luma_hosts_third_party_models_2026_08_06",
+   "developer": "Luma AI",
+   "family": "Luma platform",
+   "version": "Seedance 2.5 and MiniMax H3 on Luma",
+   "event": "announcement",
+   "date": "2026-08-06",
+   "date_precision": "day",
+   "headline": "Luma starts hosting other developers' video models (Seedance 2.5, MiniMax H3), so a 'made in Luma' clip may not come from a Ray model.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Luma post dated August 6, 2026.",
+     "quote": "August 6, 2026",
+     "source_url": "https://lumalabs.ai/news/seedance-2.5-live-in-luma",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Seedance 2.5 is offered on Luma.",
+     "quote": "Seedance 2.5 is live on Luma.",
+     "source_url": "https://lumalabs.ai/news/seedance-2.5-live-in-luma",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Second Luma post dated August 6, 2026.",
+     "quote": "August 6, 2026",
+     "source_url": "https://lumalabs.ai/news/minimax-h3-now-available-in-luma-agents",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "MiniMax H3 is offered in Luma Agents.",
+     "quote": "MiniMax H3 is live in Luma Agents today, available to self-serve accounts.",
+     "source_url": "https://lumalabs.ai/news/minimax-h3-now-available-in-luma-agents",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Provenance caution for source labels."
+  },
+  {
+   "id": "pika_1_5_2024_10",
+   "developer": "Pika",
+   "family": "Pika",
+   "version": "Pika 1.5",
+   "event": "public_release",
+   "date": "2024-10",
+   "date_precision": "month",
+   "headline": "Pika 1.5: longer clips and 'Pikaffects' that explode, melt, crush or inflate objects; a meme-friendly effects model.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Archived Pika home page (captured 2024-10-02) announces Pika 1.5.",
+     "quote": "Introducing Pika 1.5 Stunning footage. Longer clips. Jaw-dropping moves.",
+     "source_url": "https://web.archive.org/web/20241002231711id_/https://pika.art/home",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Pikaffects: explode, melt, crush or inflate.",
+     "quote": "Explode, melt, crush, or inflate anything your heart desires.",
+     "source_url": "https://web.archive.org/web/20241002231711id_/https://pika.art/home",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Archived login page (captured 2024-10-02): 'Pika 1.5 has arrived'.",
+     "quote": "New model alert! Pika 1.5 has arrived.",
+     "source_url": "https://web.archive.org/web/20241002231602id_/https://pika.art/login",
+     "source_kind": "archived_official",
+     "retrieved": true
+    }
+   ],
+   "confidence": "medium",
+   "notes": "Exact release day not derivable from archived captures retrieved (earliest capture showing it is 2024-10-02T23:16Z; captures on 2024-09-27 and 09-29 returned no content). Secondary sources say 1 Oct 2024. Overlaps R1's pika_1_0 lineage."
+  },
+  {
+   "id": "pika_2_0_2024_12",
+   "developer": "Pika",
+   "family": "Pika",
+   "version": "Pika 2.0",
+   "event": "public_release",
+   "date": "2024-12",
+   "date_precision": "month",
+   "headline": "Pika 2.0 with 'Scene Ingredients': upload your own characters, objects and locations and compose them into a scene.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Archived capture 2024-12-12T04:01Z still advertises Pika 1.5.",
+     "quote": "New model alert! Pika 1.5 has arrived.",
+     "source_url": "https://web.archive.org/web/20241212040129id_/https://pika.art/login",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Archived capture 2024-12-14T04:22Z advertises Pika 2.0 and Scene Ingredients.",
+     "quote": "New model alert! Check out Pika 2.0, and rule reality with Scene Ingredients.",
+     "source_url": "https://web.archive.org/web/20241214042200id_/https://pika.art/login",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Archived capture 2025-01-26 shows 'Pika 2.0 now available!'.",
+     "quote": "Pika 2.0 now available!",
+     "source_url": "https://web.archive.org/web/20250126143433id_/https://pika.art/login",
+     "source_kind": "archived_official",
+     "retrieved": true
+    }
+   ],
+   "confidence": "medium",
+   "notes": "Release falls between 2024-12-12 04:01Z and 2024-12-14 04:22Z per archived banners; secondary sources say 13 Dec 2024."
+  },
+  {
+   "id": "pika_2_1_2025_01",
+   "developer": "Pika",
+   "family": "Pika",
+   "version": "Pika 2.1",
+   "event": "version_release",
+   "date": "2025-01",
+   "date_precision": "month",
+   "headline": "Pika 2.1: 1080p output.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": "1080p",
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Archived login page (captured 2025-01-28T01:13Z) announces Pika 2.1 in stunning 1080p.",
+     "quote": "New model alert! Check out Pika 2.1 and create your weirdest, wildest dreams in stunning 1080p.",
+     "source_url": "https://web.archive.org/web/20250128011343id_/https://pika.art/login",
+     "source_kind": "archived_official",
+     "retrieved": true
+    }
+   ],
+   "confidence": "medium",
+   "notes": "Release falls between 2025-01-26 14:34Z (still shows 2.0) and 2025-01-28 01:13Z (shows 2.1); secondary sources say 27 Jan 2025."
+  },
+  {
+   "id": "pika_2_2_2025_02_27",
+   "developer": "Pika",
+   "family": "Pika",
+   "version": "Pika 2.2",
+   "event": "version_release",
+   "date": "2025-02-27",
+   "date_precision": "day",
+   "headline": "Pika 2.2 launches with Pikaframes: give photos and Pika builds a video with unique transitions between them.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Archived capture 2025-02-27T13:51Z shows Pikaswaps, not 2.2.",
+     "quote": "Introducing Pikaswaps: the ultimate reality switch-up.",
+     "source_url": "https://web.archive.org/web/20250227135111id_/https://pika.art/login",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Archived capture 2025-02-27T22:15Z: 'Pika 2.2 now available! Introducing Pikaframes'.",
+     "quote": "Pika 2.2 now available! Introducing Pikaframes: turn your photos into videos with unique transitions.",
+     "source_url": "https://web.archive.org/web/20250227221552id_/https://pika.art/login",
+     "source_kind": "archived_official",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Day bracketed by two same-day archived captures. Clip-length figures for 2.2 (10 s) are only in secondary sources."
+  },
+  {
+   "id": "pika_2_5_2025_11",
+   "developer": "Pika",
+   "family": "Pika",
+   "version": "Pika 2.5",
+   "event": "version_release",
+   "date": "2025-11",
+   "date_precision": "month",
+   "headline": "Pika 2.5: claimed ultra-realistic generations, enhanced physics and stronger prompt adherence.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Archived capture 2025-11-20T09:51Z still promotes Pikapocalypse Pikaffects.",
+     "quote": "Try new Pikapocaylpse Pikaffects, available now.",
+     "source_url": "https://web.archive.org/web/20251120095119id_/https://pika.art/login",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Archived capture 2025-11-22T03:43Z: 'Pika 2.5 is here'.",
+     "quote": "Pika 2.5 is here, with ultra-realistic generations, enhanced physics, and unmatched prompt adherence.",
+     "source_url": "https://web.archive.org/web/20251122034331id_/https://pika.art/login",
+     "source_kind": "archived_official",
+     "retrieved": true
+    }
+   ],
+   "confidence": "medium",
+   "notes": "Release falls in the window 2025-11-20 to 2025-11-22 per archived banners (a 2025-11-21 capture returned no content)."
+  },
+  {
+   "id": "pika_new_platform_2026_09_17",
+   "developer": "Pika",
+   "family": "Pika",
+   "version": "The new Pika (platform)",
+   "event": "announcement",
+   "date": "2026-09-17",
+   "date_precision": "day",
+   "headline": "Pika relaunches as a multi-model creative platform hosting third-party video models (Seedance 2.5, MiniMax H3, Wan 3.0, Google Omni Flash) beside Pika 2.5.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Blog post dated September 17, 2026.",
+     "quote": "September 17, 2026",
+     "source_url": "https://pika.art/blog/welcome-to-the-new-pika",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Platform unifies video, image and sound creation over leading gen-media models.",
+     "quote": "It brings video, image, and sound creation into one place, with the world’s leading gen media models underneath, and focused creative apps on top.",
+     "source_url": "https://pika.art/blog/welcome-to-the-new-pika",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Navigation lists third-party video models beside Pika 2.5 and Pikaframes.",
+     "quote": "Seedance 2.5 MiniMax H3 Wan 3.0 Google Omni Flash Pika 2.5 Pikaframes",
+     "source_url": "https://pika.art/blog/welcome-to-the-new-pika",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Any Pika-branded clip from late 2026 must state which underlying model made it."
+  },
+  {
+   "id": "midjourney_video_v1_2025_06_18",
+   "developer": "Midjourney",
+   "family": "Midjourney Video",
+   "version": "V1 Video Model",
+   "event": "public_release",
+   "date": "2025-06-18",
+   "date_precision": "day",
+   "headline": "Midjourney's first video model: press 'Animate' on an image to get four 5-second clips, extendable in ~4-second steps to 21 seconds.",
+   "specs": {
+    "max_clip_s": 21,
+    "resolution": "480p SD; 720p HD on Standard/Pro/Mega plans (docs, Dec 2025 capture)",
+    "fps": null,
+    "audio": null,
+    "notes": "Image-to-video only, web-only at launch. Audio and fps not stated in primary sources retrieved."
+   },
+   "claims": [
+    {
+     "claim": "Official announcement post dated Jun 18, 2025.",
+     "quote": "Jun 18, 2025",
+     "source_url": "https://updates.midjourney.com/introducing-our-v1-video-model/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Post metadata: published 2025-06-18T16:35:15Z.",
+     "quote": "2025-06-18T16:35:15",
+     "source_url": "https://updates.midjourney.com/introducing-our-v1-video-model/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Video model V1 released to the entire community.",
+     "quote": "We’re releasing Version 1 of our Video Model to the entire community.",
+     "source_url": "https://updates.midjourney.com/introducing-our-v1-video-model/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Workflow is Image-to-Video.",
+     "quote": "Today’s Video workflow will be called “Image-to-Video”.",
+     "source_url": "https://updates.midjourney.com/introducing-our-v1-video-model/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Each job produces four 5-second videos.",
+     "quote": "each job will produce four 5-second videos",
+     "source_url": "https://updates.midjourney.com/introducing-our-v1-video-model/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Extend roughly 4 s at a time, four times.",
+     "quote": "Once you have a video you like you can “extend” them - roughly 4 seconds at a time - four times total.",
+     "source_url": "https://updates.midjourney.com/introducing-our-v1-video-model/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Docs: 480p SD default.",
+     "quote": "Midjourney videos are generated in 480p quality, also called Standard Definition (SD).",
+     "source_url": "https://web.archive.org/web/20251201030755id_/https://docs.midjourney.com/hc/en-us/articles/37460773864589-Video",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Docs: 720p HD option.",
+     "quote": "you can also generate videos in 720p quality, or High Definition (HD)",
+     "source_url": "https://web.archive.org/web/20251201030755id_/https://docs.midjourney.com/hc/en-us/articles/37460773864589-Video",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Docs: maximum length 21 seconds.",
+     "quote": "until it reaches 21 seconds, which is the maximum length available",
+     "source_url": "https://web.archive.org/web/20251201030755id_/https://docs.midjourney.com/hc/en-us/articles/37460773864589-Video",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Web-only at launch.",
+     "quote": "For launch, we’re starting off web-only.",
+     "source_url": "https://updates.midjourney.com/introducing-our-v1-video-model/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "No newer Midjourney video model than V1 found in primary sources through 2026-09-29 (V8/V8.2 image models exist)."
+  },
+  {
+   "id": "adobe_firefly_video_model_preview_2024_09_11",
+   "developer": "Adobe",
+   "family": "Firefly Video Model",
+   "version": "Firefly Video Model (preview)",
+   "event": "preview",
+   "date": "2024-09-11",
+   "date_precision": "day",
+   "headline": "Adobe previews a video model in the Firefly family, positioned as commercially safe and heading into Premiere Pro and Creative Cloud.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Press release dated September 11, 2024.",
+     "quote": "September 11, 2024",
+     "source_url": "https://news.adobe.com/news/2024/09/091124-adobe-previews-firefly-video-model",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Designed to be commercially safe.",
+     "quote": "Designed to be commercially safe, the Firefly Video Model will be integrated across Creative Cloud, Experience Cloud and Adobe Express workflows",
+     "source_url": "https://news.adobe.com/news/2024/09/091124-adobe-previews-firefly-video-model",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "id": "adobe_firefly_video_model_limited_beta_2024_10_14",
+   "developer": "Adobe",
+   "family": "Firefly Video Model",
+   "version": "Firefly Video Model (beta)",
+   "event": "public_release",
+   "date": "2024-10-14",
+   "date_precision": "day",
+   "headline": "Firefly Video Model enters limited public beta as Adobe's first video model, positioned as commercially safe.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Press release dated Monday, October 14, 2024.",
+     "quote": "Monday, October 14, 2024",
+     "source_url": "https://news.adobe.com/news/2024/10/101424-adobe-launches-firefly-video-model",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Adobe: limited public beta; first publicly available video model designed to be commercially safe.",
+     "quote": "The Firefly Video Model, now in limited public beta, is the first publicly available video model designed to be commercially safe.",
+     "source_url": "https://news.adobe.com/news/2024/10/101424-adobe-launches-firefly-video-model",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Limited beta (small group), not general availability."
+  },
+  {
+   "id": "adobe_firefly_video_model_public_beta_2025_02_12",
+   "developer": "Adobe",
+   "family": "Firefly Video Model",
+   "version": "Firefly Video Model (public beta)",
+   "event": "public_release",
+   "date": "2025-02-12",
+   "date_precision": "day",
+   "headline": "Firefly Video Model opens in public beta inside the new Firefly app: text-to-video and image-to-video, 1080p, five-second generations.",
+   "specs": {
+    "max_clip_s": 5,
+    "resolution": "1080p",
+    "fps": null,
+    "audio": null,
+    "notes": "Adobe's plan copy quantifies capacity as 'five-second 1080p video generations'."
+   },
+   "claims": [
+    {
+     "claim": "Press release dated February 12, 2025.",
+     "quote": "SAN JOSE, Calif. – February 12, 2025",
+     "source_url": "https://news.adobe.com/news/2025/02/firefly-web-app-commercially-safe",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Powers Generate Video (beta) and Generative Extend (beta).",
+     "quote": "The new Firefly Video Model— the industry’s first commercially safe AI video generation model — powers Generate Video (beta) in the Firefly application",
+     "source_url": "https://news.adobe.com/news/2025/02/firefly-web-app-commercially-safe",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "1080p to start.",
+     "quote": "It supports 1080p resolution to start",
+     "source_url": "https://news.adobe.com/news/2025/02/firefly-web-app-commercially-safe",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Plan capacity stated in five-second 1080p generations.",
+     "quote": "up to 20 five-second 1080p video generations",
+     "source_url": "https://news.adobe.com/news/2025/02/firefly-web-app-commercially-safe",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "id": "adobe_firefly_video_update_2025_07_17",
+   "developer": "Adobe",
+   "family": "Firefly Video Model",
+   "version": "Firefly Video Model (July 2025 update)",
+   "event": "version_release",
+   "date": "2025-07-17",
+   "date_precision": "day",
+   "headline": "Firefly Video Model gets improved motion fidelity, composition reference from a video, style presets and keyframe cropping.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Blog post URL date and metadata 2025-07-17.",
+     "quote": "2025-07-17",
+     "source_url": "https://blog.adobe.com/en/publish/2025/07/17/firefly-adds-new-video-capabilities-industry-leading-ai-models-generate-sound-effects-feature",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Improved motion fidelity and advanced video controls.",
+     "quote": "Today, we’re introducing powerful enhancements to our Firefly Video Model, including improved motion fidelity and advanced video controls",
+     "source_url": "https://blog.adobe.com/en/publish/2025/07/17/firefly-adds-new-video-capabilities-industry-leading-ai-models-generate-sound-effects-feature",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Composition reference: transfer a reference video's composition.",
+     "quote": "Upload a reference video, describe your vision, and Firefly will generate a new video that transfers the original composition to your generation",
+     "source_url": "https://blog.adobe.com/en/publish/2025/07/17/firefly-adds-new-video-capabilities-industry-leading-ai-models-generate-sound-effects-feature",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "id": "adobe_firefly_prompt_to_edit_2025_12_16",
+   "developer": "Adobe",
+   "family": "Firefly Video Model",
+   "version": "Firefly video: Prompt to Edit and camera-motion reference",
+   "event": "version_release",
+   "date": "2025-12-16",
+   "date_precision": "day",
+   "headline": "Firefly adds camera-motion reference from a video and text-based precision edits, the latter using Runway's Aleph model.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Blog post metadata publication-date 12-16-2025.",
+     "quote": "publication-date\" content=\"12-16-2025\"",
+     "source_url": "https://blog.adobe.com/en/publish/2025/12/16/adobe-firefly-improves-ai-video-creation-tools-new-models-unlimited-generations",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Start frame plus a camera-motion reference video.",
+     "quote": "you can now upload your start frame image, along with a reference video showing the camera motion you want to recreate",
+     "source_url": "https://blog.adobe.com/en/publish/2025/12/16/adobe-firefly-improves-ai-video-creation-tools-new-models-unlimited-generations",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Prompt to Edit uses Runway's Aleph.",
+     "quote": "You can now generate a video in Firefly and then make precision refinements using text editing with Runway’s Aleph model",
+     "source_url": "https://blog.adobe.com/en/publish/2025/12/16/adobe-firefly-improves-ai-video-creation-tools-new-models-unlimited-generations",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Shows Adobe routing edits to a competitor's model."
+  },
+  {
+   "id": "adobe_firefly_multi_model_studio_2026_04_15",
+   "developer": "Adobe",
+   "family": "Firefly",
+   "version": "Firefly video editor and partner models (April 2026)",
+   "event": "announcement",
+   "date": "2026-04-15",
+   "date_precision": "day",
+   "headline": "Adobe describes Firefly as an all-in-one AI studio with 30+ models; Kling 3.0 and Kling 3.0 Omni join Firefly.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Blog post URL and metadata date 2026-04-15.",
+     "quote": "2026-04-15",
+     "source_url": "https://blog.adobe.com/en/publish/2026/04/15/adobe-extends-leadership-video-unleashing-new-ai-powered-creation-firefly-reinventing-color-editors-in-premiere",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Firefly: all-in-one AI creative studio with 30+ industry-leading models.",
+     "quote": "Firefly is Adobe's all-in-one AI creative studio, with 30+ industry-leading models and world-class editing tools",
+     "source_url": "https://blog.adobe.com/en/publish/2026/04/15/adobe-extends-leadership-video-unleashing-new-ai-powered-creation-firefly-reinventing-color-editors-in-premiere",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Platform-versus-model caution: a 'Firefly' clip may come from a partner model."
+  },
+  {
+   "id": "genmo_mochi_1_preview_2024_10_22",
+   "developer": "Genmo",
+   "family": "Mochi",
+   "version": "Mochi 1 preview",
+   "event": "open_weights",
+   "date": "2024-10-22",
+   "date_precision": "day",
+   "headline": "Mochi 1 preview: Apache-2.0 open text-to-video weights making 480p, 30 fps clips up to 5.4 s.",
+   "specs": {
+    "max_clip_s": 5.4,
+    "resolution": "480p",
+    "fps": 30,
+    "audio": null,
+    "notes": "Photorealistic-optimised; 'Mochi 1 HD' was promised for later in 2024 (see unverified leads)."
+   },
+   "claims": [
+    {
+     "claim": "Genmo blog dated October 22, 2024.",
+     "quote": "October 22, 2024",
+     "source_url": "https://www.genmo.ai/blog/mochi-1-a-new-sota-in-open-text-to-video",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Research preview of an open-source video model.",
+     "quote": "We are thrilled to announce a research preview of Mochi 1, our latest open-source video generation model.",
+     "source_url": "https://www.genmo.ai/blog/mochi-1-a-new-sota-in-open-text-to-video",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Apache 2.0, free for personal and commercial use (model).",
+     "quote": "Licensed under the Apache 2.0 license, a preview of Mochi 1 is freely available for personal and commercial use.",
+     "source_url": "https://www.genmo.ai/blog/mochi-1-a-new-sota-in-open-text-to-video",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "30 fps, up to 5.4 s.",
+     "quote": "Mochi 1 generates smooth videos at 30 frames per second for durations up to 5.4 seconds",
+     "source_url": "https://www.genmo.ai/blog/mochi-1-a-new-sota-in-open-text-to-video",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "480p at release.",
+     "quote": "The initial release generates videos at 480p today.",
+     "source_url": "https://www.genmo.ai/blog/mochi-1-a-new-sota-in-open-text-to-video",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "GitHub README repeats the Apache 2.0 licence statement.",
+     "quote": "We’re releasing the model under a permissive Apache 2.0 license.",
+     "source_url": "https://raw.githubusercontent.com/genmoai/mochi/main/README.md",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Apache 2.0 applies to the released model; the retrieved pages do not state a licence for sample videos."
+  },
+  {
+   "id": "lightricks_ltx_video_v0_9_0_2024_11_21",
+   "developer": "Lightricks",
+   "family": "LTX-Video",
+   "version": "LTX-Video v0.9.0",
+   "event": "open_weights",
+   "date": "2024-11-21",
+   "date_precision": "day",
+   "headline": "LTX-Video: first open text-to-video and image-to-video release from Lightricks, later described as producing video faster than it can be watched.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": "1216x704 (model card, later versions)",
+    "fps": 30,
+    "audio": null,
+    "notes": "The 30 fps 1216x704 real-time claim is from the current model card; v0.9.0 numbers not separately confirmed."
+   },
+   "claims": [
+    {
+     "claim": "Official repo changelog: initial release v0.9.0.",
+     "quote": "November 21th, 2024: Initial release v0.9.0",
+     "source_url": "https://raw.githubusercontent.com/Lightricks/LTX-Video/main/README.md",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Text-to-video and image-to-video.",
+     "quote": "Support text-to-video and image-to-video generation",
+     "source_url": "https://raw.githubusercontent.com/Lightricks/LTX-Video/main/README.md",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Model card: 30 fps at 1216x704 faster than watch time.",
+     "quote": "It produces 30 FPS videos at a 1216×704 resolution faster than they can be watched.",
+     "source_url": "https://huggingface.co/Lightricks/LTX-Video/raw/main/README.md",
+     "source_kind": "model_card",
+     "retrieved": true
+    }
+   ],
+   "confidence": "medium",
+   "notes": "Repo changelog writes 'November 21th'. Hugging Face model card licence is 'other' (custom licence text), not plain Apache-2.0."
+  },
+  {
+   "id": "lightricks_ltxv_13b_v0_9_7_2025_05_05",
+   "developer": "Lightricks",
+   "family": "LTX-Video",
+   "version": "LTXV 13B v0.9.7",
+   "event": "version_release",
+   "date": "2025-05-05",
+   "date_precision": "day",
+   "headline": "13-billion-parameter LTXV model released, followed by distilled variants and later 60-second long-shot support (July 2025).",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Repo changelog entry 'May, 5th, 2025: New model 13B v0.9.7'.",
+     "quote": "May, 5th, 2025: New model 13B v0.9.7",
+     "source_url": "https://raw.githubusercontent.com/Lightricks/LTX-Video/main/README.md",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "medium",
+   "notes": ""
+  },
+  {
+   "id": "lightricks_ltx_2_announcement_2025_10_23",
+   "developer": "Lightricks",
+   "family": "LTX-2",
+   "version": "LTX-2 (announced)",
+   "event": "announcement",
+   "date": "2025-10-23",
+   "date_precision": "day",
+   "headline": "LTX-2 announced: audio and video generated together, claimed native 4K up to 50 fps and 10 s clips; weights promised for later in 2025.",
+   "specs": {
+    "max_clip_s": 10,
+    "resolution": "native 4K (claimed)",
+    "fps": 50,
+    "audio": "synchronized audio, generated jointly with video",
+    "notes": "Announcement figures; not yet released as open weights on this date."
+   },
+   "claims": [
+    {
+     "claim": "Repo news entry dated October 23, 2025.",
+     "quote": "Today we announced our newest foundation model, LTX-2.",
+     "source_url": "https://raw.githubusercontent.com/Lightricks/LTX-Video/main/README.md",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Sound and picture generated in one coherent process.",
+     "quote": "Visuals and sound are generated in one coherent process, with motion, dialogue, ambience, and music flowing simultaneously.",
+     "source_url": "https://raw.githubusercontent.com/Lightricks/LTX-Video/main/README.md",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Native 4K and up to 50 fps.",
+     "quote": "Professional-grade precision with native 4K and up to 50 fps, sharp textures, clean motion, and synchronized audio.",
+     "source_url": "https://raw.githubusercontent.com/Lightricks/LTX-Video/main/README.md",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Clips with synchronized audio up to 10 seconds.",
+     "quote": "LTX-2 supports longer, continuous clips with synchronized audio up to 10 seconds.",
+     "source_url": "https://raw.githubusercontent.com/Lightricks/LTX-Video/main/README.md",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Weights promised 'later in 2025'.",
+     "quote": "LTX-2 model weights, code, and benchmarks will be released to the community later in 2025.",
+     "source_url": "https://raw.githubusercontent.com/Lightricks/LTX-Video/main/README.md",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "The promised release slipped into January 2026 (next milestone)."
+  },
+  {
+   "id": "lightricks_ltx_2_open_weights_2026_01",
+   "developer": "Lightricks",
+   "family": "LTX-2",
+   "version": "LTX-2",
+   "event": "open_weights",
+   "date": "2026-01",
+   "date_precision": "month",
+   "headline": "LTX-2 weights, code and paper published: a DiT audio-video model under a custom community licence (not Apache/MIT).",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": "synchronized audio and video in one model",
+    "notes": "Licence: 'ltx-2-community-license-agreement' (license: other)."
+   },
+   "claims": [
+    {
+     "claim": "Paper arXiv 2601.03233 submitted 6 Jan 2026.",
+     "quote": "[Submitted on 6 Jan 2026]",
+     "source_url": "https://arxiv.org/abs/2601.03233",
+     "source_kind": "paper",
+     "retrieved": true
+    },
+    {
+     "claim": "Hugging Face model card: DiT-based audio-video foundation model.",
+     "quote": "LTX-2 is a DiT-based audio-video foundation model designed to generate synchronized video and audio within a single model.",
+     "source_url": "https://huggingface.co/Lightricks/LTX-2/raw/main/README.md",
+     "source_kind": "model_card",
+     "retrieved": true
+    },
+    {
+     "claim": "Licence name on the model card.",
+     "quote": "license_name: ltx-2-community-license-agreement",
+     "source_url": "https://huggingface.co/Lightricks/LTX-2/raw/main/README.md",
+     "source_kind": "model_card",
+     "retrieved": true
+    }
+   ],
+   "confidence": "medium",
+   "notes": "Hugging Face repo history: initial commit 2026-01-03, LICENSE upload 2026-01-05; exact public-release day not stated in a primary press page retrieved."
+  },
+  {
+   "id": "lightricks_ltx_2_3_2026_03_05",
+   "developer": "Lightricks",
+   "family": "LTX-2",
+   "version": "LTX 2.3",
+   "event": "version_release",
+   "date": "2026-03-05",
+   "date_precision": "day",
+   "headline": "LTX 2.3 released with local inference and open weights; Lightricks pitches it as removing recurring cloud cost.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "LTX newsroom entry dated Mar 5 2026.",
+     "quote": "Mar 5 2026 LTX 2.3 Offers Creative Intelligence Without the Cloud Costs",
+     "source_url": "https://ltx.io/newsroom",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Local inference and open weights.",
+     "quote": "With local inference and open weights, LTX 2.3 reshapes the economics of AI video",
+     "source_url": "https://ltx.io/newsroom",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "medium",
+   "notes": "Hugging Face repo Lightricks/LTX-2.3 was created 2026-03-04."
+  },
+  {
+   "id": "lightricks_ltx_2_5_2026_08_11",
+   "developer": "Lightricks",
+   "family": "LTX-2",
+   "version": "LTX-2.5",
+   "event": "version_release",
+   "date": "2026-08-11",
+   "date_precision": "day",
+   "headline": "LTX-2.5: native multi-shot, stronger prompt adherence and better local performance; presented as an open world model for video.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "LTX newsroom entry dated Aug 11 2026.",
+     "quote": "Aug 11 2026 Introducing LTX-2.5: The Open World Model for Video, Real-Time, & Physical AI",
+     "source_url": "https://ltx.io/newsroom",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Model page summary of what LTX-2.5 improves.",
+     "quote": "LTX-2.5 improves quality, continuity, control, and efficiency through native multi-shot, stronger prompt adherence, and better local performance.",
+     "source_url": "https://ltx.io/model/ltx-2-5",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "medium",
+   "notes": "Hugging Face repo Lightricks/LTX-2.5 created 2026-07-23 (earlier than the press date; visibility of that repo at that time unknown). Licence: ltx-2.x community licence (license: other)."
+  },
+  {
+   "id": "meta_movie_gen_2024_10_04",
+   "developer": "Meta",
+   "family": "Movie Gen",
+   "version": "Meta Movie Gen",
+   "event": "announcement",
+   "date": "2024-10-04",
+   "date_precision": "day",
+   "headline": "Movie Gen: research models for HD video (up to 16 s at 16 fps), personalized video, precise editing and 13B-parameter synced audio; not released.",
+   "specs": {
+    "max_clip_s": 16,
+    "resolution": null,
+    "fps": 16,
+    "audio": "13B audio model, up to 45 s, synced to video",
+    "notes": "Research announcement; Meta speaks of 'a potential future release'."
+   },
+   "claims": [
+    {
+     "claim": "Meta AI blog dated October 4, 2024.",
+     "quote": "October 4, 2024",
+     "source_url": "https://ai.meta.com/blog/movie-gen-media-foundation-models-generative-ai-video/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Premiere of Movie Gen across image, video and audio.",
+     "quote": "Today, we’re excited to premiere Meta Movie Gen, our breakthrough generative AI research for media, which includes modalities like image, video, and audio.",
+     "source_url": "https://ai.meta.com/blog/movie-gen-media-foundation-models-generative-ai-video/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "30B transformer: up to 16 s at 16 fps.",
+     "quote": "This 30B parameter transformer model has the ability to generate videos of up to 16 seconds at a rate of 16 frames per second.",
+     "source_url": "https://ai.meta.com/blog/movie-gen-media-foundation-models-generative-ai-video/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Audio model up to 45 s with ambient sound, Foley and music.",
+     "quote": "generate high-quality and high-fidelity audio up to 45 seconds, including ambient sound, sound effects (Foley), and instrumental background music",
+     "source_url": "https://ai.meta.com/blog/movie-gen-media-foundation-models-generative-ai-video/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Editing variant takes video plus text prompt.",
+     "quote": "The editing variant of the same foundation model takes both video and text prompt as input",
+     "source_url": "https://ai.meta.com/blog/movie-gen-media-foundation-models-generative-ai-video/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Public release only 'potential future'.",
+     "quote": "As we continue to improve our models and move toward a potential future release",
+     "source_url": "https://ai.meta.com/blog/movie-gen-media-foundation-models-generative-ai-video/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Paper arXiv 2410.13720 submitted 17 Oct 2024.",
+     "quote": "[Submitted on 17 Oct 2024",
+     "source_url": "https://arxiv.org/abs/2410.13720",
+     "source_kind": "paper",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Not a public product at announcement."
+  },
+  {
+   "id": "meta_vibes_2025_09_25",
+   "developer": "Meta",
+   "family": "Vibes",
+   "version": "Vibes (Meta AI app)",
+   "event": "preview",
+   "date": "2025-09-25",
+   "date_precision": "day",
+   "headline": "Meta launches Vibes, an AI-video feed in the Meta AI app where users create and remix short generated videos.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "Meta newsroom post dated September 25, 2025.",
+     "quote": "September 25, 2025",
+     "source_url": "https://about.fb.com/news/2025/09/introducing-vibes-ai-videos/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Vibes: a new feed of AI videos in the Meta AI app.",
+     "quote": "We’re rolling out Vibes, a new feed of AI videos at the center of the Meta AI app.",
+     "source_url": "https://about.fb.com/news/2025/09/introducing-vibes-ai-videos/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "The Meta post does not name the video model; reports of Midjourney/Black Forest Labs partnership are secondary only (see unverified leads)."
+  },
+  {
+   "id": "meta_muse_video_preview_2026_07_07",
+   "developer": "Meta",
+   "family": "Muse",
+   "version": "Muse Video (early preview)",
+   "event": "preview",
+   "date": "2026-07-07",
+   "date_precision": "day",
+   "headline": "Meta previews Muse Video, from Meta Superintelligence Labs, with native audio; it says gaps remain in audio-video sync and fast physical motion.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": "native audio",
+    "notes": "Not publicly available at announcement ('coming soon')."
+   },
+   "claims": [
+    {
+     "claim": "Meta AI blog dated July 7, 2026.",
+     "quote": "July 7, 2026",
+     "source_url": "https://ai.meta.com/blog/introducing-muse-image-muse-video-msl/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Early preview of Muse Video.",
+     "quote": "we’re sharing an early preview of Muse Video",
+     "source_url": "https://ai.meta.com/blog/introducing-muse-image-muse-video-msl/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Native audio support.",
+     "quote": "delivers exceptional visual fidelity with native audio support",
+     "source_url": "https://ai.meta.com/blog/introducing-muse-image-muse-video-msl/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Meta lists audio-video sync and fast physical motion as gaps.",
+     "quote": "We’re investing in areas with current performance gaps, such as audio-video synchronization and physically accurate fast motion.",
+     "source_url": "https://ai.meta.com/blog/introducing-muse-image-muse-video-msl/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Coming soon to creators and Meta AI.",
+     "quote": "Muse Video is coming soon to creators and in Meta AI.",
+     "source_url": "https://ai.meta.com/blog/introducing-muse-image-muse-video-msl/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "First media generation models from Meta Superintelligence Labs.",
+     "quote": "the first media generation models developed by Meta Superintelligence Labs",
+     "source_url": "https://ai.meta.com/blog/introducing-muse-image-muse-video-msl/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "No later primary source found showing general availability as of 2026-09-29."
+  },
+  {
+   "id": "amazon_nova_reel_2024_12_03",
+   "developer": "Amazon",
+   "family": "Nova",
+   "version": "Amazon Nova Reel",
+   "event": "public_release",
+   "date": "2024-12-03",
+   "date_precision": "day",
+   "headline": "Nova Reel arrives on Amazon Bedrock: text- and image-prompted video, 6-second clips at 1280x720 and 24 fps.",
+   "specs": {
+    "max_clip_s": 6,
+    "resolution": "1280x720",
+    "fps": 24,
+    "audio": null,
+    "notes": "Spec taken from the request parameters in AWS's own code sample; audio not stated."
+   },
+   "claims": [
+    {
+     "claim": "AWS blog post metadata: published 2024-12-03.",
+     "quote": "2024-12-03T09:56:47",
+     "source_url": "https://aws.amazon.com/blogs/aws/introducing-amazon-nova-frontier-intelligence-and-industry-leading-price-performance/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Short videos from text prompts and images; control over style and pacing.",
+     "quote": "Using Amazon Nova Reel, you can produce short videos through text prompts and images, control visual style and pacing",
+     "source_url": "https://aws.amazon.com/blogs/aws/introducing-amazon-nova-frontier-intelligence-and-industry-leading-price-performance/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Sample request: durationSeconds 6, fps 24, 1280x720.",
+     "quote": "\"durationSeconds\": 6, \"fps\": 24, \"dimension\": \"1280x720\"",
+     "source_url": "https://aws.amazon.com/blogs/aws/introducing-amazon-nova-frontier-intelligence-and-industry-leading-price-performance/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "id": "amazon_nova_reel_1_1_2025_04_07",
+   "developer": "Amazon",
+   "family": "Nova",
+   "version": "Amazon Nova Reel 1.1",
+   "event": "version_release",
+   "date": "2025-04-07",
+   "date_precision": "day",
+   "headline": "Nova Reel 1.1 chains 6-second shots into multi-shot videos up to two minutes with consistent style.",
+   "specs": {
+    "max_clip_s": 120,
+    "resolution": "1280x720 (starting images)",
+    "fps": null,
+    "audio": null,
+    "notes": "Two minutes is built from 6-second shots (automated or manual storyboard); not one continuous clip."
+   },
+   "claims": [
+    {
+     "claim": "AWS blog post metadata: published 2025-04-07.",
+     "quote": "2025-04-07T12:56:14",
+     "source_url": "https://aws.amazon.com/blogs/aws/amazon-nova-reel-1-1-featuring-up-to-2-minutes-multi-shot-videos/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Quality and latency improvements in 6-second single shots.",
+     "quote": "Today, we introduce Amazon Nova Reel 1.1, which provides quality and latency improvements in 6-second single-shot video generation, compared to Amazon Nova Reel 1.0.",
+     "source_url": "https://aws.amazon.com/blogs/aws/amazon-nova-reel-1-1-featuring-up-to-2-minutes-multi-shot-videos/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Multi-shot videos up to 2 minutes with consistent style.",
+     "quote": "This update lets you generate multi-shot videos up to 2-minutes in length with consistent style across shots.",
+     "source_url": "https://aws.amazon.com/blogs/aws/amazon-nova-reel-1-1-featuring-up-to-2-minutes-multi-shot-videos/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Two minutes composed of 6-second shots.",
+     "quote": "You can either provide a single prompt for up to a 2-minute video composed of 6-second shots, or design each shot individually with custom prompts.",
+     "source_url": "https://aws.amazon.com/blogs/aws/amazon-nova-reel-1-1-featuring-up-to-2-minutes-multi-shot-videos/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Secondary reports say Amazon wound Nova Reel development down in July 2026 (see unverified leads)."
+  },
+  {
+   "id": "xai_grok_imagine_api_2026_01_28",
+   "developer": "xAI",
+   "family": "Grok Imagine",
+   "version": "Grok Imagine API",
+   "event": "public_release",
+   "date": "2026-01-28",
+   "date_precision": "day",
+   "headline": "Grok Imagine API opens video generation and video editing to developers: text- or image-to-video with native audio.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "xAI news post dated January 28, 2026.",
+     "quote": "January 28, 2026 Grok Imagine API",
+     "source_url": "https://web.archive.org/web/20260131213706id_/https://x.ai/news/grok-imagine-api",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Described as xAI's most powerful video-audio generative model.",
+     "quote": "Grok Imagine is our most powerful video-audio generative model yet.",
+     "source_url": "https://web.archive.org/web/20260131213706id_/https://x.ai/news/grok-imagine-api",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Video editing: restyle, add/remove objects, control motion.",
+     "quote": "Restyle scenes, add/remove objects, and control motion.",
+     "source_url": "https://web.archive.org/web/20260131213706id_/https://x.ai/news/grok-imagine-api",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Docs release notes list Video Generation as available on Jan 28.",
+     "quote": "Jan 28 Video Generation & Next-Gen Image Generation Video Generation and a revamped Image Generation are now available.",
+     "source_url": "https://docs.x.ai/docs/release-notes",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "The original consumer launch of Grok Imagine (reported Aug 2025) could not be confirmed from a primary source (see unverified leads)."
+  },
+  {
+   "id": "xai_grok_imagine_video_1_5_preview_2026_06_03",
+   "developer": "xAI",
+   "family": "Grok Imagine",
+   "version": "grok-imagine-video-1.5-preview",
+   "event": "preview",
+   "date": "2026-06-03",
+   "date_precision": "day",
+   "headline": "Preview of xAI's image-to-video model 1.5 in the API, up to 720p.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": "720p",
+    "fps": null,
+    "audio": null,
+    "notes": ""
+   },
+   "claims": [
+    {
+     "claim": "xAI news post dated Jun 3, 2026.",
+     "quote": "Jun 3, 2026 Grok Imagine 1.5 Preview",
+     "source_url": "https://web.archive.org/web/20260606151713id_/https://x.ai/news/grok-imagine-1-5",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Image-to-video model available via the API in preview.",
+     "quote": "grok-imagine-video-1.5-preview, our latest image-to-video model, is now available via the xAI API in preview.",
+     "source_url": "https://web.archive.org/web/20260606151713id_/https://x.ai/news/grok-imagine-1-5",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Clips up to 720p.",
+     "quote": "You can generate clips at up to 720p.",
+     "source_url": "https://web.archive.org/web/20260606151713id_/https://x.ai/news/grok-imagine-1-5",
+     "source_kind": "archived_official",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "id": "xai_grok_imagine_video_1_5_2026_06_16",
+   "developer": "xAI",
+   "family": "Grok Imagine",
+   "version": "Grok Imagine Video 1.5",
+   "event": "public_release",
+   "date": "2026-06-16",
+   "date_precision": "day",
+   "headline": "Grok Imagine Video 1.5 reaches general availability with speech and effects generated alongside the picture; Fast variant makes 6 s 720p in about 25 s.",
+   "specs": {
+    "max_clip_s": 6,
+    "resolution": "720p",
+    "fps": null,
+    "audio": "native audio (speech, effects, ambience) in the same pass",
+    "notes": "Timing figure is for the Fast variant on grok.com; xAI's own claim."
+   },
+   "claims": [
+    {
+     "claim": "xAI news post dated Jun 16, 2026.",
+     "quote": "Jun 16, 2026 Grok Imagine Video 1.5",
+     "source_url": "https://web.archive.org/web/20260926150326id_/https://x.ai/news/grok-imagine-video-1-5",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "General availability on the Imagine API.",
+     "quote": "Grok Imagine Video 1.5 is now generally available on the Imagine API.",
+     "source_url": "https://web.archive.org/web/20260926150326id_/https://x.ai/news/grok-imagine-video-1-5",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Audio generated in the same pass.",
+     "quote": "Sound effects, ambience, and dialogue are generated in the same pass and land on the action.",
+     "source_url": "https://web.archive.org/web/20260926150326id_/https://x.ai/news/grok-imagine-video-1-5",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Fast variant: 6-second 720p in about 25 seconds.",
+     "quote": "it produces 6-second, 720p videos in about 25 seconds",
+     "source_url": "https://web.archive.org/web/20260926150326id_/https://x.ai/news/grok-imagine-video-1-5",
+     "source_kind": "archived_official",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "id": "xai_grok_imagine_video_1_5_references_2026_07_31",
+   "developer": "xAI",
+   "family": "Grok Imagine",
+   "version": "Imagine Video 1.5 with References",
+   "event": "version_release",
+   "date": "2026-07-31",
+   "date_precision": "day",
+   "headline": "Adds text-to-video, native 1080p and up to seven image references plus voice references, so a character's face and voice can persist across scenes.",
+   "specs": {
+    "max_clip_s": 15,
+    "resolution": "1080p",
+    "fps": null,
+    "audio": "native audio; preset and reference voices",
+    "notes": "15 s maximum is per Runway's changelog for its MCP integration of the model, not xAI's own page."
+   },
+   "claims": [
+    {
+     "claim": "xAI news post dated Jul 31, 2026.",
+     "quote": "Jul 31, 2026 Imagine Video 1.5 with References",
+     "source_url": "https://web.archive.org/web/20260905025756id_/https://x.ai/news/grok-imagine-video-1-5-references",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Native 1080p for text-to-video and image-to-video.",
+     "quote": "Native 1080p is now supported with text-to-video and image-to-video.",
+     "source_url": "https://web.archive.org/web/20260905025756id_/https://x.ai/news/grok-imagine-video-1-5-references",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Up to seven references per generation.",
+     "quote": "Up to seven references per generation.",
+     "source_url": "https://web.archive.org/web/20260905025756id_/https://x.ai/news/grok-imagine-video-1-5-references",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Character image plus voice reference hold across scenes.",
+     "quote": "Pass in a character image and a voice reference, and both hold",
+     "source_url": "https://web.archive.org/web/20260905025756id_/https://x.ai/news/grok-imagine-video-1-5-references",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "API docs: T2V, I2V and reference-to-video supported.",
+     "quote": "grok-imagine-video-1.5 now supports text-to-video, image-to-video, and reference-to-video",
+     "source_url": "https://docs.x.ai/docs/release-notes",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Text-to-video runs as text-to-image then image-to-video.",
+     "quote": "Text-to-video on this model runs as text-to-image then image-to-video under the hood.",
+     "source_url": "https://docs.x.ai/docs/release-notes",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Runway changelog (third-party platform) states 1-15 s clips, up to 1080p.",
+     "quote": "Generate 1-15 second clips with native audio, up to 1080p resolution.",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Runway added the model to its MCP on Aug 13, 2026.",
+     "quote": "Aug 13, 2026 Paid Plans Grok Imagine 1.5 Video",
+     "source_url": "https://runwayml.com/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Voice references 'available on request' at launch per xAI."
+  }
+ ],
+ "capabilities": [
+  {
+   "capability": "image-to-video (image as first frame)",
+   "product": "Runway Gen-3 Alpha Image to Video",
+   "date": "2024-07-29",
+   "quote": "Jul 29, 2024 Paid Plans Gen-3 Alpha Image to Video Use any image as the first frame of your video generation",
+   "source_url": "https://runwayml.com/changelog",
+   "source_kind": "docs"
+  },
+  {
+   "capability": "first/last-frame keyframing",
+   "product": "Runway Gen-3 Alpha",
+   "date": "2024-08-05",
+   "quote": "Gen-3 Alpha Image to Video now supports using an image as either the first or last frame of your video generation.",
+   "source_url": "https://runwayml.com/changelog",
+   "source_kind": "docs"
+  },
+  {
+   "capability": "video-to-video restyling",
+   "product": "Runway Gen-3 Alpha Video to Video",
+   "date": "2024-09-13",
+   "quote": "Video to Video represents a new control mechanism for precise movement, expressiveness and intent within generations.",
+   "source_url": "https://runwayml.com/changelog",
+   "source_kind": "docs"
+  },
+  {
+   "capability": "clip extension to 40 s",
+   "product": "Runway Gen-3 Alpha Extensions",
+   "date": "2024-09-04",
+   "quote": "Gen-3 Alpha videos can be extended an additional 5 or 10 seconds to create up to 40s of generated video.",
+   "source_url": "https://runwayml.com/changelog",
+   "source_kind": "docs"
+  },
+  {
+   "capability": "camera direction and intensity control",
+   "product": "Runway Gen-3 Alpha Turbo",
+   "date": "2024-11-01",
+   "quote": "Choose both the direction and intensity of how you move through your scenes for even more intention in every shot.",
+   "source_url": "https://runwayml.com/changelog",
+   "source_kind": "docs"
+  },
+  {
+   "capability": "performance-driven character animation (facial)",
+   "product": "Runway Act-One",
+   "date": "2024-10-22",
+   "quote": "Act-One can create compelling animations using video and voice performances as inputs.",
+   "source_url": "https://runwayml.com/research/introducing-act-one",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "performance capture with head, face, body and hand tracking",
+   "product": "Runway Act-Two",
+   "date": "2025-07-17",
+   "quote": "Next-generation motion capture model with major improvements in generation quality and support for head, face, body and hand tracking.",
+   "source_url": "https://runwayml.com/changelog",
+   "source_kind": "docs"
+  },
+  {
+   "capability": "character/object consistency from reference images",
+   "product": "Runway Gen-4 / Gen-4 References",
+   "date": "2025-03-31",
+   "quote": "Runway Gen-4 can utilize visual references, combined with instructions, to create new images and videos utilizing consistent styles, subjects, locations and more.",
+   "source_url": "https://runwayml.com/research/introducing-runway-gen-4",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "consistent characters from a single reference image",
+   "product": "Runway Gen-4",
+   "date": "2025-03-31",
+   "quote": "Generate consistent AI video characters across any lighting condition, location or treatment",
+   "source_url": "https://runwayml.com/research/introducing-runway-gen-4",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "references shipped for paid plans",
+   "product": "Runway Gen-4 References",
+   "date": "2025-04-30",
+   "quote": "Apr 30, 2025 Paid Plans Gen-4 References Generate consistent characters, locations and more. Now available for paid plans.",
+   "source_url": "https://runwayml.com/changelog",
+   "source_kind": "docs"
+  },
+  {
+   "capability": "in-context video editing of existing footage",
+   "product": "Runway Aleph",
+   "date": "2025-07-25",
+   "quote": "Runway Aleph is a state-of-the-art in-context video model, setting a new frontier for multi-task visual generation",
+   "source_url": "https://runwayml.com/research/introducing-runway-aleph",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "native audio generation and audio editing",
+   "product": "Runway Gen-4.5",
+   "date": "2025-12-11",
+   "quote": "Gen-4.5 now supports native audio generation and native audio editing.",
+   "source_url": "https://runwayml.com/research/introducing-runway-gwm-1",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "multi-shot consistent editing",
+   "product": "Runway Gen-4.5",
+   "date": "2025-12-11",
+   "quote": "Gen-4.5 has the ability to edit videos of arbitrary length applying consistent transformations across multiple shots of arbitrary duration.",
+   "source_url": "https://runwayml.com/research/introducing-runway-gwm-1",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "image-to-video (first frame + prompt) on Gen-4.5",
+   "product": "Runway Gen-4.5",
+   "date": "2026-01-21",
+   "quote": "Jan 21, 2026 Paid Plans Gen-4.5 Image to Video You can now supply a first frame image alongside your text prompt with Gen-4.5.",
+   "source_url": "https://runwayml.com/changelog",
+   "source_kind": "docs"
+  },
+  {
+   "capability": "edit one frame, propagate to whole video (up to 30 s, 1080p)",
+   "product": "Runway Aleph 2.0",
+   "date": "2026-05-21",
+   "quote": "You can now edit clips up to 30 seconds long at 1080p.",
+   "source_url": "https://runwayml.com/product/aleph-2",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "SDR-to-HDR conversion of any video",
+   "product": "Runway Ruby",
+   "date": "2026-08-20",
+   "quote": "Convert any SDR video into true HDR.",
+   "source_url": "https://runwayml.com/product/ruby",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "real-time interactive world generation with audio",
+   "product": "Runway GWM Worlds 2",
+   "date": "2026-09-03",
+   "quote": "GWM Worlds 2 turns high-fidelity video and audio generation into real-time interactive simulation.",
+   "source_url": "https://runwayml.com/research/introducing-gwm-worlds-2",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "real-time, action-controllable frame-by-frame world model",
+   "product": "Runway GWM-1",
+   "date": "2025-12-11",
+   "quote": "It generates frame by frame, runs in real time, and can be controlled interactively with actions",
+   "source_url": "https://runwayml.com/research/introducing-runway-gwm-1",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "text-to-video/image-to-video for everyone (5 s shots)",
+   "product": "Luma Dream Machine",
+   "date": "2024-06-12",
+   "quote": "Dream Machine generates 5s shots with a realistic smooth motion, cinematography, and drama.",
+   "source_url": "https://web.archive.org/web/20240612171544id_/https://lumalabs.ai/dream-machine",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "keyframe extensions",
+   "product": "Luma Dream Machine (new app)",
+   "date": "2024-11-20",
+   "quote": "Keyframe Extensions Add image keyframes to extend videos and guide their transitions seamlessly.",
+   "source_url": "https://lumalabs.ai/changelog/welcome-to-the-all-new-dream-machine",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "5-10 s base clips, extendable to 30 s",
+   "product": "Luma Ray2",
+   "date": "2025-01-15",
+   "quote": "Extension capability : Up to 30 seconds",
+   "source_url": "https://lumalabs.ai/changelog/introducing-ray2",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "learned camera motion concepts",
+   "product": "Luma Camera Motion Concepts",
+   "date": "2025-03-31",
+   "quote": "Camera Motion Concepts deliver reliable, composable control over camera motion by learning any movement from just one or few examples.",
+   "source_url": "https://lumalabs.ai/changelog/camera-motion-concepts-launch",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "camera angle concepts",
+   "product": "Luma Camera Angle Concepts",
+   "date": "2025-04-18",
+   "quote": "Camera Angle Concepts add nine cinematic framing tools: POV, Selfie, Overhead, Over the Shoulder, Aerial, Eye Level, Ground Level, High Angle, and Low Angle.",
+   "source_url": "https://lumalabs.ai/changelog/camera-angle-concepts-launch",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "outpainting and reframing video",
+   "product": "Luma Reframe",
+   "date": "2025-05-09",
+   "quote": "Reframe lets you expand in any direction, resize for any platform, and bring back what was cropped out.",
+   "source_url": "https://lumalabs.ai/changelog/reframe-is-here",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "motion and performance capture onto new characters",
+   "product": "Luma Modify Video",
+   "date": "2025-06-02",
+   "quote": "Extract full-body, facial, or lip-sync motion from any video clip and drive new characters, props, or camera-blocked paths in perfect sync.",
+   "source_url": "https://lumalabs.ai/news/introducing-modify-video",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "native HDR EXR generation",
+   "product": "Luma Ray3",
+   "date": "2025-09-18",
+   "quote": "the first model to produce video in true 10-, 12-, and 16-bit High Dynamic Range (HDR) ACES2065-1 EXR format",
+   "source_url": "https://lumalabs.ai/news/ray3",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "fast Draft Mode exploration",
+   "product": "Luma Ray3",
+   "date": "2025-09-18",
+   "quote": "with its new Draft Mode, creatives can explore dozens of ideas up to 20x faster",
+   "source_url": "https://lumalabs.ai/news/ray3",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "start/end-frame control in video-to-video",
+   "product": "Luma Ray3 Modify",
+   "date": "2025-12-18",
+   "quote": "Now introduces Start and End Frame control to the video-to-video workflow for the first time.",
+   "source_url": "https://lumalabs.ai/news/ray3-modify",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "character reference locking likeness and costume",
+   "product": "Luma Ray3 Modify",
+   "date": "2025-12-18",
+   "quote": "lock likeness, costume, and identity continuity of a specific character across an entire modified clip",
+   "source_url": "https://lumalabs.ai/news/ray3-modify",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "native 1080p generation",
+   "product": "Luma Ray3.14",
+   "date": "2026-01-26",
+   "quote": "Ray3.14 is our most professional and powerful model, now with native 1080p video generation. It is 4x faster and 3x cheaper",
+   "source_url": "https://lumalabs.ai/news/ray3_14",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "up to 16 keyframes per clip",
+   "product": "Luma Ray3.2",
+   "date": "2026-06-09",
+   "quote": "By enabling the placement of up to 16 keyframes within a single clip",
+   "source_url": "https://lumalabs.ai/news/introducing-ray-3-2",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "20 s clips at 1080p",
+   "product": "Luma Ray3.2",
+   "date": "2026-06-09",
+   "quote": "Delivering clips up to 20 seconds long at 1080p",
+   "source_url": "https://lumalabs.ai/news/introducing-ray-3-2",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "multi-face performance tracking",
+   "product": "Luma Ray3.2",
+   "date": "2026-06-09",
+   "quote": "tracking the full expressive state for up to eight faces simultaneously, frame by frame",
+   "source_url": "https://lumalabs.ai/news/introducing-ray-3-2",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "storyboard/keyframe review before rendering",
+   "product": "Luma Scenes",
+   "date": "2026-08-11",
+   "quote": "Storyboard, key frames, timing all reviewed before a single render.",
+   "source_url": "https://lumalabs.ai/news/introducing-luma-scenes",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "Pikaffects (explode, melt, crush, inflate)",
+   "product": "Pika 1.5",
+   "date": "2024-10",
+   "quote": "Explode, melt, crush, or inflate anything your heart desires.",
+   "source_url": "https://web.archive.org/web/20241002231711id_/https://pika.art/home",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "Scene Ingredients (user-supplied elements in a scene)",
+   "product": "Pika 2.0",
+   "date": "2024-12",
+   "quote": "New model alert! Check out Pika 2.0, and rule reality with Scene Ingredients.",
+   "source_url": "https://web.archive.org/web/20241214042200id_/https://pika.art/login",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "Pikaframes (photo-to-video transitions)",
+   "product": "Pika 2.2",
+   "date": "2025-02-27",
+   "quote": "Pika 2.2 now available! Introducing Pikaframes: turn your photos into videos with unique transitions.",
+   "source_url": "https://web.archive.org/web/20250227221552id_/https://pika.art/login",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "audio-driven facial performance (Pikaformance)",
+   "product": "Pika Pikaformance",
+   "date": "on or before 2026-03-02",
+   "quote": "Our Pikaformance model is now available on web: hyper-real expressions, synced to any sound.",
+   "source_url": "https://web.archive.org/web/20260302074720id_/https://pika.art/login",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "image-to-video with automatic or manual motion prompt",
+   "product": "Midjourney V1 Video",
+   "date": "2025-06-18",
+   "quote": "Today’s Video workflow will be called “Image-to-Video”.",
+   "source_url": "https://updates.midjourney.com/introducing-our-v1-video-model/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "extend clips in ~4 s steps to 21 s",
+   "product": "Midjourney V1 Video",
+   "date": "2025-06-18",
+   "quote": "Once you have a video you like you can “extend” them - roughly 4 seconds at a time - four times total.",
+   "source_url": "https://updates.midjourney.com/introducing-our-v1-video-model/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "text/image-to-video plus Generative Extend in Premiere Pro, positioned as commercially safe",
+   "product": "Adobe Firefly Video Model",
+   "date": "2025-02-12",
+   "quote": "The new Firefly Video Model— the industry’s first commercially safe AI video generation model — powers Generate Video (beta) in the Firefly application",
+   "source_url": "https://news.adobe.com/news/2025/02/firefly-web-app-commercially-safe",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "composition reference from a video",
+   "product": "Adobe Firefly Video Model",
+   "date": "2025-07-17",
+   "quote": "Upload a reference video, describe your vision, and Firefly will generate a new video that transfers the original composition to your generation",
+   "source_url": "https://blog.adobe.com/en/publish/2025/07/17/firefly-adds-new-video-capabilities-industry-leading-ai-models-generate-sound-effects-feature",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "camera-motion reference video",
+   "product": "Adobe Firefly",
+   "date": "2025-12-16",
+   "quote": "you can now upload your start frame image, along with a reference video showing the camera motion you want to recreate",
+   "source_url": "https://blog.adobe.com/en/publish/2025/12/16/adobe-firefly-improves-ai-video-creation-tools-new-models-unlimited-generations",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "open image-to-video weights (14/25 frames)",
+   "product": "Stability Stable Video Diffusion",
+   "date": "2023-11-21",
+   "quote": "capable of generating 14 and 25 frames at customizable frame rates between 3 and 30 frames per second",
+   "source_url": "https://stability.ai/news-updates/stable-video-diffusion-open-ai-video-model",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "3D camera-trajectory control from a still image",
+   "product": "Stability Stable Virtual Camera",
+   "date": "2025-03-18",
+   "quote": "The model generates 3D videos from a single input image or up to 32, following user-defined camera trajectories",
+   "source_url": "https://stability.ai/news-updates/introducing-stable-virtual-camera-multi-view-video-generation-with-3d-camera-control",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "open-weights text-to-video, 30 fps, up to 5.4 s",
+   "product": "Genmo Mochi 1 preview",
+   "date": "2024-10-22",
+   "quote": "Mochi 1 generates smooth videos at 30 frames per second for durations up to 5.4 seconds",
+   "source_url": "https://www.genmo.ai/blog/mochi-1-a-new-sota-in-open-text-to-video",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "faster-than-watch-time generation (30 fps, 1216x704)",
+   "product": "Lightricks LTX-Video",
+   "date": "2024-11-21",
+   "quote": "It produces 30 FPS videos at a 1216×704 resolution faster than they can be watched.",
+   "source_url": "https://huggingface.co/Lightricks/LTX-Video/raw/main/README.md",
+   "source_kind": "model_card"
+  },
+  {
+   "capability": "joint audio-video generation in one model",
+   "product": "Lightricks LTX-2",
+   "date": "2025-10-23",
+   "quote": "Visuals and sound are generated in one coherent process, with motion, dialogue, ambience, and music flowing simultaneously.",
+   "source_url": "https://raw.githubusercontent.com/Lightricks/LTX-Video/main/README.md",
+   "source_kind": "docs"
+  },
+  {
+   "capability": "native multi-shot with local open weights",
+   "product": "Lightricks LTX-2.5",
+   "date": "2026-08-11",
+   "quote": "LTX-2.5 improves quality, continuity, control, and efficiency through native multi-shot, stronger prompt adherence, and better local performance.",
+   "source_url": "https://ltx.io/model/ltx-2-5",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "personalized video, precise editing and synced audio (research)",
+   "product": "Meta Movie Gen",
+   "date": "2024-10-04",
+   "quote": "The editing variant of the same foundation model takes both video and text prompt as input",
+   "source_url": "https://ai.meta.com/blog/movie-gen-media-foundation-models-generative-ai-video/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "audio up to 45 s synced to video (research)",
+   "product": "Meta Movie Gen",
+   "date": "2024-10-04",
+   "quote": "generate high-quality and high-fidelity audio up to 45 seconds, including ambient sound, sound effects (Foley), and instrumental background music",
+   "source_url": "https://ai.meta.com/blog/movie-gen-media-foundation-models-generative-ai-video/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "native audio support in a preview video model",
+   "product": "Meta Muse Video",
+   "date": "2026-07-07",
+   "quote": "delivers exceptional visual fidelity with native audio support",
+   "source_url": "https://ai.meta.com/blog/introducing-muse-image-muse-video-msl/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "6 s, 24 fps, 1280x720 text/image-to-video on Bedrock",
+   "product": "Amazon Nova Reel",
+   "date": "2024-12-03",
+   "quote": "\"durationSeconds\": 6, \"fps\": 24, \"dimension\": \"1280x720\"",
+   "source_url": "https://aws.amazon.com/blogs/aws/introducing-amazon-nova-frontier-intelligence-and-industry-leading-price-performance/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "multi-shot videos up to 2 minutes from 6 s shots",
+   "product": "Amazon Nova Reel 1.1",
+   "date": "2025-04-07",
+   "quote": "This update lets you generate multi-shot videos up to 2-minutes in length with consistent style across shots.",
+   "source_url": "https://aws.amazon.com/blogs/aws/amazon-nova-reel-1-1-featuring-up-to-2-minutes-multi-shot-videos/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "video editing (restyle, add/remove objects, control motion)",
+   "product": "xAI Grok Imagine API",
+   "date": "2026-01-28",
+   "quote": "Restyle scenes, add/remove objects, and control motion.",
+   "source_url": "https://web.archive.org/web/20260131213706id_/https://x.ai/news/grok-imagine-api",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "native audio generated in the same pass as video",
+   "product": "xAI Grok Imagine Video 1.5",
+   "date": "2026-06-16",
+   "quote": "Sound effects, ambience, and dialogue are generated in the same pass and land on the action.",
+   "source_url": "https://web.archive.org/web/20260926150326id_/https://x.ai/news/grok-imagine-video-1-5",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "image and voice references, up to seven per generation",
+   "product": "xAI Imagine Video 1.5 with References",
+   "date": "2026-07-31",
+   "quote": "Up to seven references per generation.",
+   "source_url": "https://web.archive.org/web/20260905025756id_/https://x.ai/news/grok-imagine-video-1-5-references",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "native 1080p text-to-video and image-to-video",
+   "product": "xAI Imagine Video 1.5 with References",
+   "date": "2026-07-31",
+   "quote": "Native 1080p is now supported with text-to-video and image-to-video.",
+   "source_url": "https://web.archive.org/web/20260905025756id_/https://x.ai/news/grok-imagine-video-1-5-references",
+   "source_kind": "archived_official"
+  }
+ ],
+ "limitations": [
+  {
+   "developer": "Runway",
+   "statement": "Gen-4.5 can show effects before causes (e.g. door opens before the handle is pressed).",
+   "quote": "Causal reasoning: effects sometimes precede causes",
+   "source_url": "https://runwayml.com/research/introducing-runway-gen-4.5"
+  },
+  {
+   "developer": "Runway",
+   "statement": "Gen-4.5 can make objects vanish or appear across frames (object permanence).",
+   "quote": "Object permanence: objects may disappear or appear unexpectedly across frames",
+   "source_url": "https://runwayml.com/research/introducing-runway-gen-4.5"
+  },
+  {
+   "developer": "Runway",
+   "statement": "Gen-4.5 actions disproportionately succeed (success bias).",
+   "quote": "Success bias: actions disproportionately succeed",
+   "source_url": "https://runwayml.com/research/introducing-runway-gen-4.5"
+  },
+  {
+   "developer": "Runway",
+   "statement": "At the Gen-4.5 announcement, image-to-video, keyframes and video-to-video were not yet on the model.",
+   "quote": "We’ll also be bringing all existing control modes (Image to Video, Keyframes, Video to Video and more) to Gen-4.5.",
+   "source_url": "https://runwayml.com/research/introducing-runway-gen-4.5"
+  },
+  {
+   "developer": "Runway",
+   "statement": "Gen-3 Alpha showcase clips are curated: only selected prompts are shown, stated as unmodified.",
+   "quote": "All of the videos on this page were generated with Gen-3 Alpha with no modifications.",
+   "source_url": "https://runwayml.com/research/introducing-gen-3-alpha"
+  },
+  {
+   "developer": "Midjourney",
+   "statement": "High motion can produce wonky mistakes.",
+   "quote": "The downside is all this motion can sometimes lead to wonky mistakes.",
+   "source_url": "https://updates.midjourney.com/introducing-our-v1-video-model/"
+  },
+  {
+   "developer": "Midjourney",
+   "statement": "Low motion can produce a clip that does not move at all.",
+   "quote": "The downside is sometimes you’ll actually get something that doesn’t move at all!",
+   "source_url": "https://updates.midjourney.com/introducing-our-v1-video-model/"
+  },
+  {
+   "developer": "Midjourney",
+   "statement": "V1 is image-to-video only and was web-only at launch.",
+   "quote": "For launch, we’re starting off web-only.",
+   "source_url": "https://updates.midjourney.com/introducing-our-v1-video-model/"
+  },
+  {
+   "developer": "Genmo",
+   "statement": "Extreme motion can cause minor warping and distortions.",
+   "quote": "In some edge cases with extreme motion, minor warping and distortions can also occur.",
+   "source_url": "https://www.genmo.ai/blog/mochi-1-a-new-sota-in-open-text-to-video"
+  },
+  {
+   "developer": "Genmo",
+   "statement": "Mochi 1 preview is optimised for photorealism and performs poorly on animated content.",
+   "quote": "Mochi 1 is also optimized for photorealistic styles so does not perform well with animated content.",
+   "source_url": "https://www.genmo.ai/blog/mochi-1-a-new-sota-in-open-text-to-video"
+  },
+  {
+   "developer": "Genmo",
+   "statement": "Only 480p was released; a higher-resolution Mochi 1 HD was promised but not confirmed released.",
+   "quote": "Today, we are releasing our 480p base model, with Mochi 1 HD coming later this year.",
+   "source_url": "https://www.genmo.ai/blog/mochi-1-a-new-sota-in-open-text-to-video"
+  },
+  {
+   "developer": "Stability AI",
+   "statement": "SVD clips are short (<= 4 s) and not perfectly photorealistic.",
+   "quote": "The generated videos are rather short (<= 4sec), and the model does not achieve perfect photorealism.",
+   "source_url": "https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt/raw/main/README.md"
+  },
+  {
+   "developer": "Stability AI",
+   "statement": "SVD faces and people may be generated improperly.",
+   "quote": "Faces and people in general may not be generated properly.",
+   "source_url": "https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt/raw/main/README.md"
+  },
+  {
+   "developer": "Stability AI",
+   "statement": "SVD cannot be controlled through text.",
+   "quote": "The model cannot be controlled through text.",
+   "source_url": "https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt/raw/main/README.md"
+  },
+  {
+   "developer": "Stability AI",
+   "statement": "SVD was a research release, not intended for real-world or commercial use at launch.",
+   "quote": "this model is not intended for real-world or commercial applications at this stage",
+   "source_url": "https://stability.ai/news-updates/stable-video-diffusion-open-ai-video-model"
+  },
+  {
+   "developer": "Stability AI",
+   "statement": "Stable Virtual Camera is research-only under a Non-Commercial License.",
+   "quote": "available for research use under a Non-Commercial License",
+   "source_url": "https://stability.ai/news-updates/introducing-stable-virtual-camera-multi-view-video-generation-with-3d-camera-control"
+  },
+  {
+   "developer": "Meta",
+   "statement": "Movie Gen was research only; Meta refers to 'a potential future release'.",
+   "quote": "As we continue to improve our models and move toward a potential future release",
+   "source_url": "https://ai.meta.com/blog/movie-gen-media-foundation-models-generative-ai-video/"
+  },
+  {
+   "developer": "Meta",
+   "statement": "Meta acknowledges limitations in Movie Gen models.",
+   "quote": "we acknowledge that our current models have limitations",
+   "source_url": "https://ai.meta.com/blog/movie-gen-media-foundation-models-generative-ai-video/"
+  },
+  {
+   "developer": "Meta",
+   "statement": "Muse Video preview still has gaps in audio-video synchronization and physically accurate fast motion.",
+   "quote": "We’re investing in areas with current performance gaps, such as audio-video synchronization and physically accurate fast motion.",
+   "source_url": "https://ai.meta.com/blog/introducing-muse-image-muse-video-msl/"
+  },
+  {
+   "developer": "Meta",
+   "statement": "Muse Video was not available at its announcement.",
+   "quote": "Muse Video is coming soon to creators and in Meta AI.",
+   "source_url": "https://ai.meta.com/blog/introducing-muse-image-muse-video-msl/"
+  },
+  {
+   "developer": "Adobe",
+   "statement": "Firefly Video Model in public beta was priced and described in five-second 1080p generations.",
+   "quote": "up to 20 five-second 1080p video generations",
+   "source_url": "https://news.adobe.com/news/2025/02/firefly-web-app-commercially-safe"
+  },
+  {
+   "developer": "Adobe",
+   "statement": "Firefly Video Model started in a limited public beta for a small group.",
+   "quote": "The Firefly Video Model, now in limited public beta, is the first publicly available video model designed to be commercially safe.",
+   "source_url": "https://news.adobe.com/news/2024/10/101424-adobe-launches-firefly-video-model"
+  },
+  {
+   "developer": "Amazon",
+   "statement": "Nova Reel 1.1's two-minute videos are composed of 6-second shots rather than one continuous take.",
+   "quote": "You can either provide a single prompt for up to a 2-minute video composed of 6-second shots, or design each shot individually with custom prompts.",
+   "source_url": "https://aws.amazon.com/blogs/aws/amazon-nova-reel-1-1-featuring-up-to-2-minutes-multi-shot-videos/"
+  },
+  {
+   "developer": "xAI",
+   "statement": "Grok Imagine 1.5 text-to-video is produced by text-to-image followed by image-to-video.",
+   "quote": "Text-to-video on this model runs as text-to-image then image-to-video under the hood.",
+   "source_url": "https://docs.x.ai/docs/release-notes"
+  },
+  {
+   "developer": "Lightricks",
+   "statement": "LTX-2 weights promised 'later in 2025' but the paper and weights surfaced in January 2026.",
+   "quote": "LTX-2 model weights, code, and benchmarks will be released to the community later in 2025.",
+   "source_url": "https://raw.githubusercontent.com/Lightricks/LTX-Video/main/README.md"
+  },
+  {
+   "developer": "Lightricks",
+   "statement": "LTX-2 is released under a community licence (license: other), not a standard permissive licence.",
+   "quote": "license_name: ltx-2-community-license-agreement",
+   "source_url": "https://huggingface.co/Lightricks/LTX-2/raw/main/README.md"
+  }
+ ],
+ "unverified_leads": [
+  {
+   "lead": "Luma 'Dream Machine 1.5' released around 19-20 Aug 2024 (text rendering, better prompt understanding).",
+   "why_unverified": "Only secondary press found; no Luma-owned page or archived capture showing '1.5' was retrieved (lumalabs.ai/dream-machine captures of 2024-08-01 and 2024-11-01 do not mention it)."
+  },
+  {
+   "lead": "Original consumer launch of xAI 'Grok Imagine' with video (reported 4 Aug 2025) and any 'Grok Imagine 0.9/1.0' version names between Aug 2025 and Jan 2026.",
+   "why_unverified": "x.ai/news returns 403 from the sandbox and Wayback captures of the 2025 news index returned no content; earliest primary Imagine video page retrieved is the 2026-01-28 API post."
+  },
+  {
+   "lead": "Amazon has reportedly wound Nova Reel (and Premier, Omni, Canvas) down to maintenance mode in July 2026 in favour of a new frontier model expected around re:Invent 2026.",
+   "why_unverified": "Only secondary reporting (Business Insider/Reuters via aggregators); the Amazon spokesperson statement was not found on an Amazon-owned page. Nova Reel 1.1 (2025-04-07) is the last primary Reel release retrieved."
+  },
+  {
+   "lead": "Meta used Midjourney and Black Forest Labs image/video technology for the early version of Vibes (reported Sept 2025).",
+   "why_unverified": "The Meta newsroom post retrieved does not name partners; claim is secondary only."
+  },
+  {
+   "lead": "Meta Muse Video general availability after the 2026-07-07 preview (secondary sources mention 10-second clips in partner beta).",
+   "why_unverified": "The Meta blog says 'coming soon'; no later Meta-owned page was found."
+  },
+  {
+   "lead": "Genmo 'Mochi 1 HD' (720p, image-to-video) promised for late 2024.",
+   "why_unverified": "Only the promise is verified (Genmo blog); no release found on the Genmo blog (lists only the Mochi 1 post) or in the GitHub README changelog (last entry 2024-11-26)."
+  },
+  {
+   "lead": "Pika 2.2 supports 10-second generations; Pika 2.5 supports 1080p and long generations.",
+   "why_unverified": "Specs appear only in secondary sources; Pika's archived banners retrieved give names and dates only."
+  },
+  {
+   "lead": "Exact release days for Pika 1.5 (likely 2024-10-01), 2.0 (likely 2024-12-13), 2.1 (likely 2025-01-27) and 2.5 (2025-11-20 to 11-22).",
+   "why_unverified": "Primary evidence is archived login/home-page banners bracketing each release to a window of 1-3 days; the day itself comes only from secondary sources except for Pika 2.2 (bracketed to 2025-02-27)."
+  },
+  {
+   "lead": "Pika 'Pikaformance' audio-driven performance model date.",
+   "why_unverified": "Only known to exist by an archived capture of 2026-03-02; earlier availability not checked."
+  },
+  {
+   "lead": "A Midjourney video model newer than V1 (e.g. 'Video V2'), or a 2026 Midjourney video update.",
+   "why_unverified": "Midjourney's updates blog (Ghost RSS covering 2026-05-27 to 2026-09-24) mentions video mode only in UI changelogs; no newer video model announced. Older posts are not in the feed."
+  },
+  {
+   "lead": "Runway 'foundational audio-video generation model' referenced as the base of GWM Worlds 2 (2026-09-03).",
+   "why_unverified": "The research page does not name or date the model; Runway's research nav lists Gen-4.5, Aleph 2.0, Ruby, Act-Two, Solaris only."
+  },
+  {
+   "lead": "TechCrunch reported Gen-4.5 gaining native audio and one-minute multi-shot generations (Dec 2025).",
+   "why_unverified": "The native audio/multi-shot claim is confirmed on Runway's GWM-1 page, but the 'one-minute' length appears only in the secondary article."
+  },
+  {
+   "lead": "Runway Act-Two announcement page and Act-Two spec sheet.",
+   "why_unverified": "runwayml.com/research/introducing-act-two returned a server error; only the changelog entry (2025-07-17) and a banner on the Act-One page were retrieved."
+  },
+  {
+   "lead": "Exact public open-weights release day of LTX-2 and LTX-2.5.",
+   "why_unverified": "docs.ltx.video release notes sit behind Cloudflare. Hugging Face repo timestamps (LTX-2 2026-01-03; LTX-2.5 2026-07-23) are creation times that may precede public release; press dates are LTX-2.3 2026-03-05 and LTX-2.5 2026-08-11."
+  },
+  {
+   "lead": "Cross-check for other researchers: Runway's changelog lists third-party video models on Runway (Sora 2 Pro and Kling 3.0 on 2026-02-20, Seedance 2.0 on 2026-04-07, Gemini Omni Flash on 2026-06-30, Seedance 2.5 on 2026-08-11, Wan 3.0 on 2026-08-24, MiniMax Hailuo 3.0 on 2026-08-05).",
+   "why_unverified": "Outside R3's developer list; dates are Runway's availability dates, not the models' own release dates."
+  },
+  {
+   "lead": "Adobe Firefly Video Model successor version after the July 2025 update.",
+   "why_unverified": "Adobe's posts of 2026-02-25, 2026-04-15 and 2026-06-18 never use the phrase 'Firefly Video Model' (searched), and the 2026-04-15 post calls Firefly an all-in-one studio with 30+ models; no new in-house video model version was found, but absence in three posts is not proof."
+  }
+ ],
+ "corrections_to_common_beliefs": [
+  "Runway Gen-3 Alpha: 17 June 2024 is the announcement ('will be released'); Runway's changelog dates text-to-video for paid plans 1 July 2024, image-to-video 29 July 2024, and Gen-3 Alpha Turbo 14 August 2024.",
+  "Runway Gen-4 (announced 31 March 2025, available to paid plans 1 April 2025) did not ship with References; the changelog dates Gen-4 References 30 April 2025 for paid plans, and an object-consistency update 25 June 2025.",
+  "Runway Gen-4.5 launched (1 Dec 2025; available to paid plans 11 Dec 2025) as text-to-video; first-frame image input arrived 21 Jan 2026. Its '#1 with 1,247 Elo' is a developer-cited leaderboard snapshot as of 30 Nov 2025, not a current or independent ranking, and Runway itself lists causal-reasoning, object-permanence and success-bias failures.",
+  "Runway Act-One was announced 22 Oct 2024 but rolled out gradually (changelog 25 Oct 2024).",
+  "Midjourney V1 Video (18 Jun 2025) is image-to-video only (no text-to-video), was web-only at launch, makes four 5-second clips per job extendable to 21 s, and defaults to 480p (720p HD on higher plans). Midjourney itself warns of 'wonky mistakes' and clips that do not move.",
+  "Luma Dream Machine's 12 June 2024 launch produced 5-second shots; Ray2 (15 Jan 2025) offered 5-10 s base clips extendable to 30 s. Luma's version line is Ray2, Ray3 (18 Sep 2025), Ray3.14 (26 Jan 2026), Ray3.2 (9 Jun 2026); no 'Ray4' was found. 'First reasoning model' and 'first 16-bit HDR' are Luma's own marketing claims.",
+  "Meta Movie Gen (4 Oct 2024) was a research announcement, never a public release: Meta wrote of 'a potential future release'. Meta Vibes (25 Sep 2025) is a feed, not a named video model, and Muse Video (7 Jul 2026) was only an 'early preview' with stated gaps.",
+  "Adobe's Firefly Video Model did not launch in one step: preview 11 Sep 2024, limited public beta 14 Oct 2024, public beta 12 Feb 2025 (five-second 1080p generations). By April 2026 Adobe calls Firefly an all-in-one studio with 30+ models, so 'made in Firefly' does not identify the model.",
+  "Amazon Nova Reel 1.1's 'two-minute videos' (7 Apr 2025) are multi-shot sequences stitched from 6-second shots, not one continuous 2-minute clip; Reel 1.0 (3 Dec 2024) was 6 s at 1280x720, 24 fps.",
+  "Stable Video Diffusion (21 Nov 2023) is image-to-video with 14 or 25 frames, cannot be steered by text, and was released for research use; Stable Virtual Camera (18 Mar 2025) is likewise non-commercial research.",
+  "'Open source' does not mean reusable footage: Mochi 1 is Apache 2.0 for the model; LTX-2 and LTX-2.x use custom community licences (license: other); none of the retrieved pages grants reuse rights for demo videos. Also LTX-2 was announced 23 Oct 2025 with weights promised 'later in 2025' but arrived January 2026.",
+  "Platform is not model: by Sep 2026 Pika (17 Sep 2026), Runway (Feb-Aug 2026 changelog), Adobe Firefly (Apr 2026) and Luma (6 Aug 2026) all host third-party models (e.g. Seedance 2.5, Wan 3.0, Kling 3.0, Sora 2 Pro, MiniMax H3). Every excerpt label must name the underlying model, not the app.",
+  "xAI's Grok Imagine Video 1.5 text-to-video is produced by text-to-image then image-to-video (per xAI docs); native 1080p, T2V and up to seven references arrived 31 Jul 2026, not at the 16 Jun 2026 general release.",
+  "Pika release days are only bracketed by archived site banners (Pika 2.2 exactly on 27 Feb 2025; 1.5, 2.0, 2.1, 2.5 to windows of 1-3 days), so treat month-level dates as safe and day-level dates as inferred except 2.2."
+ ]
+}

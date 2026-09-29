@@ -1,0 +1,2448 @@
+{
+  "agent": "R4",
+  "topic": "Chinese labs and open models: Kling (Kuaishou), Hailuo/MiniMax, ByteDance Seedance, Alibaba Wan, Tencent HunyuanVideo, Vidu (ShengShu), Zhipu CogVideoX. Verified against primary sources through 2026-09-29.",
+  "method_notes": "Primary pages were fetched from the Higgsfield sandbox (curl, headless Chromium for JS-rendered Kling release notes, HF/GitHub APIs, cdn.syndication.twimg.com for official X posts). Every quote below was machine-checked as a substring of the retrieved page text (typographic quotes/markdown asterisks normalised). Official X posts are labelled official_blog and are the developer's own account. Wire press releases issued by the developer (PR Newswire / Kuaishou) are labelled official_blog with a note where the copy was read on a mirror. Anything only found in secondary sources is labelled secondary or listed under unverified_leads.",
+  "milestones": [
+    {
+      "id": "kling_1_0_preview_2024_06",
+      "developer": "Kuaishou",
+      "family": "Kling",
+      "version": "Kling (launch build; later branded KLING 1.0)",
+      "event": "preview",
+      "date": "2024-06-06",
+      "date_precision": "day",
+      "headline": "Kuaishou opened applications for early-access testing of Kling, a text-to-video model billed as a Sora rival, in China.",
+      "specs": {
+        "max_clip_s": null,
+        "resolution": null,
+        "fps": null,
+        "audio": null,
+        "notes": "Company launch claim relayed by MIT Technology Review (secondary): up to two minutes, 30 fps, up to 1080p. Kuaishou's own 25 Jul 2024 release says text-to-video was only extended to 10 seconds by the July upgrade, so the 2-minute figure is a launch claim, not evidence of typical output length."
+      },
+      "claims": [
+        {
+          "claim": "Kuaishou's own July 2024 release says Kling began accepting applications on 6 June 2024 (invitation beta; >1 million applications, >300,000 granted early access).",
+          "quote": "since it began accepting applications on June 6",
+          "source_url": "https://www.nasdaq.com/press-release/kuaishou-launches-full-beta-testing-kling-ai-global-users-elevates-model-capabilities",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Launch-day spec claim (quoting Kling's own website): up to 2 minutes, 30 fps, up to 1080p. Secondary relay; not corroborated by a primary page I could retrieve.",
+          "quote": "up to two minutes long with a frame rate of 30fps and video resolution up to 1080p",
+          "source_url": "https://www.technologyreview.com/2024/06/19/1094027/kling-kuaishou-video-ai-china/",
+          "source_kind": "secondary",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": "Date confirmed by the issuer press release (nasdaq.com hosts the PR Newswire copy of Kuaishou Technology's release dated 25 Jul 2024; official IR host kuaishou.gcs-web.com was unreachable). Spec claims are medium/low confidence."
+    },
+    {
+      "id": "kling_1_0_global_web_2024_07_24",
+      "developer": "Kuaishou",
+      "family": "Kling",
+      "version": "KLING AI International Version 1.0",
+      "event": "public_release",
+      "date": "2024-07-24",
+      "date_precision": "day",
+      "headline": "Kling opened to users worldwide on the web with any email address and free daily credits; text-to-video duration extended to 10 seconds.",
+      "specs": {
+        "max_clip_s": 10,
+        "resolution": null,
+        "fps": null,
+        "audio": null,
+        "notes": "10 s is the text-to-video duration stated in the Kuaishou release; 66 free daily credits (~6 free videos)."
+      },
+      "claims": [
+        {
+          "claim": "Official Kling X account announced the global launch of the International Version 1.0 on 2024-07-24 (post timestamp 04:53 UTC).",
+          "quote": "Introducing the official global launch of Kling AI's International Version1.0",
+          "source_url": "https://x.com/Kling_ai/status/1815973596738769299",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Kuaishou release (dated 25 Jul 2024) says the beta is available to global users via the web portal.",
+          "quote": "with the beta version now available to global users via web portal",
+          "source_url": "https://www.nasdaq.com/press-release/kuaishou-launches-full-beta-testing-kling-ai-global-users-elevates-model-capabilities",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Same release: text-to-video duration extended to 10 seconds at the World Artificial Intelligence Conference web launch.",
+          "quote": "extending the text-to-video generation duration to 10 seconds",
+          "source_url": "https://www.nasdaq.com/press-release/kuaishou-launches-full-beta-testing-kling-ai-global-users-elevates-model-capabilities",
+          "source_kind": "official_blog",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": "X post read through the syndication endpoint cdn.syndication.twimg.com (tweet-result); the post is the developer's own account."
+    },
+    {
+      "id": "kling_1_5_2024_09_19",
+      "developer": "Kuaishou",
+      "family": "Kling",
+      "version": "KLING 1.5",
+      "event": "version_release",
+      "date": "2024-09-19",
+      "date_precision": "day",
+      "headline": "Kling 1.5 added 1080p in Professional mode and a Motion Brush to steer chosen elements of an image-to-video shot.",
+      "specs": {
+        "max_clip_s": null,
+        "resolution": "1080p (Professional mode)",
+        "fps": null,
+        "audio": null,
+        "notes": "The 1.5 Professional-mode image-to-video Motion Brush + Camera Movement combination was re-announced on 2024-11-22 (official X post) and the V1.5 Pro API opened 2024-11-15 (API changelog), so the fuller control set is later than 19 Sep."
+      },
+      "claims": [
+        {
+          "claim": "Official Kling X post of 2024-09-19 announces 1.5 as officially released.",
+          "quote": "The all-new Kling 1.5 Model is officially released!",
+          "source_url": "https://x.com/Kling_ai/status/1836615107918598236",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Same post: 1080p in professional mode and the Motion Brush.",
+          "quote": "Now supports generating 1080p HD videos in professional mode!",
+          "source_url": "https://x.com/Kling_ai/status/1836615107918598236",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Official X post of 2024-11-22: 1.5 image-to-video Professional mode now supports Motion Brush and Camera Movement.",
+          "quote": "KLING 1.5 Model (Image-to-Video) Professional Mode: Now supports Motion Brush and Camera Movement!",
+          "source_url": "https://x.com/Kling_ai/status/1859935337797320782",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "API changelog: V1.5 Pro model opened for API image-to-video on 11/15/2024.",
+          "quote": "Video V1.5 Pro Model Now Open for Video Generation",
+          "source_url": "https://kling.ai/document-api/apiReference/updateNotice",
+          "source_kind": "docs",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": "Older web release notes (before 2025-01-23) are not on the current kling.ai release-history page; date taken from the official X account."
+    },
+    {
+      "id": "kling_1_6_2024_12_19",
+      "developer": "Kuaishou",
+      "family": "Kling",
+      "version": "KLING 1.6 (KLING AI 1.6 Model)",
+      "event": "version_release",
+      "date": "2024-12-19",
+      "date_precision": "day",
+      "headline": "Kling 1.6 improved prompt response, visual aesthetics and physical action over 1.5; API access followed on 2025-01-07.",
+      "specs": {
+        "max_clip_s": null,
+        "resolution": null,
+        "fps": null,
+        "audio": null,
+        "notes": "API changelog: V1.6 launched via API 2025-01-07 with text-to-video STD and image-to-video STD/PRO; tail-frame, motion brush, camera control not yet supported on 1.6 at that time."
+      },
+      "claims": [
+        {
+          "claim": "Official Kling X post dated 2024-12-19 (04:22 UTC) introduces the 1.6 model.",
+          "quote": "We're excited to introduce the KLING AI 1.6 Model",
+          "source_url": "https://x.com/Kling_ai/status/1869599147046871488",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Kuaishou's FY2024 results announcement (HKEX filing, 25 Mar 2025) confirms 1.6 was unveiled in Q4 2024.",
+          "quote": "In the fourth quarter of 2024, we unveiled Kling",
+          "source_url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0325/2025032500309.pdf",
+          "source_kind": "archived_official",
+          "retrieved": true
+        },
+        {
+          "claim": "API changelog entry dated 01/07/2025.",
+          "quote": "V1.6 Model Officially Launched",
+          "source_url": "https://kling.ai/document-api/apiReference/updateNotice",
+          "source_kind": "docs",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": "The '195% improvement' figure seen in secondary coverage was not found on a primary page; not used."
+    },
+    {
+      "id": "kling_2_0_master_2025_04_15",
+      "developer": "Kuaishou",
+      "family": "Kling",
+      "version": "KLING 2.0 Master",
+      "event": "version_release",
+      "date": "2025-04-15",
+      "date_precision": "day",
+      "headline": "Kling 2.0 Master brought better prompt adherence, larger motion range and more cinematic visuals, plus a Multi-Elements video editor.",
+      "specs": {
+        "max_clip_s": null,
+        "resolution": null,
+        "fps": null,
+        "audio": null,
+        "notes": "Release note also introduces a Multi-Elements Editor for KLING 1.6 (upload a 1-5 s video, then add/swap/delete elements)."
+      },
+      "claims": [
+        {
+          "claim": "Official release history entry dated 2025-04-15 ('Huge Update: Phase 2.0 for Kling AI!').",
+          "quote": "New KLING 2.0 Master & KOLORS 2.0 models launched for video and image generation.",
+          "source_url": "https://kling.ai/release-note/release-history",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Release note text on 2.0 Master quality.",
+          "quote": "KLING 2.0 Master is here for video generation, with even better prompt adherence than the 1.6 model",
+          "source_url": "https://kling.ai/release-note/release-notes/2025041522",
+          "source_kind": "official_blog",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": "Release-note pages are JS-rendered; text retrieved with headless Chromium and the kling.ai/api/release-note/fetch_all JSON."
+    },
+    {
+      "id": "kling_2_1_2025_05_26",
+      "developer": "Kuaishou",
+      "family": "Kling",
+      "version": "KLING 2.1 / KLING 2.1 Master",
+      "event": "version_release",
+      "date": "2025-05-26",
+      "date_precision": "day",
+      "headline": "Kling 2.1 (720p/1080p) and flagship 2.1 Master launched; standard 2.1 was image-to-video only at first.",
+      "specs": {
+        "max_clip_s": null,
+        "resolution": "720p (Standard) / 1080p (Professional and Master)",
+        "fps": null,
+        "audio": null,
+        "notes": "On 2025-06-26 all Kling video models gained integrated sound effects (see capabilities)."
+      },
+      "claims": [
+        {
+          "claim": "Official release note dated 2025-05-26 introducing the 2.1 lineup.",
+          "quote": "New KLING 2.1 Master: Our flagship model gets even better! Superb dynamics & prompt adherence, now with 1080p.",
+          "source_url": "https://kling.ai/release-note/release-notes/2025052696",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Resolution tiers for standard 2.1.",
+          "quote": "Standard (720p) & Professional (1080p) Modes",
+          "source_url": "https://kling.ai/release-note/release-notes/2025052696",
+          "source_kind": "official_blog",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": "Several secondary articles give 29 May 2025; the official release note is dated 2025-05-26."
+    },
+    {
+      "id": "kling_2_5_turbo_2025_09_19",
+      "developer": "Kuaishou",
+      "family": "Kling",
+      "version": "Kling 2.5 Turbo",
+      "event": "version_release",
+      "date": "2025-09-19",
+      "date_precision": "day",
+      "headline": "Kling 2.5 Turbo improved prompt adherence, dynamic-scene stability and style consistency at roughly 30% lower price than 2.1.",
+      "specs": {
+        "max_clip_s": null,
+        "resolution": "1080p output offered (Professional mode)",
+        "fps": null,
+        "audio": null,
+        "notes": "Standard mode added 2025-11-07; start-and-end-frame support 2025-11-18 (release history)."
+      },
+      "claims": [
+        {
+          "claim": "Official release note dated 2025-09-19.",
+          "quote": "Introducing Kling AI 2.5 Turbo Video Model!",
+          "source_url": "https://kling.ai/release-note/release-notes/2025091961",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Release-history list entry for the same date.",
+          "quote": "Major Update: Kling 2.5 Turbo",
+          "source_url": "https://kling.ai/release-note/release-history",
+          "source_kind": "official_blog",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": "Some secondary sources say 23 Sep 2025; the official entry is 2025-09-19."
+    },
+    {
+      "id": "kling_video_o1_2025_12_01",
+      "developer": "Kuaishou",
+      "family": "Kling",
+      "version": "Kling VIDEO O1",
+      "event": "version_release",
+      "date": "2025-12-01",
+      "date_precision": "day",
+      "headline": "Kling O1 merged reference-to-video, text-to-video, start/end frames and prompt-based video editing into one model with 3-10 second clips.",
+      "specs": {
+        "max_clip_s": 10,
+        "resolution": null,
+        "fps": null,
+        "audio": null,
+        "notes": "'World's first unified multimodal video model' is the developer's own marketing claim. 720p and 3-10 s start/end frames added 2025-12-15."
+      },
+      "claims": [
+        {
+          "claim": "Official release note of 2025-12-01 (start of 'Omni Launch Week').",
+          "quote": "the world's first unified multimodal video model",
+          "source_url": "https://kling.ai/release-note/release-notes/vaxrndo66h",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Task scope of the model.",
+          "quote": "Reference to Video, Text-to-Video, Start & End Frames generation, video content editing, modifications, transformations, restyling, and camera extension",
+          "source_url": "https://kling.ai/release-note/release-notes/vaxrndo66h",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Duration range.",
+          "quote": "Kling O1 supports free generation of 3-10 seconds",
+          "source_url": "https://kling.ai/release-note/release-notes/vaxrndo66h",
+          "source_kind": "official_blog",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "kling_2_6_native_audio_2025_12_03",
+      "developer": "Kuaishou",
+      "family": "Kling",
+      "version": "Kling VIDEO 2.6",
+      "event": "version_release",
+      "date": "2025-12-03",
+      "date_precision": "day",
+      "headline": "Kling 2.6 generated speech, sound effects and ambience together with the picture in one pass - Kling's first native-audio model.",
+      "specs": {
+        "max_clip_s": null,
+        "resolution": null,
+        "fps": null,
+        "audio": true,
+        "notes": "API launch of V2.6 is dated 2025-12-15 in the API changelog. Voice Control (custom voice) added 2025-12-16; Motion Control (3-30 s motion references) 2025-12-17."
+      },
+      "claims": [
+        {
+          "claim": "Official release note dated 2025-12-03.",
+          "quote": "This update introduces a groundbreaking \"Native Audio\" capability.",
+          "source_url": "https://kling.ai/release-note/release-notes/c605hp1tzd",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "What is generated jointly.",
+          "quote": "the end-to-end generation of complete videos in a single go, including natural voice, action sound effects, and environmental ambience sounds",
+          "source_url": "https://kling.ai/release-note/release-notes/c605hp1tzd",
+          "source_kind": "official_blog",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": "Kling had offered post-hoc integrated sound effects on all models since 2025-06-26; 2.6 is the first single-pass audio+video model. Wan 2.5 (2025-09-24) announced native audio earlier."
+    },
+    {
+      "id": "kling_3_0_2026_02_04",
+      "developer": "Kuaishou",
+      "family": "Kling",
+      "version": "Kling 3.0 (VIDEO 3.0 / VIDEO 3.0 Omni)",
+      "event": "version_release",
+      "date": "2026-02-04",
+      "date_precision": "day",
+      "headline": "Kling 3.0 unified generation and editing, added up to 15 s clips, multi-shot storyboards and native multilingual audio.",
+      "specs": {
+        "max_clip_s": 15,
+        "resolution": null,
+        "fps": null,
+        "audio": true,
+        "notes": "3-15 s flexible duration. Native 4K mode added 2026-04-23; Turbo 2026-06-17. API: '3.0 Omni and V3 model launched' dated 02/25/2026."
+      },
+      "claims": [
+        {
+          "claim": "Official Kling X account announced the 3.0 model on 2026-02-04 (15:06 UTC).",
+          "quote": "Introducing the Kling 3.0 Model: Everyone a Director.",
+          "source_url": "https://x.com/Kling_ai/status/2019064918960668819",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Official release note (entry dated 2026-01-31, 'Now Fully Rolled Out') on duration and native audio.",
+          "quote": "This model not only supports longer video generation (up to 15 seconds), but also offers Native Audio",
+          "source_url": "https://kling.ai/release-note/release-notes/whbvu8hsip",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Multi-shot storytelling.",
+          "quote": "The all-new Multi-Shot feature is designed to understand scene coverage and shots in your prompt",
+          "source_url": "https://kling.ai/release-note/release-notes/whbvu8hsip",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Lineage: 2.6 became 3.0 and O1 became 3.0 Omni.",
+          "quote": "Kling VIDEO 2.6 has been upgraded to VIDEO 3.0, while Kling VIDEO O1 has been upgraded to VIDEO 3.0 Omni",
+          "source_url": "https://kling.ai/release-note/release-notes/whbvu8hsip",
+          "source_kind": "official_blog",
+          "retrieved": true
+        }
+      ],
+      "confidence": "medium",
+      "notes": "DATE CONFLICT: official X announcement 2026-02-04; the kling.ai release-note entry is displayed with date 2026-01-31; API changelog says 2026-02-25. 2026-02-04 is the first public announcement I could time-stamp. The 'up to 6 shots' figure in secondary articles was not found on a primary page."
+    },
+    {
+      "id": "kling_3_0_native_4k_2026_04_23",
+      "developer": "Kuaishou",
+      "family": "Kling",
+      "version": "Kling VIDEO 3.0 series - native 4K mode",
+      "event": "version_release",
+      "date": "2026-04-23",
+      "date_precision": "day",
+      "headline": "Kling 3.0 gained a one-click native 4K generation mode, priced at 30 credits per second.",
+      "specs": {
+        "max_clip_s": 15,
+        "resolution": "4K (native mode)",
+        "fps": null,
+        "audio": true,
+        "notes": "'World's first native 4K' is Kling's marketing claim. API changelog same day: mode parameter value '4k'."
+      },
+      "claims": [
+        {
+          "claim": "Official release note dated 2026-04-23.",
+          "quote": "A new 4K mode is now available in the Kling VIDEO 3.0 series, enabling one-click 4K video generation",
+          "source_url": "https://kling.ai/release-note/release-notes/z8zeqsxwol",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "API changelog entry dated 04/23/2026.",
+          "quote": "support for native 4K resolution output",
+          "source_url": "https://kling.ai/document-api/apiReference/updateNotice",
+          "source_kind": "docs",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "kling_3_0_turbo_2026_06_17",
+      "developer": "Kuaishou",
+      "family": "Kling",
+      "version": "Kling 3.0 Turbo",
+      "event": "version_release",
+      "date": "2026-06-17",
+      "date_precision": "day",
+      "headline": "Kling 3.0 Turbo added a faster, cheaper 3.0 tier; 3.0 Omni video editing extended to 15 s and 4K input/output.",
+      "specs": {
+        "max_clip_s": 15,
+        "resolution": "720p / 1080p (Turbo per API changelog); 4K for Omni editing",
+        "fps": null,
+        "audio": true,
+        "notes": ""
+      },
+      "claims": [
+        {
+          "claim": "Official release note dated 2026-06-17.",
+          "quote": "Kling 3.0 Turbo is now live",
+          "source_url": "https://kling.ai/release-note/release-notes/Kling_3_Turbo",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Omni editing upgrade.",
+          "quote": "Video editing now support input and output durations of up to 15 seconds.",
+          "source_url": "https://kling.ai/release-note/release-notes/Kling_3_Turbo",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "API changelog entry 06/17/2026.",
+          "quote": "Kling 3.0 Turbo Officially Released",
+          "source_url": "https://kling.ai/document-api/apiReference/updateNotice",
+          "source_kind": "docs",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "kling_4_0_preview_2026_09_28",
+      "developer": "Kuaishou",
+      "family": "Kling",
+      "version": "Kling 4.0 / Kling 4.0 Flash",
+      "event": "preview",
+      "date": "2026-09-28",
+      "date_precision": "day",
+      "headline": "Kling 4.0 was announced with up to 30 s clips, 4K, stereo audio and 15 references; Flash reached limited users first.",
+      "specs": {
+        "max_clip_s": 30,
+        "resolution": "720p / 1080p / 4K (10-bit HDR at 1080p and 4K listed as 'coming soon')",
+        "fps": null,
+        "audio": true,
+        "notes": "Duration 3-30 s; up to 10 keyframes; prompts up to 8,000 tokens; up to 15 reference assets (10 images, 5 videos, 7 subjects); 21:9 supported; video extension up to 2 minutes 'coming soon'. Full launch stated for October 2026, i.e. after the production date."
+      },
+      "claims": [
+        {
+          "claim": "Official release note dated 2026-09-28: full launch in October; Flash early access on 28 Sep.",
+          "quote": "The all-new Kling 4.0 will officially launch in October.",
+          "source_url": "https://kling.ai/release-note/release-notes/Kling_4",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Limited early access of the Flash tier.",
+          "quote": "Kling 4.0 Flash became available to a limited group of users for early access on September 28.",
+          "source_url": "https://kling.ai/release-note/release-notes/Kling_4",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Official X post 2026-09-28 (15:38 UTC): Flash live only for Ultra Yearly subscribers.",
+          "quote": "Kling 4.0 is coming this October. Kling 4.0 Flash is live now for Ultra Yearly subscribers.",
+          "source_url": "https://x.com/Kling_ai/status/2104596718067257458",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "30-second generation.",
+          "quote": "Generate up to 30 seconds of video in a single generation",
+          "source_url": "https://kling.ai/release-note/release-notes/Kling_4",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "HDR not yet shipped.",
+          "quote": "10-bit HDR output at 4K and 1080p is coming soon",
+          "source_url": "https://kling.ai/release-note/release-notes/Kling_4",
+          "source_kind": "official_blog",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": "Announcement is one day before the production date; general availability is future. Do not present Kling 4.0 footage as widely available. Kling's homepage already shows 'All-New Kling 4.0' teaser."
+    },
+    {
+      "id": "seedance_1_0_2025_06_11",
+      "developer": "ByteDance Seed",
+      "family": "Seedance",
+      "version": "Seedance 1.0",
+      "event": "version_release",
+      "date": "2025-06-11",
+      "date_precision": "day",
+      "headline": "Seedance 1.0 generated 1080p text/image-to-video with native multi-shot transitions and stable motion; tech report published.",
+      "specs": {
+        "max_clip_s": 10,
+        "resolution": "1080p",
+        "fps": null,
+        "audio": false,
+        "notes": "Silent video model (Seedance 1.5 pro is later described as moving 'beyond the purely visual'). arXiv 2506.09113 submitted 2025-06-10. 5 s 1080p clip in 41.4 s on an NVIDIA L20 per the developer."
+      },
+      "claims": [
+        {
+          "claim": "Seed blog dated 2025-06-11 says the team has officially released Seedance 1.0.",
+          "quote": "The ByteDance Seed team has officially released Seedance 1.0, its foundation model for video generation",
+          "source_url": "https://seed.bytedance.com/en/blog/tech-report-of-seedance-1-0-is-now-publicly-available",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "1080p from text and image inputs.",
+          "quote": "Seedance 1.0 can generate high-quality 1080p videos from text and image inputs",
+          "source_url": "https://seed.bytedance.com/en/blog/tech-report-of-seedance-1-0-is-now-publicly-available",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Native multi-shot.",
+          "quote": "generates a 10-second video with 2-3 shot transitions",
+          "source_url": "https://seed.bytedance.com/en/blog/tech-report-of-seedance-1-0-is-now-publicly-available",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Tech report abstract: native multi-shot generation.",
+          "quote": "natively supporting multi-shot generation",
+          "source_url": "https://arxiv.org/abs/2506.09113",
+          "source_kind": "paper",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": "Commercial API tiers (Lite/Pro) via Volcano Engine/BytePlus not verified here."
+    },
+    {
+      "id": "seedance_1_5_pro_2025_12_16",
+      "developer": "ByteDance Seed",
+      "family": "Seedance",
+      "version": "Seedance 1.5 pro",
+      "event": "version_release",
+      "date": "2025-12-16",
+      "date_precision": "day",
+      "headline": "Seedance 1.5 pro generated video and synchronised audio jointly, with multilingual and dialect lip-sync and stronger camera control.",
+      "specs": {
+        "max_clip_s": null,
+        "resolution": null,
+        "fps": null,
+        "audio": true,
+        "notes": "Model card arXiv 2512.13507 submitted 2025-12-15."
+      },
+      "claims": [
+        {
+          "claim": "Seed blog dated 2025-12-16.",
+          "quote": "Today, we are officially launching Seedance 1.5 pro, our next-generation audio-visual generation model.",
+          "source_url": "https://seed.bytedance.com/en/blog/sound-and-vision-all-in-one-take-the-official-release-of-seedance-1-5-pro",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Joint audio-visual generation.",
+          "quote": "Seedance 1.5 pro features joint audio-visual generation",
+          "source_url": "https://seed.bytedance.com/en/blog/sound-and-vision-all-in-one-take-the-official-release-of-seedance-1-5-pro",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Paper abstract.",
+          "quote": "a foundational model engineered specifically for native, joint audio-video generation",
+          "source_url": "https://arxiv.org/abs/2512.13507",
+          "source_kind": "paper",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "seedance_2_0_2026_02_12",
+      "developer": "ByteDance Seed",
+      "family": "Seedance",
+      "version": "Seedance 2.0",
+      "event": "version_release",
+      "date": "2026-02-12",
+      "date_precision": "day",
+      "headline": "Seedance 2.0 unified text, image, audio and video inputs with joint audio-video output, 15-second multi-shot clips, editing and extension.",
+      "specs": {
+        "max_clip_s": 15,
+        "resolution": "Native 480p and 720p per the technical report; BytePlus lists 480P / 720P / 1080P / 4K options",
+        "fps": null,
+        "audio": true,
+        "notes": "Dual-channel audio. Reference limits: 9 images + 3 video clips + 3 audio clips. Duration 4-15 s (paper and BytePlus)."
+      },
+      "claims": [
+        {
+          "claim": "Seed blog dated 2026-02-12 says Seedance 2.0 was recently launched.",
+          "quote": "We recently launched Seedance 2.0, our next-generation video creation model.",
+          "source_url": "https://seed.bytedance.com/en/blog/seedance-2-0-official-launch",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Technical report says the China release was in early February 2026.",
+          "quote": "officially released in China in early February 2026",
+          "source_url": "https://seed.bytedance.com/en/public_papers/seedance-2-0-advancing-video-generation-for-world-complexity",
+          "source_kind": "paper",
+          "retrieved": true
+        },
+        {
+          "claim": "Reference inputs.",
+          "quote": "Users can simultaneously input up to 9 images, 3 video clips, 3 audio clips, plus natural language instructions.",
+          "source_url": "https://seed.bytedance.com/en/blog/seedance-2-0-official-launch",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Multi-shot 15-second audio-video output with dual-channel audio.",
+          "quote": "The model supports 15-second high-quality multi-shot audio-video output and features dual-channel audio",
+          "source_url": "https://seed.bytedance.com/en/blog/seedance-2-0-official-launch",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Editing and extension.",
+          "quote": "It supports stable and controllable video extension and editing",
+          "source_url": "https://seed.bytedance.com/en/blog/seedance-2-0-official-launch",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "BytePlus product page resolution/duration options.",
+          "quote": "Resolution options: 480P / 720P / 1080P / 4K Video duration: 4 to 15 seconds",
+          "source_url": "https://www.byteplus.com/en/activity/seedance2-0",
+          "source_kind": "official_blog",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": "Blog date 2026-02-12 is the English blog post date; the Chinese-market release was 'early February' per the paper, so the true first-availability day may be a few days earlier (exact day unverified). The Seed page's Dreamina try-now link uses internal id dreamina_seedance_40_pro for Seedance 2.0 (and dreamina_seedance_45_pro for 2.5), so platform model ids do not match marketing versions."
+    },
+    {
+      "id": "seedance_2_0_paper_2026_04_15",
+      "developer": "ByteDance Seed",
+      "family": "Seedance",
+      "version": "Seedance 2.0 technical report",
+      "event": "paper",
+      "date": "2026-04-15",
+      "date_precision": "day",
+      "headline": "Seedance 2.0 report gives concrete limits: 4-15 s clips at native 480p/720p and up to 3 videos, 9 images, 3 audio references.",
+      "specs": {
+        "max_clip_s": 15,
+        "resolution": "native 480p and 720p",
+        "fps": null,
+        "audio": true,
+        "notes": "arXiv 2604.14148; also on seed.bytedance.com/en/public_papers."
+      },
+      "claims": [
+        {
+          "claim": "Duration and native resolution.",
+          "quote": "Seedance 2.0 supports direct generation of audio-video content with durations ranging from 4 to 15 seconds, with native output resolutions of 480p and 720p.",
+          "source_url": "https://arxiv.org/abs/2604.14148",
+          "source_kind": "paper",
+          "retrieved": true
+        },
+        {
+          "claim": "Reference limits on the open platform.",
+          "quote": "its current open platform supports up to 3 video clips, 9 images, and 3 audio clips",
+          "source_url": "https://arxiv.org/abs/2604.14148",
+          "source_kind": "paper",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": "Important for the film: do not describe Seedance 2.0 as natively 1080p/4K without checking; higher tiers on BytePlus are presented as resolution options, method (e.g. upscaling) not stated in the sources I read."
+    },
+    {
+      "id": "seedance_2_5_2026_07_31",
+      "developer": "ByteDance Seed",
+      "family": "Seedance",
+      "version": "Seedance 2.5",
+      "event": "version_release",
+      "date": "2026-07-31",
+      "date_precision": "day",
+      "headline": "Seedance 2.5 raised single-pass length from 15 to 30 seconds, with 50 reference inputs, clay-render references and timestamp-level editing.",
+      "specs": {
+        "max_clip_s": 30,
+        "resolution": "480P / 720P / 1080P (BytePlus page)",
+        "fps": null,
+        "audio": true,
+        "notes": "Up to 30 images + 10 video clips + 10 audio clips as references; multi-round extension; green-screen, camera-perspective and reference-based editing."
+      },
+      "claims": [
+        {
+          "claim": "Seed blog dated 2026-07-31 confirms the official launch (the claimed 'Seedance 2.5' is real).",
+          "quote": "Today, we are officially launching Seedance 2.5, the new-generation video creation model.",
+          "source_url": "https://seed.bytedance.com/en/blog/one-take-creation-flexible-referencing-introducing-seedance-2-5",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "30 seconds per generation with extension.",
+          "quote": "Seedance 2.5 can generate high-quality, 30-second audio-video clips in a single pass and supports multiple rounds of extension.",
+          "source_url": "https://seed.bytedance.com/en/blog/one-take-creation-flexible-referencing-introducing-seedance-2-5",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Reference limits.",
+          "quote": "Users can now input up to 30 images, 10 video clips, and 10 audio clips as reference materials in a single pass.",
+          "source_url": "https://seed.bytedance.com/en/blog/one-take-creation-flexible-referencing-introducing-seedance-2-5",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Rollout: Jimeng and Doubao first, API 'coming soon' at launch.",
+          "quote": "Today, Seedance 2.5 is rolling out on Jimeng AI, Doubao Pro, and other platforms, with API access coming soon via BytePlus ModelArk.",
+          "source_url": "https://seed.bytedance.com/en/blog/one-take-creation-flexible-referencing-introducing-seedance-2-5",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Project page summary.",
+          "quote": "Seedance 2.5 is a next-generation audio-video joint generation model, built for 30-second storytelling with precise reference control and powerful editing capabilities.",
+          "source_url": "https://seed.bytedance.com/en/seedance2_5",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "BytePlus plan page resolution/duration options.",
+          "quote": "Resolution options: 480P / 720P / 1080P Video duration: 4 to 30 seconds",
+          "source_url": "https://ai.byteplus.com/en/activity/seedance2-5",
+          "source_kind": "official_blog",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": "Newest Seedance version found on seed.bytedance.com as of 2026-09-29 (site navigation lists Seedance 2.5 as the current Seedance model; no 2.6/3.0 found)."
+    },
+    {
+      "id": "hailuo_video_01_2024_08_31",
+      "developer": "MiniMax",
+      "family": "Hailuo",
+      "version": "Video-01 (Hailuo Video 01)",
+      "event": "public_release",
+      "date": "2024-08-31",
+      "date_precision": "day",
+      "headline": "MiniMax released its first video model, Video-01: 720p, 25 fps clips up to 6 seconds from text or an image.",
+      "specs": {
+        "max_clip_s": 6,
+        "resolution": "720p",
+        "fps": 25,
+        "audio": null,
+        "notes": "Text-to-video and image-to-video modes; MiniMax said the next major version would reach 10 s."
+      },
+      "claims": [
+        {
+          "claim": "MiniMax news post dated 2024.08.31.",
+          "quote": "MiniMax has officially launched its first AI-native video generation model, video-01.",
+          "source_url": "https://www.minimax.io/news/video-01",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Resolution and frame rate.",
+          "quote": "supports the generation of high-definition videos at 720p resolution and 25fps",
+          "source_url": "https://www.minimax.io/news/video-01",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Maximum duration.",
+          "quote": "video-01 supports generating videos up to 6 seconds long",
+          "source_url": "https://www.minimax.io/news/video-01",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Later MiniMax post says an early demo webpage went up informally in late August 2024.",
+          "quote": "Our journey began late last August when we informally launched a demo webpage",
+          "source_url": "https://www.minimax.io/news/minimax-hailuo-02",
+          "source_kind": "official_blog",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": "Some secondary sources say September 2024 for the Hailuo consumer app; the official post is 2024-08-31."
+    },
+    {
+      "id": "hailuo_director_models_2025_02_11",
+      "developer": "MiniMax",
+      "family": "Hailuo",
+      "version": "T2V-01-Director / I2V-01-Director",
+      "event": "version_release",
+      "date": "2025-02-11",
+      "date_precision": "day",
+      "headline": "MiniMax released Director video models with enhanced camera-movement control following text instructions.",
+      "specs": {
+        "max_clip_s": null,
+        "resolution": null,
+        "fps": null,
+        "audio": null,
+        "notes": ""
+      },
+      "claims": [
+        {
+          "claim": "MiniMax platform release notes, entry dated Feb. 11, 2025.",
+          "quote": "T2V-01-Director / I2V-01-Director Released a video generation model with enhanced camera control",
+          "source_url": "https://platform.minimax.io/docs/release-notes/models",
+          "source_kind": "docs",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "hailuo_02_2025_06_18",
+      "developer": "MiniMax",
+      "family": "Hailuo",
+      "version": "MiniMax Hailuo 02",
+      "event": "version_release",
+      "date": "2025-06-18",
+      "date_precision": "day",
+      "headline": "Hailuo 02 offered native 1080p, strong instruction following and physics, on a new NCR architecture at low prices.",
+      "specs": {
+        "max_clip_s": 10,
+        "resolution": "768p (6 s or 10 s) and native 1080p (6 s)",
+        "fps": null,
+        "audio": null,
+        "notes": "Docs list 1080p resolution and up to 10 s; the launch post lists three versions."
+      },
+      "claims": [
+        {
+          "claim": "MiniMax news post dated 2025.06.18.",
+          "quote": "Today, we are thrilled to introduce MiniMax Hailuo 02",
+          "source_url": "https://www.minimax.io/news/minimax-hailuo-02",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Headline features.",
+          "quote": "Key Highlights of Hailuo 02: - Native 1080p - SOTA Instruction Following - Extreme Physics Mastery",
+          "source_url": "https://www.minimax.io/news/minimax-hailuo-02",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Offered versions.",
+          "quote": "We currently offer three distinct versions: 768p-6s, 768p-10s, and 1080p-6s.",
+          "source_url": "https://www.minimax.io/news/minimax-hailuo-02",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Platform release notes.",
+          "quote": "MiniMax Hailuo 02, a next-generation video generation model with support for 1080p resolution and video generation of up to 10 seconds.",
+          "source_url": "https://platform.minimax.io/docs/release-notes/models",
+          "source_kind": "docs",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": "'SOTA'/'only model globally' style statements in the post are marketing claims."
+    },
+    {
+      "id": "hailuo_2_3_2025_10_28",
+      "developer": "MiniMax",
+      "family": "Hailuo",
+      "version": "MiniMax Hailuo 2.3 / 2.3 Fast",
+      "event": "version_release",
+      "date": "2025-10-28",
+      "date_precision": "day",
+      "headline": "Hailuo 2.3 improved body movement, facial micro-expressions and stylisation at Hailuo 02 pricing; a Fast variant cut batch costs.",
+      "specs": {
+        "max_clip_s": null,
+        "resolution": null,
+        "fps": null,
+        "audio": null,
+        "notes": ""
+      },
+      "claims": [
+        {
+          "claim": "MiniMax news post dated 2025.10.28.",
+          "quote": "Building upon the Hailuo 02 model, it further enhances dynamic expression",
+          "source_url": "https://www.minimax.io/news/minimax-hailuo-23",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Availability.",
+          "quote": "We have fully rolled out these model updates across the Hailuo AI website, mobile app, and Open Platform API.",
+          "source_url": "https://www.minimax.io/news/minimax-hailuo-23",
+          "source_kind": "official_blog",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "minimax_h3_2026_07_31",
+      "developer": "MiniMax",
+      "family": "Hailuo",
+      "version": "MiniMax H3 (Hailuo 3.0 is a common alias)",
+      "event": "version_release",
+      "date": "2026-07-31",
+      "date_precision": "day",
+      "headline": "MiniMax H3 is one omni-modal model producing video with native stereo sound, up to 15 s at 2K, with open weights promised.",
+      "specs": {
+        "max_clip_s": 15,
+        "resolution": "2K (default)",
+        "fps": null,
+        "audio": true,
+        "notes": "Native stereo audio; inputs: text, images, video, audio. Aliases 'Hailuo 3.0/03' are used by third parties; the official name is MiniMax H3."
+      },
+      "claims": [
+        {
+          "claim": "MiniMax blog dated 2026-07-31.",
+          "quote": "Today, we're launching MiniMax H3, a general-purpose multimodal generation model.",
+          "source_url": "https://www.minimax.io/blog/minimax-h3",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Capabilities.",
+          "quote": "generating video with native stereo sound, up to 15 seconds at 2K resolution",
+          "source_url": "https://www.minimax.io/blog/minimax-h3",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Platform release notes entry Jul. 31, 2026.",
+          "quote": "MiniMax H3 A new-generation open general-purpose multimodal video model.",
+          "source_url": "https://platform.minimax.io/docs/release-notes/models",
+          "source_kind": "docs",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": "Blog says a technical report will follow (not found as of 2026-09-29)."
+    },
+    {
+      "id": "minimax_h3_open_weights_2026_08_03",
+      "developer": "MiniMax",
+      "family": "Hailuo",
+      "version": "MiniMax H3 open weights (MiniMaxAI/MiniMax-H3)",
+      "event": "open_weights",
+      "date": "2026-08-03",
+      "date_precision": "day",
+      "headline": "MiniMax published H3 weights on Hugging Face under a custom community licence that excludes the EU, UK, South Korea and the US.",
+      "specs": {
+        "max_clip_s": 15,
+        "resolution": "2K",
+        "fps": null,
+        "audio": true,
+        "notes": "Licence: 'MiniMax H3 Community License Agreement' (not OSI, not Apache/MIT). Licence text says outputs are not model derivatives."
+      },
+      "claims": [
+        {
+          "claim": "Announcement blog (2026-07-31) promised weights 'in the coming days'.",
+          "quote": "we plan to open up the model weights in the coming days, subject to applicable laws and regulations",
+          "source_url": "https://www.minimax.io/blog/minimax-h3",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Hugging Face repo history: first commit 2026-08-03T16:05Z.",
+          "quote": "Init MiniMaxAI/MiniMax-H3",
+          "source_url": "https://huggingface.co/api/models/MiniMaxAI/MiniMax-H3/commits/main",
+          "source_kind": "model_card",
+          "retrieved": true
+        },
+        {
+          "claim": "Licence date.",
+          "quote": "MiniMax H3 release date/License date: August 2, 2026.",
+          "source_url": "https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE",
+          "source_kind": "model_card",
+          "retrieved": true
+        },
+        {
+          "claim": "Territorial exclusion.",
+          "quote": "means the European Union, the United Kingdom, the Republic of Korea and the United States of America.",
+          "source_url": "https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE",
+          "source_kind": "model_card",
+          "retrieved": true
+        },
+        {
+          "claim": "Model card capability summary.",
+          "quote": "can generate video with native stereo audio at resolutions up to 2K and durations of up to 15 seconds",
+          "source_url": "https://huggingface.co/MiniMaxAI/MiniMax-H3",
+          "source_kind": "model_card",
+          "retrieved": true
+        }
+      ],
+      "confidence": "medium",
+      "notes": "Date is the first visible commit (repo public entry point made 2026-08-05); licence text is dated 2026-08-02 and HF createdAt is 2026-07-28 (repo creation, likely private). Treat 2026-08-02..05 as the public window; day-level date is medium confidence."
+    },
+    {
+      "id": "wan_2_1_open_weights_2025_02_25",
+      "developer": "Alibaba (Tongyi Lab)",
+      "family": "Wan",
+      "version": "Wan2.1",
+      "event": "open_weights",
+      "date": "2025-02-25",
+      "date_precision": "day",
+      "headline": "Alibaba released Wan2.1 code and weights (14B and 1.3B) under Apache-2.0, including a 1.3B model that runs on 8 GB GPUs.",
+      "specs": {
+        "max_clip_s": 5,
+        "resolution": "480P / 720P",
+        "fps": null,
+        "audio": false,
+        "notes": "1.3B model: 8.19 GB VRAM, a 5-second 480P clip in ~4 minutes on an RTX 4090. Text/image-to-video, editing, text-to-image in the family."
+      },
+      "claims": [
+        {
+          "claim": "GitHub README news entry 'Feb 25, 2025'.",
+          "quote": "We've released the inference code and weights of Wan2.1.",
+          "source_url": "https://github.com/Wan-Video/Wan2.1",
+          "source_kind": "model_card",
+          "retrieved": true
+        },
+        {
+          "claim": "Licence.",
+          "quote": "The models in this repository are licensed under the Apache 2.0 License.",
+          "source_url": "https://github.com/Wan-Video/Wan2.1",
+          "source_kind": "model_card",
+          "retrieved": true
+        },
+        {
+          "claim": "Outputs: developer claims no rights over generated content (relevant to reuse).",
+          "quote": "We claim no rights over the your generated contents",
+          "source_url": "https://github.com/Wan-Video/Wan2.1",
+          "source_kind": "model_card",
+          "retrieved": true
+        },
+        {
+          "claim": "Alibaba Group release dated 2025-02-26 confirms open-sourcing.",
+          "quote": "Alibaba Cloud said on Wednesday that it has made its AI models for video generation freely available",
+          "source_url": "https://www.alibabagroup.com/en-US/document-1831486012178563072",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Consumer-GPU claim.",
+          "quote": "The T2V-1.3B model requires only 8.19 GB VRAM",
+          "source_url": "https://github.com/Wan-Video/Wan2.1",
+          "source_kind": "model_card",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": "Hugging Face Wan-AI/Wan2.1-T2V-14B repo created 2025-02-25. The first Wan 2.1 hosted release on wan.video predates the open weights (Jan 2025, unverified)."
+    },
+    {
+      "id": "wan_paper_2025_03_26",
+      "developer": "Alibaba (Tongyi Lab)",
+      "family": "Wan",
+      "version": "Wan technical report (Wan2.1)",
+      "event": "paper",
+      "date": "2025-03-26",
+      "date_precision": "day",
+      "headline": "The Wan report described the open video foundation suite: a new VAE, scalable pre-training and large-scale data curation.",
+      "specs": {
+        "max_clip_s": null,
+        "resolution": null,
+        "fps": null,
+        "audio": null,
+        "notes": "arXiv 2503.20314 v1 submitted 26 Mar 2025."
+      },
+      "claims": [
+        {
+          "claim": "Abstract.",
+          "quote": "This report presents Wan, a comprehensive and open suite of video foundation models",
+          "source_url": "https://arxiv.org/abs/2503.20314",
+          "source_kind": "paper",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "wan_2_2_open_weights_2025_07_28",
+      "developer": "Alibaba (Tongyi Lab)",
+      "family": "Wan",
+      "version": "Wan2.2",
+      "event": "open_weights",
+      "date": "2025-07-28",
+      "date_precision": "day",
+      "headline": "Wan2.2 open-sourced a Mixture-of-Experts video model plus a 5B text/image-to-video model at 720P and 24 fps, under Apache-2.0.",
+      "specs": {
+        "max_clip_s": null,
+        "resolution": "480P / 720P (TI2V-5B: 720P@24fps)",
+        "fps": 24,
+        "audio": false,
+        "notes": "Later open additions: Wan2.2-S2V (2025-08-26), Wan2.2-Animate (2025-09-19). No open Wan2.5+ base weights found."
+      },
+      "claims": [
+        {
+          "claim": "GitHub README news 'Jul 28, 2025'.",
+          "quote": "We've released the inference code and model weights of Wan2.2.",
+          "source_url": "https://github.com/Wan-Video/Wan2.2",
+          "source_kind": "model_card",
+          "retrieved": true
+        },
+        {
+          "claim": "MoE architecture.",
+          "quote": "Wan2.2 introduces a Mixture-of-Experts (MoE) architecture into video diffusion models.",
+          "source_url": "https://github.com/Wan-Video/Wan2.2",
+          "source_kind": "model_card",
+          "retrieved": true
+        },
+        {
+          "claim": "5B hybrid model spec.",
+          "quote": "This model supports both text-to-video and image-to-video generation at 720P resolution with 24fps",
+          "source_url": "https://github.com/Wan-Video/Wan2.2",
+          "source_kind": "model_card",
+          "retrieved": true
+        },
+        {
+          "claim": "Licence.",
+          "quote": "The models in this repository are licensed under the Apache 2.0 License.",
+          "source_url": "https://github.com/Wan-Video/Wan2.2",
+          "source_kind": "model_card",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": "HF repo Wan-AI/Wan2.2-T2V-A14B created 2025-07-24, Diffusers variants 2025-07-28."
+    },
+    {
+      "id": "wan_2_5_preview_2025_09_24",
+      "developer": "Alibaba (Tongyi Lab / Alibaba Cloud)",
+      "family": "Wan",
+      "version": "Wan2.5-Preview",
+      "event": "preview",
+      "date": "2025-09-24",
+      "date_precision": "day",
+      "headline": "Wan2.5-Preview added natively generated audio to video and doubled duration from 5 to 10 seconds; not released as open weights.",
+      "specs": {
+        "max_clip_s": 10,
+        "resolution": null,
+        "fps": null,
+        "audio": true,
+        "notes": "Announced at Apsara Conference 2025. API/hosted only; no open weights found."
+      },
+      "claims": [
+        {
+          "claim": "Official Wan X account, 2025-09-24 03:50 UTC.",
+          "quote": "Today, we're officially launching Wan2.5-Preview!",
+          "source_url": "https://x.com/Alibaba_Wan/status/1970697244740591917",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Alibaba Cloud Apsara press release: native audio and 5-to-10 s.",
+          "quote": "The video generation models natively support high-fidelity audio generation for the video, doubling the duration from 5 to 10 seconds",
+          "source_url": "https://www.alibabacloud.com/en/press-room/alibabacloudunveilsstrategicroadmaps",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Scope.",
+          "quote": "Alibaba also previewed four Wan2.5 models",
+          "source_url": "https://www.alibabacloud.com/en/press-room/alibabacloudunveilsstrategicroadmaps",
+          "source_kind": "official_blog",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": "Some secondary pages call Wan 2.5 'open source'; no Wan2.5 weights exist in the Wan-AI Hugging Face org or Wan-Video GitHub org."
+    },
+    {
+      "id": "wan_2_6_2025_12_16",
+      "developer": "Alibaba (Tongyi Lab / Alibaba Cloud)",
+      "family": "Wan",
+      "version": "Wan2.6 series (Wan2.6-T2V, I2V, R2V)",
+      "event": "version_release",
+      "date": "2025-12-16",
+      "date_precision": "day",
+      "headline": "Wan2.6 added reference-to-video with a subject's look and voice, multi-shot storytelling and clips up to 15 seconds.",
+      "specs": {
+        "max_clip_s": 15,
+        "resolution": null,
+        "fps": null,
+        "audio": true,
+        "notes": "Available through Model Studio and the Wan website; Wan2.6-R2V accepts a character reference video with appearance and voice."
+      },
+      "claims": [
+        {
+          "claim": "Alibaba press release dated 2025-12-16.",
+          "quote": "Hangzhou, China, December 16, 2025 - Alibaba today unveiled the latest evolution of its visual generation models, the Wan2.6 series.",
+          "source_url": "https://www.alibabacloud.com/blog/alibaba-unveils-wan2-6-series-enabling-everyone-to-star-in-videos_602742",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Duration.",
+          "quote": "Supporting video outputs of up to 15 seconds, the models give creators more room to develop their stories.",
+          "source_url": "https://www.alibabacloud.com/blog/alibaba-unveils-wan2-6-series-enabling-everyone-to-star-in-videos_602742",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Reference-to-video.",
+          "quote": "Wan2.6-R2V enables users to upload a character reference video with both appearance and voice",
+          "source_url": "https://www.alibabacloud.com/blog/alibaba-unveils-wan2-6-series-enabling-everyone-to-star-in-videos_602742",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Multi-shot.",
+          "quote": "The new models introduce intelligent multi-shot storytelling capabilities",
+          "source_url": "https://www.alibabacloud.com/blog/alibaba-unveils-wan2-6-series-enabling-everyone-to-star-in-videos_602742",
+          "source_kind": "official_blog",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "wan_2_7_2026_04_07",
+      "developer": "Alibaba (Tongyi Lab / Alibaba Cloud)",
+      "family": "Wan",
+      "version": "Wan2.7-Video (t2v, i2v, r2v, videoedit)",
+      "event": "version_release",
+      "date": "2026-04-07",
+      "date_precision": "day",
+      "headline": "Wan2.7-Video unified generation, reference and natural-language video editing, with 2-15 s clips at 720p/1080p.",
+      "specs": {
+        "max_clip_s": 15,
+        "resolution": "720p / 1080p",
+        "fps": null,
+        "audio": true,
+        "notes": "Consistency for up to five characters with custom voices; can specify ending frames for continuation."
+      },
+      "claims": [
+        {
+          "claim": "Alibaba Cloud Community (Alibaba press) post dated 2026-04-07.",
+          "quote": "Alibaba has launched Wan2.7-Video, a comprehensive video generation model",
+          "source_url": "https://www.alibabacloud.com/blog/alibaba-unveils-wan2-7-video-to-elevate-creators-from-executors-to-directors_603009",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Duration and resolution.",
+          "quote": "Wan2.7-Video supports flexible video generation ranging from 2 to 15 seconds and delivers 720p and 1080p output.",
+          "source_url": "https://www.alibabacloud.com/blog/alibaba-unveils-wan2-7-video-to-elevate-creators-from-executors-to-directors_603009",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Editing by natural language.",
+          "quote": "introduces intuitive natural language instructions that allows creators to modify any video dimension",
+          "source_url": "https://www.alibabacloud.com/blog/alibaba-unveils-wan2-7-video-to-elevate-creators-from-executors-to-directors_603009",
+          "source_kind": "official_blog",
+          "retrieved": true
+        }
+      ],
+      "confidence": "medium",
+      "notes": "Post date is 2026-04-07 and says the video model arrived 'just days after' Wan2.7-Image; secondary sources give 1-6 April for availability, so the true launch day may be a little earlier (unverified). Closed API/hosted model; no open weights found."
+    },
+    {
+      "id": "wan_3_0_public_beta_2026_08_06",
+      "developer": "Alibaba (Tongyi Lab / Alibaba Cloud)",
+      "family": "Wan",
+      "version": "Wan3.0",
+      "event": "preview",
+      "date": "2026-08-06",
+      "date_precision": "day",
+      "headline": "Wan3.0 entered public beta with native 30-second generation and 'omni-reference' inputs, including documents and web pages.",
+      "specs": {
+        "max_clip_s": 30,
+        "resolution": "480P / 720P / 1080P",
+        "fps": null,
+        "audio": true,
+        "notes": "API only (Alibaba Cloud Model Studio, Qwen Cloud). Pricing per second $0.05 / $0.10 / $0.20 for 480P/720P/1080P per an Alibaba Cloud Community post. No open weights found."
+      },
+      "claims": [
+        {
+          "claim": "Official Wan X account, 2026-08-06 12:18 UTC.",
+          "quote": "Introducing Wan3.0 — now in Public Beta.",
+          "source_url": "https://x.com/Alibaba_Wan/status/2085339761284104529",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Alibaba (Alizila-sourced) post dated 2026-08-07 confirms beta and 30 s.",
+          "quote": "Alibaba has rolled out the beta version of Wan3.0, an advanced video generation model that supports 30-second video length and multimodal reference inputs.",
+          "source_url": "https://www.alibabacloud.com/blog/alibaba-unveils-wan3-0-with-twice-as-long-video-outputs-from-a-richer-variety-of-inputs_603439",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Alibaba Cloud Community post dated 2026-08-13: 30 s in one pass; resolutions.",
+          "quote": "It generates up to 30 seconds of video in a single pass",
+          "source_url": "https://www.alibabacloud.com/blog/wan3-0-30-second-ai-video-generation-from-any-input_603452",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Output resolutions.",
+          "quote": "Output resolutions 480P, 720P, 1080P",
+          "source_url": "https://www.alibabacloud.com/blog/wan3-0-30-second-ai-video-generation-from-any-input_603452",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "General availability date reported by a community author (not Alibaba staff).",
+          "quote": "On Aug. 24, 2026, Alibaba Cloud announced the general availability of Wan3.0 across its international channels",
+          "source_url": "https://www.alibabacloud.com/blog/wan3-0-at-general-availability-capabilities-benchmarks-pricing-and-the-workflows-it-changes_603505",
+          "source_kind": "secondary",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": "Beta date verified from the developer's own X post; GA date 2026-08-24 is from a third-party-authored community post and is unverified."
+    },
+    {
+      "id": "hunyuanvideo_open_weights_2024_12_03",
+      "developer": "Tencent",
+      "family": "HunyuanVideo",
+      "version": "HunyuanVideo",
+      "event": "open_weights",
+      "date": "2024-12-03",
+      "date_precision": "day",
+      "headline": "Tencent released HunyuanVideo, a 13-billion-parameter open text-to-video model, with code, weights and a technical report.",
+      "specs": {
+        "max_clip_s": null,
+        "resolution": "720px x 1280px, 129 frames",
+        "fps": null,
+        "audio": false,
+        "notes": "Setting listed in the README: 720px1280px129f (~60 GB GPU memory). Licence is the Tencent Hunyuan Community License (custom), not OSI open source."
+      },
+      "claims": [
+        {
+          "claim": "GitHub README news 'Dec 3, 2024'.",
+          "quote": "We release the inference code and model weights of HunyuanVideo.",
+          "source_url": "https://github.com/Tencent-Hunyuan/HunyuanVideo",
+          "source_kind": "model_card",
+          "retrieved": true
+        },
+        {
+          "claim": "Paper (arXiv 2412.03603, submitted 3 Dec 2024).",
+          "quote": "we successfully trained a video generative model with over 13 billion parameters",
+          "source_url": "https://arxiv.org/abs/2412.03603",
+          "source_kind": "paper",
+          "retrieved": true
+        },
+        {
+          "claim": "Licence release date.",
+          "quote": "Tencent HunyuanVideo Release Date: December 3, 2024",
+          "source_url": "https://github.com/Tencent-Hunyuan/HunyuanVideo/blob/main/LICENSE.txt",
+          "source_kind": "model_card",
+          "retrieved": true
+        },
+        {
+          "claim": "Territorial limit of the licence.",
+          "quote": "THIS LICENSE AGREEMENT DOES NOT APPLY IN THE EUROPEAN UNION, UNITED KINGDOM AND SOUTH KOREA",
+          "source_url": "https://github.com/Tencent-Hunyuan/HunyuanVideo/blob/main/LICENSE.txt",
+          "source_kind": "model_card",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": "Related later Tencent releases per README: HunyuanCustom (2025-05-09), HunyuanVideo-Avatar (2025-05-28)."
+    },
+    {
+      "id": "hunyuanvideo_i2v_2025_03_06",
+      "developer": "Tencent",
+      "family": "HunyuanVideo",
+      "version": "HunyuanVideo-I2V",
+      "event": "open_weights",
+      "date": "2025-03-06",
+      "date_precision": "day",
+      "headline": "Tencent open-sourced HunyuanVideo-I2V, an image-to-video model built on HunyuanVideo.",
+      "specs": {
+        "max_clip_s": null,
+        "resolution": null,
+        "fps": null,
+        "audio": false,
+        "notes": "HF repo tencent/HunyuanVideo-I2V created 2025-03-05."
+      },
+      "claims": [
+        {
+          "claim": "README news entry dated 'Mar 06, 2025'.",
+          "quote": "an image-to-video model based on HunyuanVideo",
+          "source_url": "https://github.com/Tencent-Hunyuan/HunyuanVideo",
+          "source_kind": "model_card",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "hunyuanvideo_1_5_open_weights_2025_11_20",
+      "developer": "Tencent",
+      "family": "HunyuanVideo",
+      "version": "HunyuanVideo-1.5",
+      "event": "open_weights",
+      "date": "2025-11-20",
+      "date_precision": "day",
+      "headline": "HunyuanVideo-1.5 delivered a lighter 8.3B-parameter open model for consumer GPUs, with 480p/720p generation and 1080p super-resolution.",
+      "specs": {
+        "max_clip_s": null,
+        "resolution": "480p / 720p native, 1080p via super-resolution network",
+        "fps": null,
+        "audio": false,
+        "notes": "Licence file dated November 21, 2025 (Tencent Hunyuan Community License, same territorial exclusions). Newest Tencent open video model found; no 2026 successor found."
+      },
+      "claims": [
+        {
+          "claim": "GitHub README news 'Nov 20, 2025'.",
+          "quote": "We release the inference code and model weights of HunyuanVideo-1.5.",
+          "source_url": "https://github.com/Tencent-Hunyuan/HunyuanVideo-1.5",
+          "source_kind": "model_card",
+          "retrieved": true
+        },
+        {
+          "claim": "Size and target hardware.",
+          "quote": "HunyuanVideo-1.5 is a video generation model that delivers top-tier quality with only 8.3B parameters",
+          "source_url": "https://github.com/Tencent-Hunyuan/HunyuanVideo-1.5",
+          "source_kind": "model_card",
+          "retrieved": true
+        },
+        {
+          "claim": "1080p via super-resolution.",
+          "quote": "an efficient few-step super-resolution network that upscales outputs to 1080p",
+          "source_url": "https://github.com/Tencent-Hunyuan/HunyuanVideo-1.5",
+          "source_kind": "model_card",
+          "retrieved": true
+        },
+        {
+          "claim": "Licence release date.",
+          "quote": "Tencent HunyuanVideo 1.5 Release Date: November 21, 2025",
+          "source_url": "https://github.com/Tencent-Hunyuan/HunyuanVideo-1.5/blob/main/LICENSE",
+          "source_kind": "model_card",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "vidu_unveil_2024_04",
+      "developer": "ShengShu Technology",
+      "family": "Vidu",
+      "version": "Vidu (first model)",
+      "event": "announcement",
+      "date": "2024-04",
+      "date_precision": "month",
+      "headline": "ShengShu Technology, with Tsinghua University, launched Vidu in April 2024 as a long, consistent text-to-video model.",
+      "specs": {
+        "max_clip_s": null,
+        "resolution": null,
+        "fps": null,
+        "audio": null,
+        "notes": "Spec claims for the debut (16 s, 1080p) appear only in secondary/government-media coverage and are not used."
+      },
+      "claims": [
+        {
+          "claim": "ShengShu's own January 2026 press release dates the launch to April 2024.",
+          "quote": "Since launching in April 2024, Vidu has expanded to users in more than 200 countries and regions",
+          "source_url": "https://www.prnewswire.com/news-releases/vidu-showcases-china-speed-in-advancing-ai-video-into-production-at-global-creativity-week-302675040.html",
+          "source_kind": "official_blog",
+          "retrieved": true
+        }
+      ],
+      "confidence": "medium",
+      "notes": "Month-level only from the developer. Secondary sources say the unveiling was 27 April 2024 at the Zhongguancun Forum (unverified here)."
+    },
+    {
+      "id": "vidu_public_2024_07",
+      "developer": "ShengShu Technology",
+      "family": "Vidu",
+      "version": "Vidu (commercial availability)",
+      "event": "public_release",
+      "date": "2024-07",
+      "date_precision": "month",
+      "headline": "Vidu became commercially available in July 2024, described by its developer as the first text-to-video model of its kind to do so.",
+      "specs": {
+        "max_clip_s": null,
+        "resolution": null,
+        "fps": null,
+        "audio": null,
+        "notes": ""
+      },
+      "claims": [
+        {
+          "claim": "ShengShu press release of 2025-04-21 gives July 2024 for commercial availability.",
+          "quote": "since being the first to be made commercially available back in July 2024",
+          "source_url": "https://www.prnewswire.com/news-releases/vidu-q1-model-launches-globally-offering-unmatched-realistic-vfx-capabilities-from-generating-cinematic-transitions-to-high-fidelity-sound-effects-with-just-a-few-simple-inputs-302433278.html",
+          "source_kind": "official_blog",
+          "retrieved": true
+        }
+      ],
+      "confidence": "medium",
+      "notes": "'First commercially available' is the developer's own claim; Kling reached global web users on 2024-07-24 as well. Secondary sources say 30 July 2024."
+    },
+    {
+      "id": "vidu_q1_2025_04_21",
+      "developer": "ShengShu Technology",
+      "family": "Vidu",
+      "version": "Vidu Q1",
+      "event": "version_release",
+      "date": "2025-04-21",
+      "date_precision": "day",
+      "headline": "Vidu Q1 offered up to 1080p, 5-second clips with First-to-Last Frame transitions and auto-generated background music.",
+      "specs": {
+        "max_clip_s": 5,
+        "resolution": "up to 1080p",
+        "fps": null,
+        "audio": null,
+        "notes": "Audio here = separately generated background music/sound effects feature, not joint audio-video generation."
+      },
+      "claims": [
+        {
+          "claim": "PR Newswire release dated April 21, 2025.",
+          "quote": "is unveiling Vidu Q1",
+          "source_url": "https://www.prnewswire.com/news-releases/vidu-q1-model-launches-globally-offering-unmatched-realistic-vfx-capabilities-from-generating-cinematic-transitions-to-high-fidelity-sound-effects-with-just-a-few-simple-inputs-302433278.html",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Resolution and length.",
+          "quote": "Vidu Q1 delivers up to 1080p video output for clips up to 5 seconds.",
+          "source_url": "https://www.prnewswire.com/news-releases/vidu-q1-model-launches-globally-offering-unmatched-realistic-vfx-capabilities-from-generating-cinematic-transitions-to-high-fidelity-sound-effects-with-just-a-few-simple-inputs-302433278.html",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "First-to-last-frame control.",
+          "quote": "First-to-Last Frame, a seamless way to generate hyper-realistic, professional-grade transitions",
+          "source_url": "https://www.prnewswire.com/news-releases/vidu-q1-model-launches-globally-offering-unmatched-realistic-vfx-capabilities-from-generating-cinematic-transitions-to-high-fidelity-sound-effects-with-just-a-few-simple-inputs-302433278.html",
+          "source_kind": "official_blog",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "vidu_q2_2025_09_30",
+      "developer": "ShengShu Technology",
+      "family": "Vidu",
+      "version": "Vidu Q2",
+      "event": "version_release",
+      "date": "2025-09-30",
+      "date_precision": "day",
+      "headline": "Vidu Q2 focused on emotional performance, camera work and speed, with 2-8 second clips and Flash/Cinematic modes.",
+      "specs": {
+        "max_clip_s": 8,
+        "resolution": null,
+        "fps": null,
+        "audio": null,
+        "notes": "Q2 Reference-to-Video followed 2025-10-21; Q2 image generation 2025-12-01 (PR Newswire listing)."
+      },
+      "claims": [
+        {
+          "claim": "PR Newswire release dated Sept. 30, 2025.",
+          "quote": "today announced Vidu Q2 model, the latest evolution of its flagship video generation platform.",
+          "source_url": "https://www.prnewswire.com/news-releases/starring-ai-vidu-q2-brings-performances-to-life-302570537.html",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Clip durations.",
+          "quote": "Vidu Q2 introduces flexible clip durations ranging from two to eight seconds",
+          "source_url": "https://www.prnewswire.com/news-releases/starring-ai-vidu-q2-brings-performances-to-life-302570537.html",
+          "source_kind": "official_blog",
+          "retrieved": true
+        }
+      ],
+      "confidence": "medium",
+      "notes": "Date is the press-release date; the product may have shipped slightly earlier."
+    },
+    {
+      "id": "vidu_q3_2026_01_30",
+      "developer": "ShengShu Technology",
+      "family": "Vidu",
+      "version": "Vidu Q3 (with Q2 Reference-to-Video Pro)",
+      "event": "version_release",
+      "date": "2026-01-30",
+      "date_precision": "day",
+      "headline": "Vidu Q3 generated synchronised audio and video together, up to 16 seconds at 1080p; Q2 Pro added multi-reference control.",
+      "specs": {
+        "max_clip_s": 16,
+        "resolution": "native 1080p",
+        "fps": null,
+        "audio": true,
+        "notes": "'Industry's first long-form ... native audio-video' is the developer's own claim (Seedance 1.5 pro and Kling 2.6 were earlier)."
+      },
+      "claims": [
+        {
+          "claim": "PR Newswire release dated Jan. 30, 2026 (Global Creativity Week).",
+          "quote": "It is the industry's first long-form AI video generation model to support up to 16 seconds of native audio-video output in a single pass.",
+          "source_url": "https://www.prnewswire.com/news-releases/vidu-showcases-china-speed-in-advancing-ai-video-into-production-at-global-creativity-week-302675040.html",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Resolution.",
+          "quote": "native 1080p rendering",
+          "source_url": "https://www.prnewswire.com/news-releases/vidu-showcases-china-speed-in-advancing-ai-video-into-production-at-global-creativity-week-302675040.html",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Q2 Reference-to-Video Pro reference limits.",
+          "quote": "it supports two video references and four image references within a unified workflow",
+          "source_url": "https://www.prnewswire.com/news-releases/vidu-showcases-china-speed-in-advancing-ai-video-into-production-at-global-creativity-week-302675040.html",
+          "source_kind": "official_blog",
+          "retrieved": true
+        }
+      ],
+      "confidence": "medium",
+      "notes": "Date is the press-release date of a week-long launch event; exact model go-live day unverified."
+    },
+    {
+      "id": "vidu_q3_reference_to_video_2026_04_13",
+      "developer": "ShengShu Technology",
+      "family": "Vidu",
+      "version": "Vidu Q3 Reference-to-Video",
+      "event": "version_release",
+      "date": "2026-04-13",
+      "date_precision": "day",
+      "headline": "Vidu Q3 Reference-to-Video combined subjects, environments, costumes and props in one workflow, with expanded effects and audio categories.",
+      "specs": {
+        "max_clip_s": null,
+        "resolution": null,
+        "fps": null,
+        "audio": true,
+        "notes": ""
+      },
+      "claims": [
+        {
+          "claim": "Release dated April 13, 2026 (read on the PR Newswire Asia mirror en.prnasia.com).",
+          "quote": "today announced the global launch of Vidu Q3 Reference-to-Video",
+          "source_url": "https://en.prnasia.com/releases/global/shengshu-launches-vidu-q3-reference-to-video-with-expanded-visual-and-audio-capabilities-528832.shtml",
+          "source_kind": "official_blog",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": "Same release on prnewswire.com: https://www.prnewswire.com/news-releases/shengshu-launches-vidu-q3-reference-to-video-with-expanded-visual-and-audio-capabilities-302740489.html"
+    },
+    {
+      "id": "vidu_s1_2026_07_03",
+      "developer": "ShengShu Technology",
+      "family": "Vidu",
+      "version": "Vidu S1",
+      "event": "announcement",
+      "date": "2026-07-03",
+      "date_precision": "day",
+      "headline": "Vidu S1 introduced real-time interactive video: continuous voice-controlled AI characters at 540p and 25 fps on consumer GPUs.",
+      "specs": {
+        "max_clip_s": null,
+        "resolution": "540P (960x540)",
+        "fps": 25,
+        "audio": null,
+        "notes": "Real-time streaming model, not a clip generator; up to 42 FPS stated."
+      },
+      "claims": [
+        {
+          "claim": "PR Newswire release dated July 3, 2026.",
+          "quote": "ShengShu Technology today unveiled Vidu S1",
+          "source_url": "https://www.prnewswire.com/news-releases/shengshu-technology-unveils-vidu-s1-bringing-real-time-interactive-generation-to-ai-video-302817626.html",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Real-time specs.",
+          "quote": "The model delivers 540P (960x540) resolution at 25 FPS (up to 42 FPS)",
+          "source_url": "https://www.prnewswire.com/news-releases/shengshu-technology-unveils-vidu-s1-bringing-real-time-interactive-generation-to-ai-video-302817626.html",
+          "source_kind": "official_blog",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "vidu_s2_2026_09_15",
+      "developer": "ShengShu Technology",
+      "family": "Vidu",
+      "version": "Vidu S2 (S2-Avatar, S2-Editing)",
+      "event": "announcement",
+      "date": "2026-09-15",
+      "date_precision": "day",
+      "headline": "Vidu S2 added real-time avatar interaction at 720p and real-time editing of an incoming video stream.",
+      "specs": {
+        "max_clip_s": null,
+        "resolution": "720p (S2-Avatar real-time)",
+        "fps": null,
+        "audio": null,
+        "notes": "Press release distributed 2026-09-16; states the unveiling took place on 15 Sep 2026."
+      },
+      "claims": [
+        {
+          "claim": "PR Newswire release dated Sept. 16, 2026.",
+          "quote": "On September 15, 2026, ShengShu Technology unveiled Vidu S2",
+          "source_url": "https://www.prnewswire.com/news-releases/shengshu-technology-unveils-vidu-s2-bringing-real-time-interaction-and-editing-to-ai-video-302879976.html",
+          "source_kind": "official_blog",
+          "retrieved": true
+        },
+        {
+          "claim": "Resolution increase.",
+          "quote": "increases real-time output resolution from 540p to 720p",
+          "source_url": "https://www.prnewswire.com/news-releases/shengshu-technology-unveils-vidu-s2-bringing-real-time-interaction-and-editing-to-ai-video-302879976.html",
+          "source_kind": "official_blog",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "cogvideox_2b_open_weights_2024_08_06",
+      "developer": "Zhipu AI / Tsinghua (THUDM)",
+      "family": "CogVideoX",
+      "version": "CogVideoX-2B",
+      "event": "open_weights",
+      "date": "2024-08-06",
+      "date_precision": "day",
+      "headline": "Zhipu AI open-sourced CogVideoX-2B, the first CogVideoX model: 6-second, 720x480, 8 fps clips under Apache-2.0.",
+      "specs": {
+        "max_clip_s": 6,
+        "resolution": "720 x 480",
+        "fps": 8,
+        "audio": false,
+        "notes": "CogVideoX-5B followed 2024-08-27 (custom CogVideoX licence); 5B-I2V 2024-09-19."
+      },
+      "claims": [
+        {
+          "claim": "GitHub README news entry 2024/8/6.",
+          "quote": "We have open-sourced the first model of the CogVideoX series video generation models, CogVideoX-2B",
+          "source_url": "https://github.com/THUDM/CogVideo",
+          "source_kind": "model_card",
+          "retrieved": true
+        },
+        {
+          "claim": "2B licence.",
+          "quote": "The CogVideoX-2B model (including its corresponding Transformers module and VAE module) is released under",
+          "source_url": "https://github.com/THUDM/CogVideo",
+          "source_kind": "model_card",
+          "retrieved": true
+        },
+        {
+          "claim": "5B is under a different licence.",
+          "quote": "The CogVideoX-5B model (Transformers module, include I2V and T2V) is released under",
+          "source_url": "https://github.com/THUDM/CogVideo",
+          "source_kind": "model_card",
+          "retrieved": true
+        },
+        {
+          "claim": "Frame rates in the README spec table (8 fps for the 2B/5B row).",
+          "quote": "Frame Rate 16 frames / second 8 frames / second",
+          "source_url": "https://github.com/THUDM/CogVideo",
+          "source_kind": "model_card",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": "The README says the 2B licence was changed to Apache 2.0 shortly after release (entry for 2024/8/27). Hugging Face repo (now zai-org/CogVideoX-2b) created 2024-08-05."
+    },
+    {
+      "id": "cogvideox_paper_2024_08_12",
+      "developer": "Zhipu AI / Tsinghua (THUDM)",
+      "family": "CogVideoX",
+      "version": "CogVideoX technical report",
+      "event": "paper",
+      "date": "2024-08-12",
+      "date_precision": "day",
+      "headline": "The CogVideoX paper describes a diffusion transformer with a 3D VAE generating 10-second clips at 16 fps and 768 x 1360.",
+      "specs": {
+        "max_clip_s": 10,
+        "resolution": "768 x 1360",
+        "fps": 16,
+        "audio": false,
+        "notes": "arXiv 2408.06072 v1 submitted 12 Aug 2024. Released open models are lower spec (see 2B milestone)."
+      },
+      "claims": [
+        {
+          "claim": "Abstract spec claim.",
+          "quote": "which can generate 10-second continuous videos aligned with text prompt, with a frame rate of 16 fps and resolution of 768 * 1360 pixels",
+          "source_url": "https://arxiv.org/abs/2408.06072",
+          "source_kind": "paper",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "cogvideox_1_5_2024_11_08",
+      "developer": "Zhipu AI / Tsinghua (THUDM)",
+      "family": "CogVideoX",
+      "version": "CogVideoX1.5 (5B, 5B-I2V)",
+      "event": "open_weights",
+      "date": "2024-11-08",
+      "date_precision": "day",
+      "headline": "CogVideoX1.5 open-sourced an upgraded 5B model supporting 10-second videos at higher resolution and image-to-video at any resolution.",
+      "specs": {
+        "max_clip_s": 10,
+        "resolution": "higher than 720x480 (I2V any resolution)",
+        "fps": 16,
+        "audio": false,
+        "notes": "README table: 5 or 10 seconds at 16 frames/second for the 1.5 models."
+      },
+      "claims": [
+        {
+          "claim": "GitHub README news entry 2024/11/08.",
+          "quote": "We have released the CogVideoX1.5 model.",
+          "source_url": "https://github.com/THUDM/CogVideo",
+          "source_kind": "model_card",
+          "retrieved": true
+        },
+        {
+          "claim": "Capability.",
+          "quote": "The CogVideoX1.5-5B series supports 10-second videos with higher resolution",
+          "source_url": "https://github.com/THUDM/CogVideo",
+          "source_kind": "model_card",
+          "retrieved": true
+        }
+      ],
+      "confidence": "high",
+      "notes": ""
+    },
+    {
+      "id": "cogvideox_3_2025_07_15",
+      "developer": "Zhipu AI (Z.ai)",
+      "family": "CogVideoX",
+      "version": "CogVideoX-3",
+      "event": "version_release",
+      "date": "2025-07-15",
+      "date_precision": "day",
+      "headline": "Zhipu's proprietary CogVideoX-3 API added start-and-end-frame generation and better subject clarity; it is not open weights.",
+      "specs": {
+        "max_clip_s": null,
+        "resolution": null,
+        "fps": null,
+        "audio": null,
+        "notes": "API only; inputs: image, text, start and end frame."
+      },
+      "claims": [
+        {
+          "claim": "Z.ai release-notes entry dated 2025-07-15.",
+          "quote": "We've launched CogVideoX-3, an incremental upgrade to our video generation model with improved quality and new features.",
+          "source_url": "https://docs.z.ai/release-notes/new-released",
+          "source_kind": "docs",
+          "retrieved": true
+        },
+        {
+          "claim": "Model page inputs/outputs.",
+          "quote": "Input Modality Image / Text / Start and End Frame Output Modality Video",
+          "source_url": "https://docs.z.ai/guides/video/cogvideox-3",
+          "source_kind": "docs",
+          "retrieved": true
+        }
+      ],
+      "confidence": "medium",
+      "notes": "Only the docs release-note date was found; the launch press coverage was not checked. Zhipu's consumer 'Ying' app launch (2024) is not verified."
+    }
+  ],
+  "capabilities": [
+    {
+      "capability": "Native (joint) audio generated together with video",
+      "product": "Wan2.5-Preview",
+      "date": "2025-09-24",
+      "quote": "The video generation models natively support high-fidelity audio generation for the video, doubling the duration from 5 to 10 seconds",
+      "source_url": "https://www.alibabacloud.com/en/press-room/alibabacloudunveilsstrategicroadmaps",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Native audio in a single pass (voice, sound effects, ambience)",
+      "product": "Kling VIDEO 2.6",
+      "date": "2025-12-03",
+      "quote": "This update introduces a groundbreaking \"Native Audio\" capability.",
+      "source_url": "https://kling.ai/release-note/release-notes/c605hp1tzd",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Joint audio-visual generation (multilingual and dialect lip-sync)",
+      "product": "Seedance 1.5 pro",
+      "date": "2025-12-16",
+      "quote": "Seedance 1.5 pro features joint audio-visual generation",
+      "source_url": "https://seed.bytedance.com/en/blog/sound-and-vision-all-in-one-take-the-official-release-of-seedance-1-5-pro",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Native 16-second audio-video output at 1080p",
+      "product": "Vidu Q3",
+      "date": "2026-01-30",
+      "quote": "It is the industry's first long-form AI video generation model to support up to 16 seconds of native audio-video output in a single pass.",
+      "source_url": "https://www.prnewswire.com/news-releases/vidu-showcases-china-speed-in-advancing-ai-video-into-production-at-global-creativity-week-302675040.html",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Dual-channel audio with 15-second multi-shot output",
+      "product": "Seedance 2.0",
+      "date": "2026-02-12",
+      "quote": "The model supports 15-second high-quality multi-shot audio-video output and features dual-channel audio",
+      "source_url": "https://seed.bytedance.com/en/blog/seedance-2-0-official-launch",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Native stereo sound with 15 s at 2K",
+      "product": "MiniMax H3",
+      "date": "2026-07-31",
+      "quote": "generating video with native stereo sound, up to 15 seconds at 2K resolution",
+      "source_url": "https://www.minimax.io/blog/minimax-h3",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Two-channel stereo audio and improved lip-sync (announced)",
+      "product": "Kling 4.0",
+      "date": "2026-09-28",
+      "quote": "Supports high-quality audio and two-channel stereo.",
+      "source_url": "https://kling.ai/release-note/release-notes/Kling_4",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Native multi-shot generation from one prompt",
+      "product": "Seedance 1.0",
+      "date": "2025-06-11",
+      "quote": "generates a 10-second video with 2-3 shot transitions",
+      "source_url": "https://seed.bytedance.com/en/blog/tech-report-of-seedance-1-0-is-now-publicly-available",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Intelligent multi-shot storytelling",
+      "product": "Wan2.6",
+      "date": "2025-12-16",
+      "quote": "The new models introduce intelligent multi-shot storytelling capabilities",
+      "source_url": "https://www.alibabacloud.com/blog/alibaba-unveils-wan2-6-series-enabling-everyone-to-star-in-videos_602742",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Multi-shot with custom storyboard, up to 15 s",
+      "product": "Kling VIDEO 3.0",
+      "date": "2026-02-04",
+      "quote": "The all-new Multi-Shot feature is designed to understand scene coverage and shots in your prompt",
+      "source_url": "https://kling.ai/release-note/release-notes/whbvu8hsip",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Motion Brush and camera-movement control for image-to-video",
+      "product": "KLING 1.5 (Professional mode)",
+      "date": "2024-11-22",
+      "quote": "KLING 1.5 Model (Image-to-Video) Professional Mode: Now supports Motion Brush and Camera Movement!",
+      "source_url": "https://x.com/Kling_ai/status/1859935337797320782",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Enhanced camera control following text instructions",
+      "product": "MiniMax T2V-01-Director / I2V-01-Director",
+      "date": "2025-02-11",
+      "quote": "T2V-01-Director / I2V-01-Director Released a video generation model with enhanced camera control",
+      "source_url": "https://platform.minimax.io/docs/release-notes/models",
+      "source_kind": "docs"
+    },
+    {
+      "capability": "First-frame to last-frame transitions",
+      "product": "Vidu Q1",
+      "date": "2025-04-21",
+      "quote": "First-to-Last Frame, a seamless way to generate hyper-realistic, professional-grade transitions",
+      "source_url": "https://www.prnewswire.com/news-releases/vidu-q1-model-launches-globally-offering-unmatched-realistic-vfx-capabilities-from-generating-cinematic-transitions-to-high-fidelity-sound-effects-with-just-a-few-simple-inputs-302433278.html",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Start and end frame generation (proprietary API)",
+      "product": "CogVideoX-3",
+      "date": "2025-07-15",
+      "quote": "Input Modality Image / Text / Start and End Frame Output Modality Video",
+      "source_url": "https://docs.z.ai/guides/video/cogvideox-3",
+      "source_kind": "docs"
+    },
+    {
+      "capability": "Start and end frames on Kling 2.1",
+      "product": "KLING 2.1",
+      "date": "2025-08-21",
+      "quote": "The highly sought-after Start & End Frames feature for KLING 2.1 is finally here!",
+      "source_url": "https://kling.ai/release-note/release-notes/2025082114",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Unified reference, keyframe and editing model",
+      "product": "Kling VIDEO O1",
+      "date": "2025-12-01",
+      "quote": "Reference to Video, Text-to-Video, Start & End Frames generation, video content editing, modifications, transformations, restyling, and camera extension",
+      "source_url": "https://kling.ai/release-note/release-notes/vaxrndo66h",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Multi-image and video references as reusable Elements",
+      "product": "Kling VIDEO 3.0",
+      "date": "2026-02-04",
+      "quote": "supports multi-image references, or even video references as Elements",
+      "source_url": "https://kling.ai/release-note/release-notes/whbvu8hsip",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Character reference video with appearance and voice",
+      "product": "Wan2.6-R2V",
+      "date": "2025-12-16",
+      "quote": "Wan2.6-R2V enables users to upload a character reference video with both appearance and voice",
+      "source_url": "https://www.alibabacloud.com/blog/alibaba-unveils-wan2-6-series-enabling-everyone-to-star-in-videos_602742",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Mixed references (9 images, 3 video clips, 3 audio clips)",
+      "product": "Seedance 2.0",
+      "date": "2026-02-12",
+      "quote": "Users can simultaneously input up to 9 images, 3 video clips, 3 audio clips, plus natural language instructions.",
+      "source_url": "https://seed.bytedance.com/en/blog/seedance-2-0-official-launch",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Two video plus four image references",
+      "product": "Vidu Q2 Reference-to-Video Pro",
+      "date": "2026-01-30",
+      "quote": "it supports two video references and four image references within a unified workflow",
+      "source_url": "https://www.prnewswire.com/news-releases/vidu-showcases-china-speed-in-advancing-ai-video-into-production-at-global-creativity-week-302675040.html",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Reference inputs up to 30 images, 10 videos, 10 audio clips",
+      "product": "Seedance 2.5",
+      "date": "2026-07-31",
+      "quote": "Users can now input up to 30 images, 10 video clips, and 10 audio clips as reference materials in a single pass.",
+      "source_url": "https://seed.bytedance.com/en/blog/one-take-creation-flexible-referencing-introducing-seedance-2-5",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Up to 15 reference assets in one generation (announced)",
+      "product": "Kling 4.0",
+      "date": "2026-09-28",
+      "quote": "Use up to 15 reference assets in a single generation",
+      "source_url": "https://kling.ai/release-note/release-notes/Kling_4",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Clay-render (white-model) references for blocking and camera",
+      "product": "Seedance 2.5",
+      "date": "2026-07-31",
+      "quote": "Seedance 2.5 also enhances specific reference capabilities including clay render, motion, and creative referencing",
+      "source_url": "https://seed.bytedance.com/en/blog/one-take-creation-flexible-referencing-introducing-seedance-2-5",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Video extension and editing",
+      "product": "Seedance 2.0",
+      "date": "2026-02-12",
+      "quote": "It supports stable and controllable video extension and editing",
+      "source_url": "https://seed.bytedance.com/en/blog/seedance-2-0-official-launch",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Natural-language video editing of any dimension",
+      "product": "Wan2.7-Video",
+      "date": "2026-04-07",
+      "quote": "introduces intuitive natural language instructions that allows creators to modify any video dimension",
+      "source_url": "https://www.alibabacloud.com/blog/alibaba-unveils-wan2-7-video-to-elevate-creators-from-executors-to-directors_603009",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Timestamp-level targeted audio and video editing",
+      "product": "Seedance 2.5",
+      "date": "2026-07-31",
+      "quote": "Seedance 2.5 offers timestamp-level control for targeted editing of audio and video content",
+      "source_url": "https://seed.bytedance.com/en/blog/one-take-creation-flexible-referencing-introducing-seedance-2-5",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Video editing with up to 15 s and 4K in and out",
+      "product": "Kling 3.0 Omni",
+      "date": "2026-06-17",
+      "quote": "Video editing now support input and output durations of up to 15 seconds.",
+      "source_url": "https://kling.ai/release-note/release-notes/Kling_3_Turbo",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Motion transfer from a 3-30 s reference video",
+      "product": "Kling VIDEO 2.6 Motion Control",
+      "date": "2025-12-17",
+      "quote": "Upload motion reference ranging from 3 to 30 seconds",
+      "source_url": "https://kling.ai/release-note/release-notes/rybo04kstj",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Face binding in motion control for facial consistency",
+      "product": "Kling VIDEO 3.0 Motion Control",
+      "date": "2026-03-04",
+      "quote": "The newly upgraded Motion Control allows you to bind facial elements by uploading multiple images/videos after submitting the character image.",
+      "source_url": "https://kling.ai/release-note/release-notes/4titicw2vg",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Native 1080p generation",
+      "product": "MiniMax Hailuo 02",
+      "date": "2025-06-18",
+      "quote": "Key Highlights of Hailuo 02: - Native 1080p - SOTA Instruction Following - Extreme Physics Mastery",
+      "source_url": "https://www.minimax.io/news/minimax-hailuo-02",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "One-click native 4K mode",
+      "product": "Kling VIDEO 3.0 series",
+      "date": "2026-04-23",
+      "quote": "A new 4K mode is now available in the Kling VIDEO 3.0 series, enabling one-click 4K video generation",
+      "source_url": "https://kling.ai/release-note/release-notes/z8zeqsxwol",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "10-bit HDR output at 4K and 1080p (not yet shipped)",
+      "product": "Kling 4.0",
+      "date": "2026-09-28",
+      "quote": "10-bit HDR output at 4K and 1080p is coming soon",
+      "source_url": "https://kling.ai/release-note/release-notes/Kling_4",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "30-second single-pass generation with multi-round extension",
+      "product": "Seedance 2.5",
+      "date": "2026-07-31",
+      "quote": "Seedance 2.5 can generate high-quality, 30-second audio-video clips in a single pass and supports multiple rounds of extension.",
+      "source_url": "https://seed.bytedance.com/en/blog/one-take-creation-flexible-referencing-introducing-seedance-2-5",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "30-second single-pass generation and document/web-page inputs",
+      "product": "Wan3.0",
+      "date": "2026-08-06",
+      "quote": "Wan3.0 is the first model in the family to read documents, spreadsheets, and web pages as structured input.",
+      "source_url": "https://www.alibabacloud.com/blog/wan3-0-30-second-ai-video-generation-from-any-input_603452",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Up to 30 seconds per generation (announced)",
+      "product": "Kling 4.0",
+      "date": "2026-09-28",
+      "quote": "Generate up to 30 seconds of video in a single generation",
+      "source_url": "https://kling.ai/release-note/release-notes/Kling_4",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Legible text rendering in video",
+      "product": "Kling VIDEO 3.0",
+      "date": "2026-02-04",
+      "quote": "Native-Level Text Output with Precise Lettering Capabilities",
+      "source_url": "https://kling.ai/release-note/release-notes/whbvu8hsip",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Open weights: 13B text-to-video model",
+      "product": "HunyuanVideo",
+      "date": "2024-12-03",
+      "quote": "We release the inference code and model weights of HunyuanVideo.",
+      "source_url": "https://github.com/Tencent-Hunyuan/HunyuanVideo",
+      "source_kind": "model_card"
+    },
+    {
+      "capability": "Open weights under Apache-2.0; 1.3B model on 8 GB VRAM",
+      "product": "Wan2.1",
+      "date": "2025-02-25",
+      "quote": "The T2V-1.3B model requires only 8.19 GB VRAM",
+      "source_url": "https://github.com/Wan-Video/Wan2.1",
+      "source_kind": "model_card"
+    },
+    {
+      "capability": "Open weights: 8.3B model for consumer GPUs",
+      "product": "HunyuanVideo-1.5",
+      "date": "2025-11-20",
+      "quote": "HunyuanVideo-1.5 is a video generation model that delivers top-tier quality with only 8.3B parameters",
+      "source_url": "https://github.com/Tencent-Hunyuan/HunyuanVideo-1.5",
+      "source_kind": "model_card"
+    },
+    {
+      "capability": "Open weights under a custom community licence (omni-modal H3)",
+      "product": "MiniMax H3",
+      "date": "2026-08-03",
+      "quote": "MiniMax H3 is a general-purpose, omni-modal generative system.",
+      "source_url": "https://huggingface.co/MiniMaxAI/MiniMax-H3",
+      "source_kind": "model_card"
+    },
+    {
+      "capability": "Real-time interactive video generation at 540p / 25 fps",
+      "product": "Vidu S1",
+      "date": "2026-07-03",
+      "quote": "The model delivers 540P (960x540) resolution at 25 FPS (up to 42 FPS)",
+      "source_url": "https://www.prnewswire.com/news-releases/shengshu-technology-unveils-vidu-s1-bringing-real-time-interactive-generation-to-ai-video-302817626.html",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Real-time avatar interaction at 720p",
+      "product": "Vidu S2-Avatar",
+      "date": "2026-09-15",
+      "quote": "increases real-time output resolution from 540p to 720p",
+      "source_url": "https://www.prnewswire.com/news-releases/shengshu-technology-unveils-vidu-s2-bringing-real-time-interaction-and-editing-to-ai-video-302879976.html",
+      "source_kind": "official_blog"
+    },
+    {
+      "capability": "Native-language and dialect audio with lip movements",
+      "product": "Kling VIDEO 3.0",
+      "date": "2026-02-04",
+      "quote": "the upgrade now supports more languages (Chinese, English, Japanese, Korean, Spanish)",
+      "source_url": "https://kling.ai/release-note/release-notes/whbvu8hsip",
+      "source_kind": "official_blog"
+    }
+  ],
+  "limitations": [
+    {
+      "developer": "Kuaishou (Kling)",
+      "statement": "Kling's own blog (2026-09-24) lists limitations of current AI video: visual consistency, realistic physics, text rendering, precise editing and long-form storytelling.",
+      "quote": "AI video still has limitations in visual consistency, realistic physics, text rendering, precise editing, and long-form storytelling.",
+      "source_url": "https://kling.ai/blog/limitations-of-current-ai-video-generation-technology"
+    },
+    {
+      "developer": "Kuaishou (Kling)",
+      "statement": "Same post: identity can change between separately generated shots.",
+      "quote": "Faces, hairstyles, clothing, accessories, product shapes, colors, or surface details may change from one shot to the next.",
+      "source_url": "https://kling.ai/blog/limitations-of-current-ai-video-generation-technology"
+    },
+    {
+      "developer": "Kuaishou (Kling)",
+      "statement": "Same post: hands and text can still break down.",
+      "quote": "Fingers can warp, text may be misspelled or distorted, logos can shift, and small product features may change during motion.",
+      "source_url": "https://kling.ai/blog/limitations-of-current-ai-video-generation-technology"
+    },
+    {
+      "developer": "Kuaishou (Kling)",
+      "statement": "Kling 4.0 headline features are not all live: HDR is 'coming soon' and only the Flash tier is in limited early access; full launch is October 2026.",
+      "quote": "10-bit HDR output at 4K and 1080p is coming soon",
+      "source_url": "https://kling.ai/release-note/release-notes/Kling_4"
+    },
+    {
+      "developer": "ByteDance Seed (Seedance 2.0)",
+      "statement": "The Seedance 2.0 launch post admits remaining flaws.",
+      "quote": "Seedance 2.0 is still far from perfect, with various flaws remaining in its generation results.",
+      "source_url": "https://seed.bytedance.com/en/blog/seedance-2-0-official-launch"
+    },
+    {
+      "developer": "ByteDance Seed (Seedance 2.0)",
+      "statement": "Named weaknesses: multi-subject consistency, text rendering, complex edits.",
+      "quote": "However, there is still room for optimization regarding multi-subject consistency, text rendering accuracy, and complex editing effects.",
+      "source_url": "https://seed.bytedance.com/en/blog/seedance-2-0-official-launch"
+    },
+    {
+      "developer": "ByteDance Seed (Seedance 2.0)",
+      "statement": "Audio glitches remain.",
+      "quote": "Seedance 2.0 still needs to address issues like occasional audio distortion.",
+      "source_url": "https://seed.bytedance.com/en/blog/seedance-2-0-official-launch"
+    },
+    {
+      "developer": "ByteDance Seed (Seedance 2.5)",
+      "statement": "Seedance 2.5 launch post: physics of complex motion and multi-subject scenes are still weak.",
+      "quote": "there is still room for improvement, particularly regarding the physical plausibility of complex motions and the stability of scenes involving interactions among multiple subjects",
+      "source_url": "https://seed.bytedance.com/en/blog/one-take-creation-flexible-referencing-introducing-seedance-2-5"
+    },
+    {
+      "developer": "ByteDance Seed (Seedance 1.5 pro)",
+      "statement": "Seed says a showcased sung-opera clip deviated significantly from real opera conventions, i.e. cultural fidelity is limited.",
+      "quote": "still deviate significantly from the standards of traditional opera standards",
+      "source_url": "https://seed.bytedance.com/en/blog/sound-and-vision-all-in-one-take-the-official-release-of-seedance-1-5-pro"
+    },
+    {
+      "developer": "Alibaba (Wan3.0)",
+      "statement": "Alibaba Cloud says audio texture and on-screen text are not yet at target quality.",
+      "quote": "audio texture and on-screen text rendering accuracy are improving but not yet where we want them",
+      "source_url": "https://www.alibabacloud.com/blog/wan3-0-30-second-ai-video-generation-from-any-input_603452"
+    },
+    {
+      "developer": "MiniMax (H3)",
+      "statement": "MiniMax says visual detail still needs improvement in some scenarios.",
+      "quote": "Visual detail can still be improved in certain scenarios.",
+      "source_url": "https://www.minimax.io/blog/minimax-h3"
+    },
+    {
+      "developer": "MiniMax (H3 licence)",
+      "statement": "The H3 open-weights licence excludes the EU, UK, South Korea and the US, so 'open' does not mean freely usable everywhere.",
+      "quote": "means the European Union, the United Kingdom, the Republic of Korea and the United States of America.",
+      "source_url": "https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE"
+    },
+    {
+      "developer": "Tencent (HunyuanVideo licence)",
+      "statement": "HunyuanVideo weights come under a community licence that does not apply in the EU, UK and South Korea.",
+      "quote": "THIS LICENSE AGREEMENT DOES NOT APPLY IN THE EUROPEAN UNION, UNITED KINGDOM AND SOUTH KOREA",
+      "source_url": "https://github.com/Tencent-Hunyuan/HunyuanVideo/blob/main/LICENSE.txt"
+    },
+    {
+      "developer": "Zhipu AI (CogVideoX)",
+      "statement": "Only CogVideoX-2B is Apache-2.0; the 5B models carry a separate CogVideoX licence.",
+      "quote": "The CogVideoX-5B model (Transformers module, include I2V and T2V) is released under",
+      "source_url": "https://github.com/THUDM/CogVideo"
+    }
+  ],
+  "unverified_leads": [
+    {
+      "lead": "Exact Kling 3.0 release day (2026-01-31 vs 2026-02-04 vs API 2026-02-25).",
+      "why_unverified": "Three official surfaces disagree: the release-note entry is displayed as 2026-01-31, the official X announcement is 2026-02-04, and the API changelog says 2026-02-25. No official statement reconciles them; milestone uses 2026-02-04 (medium confidence)."
+    },
+    {
+      "lead": "Kling 4.0 general availability and features beyond the announcement (10-bit HDR, 2-minute extension, 120 s long-video mode, up to 60 s extension reported by a third-party X user).",
+      "why_unverified": "Official note says full launch is October 2026 (after the production date); HDR and extension are marked 'coming soon'. Third-party figures could not be matched to a Kling page."
+    },
+    {
+      "lead": "Kling 1.0 launch-day specs (2 minutes, 30 fps, 1080p).",
+      "why_unverified": "Only relayed by MIT Technology Review, TechNode and Caixin quoting Kling's site; no primary page retrievable. The July 2024 Kuaishou release only states 10-second text-to-video."
+    },
+    {
+      "lead": "Kling 1.6 '195% improvement over 1.5', 'up to 6 shots' in Kling 3.0, and Kling 3.0 '60 fps' claims.",
+      "why_unverified": "Found only in secondary articles; not on the official release notes I retrieved."
+    },
+    {
+      "lead": "Kling 1.0/1.5/1.6 web release notes (pre-2025-01-23).",
+      "why_unverified": "The current kling.ai release-history feed starts at 2025-01-23; older dates rely on the official X account and Kuaishou filings (quarter-level only for 1.6)."
+    },
+    {
+      "lead": "Kling 'world's first' claims (unified multimodal model O1, native 4K, first native-audio).",
+      "why_unverified": "Marketing wording from the developer; not independently verifiable and contradicted in part by earlier native-audio models (Wan 2.5 preview, Sept 2025)."
+    },
+    {
+      "lead": "Seedance 2.0 first availability day in China and its global rollout (Dreamina, BytePlus, CapCut).",
+      "why_unverified": "Blog date is 2026-02-12 ('recently launched'); the paper only says 'early February 2026'. No dated global-availability statement retrieved."
+    },
+    {
+      "lead": "Seedance 2.0 1080p/4K output.",
+      "why_unverified": "The technical report says native output is 480p/720p while the BytePlus page lists 480P/720P/1080P/4K options; how higher tiers are produced is not stated in sources I read."
+    },
+    {
+      "lead": "Seedance 2.5 API/global availability.",
+      "why_unverified": "Launch blog says API access is 'coming soon'; a BytePlus plan page exists with 480P/720P/1080P and 4-30 s options but I did not confirm live API access or pricing."
+    },
+    {
+      "lead": "Seedance 1.0 Lite/Pro API dates (Volcano Engine Force, June 2025) and the arXiv-vs-blog one-day gap.",
+      "why_unverified": "Only the Seed blog (2025-06-11) and arXiv (2025-06-10) were retrieved."
+    },
+    {
+      "lead": "Wan 2.7 exact launch date (secondary sources say 1-6 April 2026).",
+      "why_unverified": "The Alibaba post is dated 2026-04-07 and says 'has launched'; no earlier dated primary post found."
+    },
+    {
+      "lead": "Wan 3.0 general-availability date 2026-08-24 and pricing ($0.05/$0.10/$0.20 per second).",
+      "why_unverified": "From a community-author post on alibabacloud.com, not an Alibaba announcement; public beta date 2026-08-06 is verified from the official Wan X account."
+    },
+    {
+      "lead": "Wan 2.1 initial hosted release (January 2025) before the open weights.",
+      "why_unverified": "Only the open-weights date (2025-02-25) and Alibaba Group's note that it was 'unveiled earlier this year' were retrieved."
+    },
+    {
+      "lead": "Claims that Wan 2.5, 2.6 or 2.7 base models were open-sourced under Apache 2.0.",
+      "why_unverified": "No such weights exist in the Wan-AI Hugging Face org (latest open items: Wan2.2-Animate-2, Wan-Dancer in July 2026, both Apache-2.0) or the Wan-Video GitHub org; secondary pages appear to conflate them."
+    },
+    {
+      "lead": "Hailuo Video-01-Live and S2V-01 (subject reference) release dates.",
+      "why_unverified": "No dated official page found; only secondary mentions."
+    },
+    {
+      "lead": "MiniMax H3 exact public weights day and the promised technical report.",
+      "why_unverified": "First visible Hugging Face commit is 2026-08-03; licence text is dated 2026-08-02; blog only said 'in the coming days'. No technical report seen by 2026-09-29."
+    },
+    {
+      "lead": "Vidu original unveiling day (27 April 2024) and 30 July 2024 public launch; Vidu 1.5 / 2.0 dates.",
+      "why_unverified": "Developer press releases give only month-level dates (April 2024, July 2024); day-level dates are from secondary sources; Vidu 1.5/2.0 not checked."
+    },
+    {
+      "lead": "Vidu Q3 exact go-live day.",
+      "why_unverified": "Only the press-release date (2026-01-30) of Global Creativity Week; the model may have shipped earlier that week."
+    },
+    {
+      "lead": "Zhipu 'Ying' consumer video app launch (July 2024) and CogVideoX-3 press coverage.",
+      "why_unverified": "Not checked against a primary page; CogVideoX-3 date comes only from the Z.ai release-notes list."
+    },
+    {
+      "lead": "Any Tencent video model newer than HunyuanVideo-1.5 (2026).",
+      "why_unverified": "None found on GitHub/Hugging Face (tencent org lists Hy3/Hy4 LLM releases but no new video model); a closed Hunyuan video service may exist on hunyuan.tencent.com but was not verified."
+    }
+  ],
+  "corrections_to_common_beliefs": [
+    "Seedance 2.5 is real: ByteDance Seed's own blog dated 2026-07-31 announces it (30 s per generation, 30 images + 10 videos + 10 audio references). Seedance 2.0's official blog is dated 2026-02-12.",
+    "Seedance 2.0 is often described as natively high-resolution. Its technical report says direct generation is 4-15 s with native 480p and 720p; BytePlus lists higher resolution options.",
+    "Kling 3.0: the official X announcement is 2026-02-04, the release-note entry is displayed as 2026-01-31, and the API launch is dated 2026-02-25; do not quote a single unqualified date.",
+    "Kling 2.5 Turbo's official release note is 2025-09-19 (some sources say 23 Sep) and Kling 2.1's is 2025-05-26 (some sources say 29 May).",
+    "Kling 2.6 (2025-12-03) was Kling's first native-audio model, but Wan 2.5-Preview (2025-09-24) announced native audio earlier; Kling had post-hoc integrated sound effects from 2025-06-26.",
+    "Kling 1.0 began as an early-access beta (applications opened 2024-06-06; more than 300,000 users granted access by July) and opened to global web users on 2024-07-24; the 'two-minute 1080p' launch figure was a claim, while the July 2024 Kuaishou release describes 10-second text-to-video.",
+    "Kling 1.5's Motion Brush appeared 2024-09-19, but the 1.5 Professional-mode I2V Motion Brush plus Camera Movement combination was re-announced 2024-11-22 and the V1.5 Pro API opened 2024-11-15.",
+    "Kling 4.0 is only announced (2026-09-28) with limited Flash early access; the full launch is stated for October 2026 and HDR is 'coming soon'.",
+    "Hailuo Video-01 launched 2024-08-31 per MiniMax's own post (720p, 25 fps, up to 6 s), not September 2024; Hailuo 02 (2025-06-18) is native 1080p; Hailuo 2.3 is 2025-10-28; the current model is MiniMax H3 (2026-07-31), not 'Hailuo 3' as the official name.",
+    "MiniMax H3 'open weights' come with a custom community licence that excludes the EU, UK, South Korea and the United States; it is not Apache/MIT.",
+    "Wan is open-weights only through Wan2.1 (2025-02-25, Apache-2.0) and Wan2.2 (2025-07-28, Apache-2.0) plus specialised Animate/Dancer models; Wan 2.5, 2.6, 2.7 and 3.0 are API/hosted products with no base weights found. Wan 3.0 public beta is 2026-08-06 (30-second clips).",
+    "HunyuanVideo (2024-12-03) and HunyuanVideo-1.5 (2025-11-20) are 'open' under the Tencent Hunyuan Community License, which does not apply in the EU, UK and South Korea; it is not OSI open source.",
+    "CogVideoX: only the 2B model is Apache-2.0 (2024-08-06); 5B models use a separate CogVideoX licence; CogVideoX-3 (Z.ai release note dated 2025-07-15) is a proprietary API. The paper's 10 s / 16 fps / 768x1360 figures are higher than the released 2B model (6 s, 8 fps, 720x480).",
+    "Vidu's own press releases date its launch to April 2024 and commercial availability to July 2024; its Q3 model (Jan 2026) is 16-second native audio-video at 1080p, and S1/S2 (2026) are real-time interactive models, not clip generators."
+  ]
+}

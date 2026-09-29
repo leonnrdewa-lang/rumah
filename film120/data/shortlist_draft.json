@@ -325,41 +325,6 @@
    },
    "source_file": "H1.json"
   },
-  "veo3_owl_badger_deepmind_demo": {
-   "media_url": "https://upload.wikimedia.org/wikipedia/commons/e/ef/Veo_3_demo_Owl_and_Badger.webm",
-   "page": "https://commons.wikimedia.org/wiki/File:Veo_3_demo_Owl_and_Badger.webm",
-   "family": "Veo",
-   "model_version": "Veo 3 (page: 'Created with Veo 3 - our new state-of-the-art video generation model')",
-   "created": "2025-05-21",
-   "date_basis": "Commons date field 2025-05-21 (YouTube upload day); Veo 3 announced 2025-05-20 (blog.google I/O post). Video is on Google DeepMind's YouTube channel (oEmbed).",
-   "creator": "VulcanSphere",
-   "license": "PD (Commons: AI output)",
-   "license_basis": "Commons tag on an official Google DeepMind demo re-hosted by a third party via yt-dlp. Google has not published a reuse licence for the clip. Supporting: the page text says 'Created with Veo 3', and the multi-part prompt (with Audio: lines) shows the score and effects were prompted, i.e. generated natively. Whether Google added any human-authored editing to join segments is not stated (no cuts detected, but soft joins are possible).",
-   "verdict": "clear_with_conditions",
-   "verdict_confidence": "low",
-   "conditions": [
-    "Highest-risk clip retained. Project must accept in writing that the licence rests only on VulcanSphere's Commons {{PD-algorithm}} tag; Google DeepMind has issued no reuse licence. If the project needs a developer grant, request press permission from Google DeepMind before use.",
-    "Source the master only from the Commons file or Google's own hosted copy (URL in corrected_fields), never from YouTube; credit 'Google DeepMind, Veo 3, May 2025' (no legal attribution required).",
-    "Label as a curated flagship demo; do not imply typical output."
-   ],
-   "risk_flags": [],
-   "story_roles": [
-    "hero",
-    "milestone"
-   ],
-   "description": "From the Commons/DeepMind description and prompt: a wise old owl circles in a moonlit sky then lands beside a nervous badger on a forest path; the badger says they left behind a 'ball' that bounced higher than it can jump, the owl asks what manner of magic that is; owl flies off, badger runs off, a squirrel hurries past through dry leaves. Audio (wings, birdsong, dialogue, light orchestral score) is described as prompted. Audio measured: mean -27.4 dB, max -7.6 dB.",
-   "prompt": "A follow shot of a wise old owl high in the air, peeking through the clouds in a moonlit sky above a forest. The wise old owl carefully circles a clearing looking around to the forest floor. After a few moments, it dives down to a moonlit path and sits next to a badger. Audio: wings flapping, birdsong, loud and pleasant wind rustling and the sound of intermittent pleasant sounds buzzing, twigs snapping underfoot, croaking. A light orchestral score with woodwinds throughout with a cheerful, optimistic rhythm, full of innocent curiosity. [continues with a dialogue segment and an exit segment; full text on the Commons page]",
-   "listed_media": {
-    "duration_s": 22.708,
-    "width": 3840,
-    "height": 2160,
-    "fps": 24,
-    "size_mb": 29.29,
-    "has_audio": true,
-    "format": "webm"
-   },
-   "source_file": "H1.json"
-  },
   "veo3_visual_kei_lemonade_gemini": {
    "media_url": "https://upload.wikimedia.org/wikipedia/commons/1/14/Visual_Kei_Man_Enjoys_Lemonade_%28Veo_3%29.webm",
    "page": "https://commons.wikimedia.org/wiki/File:Visual_Kei_Man_Enjoys_Lemonade_(Veo_3).webm",
@@ -508,8 +473,10 @@
    "verdict": "clear_with_conditions",
    "verdict_confidence": "medium",
    "conditions": [
-    "Base image of the render is not stated on the page. Same-day sibling uploads suggest it is the uploader's own Schiller-Gymnasium Hof photo (unverified inference). Watch the clip for identifiable people, logos or third-party artwork before use.",
-    "Label as 'DeepDream (Google algorithm, 2015), render by PantheraLeo1359531, 2021, CC0'; never as a text-to-video model or an early video-generation example."
+    "Do not use the opening frames until the base image is identified: the page never says what image is rotated per frame, so the hunter's suggested 0-4 s excerpt would expose an image of unknown provenance. Either pick a window after the base has dissolved into DeepDream structure, or ask the uploader (PantheraLeo1359531) to name the source image.",
+    "Label 'DeepDream (Google technique, 2015) - render by PantheraLeo1359531, 2021'; never present it as a 2015 clip.",
+    "CC0 needs no attribution; courtesy credit 'PantheraLeo1359531, Wikimedia Commons, CC0 1.0'.",
+    "Download and archive the master now with its Commons sha1 (unused or thinly used Commons files can be deleted on scope grounds; sibling AI clips were deleted 2026-04-25 and 2026-07-04). 103 MB original; 480p/360p/240p transcodes exist for editing."
    ],
    "risk_flags": [],
    "story_roles": [
@@ -645,43 +612,6 @@
    },
    "source_file": "H2.json"
   },
-  "runway_gen3_alpha_cowboy_2024": {
-   "media_url": "https://upload.wikimedia.org/wikipedia/commons/4/42/Gen-3_Alpha_3480943356%2C_A_cowboy_riding_his_%2C_pikaso_texttoimage_C_%281%29.webm",
-   "page": "https://commons.wikimedia.org/wiki/File:Gen-3_Alpha_3480943356,_A_cowboy_riding_his_,_pikaso_texttoimage_C_(1).webm",
-   "family": "Runway Gen-3 Alpha",
-   "model_version": "File name: 'Gen-3 Alpha 3480943356, A cowboy riding his , pikaso texttoimage C (1)' (Runway auto-name: model, seed, prompt start, input image name; input image appears to come from a Freepik Pikaso text-to-image). Corroborated: Runway announcement 'Runway Gen-3 Alpha: AI Video Generation with Temporal Control June 17, 2024'; Runway help spec table (Wayback 2025-07-23): Gen-3 Alpha output 1280x768, 24 fps, 5 or 10 s - matches this file exactly (1280x768, 24 fps, 253 frames = 10.54 s).",
-   "created": "2024-09-20",
-   "date_basis": "Commons Date field 2024-09-20 = first-upload timestamp 2024-09-20 (uploader Oronbb); model released 2024-06-17 per Runway.",
-   "creator": "Oronbb",
-   "license": "CC BY 4.0",
-   "license_basis": "Wikitext: {{self|cc-by-4.0}} followed by {{PD-algorithm}}; source {{own}}. The author label is oddly '[[User:Oronbb|Runway ML]]' - treat credit as Oronbb / generated with Runway Gen-3 Alpha and keep attribution (the stricter of the two tags). Runway does not claim ownership of Outputs (ToS, Wayback 2024-09-03).",
-   "verdict": "clear_with_conditions",
-   "verdict_confidence": "medium",
-   "conditions": [
-    "Credit: Oronbb (Wikimedia Commons; the page's author label reads 'Runway ML' but links to User:Oronbb), CC BY 4.0, generated with Runway Gen-3 Alpha; indicate changes. The page also carries {{PD-algorithm}}; apply the stricter CC BY 4.0 credit.",
-    "Input still: the file name shows the start image came from 'pikaso texttoimage' (Freepik Pikaso, an AI image tool whose free plan reportedly requires attribution to Freepik - secondary source only, terms not retrieved). Either add 'Input image: Freepik Pikaso (AI-generated)' to the credits or ask the uploader; treat as unresolved.",
-    "Label 'Runway Gen-3 Alpha (announced 2024-06-17), clip uploaded 2024-09-20 (per uploader)'; do not call it Turbo."
-   ],
-   "risk_flags": [],
-   "story_roles": [
-    "milestone",
-    "control_demo",
-    "gallery",
-    "split_screen_pair"
-   ],
-   "description": "Page text: 'Cowboy riding in the desert'. Pixel statistics: continuous single shot, no cuts, steady low motion (mean abs luma diff about 2.6 falling to 1.3/255), one luminance jump of about 1.0/255 near second 10.",
-   "prompt": "Prompt text truncated in the file name: 'A cowboy riding his ...' (input image from a Pikaso text-to-image)",
-   "listed_media": {
-    "duration_s": 10.542,
-    "width": 1280,
-    "height": 768,
-    "fps": 24,
-    "size_mb": 1.6,
-    "has_audio": false,
-    "format": "webm"
-   },
-   "source_file": "H2.json"
-  },
   "cogvideox_late_afternoon_swans_2024": {
    "media_url": "https://upload.wikimedia.org/wikipedia/commons/3/34/Late_Afternoon_Swans_%28CogVideoX%29.webm",
    "page": "https://commons.wikimedia.org/wiki/File:Late_Afternoon_Swans_(CogVideoX).webm",
@@ -751,41 +681,6 @@
     "height": 480,
     "fps": 8,
     "size_mb": 0.24,
-    "has_audio": false,
-    "format": "webm"
-   },
-   "source_file": "H2.json"
-  },
-  "hailuo_video01_cyberpunk_rainy_street_2024": {
-   "media_url": "https://upload.wikimedia.org/wikipedia/commons/a/ae/Cyberpunk_Rainy_Street_%28Hailuo_AI%29.webm",
-   "page": "https://commons.wikimedia.org/wiki/File:Cyberpunk_Rainy_Street_(Hailuo_AI).webm",
-   "family": "Hailuo AI (MiniMax Video-01)",
-   "model_version": "Page: 'A generative video ... with Hailuo AI', credit 'Generated in Hailuo AI (https://hailuoai.video/)'; no model version number stated on the page. Corroborated: MiniMax news post dated 2024.08.31 'MiniMax has officially launched its first AI-native video generation model, video-01 ... 720p resolution and 25fps' and 'up to 6 seconds long' - the file is 1280x720, 25 fps, 5.64 s, which matches (inference: Video-01-era Hailuo; not stated by the uploader).",
-   "created": "2024-12-24",
-   "date_basis": "Commons Date field and upload timestamp 2024-12-24 (uploader VulcanSphere = prompter). Generation date, not model debut (2024-08-31).",
-   "creator": "VulcanSphere",
-   "license": "CC0",
-   "license_basis": "Licence block comes from the uploader's own template {{User:VulcanSphere/AI-CC0-videos}}: CC0 where eligible for copyright (UK, mainland China), PD-algorithm in the US; the uploader is the prompter. Hailuo/MiniMax terms of service could not be read (JS-rendered pages), so any platform restriction on outputs is UNCHECKED.",
-   "verdict": "clear_with_conditions",
-   "verdict_confidence": "medium",
-   "conditions": [
-    "Courtesy credit recommended: VulcanSphere (Wikimedia Commons), CC0; generated with Hailuo AI (MiniMax).",
-    "Label 'Hailuo AI (MiniMax), generated 2024-12-24; version not stated (MiniMax Video-01 launched 2024-08-31)'. Do not print 'Video-01' as fact.",
-    "Resolve or accept the platform-terms residual risk (see issues) before using in a commercial release."
-   ],
-   "risk_flags": [],
-   "story_roles": [
-    "gallery",
-    "milestone"
-   ],
-   "description": "Page text: text-to-video of a middle-aged hooded man walking forward with an umbrella in a rainy cyberpunk city street. Pixel statistics: single continuous shot, no cuts, steady motion (mean abs luma diff 4.2-6.3/255 per frame, rising toward the end).",
-   "prompt": "A hoodie man walking forward in the rainy cyberpunk street, carrying an umbrella",
-   "listed_media": {
-    "duration_s": 5.64,
-    "width": 1280,
-    "height": 720,
-    "fps": 25,
-    "size_mb": 3.12,
     "has_audio": false,
     "format": "webm"
    },
@@ -923,9 +818,15 @@
    "creator": "Calhoun Press (Wikimedia Commons uploade",
    "license": "CC BY-SA 4.0",
    "license_basis": "Wikitext carries {{cc-by-sa-4.0}} with author=Calhoun Press and source http://calhounpress.net/blogs/blog/72629699-call-for-submissions-deep-dreams-of-electric-sheep. The GIF is a derivative of a public-domain Renaissance painting, so only the DeepDream rendering layer is licensed. Date-of-release primary source for the technique: https://research.google/blog/inceptionism-going-deeper-into-neural-networks/ ('June 18, 2015').",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Credit: Calhoun Press, 'Deep dreams of Arcimboldo's La Primavera' (animated GIF, 10 Nov 2015), CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0), via Wikimedia Commons (page URL); indicate any changes (crop, retime, slow-down).",
+    "ShareAlike applies: any adaptation of the GIF (cropped, slowed, recoloured) must be offered under CC BY-SA 4.0 or a compatible licence. Production counsel to decide whether embedding it in the film makes the film adapted material; safest is to keep it a clearly separable shot with its own credit card.",
+    "Label as 'DeepDream-style neural filter (Google technique, 2015), made with the Deep Dreamer app' - it is a 7-frame still-image effect, not a video model; never say Google generated it.",
+    "Only 0.7 s at 590x787 (about 2.4x upscale to fill 1920 px height): hold/step frames, do not pretend it is smooth motion.",
+    "Download and archive the master now with its Commons sha1 (unused or thinly used Commons files can be deleted on scope grounds; sibling AI clips were deleted 2026-04-25 and 2026-07-04)."
+   ],
    "risk_flags": [],
    "story_roles": [
     "hook_early",
@@ -945,72 +846,6 @@
    },
    "source_file": "H4.json"
   },
-  "videopoet_dog_popcorn_audio_2023": {
-   "media_url": "https://upload.wikimedia.org/wikipedia/commons/7/76/Dog_popcorn_with_audio_6781BD0C.webm",
-   "page": "https://commons.wikimedia.org/wiki/File:Dog_popcorn_with_audio_6781BD0C.webm",
-   "family": "VideoPoet (Google Research, LLM-style video model with video-to-audio)",
-   "model_version": "VideoPoet (Dec 2023 research demo); no version number",
-   "created": "2023-12-20",
-   "date_basis": "Commons |date=2023-12-20 (matches source file date); Google Research blog post dated December 19, 2023; Commons upload 2024-02-21",
-   "creator": "VideoPoet / Google Research",
-   "license": "PD (Commons: AI output)",
-   "license_basis": "File wikitext: {{PD-algorithm}} {{LicenseReview}} with source https://sites.research.google/videopoet/ and the storage.googleapis.com mp4. The Google demo page contains NO reuse licence for its clips (it only credits third-party CC/PD source images), so reliance is solely on the no-human-authorship theory; LicenseReview is pending. Weakest licence tier among the candidates.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
-   "risk_flags": [
-    "unverifiable_model_claim"
-   ],
-   "story_roles": [
-    "hook_early",
-    "milestone",
-    "gallery"
-   ],
-   "description": "2.2-second vertical clip with a mono Opus soundtrack from Google's VideoPoet demo, section 'Video-to-audio: VideoPoet can also output audio to match an input video without using any text as guidance'. File name and the site's caption list point to the prompt 'A dog eating popcorn at the cinema' (mapping by file name; probable, not proven). The clip is 8 fps.",
-   "prompt": "A dog eating popcorn at the cinema (from the demo page's video-to-audio caption; mapping to this file inferred from the file name)",
-   "listed_media": {
-    "duration_s": 2.184,
-    "width": 512,
-    "height": 896,
-    "fps": 8,
-    "size_mb": 0.24,
-    "has_audio": true,
-    "format": "webm"
-   },
-   "source_file": "H4.json"
-  },
-  "veo3_chernobyl_room_2025": {
-   "media_url": "https://upload.wikimedia.org/wikipedia/commons/f/ff/Veo-3_animation_example_-_Chernobyl_decaying_room.webm",
-   "page": "https://commons.wikimedia.org/wiki/File:Veo-3_animation_example_-_Chernobyl_decaying_room.webm",
-   "family": "Google Veo 3 (native audio, camera-move prompt)",
-   "model_version": "Veo-3 (as stated: 'Google Veo-3'); Fast vs standard not stated",
-   "created": "2025-08-10",
-   "date_basis": "Commons |date=2025-08-10; upload timestamp 2025-08-10T04:20:05Z; Veo 3 announced 2025-05-20",
-   "creator": "Global Donald (Wikimedia Commons); gener",
-   "license": "CC0",
-   "license_basis": "Wikitext {{self|cc-zero}} {{PD-algorithm}}, source {{own}}; uploader is the prompter. Google's Veo output terms not checked.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
-   "risk_flags": [],
-   "story_roles": [
-    "control_demo",
-    "hero",
-    "gallery"
-   ],
-   "description": "Page text: 'A video, with sound, generated with using Google's Veo-3'. Prompt asks for a slow 180-degree view of an abandoned decaying room with radiation-meter sound, dust, darker grade and a creepy soundtrack. Audio present (mean -27.5 dB, peak -4.7 dB). Single shot.",
-   "prompt": "An abandoned, decaying room with peeling green paint, a worn red armchair holding a doll's head, a small white chair beside it, and debris scattered across the dirty floor. Do a 180 degree view, slow, with radiation sound (it's in chernobyl). You can make the video a bit darker, it must sound creepy, you can also add dust if you want.",
-   "listed_media": {
-    "duration_s": 8.0,
-    "width": 1920,
-    "height": 1080,
-    "fps": 30,
-    "size_mb": 13.2,
-    "has_audio": true,
-    "format": "webm"
-   },
-   "source_file": "H4.json"
-  },
   "lvdm_ucf_long_40s": {
    "media_url": "https://media.githubusercontent.com/media/YingqingHe/LVDM/d251dccfbf6352826f5c5681abd86e87ed7e6371/assets/ucf-long-001.gif",
    "page": "https://github.com/YingqingHe/LVDM/blob/d251dccfbf6352826f5c5681abd86e87ed7e6371/README.md",
@@ -1021,9 +856,14 @@
    "creator": "Yingqing He, Tianyu Yang, Yong Zhang, Yi",
    "license": "MIT",
    "license_basis": "File is committed in the repository root tree (assets/, an LFS-stored gif) and displayed by the project README as its own result; repo LICENSE is MIT for 'software and associated documentation files'. Argument = media are documentation assets of the licensed repo authored by the licensor. The licence does not name media, hence 'likely' not 'clear'.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "low",
+   "conditions": [
+    "Credit the developer in the source label; include the MIT copyright + permission notice in the credits/rights sheet. Suggested label: 'LVDM (unconditional sample), 2022 - Y. He, T. Yang, Y. Zhang, Y. Shan, Q. Chen - MIT'.",
+    "A human must watch the clip (or each tile) before use and confirm: no identifiable real person, no brand/logo/IP, no in-scene political text, no source watermark that a vertical crop would cut; if a watermark/logo/title exists it must stay visible.",
+    "Say 'sample published with the paper, Nov 2022' - do NOT say the model was released in Nov 2022: pretrained weights only appeared on Hugging Face on 2023-05-01.",
+    "Use only as a small inset / heavily upscaled early-era example (256x256)."
+   ],
    "risk_flags": [],
    "story_roles": [
     "early_failure_annotation",
@@ -1052,9 +892,15 @@
    "creator": "Yingqing He, Tianyu Yang, Yong Zhang, Yi",
    "license": "MIT",
    "license_basis": "In-tree README result gif in a repo whose root LICENSE is MIT (software and associated documentation files). Media not named by the licence; no separate media licence or exclusion found.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "low",
+   "conditions": [
+    "Credit the developer in the source label; include the MIT copyright + permission notice in the credits/rights sheet. Suggested label: 'LVDM text-to-video, 2023 - He et al. (HKUST / Tencent AI Lab) - MIT'.",
+    "A human must watch the clip (or each tile) before use and confirm: no identifiable real person, no brand/logo/IP, no in-scene political text, no source watermark that a vertical crop would cut; if a watermark/logo/title exists it must stay visible.",
+    "Crop the ~8 px border strip (1032 px canvas vs 1024 content) - the border is not a watermark.",
+    "Do not use the sibling t2v-004.gif ('iron man', brand IP).",
+    "Label as 'text-to-video result, 2023'; weights were released on HF only on 2023-05-01."
+   ],
    "risk_flags": [],
    "story_roles": [
     "hook_early",
@@ -1083,9 +929,14 @@
    "creator": "Levon Khachatryan et al., Picsart AI Res",
    "license": "CreativeML OpenRAIL-M",
    "license_basis": "Best licence evidence in this batch for a model output: section 6 disclaims rights in Output; 'Complementary Material' is defined to include 'accompanying documentation, tutorials, examples'; README states 'Our code is published under the CreativeML Open RAIL-M license'. Gap: the licence is model/code-scoped and the Use-based restrictions (Attachment A) still bind use of the Model, so verdict stays 'likely'.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Credit: 'Text2Video-Zero - L. Khachatryan et al., Picsart AI Research, 2023 - CreativeML Open RAIL-M'; keep the copyright line 'Copyright (c) 2023 Levon Khachatryan and Andranik Movsisyan and Vahram Tadevosyan and Roberto Henschel and Zhangyang Wang and Shant Navasardyan and Humphrey Shi' in the rights sheet with a link to the LICENSE.",
+    "Film use must respect OpenRAIL-M Attachment A (no harmful/false-info use) - no issue for an explainer, but do not use the clip to imply factual footage.",
+    "A human must watch the clip (or each tile) before use and confirm: no identifiable real person, no brand/logo/IP, no in-scene political text, no source watermark that a vertical crop would cut; if a watermark/logo/title exists it must stay visible.",
+    "Label honestly as an 8-frame, ~3 fps zero-shot result on Stable Diffusion; do not smooth/interpolate without saying so."
+   ],
    "risk_flags": [],
    "story_roles": [
     "hook_early",
@@ -1105,69 +956,6 @@
    },
    "source_file": "H5.json"
   },
-  "lavie_teddy_street_base": {
-   "media_url": "https://raw.githubusercontent.com/Vchitect/LaVie/6ce851e98be2ad2ddb7df177ab31f18194b0ceff/assets/a_teddy_bear_walking_on_the_street%2C_2k%2C_high_quality.gif",
-   "page": "https://github.com/Vchitect/LaVie/blob/6ce851e98be2ad2ddb7df177ab31f18194b0ceff/README.md",
-   "family": "LaVie",
-   "model_version": "LaVie base text-to-video (16 frames, 512x320), README gallery gif",
-   "created": "2023-11-20",
-   "date_basis": "Git commit adds the gif 2023-11-20T22:27:32+08:00; arXiv 2309.15103 submitted 26 Sep 2023 (https://arxiv.org/abs/2309.15103); repo README created 2023-09-22.",
-   "creator": "Vchitect / Shanghai AI Laboratory - LaVi",
-   "license": "Apache-2.0",
-   "license_basis": "README says 'The code is licensed under Apache-2.0, model weights are fully open for academic research and also allow free commercial usage.' The gif is an in-tree asset; Apache 'Work' includes 'documentation source'. No sentence names the gallery media, so 'likely'.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
-   "risk_flags": [],
-   "story_roles": [
-    "split_screen_pair",
-    "frame_stack",
-    "milestone"
-   ],
-   "description": "Prompt encoded in the file name; 16 frames at ~8 fps. Pair partner: the frame-interpolated 24 fps version of the same prompt (lavie_teddy_street_interp24). Not viewed.",
-   "prompt": "a teddy bear walking on the street, 2k, high quality",
-   "listed_media": {
-    "duration_s": 2.01,
-    "width": 512,
-    "height": 320,
-    "fps": 7.96,
-    "size_mb": 1.83,
-    "has_audio": false,
-    "format": "gif"
-   },
-   "source_file": "H5.json"
-  },
-  "lavie_teddy_street_interp24": {
-   "media_url": "https://raw.githubusercontent.com/Vchitect/LaVie/6ce851e98be2ad2ddb7df177ab31f18194b0ceff/assets/interpolation/a_teddy_bear_walking_on_the_street%2C_2k%2C_high_quality.gif",
-   "page": "https://github.com/Vchitect/LaVie/blob/6ce851e98be2ad2ddb7df177ab31f18194b0ceff/README.md",
-   "family": "LaVie",
-   "model_version": "LaVie + frame-interpolation stage (README 'interpolation' gallery folder), 61 frames at 24 fps",
-   "created": "2023-11-21",
-   "date_basis": "Git commit adds the gif 2023-11-21T21:16:54+08:00; arXiv 2309.15103 submitted 26 Sep 2023 (https://arxiv.org/abs/2309.15103).",
-   "creator": "Vchitect / Shanghai AI Laboratory - LaVi",
-   "license": "Apache-2.0",
-   "license_basis": "Same repo, same in-tree gallery assets, same argument as the base clip; not named explicitly by the licence, hence 'likely'.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
-   "risk_flags": [],
-   "story_roles": [
-    "split_screen_pair",
-    "milestone"
-   ],
-   "description": "Same prompt as lavie_teddy_street_base after LaVie's interpolation stage (61 frames at 24 fps). Not viewed.",
-   "prompt": "a teddy bear walking on the street, 2k, high quality",
-   "listed_media": {
-    "duration_s": 2.54,
-    "width": 512,
-    "height": 320,
-    "fps": 24.0,
-    "size_mb": 5.32,
-    "has_audio": false,
-    "format": "gif"
-   },
-   "source_file": "H5.json"
-  },
   "latte1_t2v_4x4_grid": {
    "media_url": "https://raw.githubusercontent.com/Vchitect/Latte/ad4b85a69bd26c66eebd65f4323718c80e7cf449/visuals/latteT2V.gif",
    "page": "https://github.com/Vchitect/Latte/blob/ad4b85a69bd26c66eebd65f4323718c80e7cf449/README.md",
@@ -1178,9 +966,14 @@
    "creator": "Xin Ma, Yaohui Wang et al. - Latte (Vchi",
    "license": "Apache-2.0",
    "license_basis": "README licence section: 'The code and model weights are licensed under LICENSE.' In-tree asset in the licensed repo. Weaker than other entries because the README references the gif only inside an HTML comment, so it is not displayed as an official demo.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "low",
+   "conditions": [
+    "Credit the developer and name the licence in the on-screen source label and in the credits/rights sheet; ship a copy of the Apache-2.0 text with the rights file (Apache-2.0 s.4: licence copy, retain notices, mark changes to the excerpt). Suggested label: 'Latte (T2V sample grid), mid-2024 - X. Ma, Y. Wang et al. (Monash / Shanghai AI Lab / NJUPT / S-Lab NTU) - Apache-2.0'.",
+    "Do not show the whole 4x4 mosaic or any tile until each of the 16 tiles has been watched (prompts are unpublished; tile content unknown).",
+    "A human must watch the clip (or each tile) before use and confirm: no identifiable real person, no brand/logo/IP, no in-scene political text, no source watermark that a vertical crop would cut; if a watermark/logo/title exists it must stay visible.",
+    "Date wording: 'mid-2024' (README 2024-05-23, HF repo created 2024-06-03, gif commit 2024-06-04)."
+   ],
    "risk_flags": [
     "unverifiable_model_claim"
    ],
@@ -1211,9 +1004,14 @@
    "creator": "Genmo - Mochi 1 preview, 2024",
    "license": "Apache-2.0",
    "license_basis": "Quote is from the README overview (model licence). File is an in-tree asset added in the initial commit and the repo LICENSE is Apache-2.0. The README shows a user-attachments video, not this file, so the file is an orphaned demo asset; licence coverage of media is argued, not stated.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "low",
+   "conditions": [
+    "Credit the developer and name the licence in the on-screen source label and in the credits/rights sheet; ship a copy of the Apache-2.0 text with the rights file (Apache-2.0 s.4: licence copy, retain notices, mark changes to the excerpt). Suggested label: 'Genmo - Mochi 1 preview, 2024 - Apache-2.0'.",
+    "A human must watch the clip (or each tile) before use and confirm: no identifiable real person, no brand/logo/IP, no in-scene political text, no source watermark that a vertical crop would cut; if a watermark/logo/title exists it must stay visible.",
+    "Only single-tile crops (848x480) after each tile has been watched; heavy upscale needed for 9:16.",
+    "Frame it honestly: Mochi README itself says 'minor warping and distortions can also occur' and that it is optimised for photorealistic styles."
+   ],
    "risk_flags": [],
    "story_roles": [
     "gallery",
@@ -1242,9 +1040,13 @@
    "creator": "Rhymes AI - Allegro, 2024",
    "license": "Apache-2.0",
    "license_basis": "Quote is the README 'License' section, which speaks of the whole repo. The mp4 is an in-tree asset from the developer's own repository (added two days before release). The README no longer references this file, so its status as an official demo is inferred from the file name only.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "low",
+   "conditions": [
+    "Credit the developer and name the licence in the on-screen source label and in the credits/rights sheet; ship a copy of the Apache-2.0 text with the rights file (Apache-2.0 s.4: licence copy, retain notices, mark changes to the excerpt). The repo NOTICE (added 2024-11-22) also asks: 'we would appreciate it if you give us due credit and feedback when you are using this Work for services or products' - credit 'Rhymes AI - Allegro'.",
+    "A human must watch the clip (or each tile) before use and confirm: no identifiable real person, no brand/logo/IP, no in-scene political text, no source watermark that a vertical crop would cut; if a watermark/logo/title exists it must stay visible.",
+    "Label as 'Allegro (Rhymes AI), Oct 2024'; the exact checkpoint is not stated."
+   ],
    "risk_flags": [
     "unverifiable_model_claim"
    ],
@@ -1265,171 +1067,6 @@
    },
    "source_file": "H5.json"
   },
-  "ltxv_v090_cityscape_pan": {
-   "media_url": "https://media.githubusercontent.com/media/Lightricks/LTX-Video/4b2d053057623ddd4d0a1d3e9cd28890e9ef487f/docs/_static/ltx-video_example_00013.gif",
-   "page": "https://github.com/Lightricks/LTX-Video/blob/5a592aa/README.md",
-   "family": "LTX-Video",
-   "model_version": "LTX-Video initial release v0.9.0 (README heading 'November 21th, 2024: Initial release v0.9.0')",
-   "created": "2024-11-22",
-   "date_basis": "Initial repo commit 5a592aa 'LTX-Video: Initial commit' 2024-11-22T15:53:46+02:00 contains the gif and a README caption with the full prompt; README news 'November 21th, 2024: Initial release v0.9.0'; arXiv 2501.00103 (30 Dec 2024). HF Lightricks/LTX-Video createdAt 2024-10-31 predates the release.",
-   "creator": "Lightricks - LTX-Video v0.9.0, 2024",
-   "license": "Apache-2.0",
-   "license_basis": "Repo LICENSE is Apache-2.0 and the gif is an LFS asset committed by Lightricks with a README caption in the very first commit. Caveat: the README later notes the model weights moved to OpenRAIL-M ('New license for commercial use (OpenRail-M)') and HF lists 'other'; the code licence does not state coverage of media.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
-   "risk_flags": [],
-   "story_roles": [
-    "milestone",
-    "control_demo"
-   ],
-   "description": "README caption (initial commit): camera pans left to right across tall buildings with a circular building with a green roof in the centre, high angle, bright sun from upper left, 'computer-generated imagery' look.",
-   "prompt": "The camera pans across a cityscape of tall buildings with a circular building in the center. The camera moves from left to right, showing the tops of the buildings and the circular building in the center. The buildings are various shades of gray and white, and the circular building has a green roof. The camera angle is high, looking down at the city. The lighting is bright, with the sun shining from the upper left, casting shadows from the buildings. The scene is computer-generated imagery.",
-   "listed_media": {
-    "duration_s": 4.84,
-    "width": 384,
-    "height": 256,
-    "fps": 25.0,
-    "size_mb": 9.02,
-    "has_audio": false,
-    "format": "gif"
-   },
-   "source_file": "H5.json"
-  },
-  "ltxv_i2v_example_00001": {
-   "media_url": "https://media.githubusercontent.com/media/Lightricks/LTX-Video/4b2d053057623ddd4d0a1d3e9cd28890e9ef487f/docs/_static/ltx-video_i2v_example_00001.gif",
-   "page": "https://github.com/Lightricks/LTX-Video/blob/4b2d053057623ddd4d0a1d3e9cd28890e9ef487f/README.md",
-   "family": "LTX-Video",
-   "model_version": "LTX-Video image-to-video (README section 'Image-to-video examples'); exact version not stated for the gif. Committed the same day as the README news 'May, 14th, 2025: New distilled model 13B v0.9.7'",
-   "created": "2025-05-14",
-   "date_basis": "Git commit adds docs/_static/ltx-video_i2v_example_00001.gif on 2025-05-14T09:30:06+03:00; README news dated 'May, 14th, 2025' (13B v0.9.7 distilled) - association is an inference, not stated.",
-   "creator": "Lightricks - LTX-Video, 2025",
-   "license": "Apache-2.0",
-   "license_basis": "In-tree LFS asset in an Apache-2.0 repo, displayed in the README as an official example. Input image provenance is not stated, which is an additional gap.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
-   "risk_flags": [
-    "unverifiable_model_claim"
-   ],
-   "story_roles": [
-    "control_demo",
-    "gallery"
-   ],
-   "description": "README lists it in the 'Image-to-video examples' 3x3 table; no caption, prompt or input image given. Not viewed.",
-   "prompt": null,
-   "listed_media": {
-    "duration_s": 5.04,
-    "width": 640,
-    "height": 360,
-    "fps": 25.0,
-    "size_mb": 9.29,
-    "has_audio": false,
-    "format": "gif"
-   },
-   "source_file": "H5.json"
-  },
-  "ltxv_iclora_control_00000": {
-   "media_url": "https://media.githubusercontent.com/media/Lightricks/LTX-Video/4b2d053057623ddd4d0a1d3e9cd28890e9ef487f/docs/_static/ltx-video_ic_2v_example_00000.gif",
-   "page": "https://github.com/Lightricks/LTX-Video/blob/4b2d053057623ddd4d0a1d3e9cd28890e9ef487f/README.md",
-   "family": "LTX-Video",
-   "model_version": "LTX-Video IC-LoRA control models (README section 'Controlled video examples'; news 'July, 8th, 2025: New Control Models Released!' depth/pose/canny for 13b-0.9.7)",
-   "created": "2025-07-08",
-   "date_basis": "Git commit adds docs/_static/ltx-video_ic_2v_example_00000.gif on 2025-07-08T12:25:56+00:00; README news 'July, 8th, 2025: New Control Models Released!' (which control type this gif uses is not stated).",
-   "creator": "Lightricks - LTX-Video IC-LoRA, 2025",
-   "license": "Apache-2.0",
-   "license_basis": "In-tree LFS asset in an Apache-2.0 repo, shown as an official example; control (pose/depth/canny) reference footage inside the gif is of unknown provenance, which is the main gap.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
-   "risk_flags": [
-    "real_person",
-    "unverifiable_model_claim"
-   ],
-   "story_roles": [
-    "control_demo",
-    "split_screen_pair"
-   ],
-   "description": "1024x2048 (1:2) stacked multi-panel layout (seams near rows 1036 and 1365); presumably control input and result but not stated. 81 frames at ~16 fps. Not viewed.",
-   "prompt": null,
-   "listed_media": {
-    "duration_s": 5.06,
-    "width": 1024,
-    "height": 2048,
-    "fps": 16.0,
-    "size_mb": 37.15,
-    "has_audio": false,
-    "format": "gif"
-   },
-   "source_file": "H5.json"
-  },
-  "wan21_readme_video_demos": {
-   "media_url": "https://github.com/user-attachments/assets/4aca6063-60bf-4953-bfb7-e265053f49ef",
-   "page": "https://github.com/Wan-Video/Wan2.1/blob/9737cba9c1c3c4d04b33fcad41c111989865d315/README.md",
-   "family": "Wan",
-   "model_version": "Wan2.1 (README 'Video Demos' reel; README feature list covers T2V, I2V, video editing, text-to-image, video-to-audio)",
-   "created": "2025-02-25",
-   "date_basis": "README news: 'Feb 25, 2025: We've released the inference code and weights of **Wan2.1**.'; repo 'init upload' commits 2025-02-25; HF Wan-AI/Wan2.1-T2V-14B createdAt 2025-02-25T07:26:34Z; Wan report arXiv 2503.20314 (26 Mar 2025). Upload date of the reel itself is unknown.",
-   "creator": "Wan Team, Alibaba - Wan2.1, 2025",
-   "license": "Apache-2.0 + output-righ",
-   "license_basis": "README 'License Agreement': 'The models in this repository are licensed under the Apache 2.0 License. We claim no rights over the your generated contents...' The reel is a compilation of model outputs published by the licensor in its README. Gaps: the sentence addresses users' outputs, not this reel specifically; the reel is not in the git tree (github user-attachments asset); its soundtrack is not covered.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
-   "risk_flags": [
-    "unverifiable_model_claim"
-   ],
-   "story_roles": [
-    "milestone",
-    "gallery"
-   ],
-   "description": "Official README demo reel of Wan2.1. Scene-cut detector (threshold 0.35) finds cuts at 11.96, 33.04, 47.8 and 59.84 s, so it is made of long segments (or cross-fades/split layouts that the detector misses). Audio track present (mean volume -13.1 dB), presumably music. Content not viewed.",
-   "prompt": null,
-   "listed_media": {
-    "duration_s": 62.6,
-    "width": 1280,
-    "height": 720,
-    "fps": 25.0,
-    "size_mb": 9.59,
-    "has_audio": true,
-    "format": "mp4"
-   },
-   "source_file": "H5.json"
-  },
-  "wan22_readme_video_demos": {
-   "media_url": "https://github.com/user-attachments/assets/b63bfa58-d5d7-4de6-a1a2-98970b06d9a7",
-   "page": "https://github.com/Wan-Video/Wan2.2/blob/1ea34ff48f87168174e12956e200b1d908b1c5ff/README.md",
-   "family": "Wan",
-   "model_version": "Wan2.2 (README 'Video Demos' reel; MoE architecture, T2V-A14B/I2V-A14B/TI2V-5B)",
-   "created": "2025-07-28",
-   "date_basis": "README news: 'Jul 28, 2025: We've released the inference code and model weights of **Wan2.2**.'; git commit 'upload videos' 2025-07-28T19:54:34+08:00; HF Wan-AI/Wan2.2-T2V-A14B createdAt 2025-07-24. Reel may have been re-uploaded later (asset ids differ from Feb 2025).",
-   "creator": "Wan Team, Alibaba - Wan2.2, 2025",
-   "license": "Apache-2.0 + output-righ",
-   "license_basis": "Identical README 'License Agreement' wording as Wan2.1 (Apache-2.0 for the models, no rights claimed over generated contents). Same gaps: not specific to the reel, reel hosted as a user-attachments asset outside the tree, soundtrack not covered.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
-   "risk_flags": [
-    "unverifiable_model_claim"
-   ],
-   "story_roles": [
-    "milestone",
-    "gallery",
-    "hero"
-   ],
-   "description": "Official README demo reel of Wan2.2. Scene-cut detector (threshold 0.35) finds ~37 cuts, e.g. 8.67, 14.47, 15.83, 19.4, 30.1, 32.13, then a burst between 36 and 45 s, later 48.9, 53.3, 57.67, 58.8, 62.77, 65.33, 67.03, 69.7, 70.83, 72.37, 73.57, 76.43 s. Audio present (mean -11.3 dB). Content not viewed.",
-   "prompt": null,
-   "listed_media": {
-    "duration_s": 80.03,
-    "width": 1280,
-    "height": 720,
-    "fps": 30.0,
-    "size_mb": 9.19,
-    "has_audio": true,
-    "format": "mp4"
-   },
-   "source_file": "H5.json"
-  },
   "kandinsky5_sft_10s_example3": {
    "media_url": "https://raw.githubusercontent.com/kandinskylab/kandinsky-5/3a74261b957df0446c1969c5cedf8bbb07969ac2/assets/generation_examples/sft/3.mp4",
    "page": "https://github.com/kandinskylab/kandinsky-5/blob/3a74261b957df0446c1969c5cedf8bbb07969ac2/README.md",
@@ -1440,9 +1077,14 @@
    "creator": "Kandinsky Lab - Kandinsky 5.0, 2025",
    "license": "MIT",
    "license_basis": "In-tree mp4 (assets/generation_examples/sft/) committed by the licensor in a repo whose root LICENSE is MIT (Copyright (c) 2025 Kandinsky Lab). The README does not reference this file (its own demo videos are user-attachments), no caption or prompt exists, and the licence does not name media: 'likely' rests on the documentation-files argument only.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Credit the developer in the source label; include the MIT copyright + permission notice in the credits/rights sheet. Suggested label: 'Kandinsky Lab - Kandinsky 5.0 T2V Lite (SFT, 10 s), 2025 - MIT' with '(c) 2025 Kandinsky Lab'.",
+    "A human must watch the clip (or each tile) before use and confirm: no identifiable real person, no brand/logo/IP, no in-scene political text, no source watermark that a vertical crop would cut; if a watermark/logo/title exists it must stay visible.",
+    "Avoid ~7.4-8.5 s: frame-to-frame change jumps to 9-15 (mean |delta-luma|, median 1.9) for about a second - a fast morph/whip/cut that the hunter's second excerpt (5.0-9.0 s) overlaps; view before choosing windows. First excerpt 0.5-4.5 s is not affected.",
+    "Label as a 2025 open-weights model sample; it is not evidence of the 2025 Pro model."
+   ],
    "risk_flags": [
     "unverifiable_model_claim"
    ],
@@ -1473,9 +1115,14 @@
    "creator": "Character.AI / Yale - Ovi, 2025",
    "license": "Apache-2.0",
    "license_basis": "In-tree asset in an Apache-2.0 repo; the README (checked) has no licence statement about media and does not reference this file; HF card lists apache-2.0 for the model. Argument only: 'documentation source' in the Apache 'Work' definition.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "low",
+   "conditions": [
+    "Credit the developer and name the licence in the on-screen source label and in the credits/rights sheet; ship a copy of the Apache-2.0 text with the rights file (Apache-2.0 s.4: licence copy, retain notices, mark changes to the excerpt). Suggested label: 'Character.AI / Yale - Ovi, Oct 2025 - Apache-2.0'.",
+    "A human must watch the clip (or each tile) before use and confirm: no identifiable real person, no brand/logo/IP, no in-scene political text, no source watermark that a vertical crop would cut; if a watermark/logo/title exists it must stay visible.",
+    "Audio: the clip carries generated speech. Whisper (base) transcribes it as \"human's fight for freedom tonight.\" (0-4 s). Either mute it, or use it only if the line is reviewed and clearly not read as a political/protest slogan or a real person's voice; do not use a claim of 'live' footage.",
+    "Label as 'Ovi (initial 2025 release, before the 2025-11-10 Ovi 1.1 update)'."
+   ],
    "risk_flags": [
     "unverifiable_model_claim"
    ],
@@ -1506,9 +1153,13 @@
    "creator": "ByteDance - Lance, 2026",
    "license": "Apache-2.0",
    "license_basis": "README links the mp4 as an official demo (table of eight text-to-video demos) and its 'License' section is 'Copyright 2025 ByteDance Ltd. and/or its affiliates.' with an Apache-2.0 LICENSE file at root. The LICENSE file contains only the template copyright line and the README does not spell out the licence name, and media are not mentioned.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Credit the developer and name the licence in the on-screen source label and in the credits/rights sheet; ship a copy of the Apache-2.0 text with the rights file (Apache-2.0 s.4: licence copy, retain notices, mark changes to the excerpt). Suggested label: 'ByteDance - Lance, 2026 - Apache-2.0'.",
+    "A human must watch the clip (or each tile) before use and confirm: no identifiable real person, no brand/logo/IP, no in-scene political text, no source watermark that a vertical crop would cut; if a watermark/logo/title exists it must stay visible.",
+    "Say 'as published by the developers': resolution/frame rate (1664x896, 24 fps) exceed what the README documents for training (up to 480p, 12 FPS); do not claim native quality. Keep the README's own caveat ('a research project rather than a polished product model ... Output quality may vary') in the framing."
+   ],
    "risk_flags": [
     "unverifiable_model_claim"
    ],
@@ -1529,39 +1180,6 @@
    },
    "source_file": "H5.json"
   },
-  "longcat_motorcycle_4k": {
-   "media_url": "https://raw.githubusercontent.com/meituan-longcat/LongCat-Video/6b3f4b8582a8bc3f20f795735f5383716c4ba794/assets/motorcycle.mp4",
-   "page": "https://github.com/meituan-longcat/LongCat-Video/blob/6b3f4b8582a8bc3f20f795735f5383716c4ba794/README.md",
-   "family": "LongCat-Video",
-   "model_version": "LongCat-Video (README news 'Oct 25, 2025: We've released LongCat-Video, a foundational video generation model'); README says it generates 720p 30 fps video while this file is 3840x2160",
-   "created": "2025-10-25",
-   "date_basis": "Git commit adds assets/motorcycle.mp4 2025-10-25T14:50:20+08:00; README news dated 'Oct 25, 2025'; arXiv 2510.22200 (25 Oct 2025); HF meituan-longcat/LongCat-Video createdAt 2025-10-24.",
-   "creator": "Meituan LongCat team - LongCat-Video, 20",
-   "license": "MIT",
-   "license_basis": "Quote is from the README 'License Agreement' section (also states the model weights are MIT). The mp4 is an in-tree asset added on release day; MIT LICENSE covers 'software and associated documentation files'. README never references motorcycle.mp4 and gives no caption.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
-   "risk_flags": [
-    "unverifiable_model_claim"
-   ],
-   "story_roles": [
-    "hero",
-    "gallery"
-   ],
-   "description": "File name suggests a motorcycle subject; nothing else documented. 4.0 s, 120 frames, 3840x2160. Not viewed.",
-   "prompt": null,
-   "listed_media": {
-    "duration_s": 4.0,
-    "width": 3840,
-    "height": 2160,
-    "fps": 30.0,
-    "size_mb": 2.94,
-    "has_audio": false,
-    "format": "mp4"
-   },
-   "source_file": "H5.json"
-  },
   "matrix_game3_readme_demo": {
    "media_url": "https://raw.githubusercontent.com/SkyworkAI/Matrix-Game/756776d516233027631008761d4d40ddaea3e23a/Matrix-Game-3/assets/videos/matrix-game3.mp4",
    "page": "https://github.com/SkyworkAI/Matrix-Game/blob/756776d516233027631008761d4d40ddaea3e23a/README.md",
@@ -1572,9 +1190,14 @@
    "creator": "Skywork AI - Matrix-Game-3.0, 2026",
    "license": "Apache-2.0",
    "license_basis": "The Matrix-Game-3 subfolder carries its own Apache-2.0 LICENSE.txt and the repo root LICENSE is MIT ('licensed under the MIT License'); the mp4 sits inside the Matrix-Game-3 subtree. Two different licences in one repo and no statement on media, so only 'likely'.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "low",
+   "conditions": [
+    "Credit the developer and name the licence in the on-screen source label and in the credits/rights sheet; ship a copy of the Apache-2.0 text with the rights file (Apache-2.0 s.4: licence copy, retain notices, mark changes to the excerpt). Suggested label: 'Skywork AI - Matrix-Game 3.0, 2026 - Apache-2.0'. (Root of the repo is MIT, the Matrix-Game-3 subfolder is Apache-2.0; both are permissive - cite Apache-2.0 for this folder.)",
+    "A human must watch the clip (or each tile) before use and confirm: no identifiable real person, no brand/logo/IP, no in-scene political text, no source watermark that a vertical crop would cut; if a watermark/logo/title exists it must stay visible.",
+    "BURNT-IN TITLE: a static 'Matrix-Game 3.0' title sits across the frame centre (about x 23-80%, y 44-60% of a 1920x1080 frame) for the ENTIRE 15 s (OCR at every second). It must not be removed or cropped away; use a letterboxed 16:9 frame inside the 9:16 canvas or drop this clip as a 'hero' shot.",
+    "Because the README says the model trains on 'large-scale automated AAA game data', check every second for game HUD, logos, character IP; if any appears, drop the clip."
+   ],
    "risk_flags": [],
    "story_roles": [
     "gallery",
@@ -1592,6 +1215,547 @@
     "format": "mp4"
    },
    "source_file": "H5.json"
+  },
+  "dcgan_anime128_63k_2021": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/e/e6/Dcgan%28128128_63k%29.gif",
+   "page": "https://commons.wikimedia.org/wiki/File:Dcgan%28128128_63k%29.gif",
+   "family": "DCGAN (GAN image-grid training visualisation)",
+   "model_version": "'DCGAN Anime 128*128 trained on 63k images' (file page). Architecture corroborated: arXiv:1511.06434 v1, 2015-11-19. The 2021 training run itself is the uploader's and cannot be verified further.",
+   "created": "2021-02-19",
+   "date_basis": "Commons {{Information}} date=2021-02-19; upload timestamp 2021-02-19T11:50:38Z; DateTimeOriginal in extmetadata",
+   "creator": "Zisaac33 / Wikimedia Commons, CC BY-SA 4",
+   "license": "CC BY-SA 4.0",
+   "license_basis": "Own-work upload by the creator; wikitext {{self|cc-by-sa-4.0}}, author Zisaac33, source own. Licence attaches to this GIF itself.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "hook_early",
+    "early_failure_annotation",
+    "gallery",
+    "split_screen_pair",
+    "frame_stack"
+   ],
+   "description": "Page text says only 'DCGAN Anime 128*128 trained on 63k images'. Measured (not viewed): 139 frames at 100 ms; a 6 x 6 grid of roughly 78 px tiles on a white canvas with about 90 px margins; almost every tile changes from frame to frame (mean luma change about 25/255 per frame, 180 px downsample); frame 0 has about one third of the fine-detail energy of later frames (gradient sum 4.0 vs 11-15). What the tiles depict (generated anime faces per the title) must be confirmed by a person watching it.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 13.9,
+    "width": 720,
+    "height": 720,
+    "fps": 10,
+    "size_mb": 35.71,
+    "has_audio": false,
+    "format": "gif"
+   },
+   "source_file": "H7.json"
+  },
+  "dcgan_anime128_9k_2021": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Dcgan%28128128_9k%29.gif",
+   "page": "https://commons.wikimedia.org/wiki/File:Dcgan%28128128_9k%29.gif",
+   "family": "DCGAN (GAN image-grid training visualisation)",
+   "model_version": "'DCGAN Anime 128*128 trained on 9k images' (file page). Architecture corroborated: arXiv:1511.06434 v1, 2015-11-19; training run is the uploader's.",
+   "created": "2021-02-19",
+   "date_basis": "Commons {{Information}} date=2021-02-19; upload timestamp 2021-02-19T11:51:14Z",
+   "creator": "Zisaac33 / Wikimedia Commons, CC BY-SA 4",
+   "license": "CC BY-SA 4.0",
+   "license_basis": "Own-work upload by the creator; wikitext {{self|cc-by-sa-4.0}}, author Zisaac33. Licence attaches to this GIF itself.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "early_failure_annotation",
+    "split_screen_pair"
+   ],
+   "description": "Page text says only 'DCGAN Anime 128*128 trained on 9k images'. Measured (not viewed): 402 frames at 100 ms, same 720x720 canvas and white-margin tile grid as the 63k file; per-frame change is even higher (mean about 30/255) than the 63k run (about 25/255). Content must be confirmed visually.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 40.2,
+    "width": 720,
+    "height": 720,
+    "fps": 10,
+    "size_mb": 97.42,
+    "has_audio": false,
+    "format": "gif"
+   },
+   "source_file": "H7.json"
+  },
+  "cogvideo_samples_mosaic_2022": {
+   "media_url": "https://raw.githubusercontent.com/THUDM/CogVideo/ff423aa169978fb2f636f761e348631fa3178b03/assets/CogVideo_samples.mp4",
+   "page": "https://github.com/THUDM/CogVideo/blob/ff423aa169978fb2f636f761e348631fa3178b03/assets/CogVideo_samples.mp4",
+   "family": "CogVideo",
+   "model_version": "CogVideo (README at that commit: 'CogVideo'); arXiv:2205.15868 states 9.4 billion parameters and 5.4 million text-video pairs",
+   "created": "2022-05-29",
+   "date_basis": "git commit 32f22c99b7e684a00dba98f029bd4d7880c53431 ('add demo', 2022-05-29 15:22:09 +0800) adds assets/CogVideo_samples.mp4; arXiv 2205.15868 submitted 29 May 2022",
+   "creator": "THUDM / CogVideo authors (Hong, Ding, Zh",
+   "license": "Apache-2.0",
+   "license_basis": "LICENSE (Apache-2.0, created 2022-07-19 by wenyihong) and assets/CogVideo_samples.mp4 (added by the same owner 2022-05-29) are in the same commit tree; nothing carves the assets out. Argument only: repo-level licence applied to a repo-hosted media file. Missing: an explicit statement that sample videos are covered. The mp4 was deleted from HEAD on 2024-08-06 ('init' commit) but is retrievable by the commit permalink.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "milestone",
+    "gallery",
+    "early_failure_annotation"
+   ],
+   "description": "README at the same commit, section 'Generated Samples': 'Video samples generated by CogVideo. The actual text inputs are in Chinese. Each sample is a 4-second clip of 32 frames'. The mp4 is 33 frames at 8 fps (4.125 s), h264, 2887x2887. Measured: a dense mosaic of many differently sized tiles with no white gutters (about 89 percent non-white pixels, no scene cuts). Tile boundaries, subjects and any burnt-in text are not determined.",
+   "prompt": "Chinese prompts, not embedded in the file; see README/paper",
+   "listed_media": {
+    "duration_s": 4.125,
+    "width": 2887,
+    "height": 2887,
+    "fps": 8,
+    "size_mb": 9.93,
+    "has_audio": false,
+    "format": "mp4"
+   },
+   "source_file": "H7.json"
+  },
+  "cogvideo_highframerate_32frames_strip_2022": {
+   "media_url": "https://raw.githubusercontent.com/THUDM/CogVideo/ff423aa169978fb2f636f761e348631fa3178b03/assets/appendix-sample-highframerate.png",
+   "page": "https://github.com/THUDM/CogVideo/blob/ff423aa169978fb2f636f761e348631fa3178b03/assets/appendix-sample-highframerate.png",
+   "family": "CogVideo",
+   "model_version": "CogVideo (README at commit ff423aa)",
+   "created": "2022-05-29",
+   "date_basis": "git commit ce5fc5a (2022-05-29 15:54:14 +0800, 'change to png') creates assets/appendix-sample-highframerate.png; arXiv 2205.15868 dated 29 May 2022",
+   "creator": "THUDM / CogVideo authors, Apache-2.0",
+   "license": "Apache-2.0",
+   "license_basis": "Same argument as the sample mp4: repo-level Apache-2.0 at the same commit tree as this PNG; no explicit media carve-out or grant.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "frame_stack",
+    "early_failure_annotation"
+   ],
+   "description": "STILL image, not video. README caption at that commit: 'CogVideo is able to generate relatively high-frame-rate videos. A 4-second clip of 32 frames is shown below.' A single generated clip laid out as consecutive frames.",
+   "prompt": "Chinese prompt (not stated in the file)",
+   "listed_media": {
+    "duration_s": 0,
+    "width": 3840,
+    "height": 2067,
+    "fps": 0,
+    "size_mb": 6.8,
+    "has_audio": false,
+    "format": "png"
+   },
+   "source_file": "H7.json"
+  },
+  "tgan_moving_mnist_2016": {
+   "media_url": "https://raw.githubusercontent.com/pfnet-research/tgan/09aa10571e6c090a0f530c8e3f1515780867a894/docs/images/mm.gif",
+   "page": "https://github.com/pfnet-research/tgan/blob/09aa10571e6c090a0f530c8e3f1515780867a894/docs/images/mm.gif",
+   "family": "TGAN (Temporal GAN with Singular Value Clipping)",
+   "model_version": "TGAN with WGAN + Singular Value Clipping; arXiv:1611.06624 (ICCV 2017 per project page). Project page: 'Following results are random samples generated by TGAN (not cherry picked).'",
+   "created": "2017-10-05",
+   "date_basis": "git commit 1bf11cab9266d2590f9c9f9a2cf44de3b61589c3 ('project page', 2017-10-05 16:21 +0900) adds docs/images/mm.gif; model first public 2016-11-21 (arXiv v1)",
+   "creator": "Preferred Networks, Inc. (TGAN), MIT Lic",
+   "license": "MIT",
+   "license_basis": "MIT grant covers 'software and associated documentation files'; docs/index.html (the project page) and docs/images/*.gif are documentation assets of the repo. Argument only: no explicit media sentence; MIT requires the notice to accompany copies or substantial portions.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "hook_early",
+    "early_failure_annotation",
+    "gallery"
+   ],
+   "description": "docs/index.html lists this file under the row 'Moving MNIST' (link to the Moving MNIST dataset). Measured: 16 frames at 50 ms; dense mosaic of many small samples on black (black corners; irregular light/dark bands where tiles meet). Content (moving handwritten digits, per the row label) to be confirmed visually.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 0.8,
+    "width": 640,
+    "height": 640,
+    "fps": 20,
+    "size_mb": 0.95,
+    "has_audio": false,
+    "format": "gif"
+   },
+   "source_file": "H7.json"
+  },
+  "tgan_golf_2016": {
+   "media_url": "https://raw.githubusercontent.com/pfnet-research/tgan/09aa10571e6c090a0f530c8e3f1515780867a894/docs/images/golf.gif",
+   "page": "https://github.com/pfnet-research/tgan/blob/09aa10571e6c090a0f530c8e3f1515780867a894/docs/images/golf.gif",
+   "family": "TGAN (Temporal GAN with Singular Value Clipping)",
+   "model_version": "TGAN with WGAN + Singular Value Clipping; arXiv:1611.06624; project page: random samples, 'not cherry picked'",
+   "created": "2017-10-05",
+   "date_basis": "git commit 1bf11cab9266d2590f9c9f9a2cf44de3b61589c3 ('project page', 2017-10-05) adds docs/images/golf.gif; model first public 2016-11-21 (arXiv v1)",
+   "creator": "Preferred Networks, Inc. (TGAN), MIT Lic",
+   "license": "MIT",
+   "license_basis": "Same MIT argument as mm.gif: docs/ project-page asset inside the MIT repo; not an explicit media grant.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "early_failure_annotation",
+    "gallery"
+   ],
+   "description": "docs/index.html lists this file under 'Golf' (link to carlvondrick.com/tinyvideo, the VGAN golf scenes dataset). Measured: 16 frames at 50 ms; full-frame content, no gutters detected (mean change about 5/255 per frame). Subject matter (golf-course scenes per the row label) to be confirmed visually.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 0.8,
+    "width": 640,
+    "height": 640,
+    "fps": 20,
+    "size_mb": 5.38,
+    "has_audio": false,
+    "format": "gif"
+   },
+   "source_file": "H7.json"
+  },
+  "tgan_ucf101_label_conditional_2016": {
+   "media_url": "https://raw.githubusercontent.com/pfnet-research/tgan/09aa10571e6c090a0f530c8e3f1515780867a894/docs/images/ucf_cond.gif",
+   "page": "https://github.com/pfnet-research/tgan/blob/09aa10571e6c090a0f530c8e3f1515780867a894/docs/images/ucf_cond.gif",
+   "family": "TGAN (Temporal GAN with Singular Value Clipping)",
+   "model_version": "TGAN with WGAN + Singular Value Clipping, label-conditional variant (row 'UCF-101 (label conditional)'); arXiv:1611.06624",
+   "created": "2017-10-05",
+   "date_basis": "git commit 1bf11cab9266d2590f9c9f9a2cf44de3b61589c3 ('project page', 2017-10-05) adds docs/images/ucf_cond.gif; model first public 2016-11-21",
+   "creator": "Preferred Networks, Inc. (TGAN), MIT Lic",
+   "license": "MIT",
+   "license_basis": "Same MIT argument: docs/ project-page asset inside the MIT repo; not an explicit media grant.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "early_failure_annotation",
+    "control_demo",
+    "frame_stack"
+   ],
+   "description": "docs/index.html row 'UCF-101 (label conditional)'. Measured: 16 frames at 50 ms, mean change about 9/255 per frame. UCF-101 is a human-action dataset, so samples are tiny generated human-action clips; the file's visible content must be confirmed by viewing (possible identifiable-person resemblance is unlikely at 64x64 but must be checked).",
+   "prompt": "class label (per row name); not stated in the file",
+   "listed_media": {
+    "duration_s": 0.8,
+    "width": 640,
+    "height": 640,
+    "fps": 20,
+    "size_mb": 5.39,
+    "has_audio": false,
+    "format": "gif"
+   },
+   "source_file": "H7.json"
+  },
+  "tgan2_faceforensics_2018": {
+   "media_url": "https://raw.githubusercontent.com/pfnet-research/tgan2/f892bc432da315d4f6b6ae9448f69d046ef6fe01/images/tgan2_generated_faceforensics.gif",
+   "page": "https://github.com/pfnet-research/tgan2/blob/f892bc432da315d4f6b6ae9448f69d046ef6fe01/images/tgan2_generated_faceforensics.gif",
+   "family": "TGANv2 (multi-resolution temporal GAN)",
+   "model_version": "TGANv2, paper 'Train Sparsely, Generate Densely' arXiv:1811.09245 (v1 2018-11-22; v2 2020-06-01); README: 'Unconditional video generation results by TGANv2 (trained on the FaceForensics dataset)'",
+   "created": "2020-06-02",
+   "date_basis": "git commit eec98a244bbbada5c576280c0d245435ffc10469 (2020-06-02 12:37 +0900) adds images/tgan2_generated_faceforensics.gif; paper v1 2018-11-22",
+   "creator": "Preferred Networks (TGANv2), MIT License",
+   "license": "MIT",
+   "license_basis": "Repo-level MIT licence; the GIF is the README's headline documentation asset in the same tree. Not an explicit media grant.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [
+    "real_person"
+   ],
+   "story_roles": [
+    "early_failure_annotation"
+   ],
+   "description": "README caption: 'Unconditional video generation results by TGANv2 (trained on the FaceForensics dataset)'. Measured: 11 frames at 100 ms; mean change about 4/255 per frame. Shows generated talking-head style faces (per the training set name); actual appearance must be viewed.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 1.1,
+    "width": 640,
+    "height": 640,
+    "fps": 10,
+    "size_mb": 3.23,
+    "has_audio": false,
+    "format": "gif"
+   },
+   "source_file": "H7.json"
+  },
+  "tats_ucf101_gif_2022": {
+   "media_url": "https://raw.githubusercontent.com/songweige/TATS/03bbce1daa3da7e9bff8221e9ec433df9484817f/assets/tats-ucf101.gif",
+   "page": "https://github.com/songweige/TATS/blob/03bbce1daa3da7e9bff8221e9ec433df9484817f/assets/tats-ucf101.gif",
+   "family": "TATS (Time-Agnostic VQGAN + Time-Sensitive Transformer)",
+   "model_version": "TATS, arXiv:2204.03638 v1 2022-04-07 (ECCV 2022 per README); GIF shows the UCF-101 results",
+   "created": "2022-04-08",
+   "date_basis": "git commit fec6352ab84b59d16eb3339236589015d656341c ('gif;', 2022-04-08 04:37 -0400) adds assets/tats-ucf101.gif; repo initial commit 2022-04-08; arXiv v1 2022-04-07",
+   "creator": "Songwei Ge et al. (TATS), MIT License, C",
+   "license": "MIT",
+   "license_basis": "Repo-level MIT licence; the GIF is displayed at the top of the README (documentation asset). The same authors released the paper under CC BY 4.0 (arXiv abs page v1-v4), which supports but does not by itself extend to this GIF.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "milestone",
+    "early_failure_annotation",
+    "gallery"
+   ],
+   "description": "README header image (no caption text). Measured: 512 frames at 20 ms; 852 = 3 x 284 so most likely three side-by-side 284 px panels; mean change about 8/255 per frame. UCF-101 (human actions) generation per file name; content must be confirmed visually.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 10.24,
+    "width": 852,
+    "height": 284,
+    "fps": 50,
+    "size_mb": 59.88,
+    "has_audio": false,
+    "format": "gif"
+   },
+   "source_file": "H7.json"
+  },
+  "tats_sky_long_gif_2022": {
+   "media_url": "https://raw.githubusercontent.com/songweige/TATS/03bbce1daa3da7e9bff8221e9ec433df9484817f/assets/tats_sky_long_high_res.gif",
+   "page": "https://github.com/songweige/TATS/blob/03bbce1daa3da7e9bff8221e9ec433df9484817f/assets/tats_sky_long_high_res.gif",
+   "family": "TATS (Time-Agnostic VQGAN + Time-Sensitive Transformer)",
+   "model_version": "TATS, arXiv:2204.03638; Sky-Timelapse long-video result (README header)",
+   "created": "2022-07-17",
+   "date_basis": "git commit b9f8702248cb193d76acb3229204865af85658d9 ('high resolution sky vid', 2022-07-17 23:34 -0400) adds assets/tats_sky_long_high_res.gif; arXiv v1 2022-04-07",
+   "creator": "Songwei Ge et al. (TATS), MIT License, C",
+   "license": "MIT",
+   "license_basis": "Repo-level MIT licence; README header asset; supported by the authors' CC BY 4.0 paper licence but not an explicit media grant.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "milestone",
+    "gallery"
+   ],
+   "description": "README header image showing long sky-timelapse generation (project tl;dr: 'generate videos with thousands of frames using sliding window'). Measured: 252 frames, 31.5 s total, variable delay (avg 125 ms); four 270 px panels separated by 5 px gutters (x=270-274, 545-549, 820-824); large frame-to-frame change (about 42/255) suggests frames are sampled sparsely from a longer video, but that is not stated.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 31.51,
+    "width": 1095,
+    "height": 270,
+    "fps": 8,
+    "size_mb": 40.42,
+    "has_audio": false,
+    "format": "gif"
+   },
+   "source_file": "H7.json"
+  },
+  "mocogan_hd_afhq_2021": {
+   "media_url": "https://raw.githubusercontent.com/snap-research/MoCoGAN-HD/27356baa0518bc69507106d9c8817753520d2082/gifs/AFHQ.gif",
+   "page": "https://github.com/snap-research/MoCoGAN-HD/blob/27356baa0518bc69507106d9c8817753520d2082/gifs/AFHQ.gif",
+   "family": "MoCoGAN-HD (StyleGAN2-based high-resolution video synthesis)",
+   "model_version": "MoCoGAN-HD, 'A Good Image Generator Is What You Need for High-Resolution Video Synthesis', arXiv:2104.15069 (2021-04-30), ICLR 2021 Spotlight; README caption for this GIF: '(AFHQ, VoxCeleb)'",
+   "created": "2021-08-07",
+   "date_basis": "git commit a2f8b8ca4daa93efdefbfc400a68c5455cb4339a (2021-08-07 16:13 -0700) adds gifs/*.gif; repo initial commit 2021-03-17; arXiv 2021-04-30",
+   "creator": "Snap Inc. (MoCoGAN-HD), Copyright (c) 20",
+   "license": "MIT (Snap grant in repo ",
+   "license_basis": "LICENSE begins 'For Snap Research MoCoGAN-HD software: Copyright (c) 2021 Snap Inc.' with an MIT permission text covering 'software and associated documentation files'; gifs/ is a documentation folder. The later sections of LICENSE (stylegan2-pytorch MIT, NVIDIA Source Code License-NC) concern third-party code, not these GIFs. Argument only; not an explicit media grant.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "gallery",
+    "control_demo",
+    "early_failure_annotation"
+   ],
+   "description": "README header; caption '(AFHQ, VoxCeleb)': image generator trained on AFHQ (animal faces) driven by a motion generator trained on VoxCeleb (cross-domain video synthesis, per README). Measured: 13 frames at 100 ms, 600x600, mean change about 8/255 per frame. Visible content (animal faces moving like talking heads, per the dataset names) must be confirmed visually.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 1.3,
+    "width": 600,
+    "height": 600,
+    "fps": 10,
+    "size_mb": 3.68,
+    "has_audio": false,
+    "format": "gif"
+   },
+   "source_file": "H7.json"
+  },
+  "mocogan_hd_lsun_church_2021": {
+   "media_url": "https://raw.githubusercontent.com/snap-research/MoCoGAN-HD/27356baa0518bc69507106d9c8817753520d2082/gifs/LSUN-Church.gif",
+   "page": "https://github.com/snap-research/MoCoGAN-HD/blob/27356baa0518bc69507106d9c8817753520d2082/gifs/LSUN-Church.gif",
+   "family": "MoCoGAN-HD (StyleGAN2-based high-resolution video synthesis)",
+   "model_version": "MoCoGAN-HD, arXiv:2104.15069; README section '(LSUN-Church, TLVDB)' (time-lapse motion source)",
+   "created": "2021-08-07",
+   "date_basis": "git commit a2f8b8ca4daa93efdefbfc400a68c5455cb4339a (2021-08-07) adds gifs/LSUN-Church.gif; arXiv 2021-04-30",
+   "creator": "Snap Inc. (MoCoGAN-HD), Copyright (c) 20",
+   "license": "MIT (Snap grant in repo ",
+   "license_basis": "Same Snap MIT grant as AFHQ.gif; gifs/ is a README documentation asset; not an explicit media grant.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "gallery"
+   ],
+   "description": "README section 'Examples of Generated Videos' caption '(LSUN-Church, TLVDB)': church images generated by a StyleGAN2 image generator animated with time-lapse motion (per README dataset names). Measured: 13 frames at 100 ms, 600x600, mean change about 5/255 per frame. Visible content must be confirmed.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 1.3,
+    "width": 600,
+    "height": 600,
+    "fps": 10,
+    "size_mb": 3.41,
+    "has_audio": false,
+    "format": "gif"
+   },
+   "source_file": "H7.json"
+  },
+  "mocogan_hd_anime_2021": {
+   "media_url": "https://raw.githubusercontent.com/snap-research/MoCoGAN-HD/27356baa0518bc69507106d9c8817753520d2082/gifs/Anime.gif",
+   "page": "https://github.com/snap-research/MoCoGAN-HD/blob/27356baa0518bc69507106d9c8817753520d2082/gifs/Anime.gif",
+   "family": "MoCoGAN-HD (StyleGAN2-based high-resolution video synthesis)",
+   "model_version": "MoCoGAN-HD, arXiv:2104.15069; README section '(Anime, VoxCeleb)'",
+   "created": "2021-08-07",
+   "date_basis": "git commit a2f8b8ca4daa93efdefbfc400a68c5455cb4339a (2021-08-07) adds gifs/Anime.gif; arXiv 2021-04-30",
+   "creator": "Snap Inc. (MoCoGAN-HD), Copyright (c) 20",
+   "license": "MIT (Snap grant in repo ",
+   "license_basis": "Same Snap MIT grant; gifs/ documentation asset; not an explicit media grant.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "gallery",
+    "early_failure_annotation"
+   ],
+   "description": "README caption '(Anime, VoxCeleb)': anime-style faces animated with motion from VoxCeleb (per README dataset names). Measured: 13 frames at 100 ms, 600x600, mean change about 5/255 per frame; black corner pixels. Visible content must be confirmed.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 1.3,
+    "width": 600,
+    "height": 600,
+    "fps": 10,
+    "size_mb": 3.33,
+    "has_audio": false,
+    "format": "gif"
+   },
+   "source_file": "H7.json"
+  },
+  "stylegan_music_video_ia_2021": {
+   "media_url": "https://archive.org/download/2748-1-0-0/2748%201%200%200.mp4",
+   "page": "https://archive.org/details/2748-1-0-0",
+   "family": "StyleGAN music video (Internet Archive, uploader claim)",
+   "model_version": "Uploader's description: 'A Music video generated by StyleGAN, an generative adversarial network (GAN).' StyleGAN version not stated (StyleGAN architecture paper: arXiv:1812.04948, v1 2018-12-12). NOT corroborated for this file.",
+   "created": "2021-11-11",
+   "date_basis": "IA metadata publicdate 2021-11-11T07:01:02; item 'date' field '2021' (year only)",
+   "creator": "This Music Video Does Not Exist (via Int",
+   "license": "PD (Commons: AI output)",
+   "license_basis": "IA licenseurl http://creativecommons.org/publicdomain/mark/1.0/ plus the description's stated basis that the AI output cannot carry copyright. The PD Mark is a marker not a dedication (CC0 would be); the legal theory is the uploader's; the audio track is separate and its provenance is unknown.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [
+    "unverifiable_model_claim",
+    "real_person"
+   ],
+   "story_roles": [
+    "hook_early",
+    "early_failure_annotation",
+    "gallery"
+   ],
+   "description": "IA item description: a music video generated by StyleGAN (GAN). ffprobe: h264 480x480, 1938 frames, 89.9 s, AAC audio 90 s. Visual content is not described on the page and was not viewed; being a StyleGAN music video it may show latent-space morphs of faces or other imagery - must be profiled.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 89.95,
+    "width": 480,
+    "height": 480,
+    "fps": 21.54,
+    "size_mb": 10.34,
+    "has_audio": true,
+    "format": "mp4"
+   },
+   "source_file": "H7.json"
+  },
+  "tats_fig_failure_cases_ucf101_2022": {
+   "media_url": "https://arxiv.org/e-print/2204.03638",
+   "page": "https://arxiv.org/abs/2204.03638",
+   "family": "TATS (Time-Agnostic VQGAN + Time-Sensitive Transformer)",
+   "model_version": "TATS, arXiv:2204.03638 v4 (2022-09-24), appendix figure 'long_video_gen_failure' (paper PDF page 26)",
+   "created": "2022-09-24",
+   "date_basis": "arXiv v4 revision date (figure verified in the v4 source and PDF); paper first posted 2022-04-07",
+   "creator": "Ge et al., 'Long Video Generation with T",
+   "license": "CC BY 4.0",
+   "license_basis": "The arXiv abs page of v1, v2, v3 and v4 each carries the licence link http://creativecommons.org/licenses/by/4.0/; the figure is part of the paper submission (LaTeX caption: 'Failure cases of class-conditional generation results of long videos on the UCF-101 dataset.'). Credit the authors; state 'figure adapted' if cropped.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "frame_stack",
+    "early_failure_annotation"
+   ],
+   "description": "STILL. The authors' own appendix figure of failure cases: 22 generated 200x200 frames laid out as frame strips of long class-conditional UCF-101 generations. Caption (verbatim): 'Failure cases of class-conditional generation results of long videos on the UCF-101 dataset.' Frames not viewed.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 0,
+    "width": 1152,
+    "height": 259,
+    "fps": 0,
+    "size_mb": 0.166,
+    "has_audio": false,
+    "format": "pdf figure (vector page with 22 embedded 200x200 JPEG frames); rasterise before use"
+   },
+   "source_file": "H7.json"
+  },
+  "videogpt_fig_ucf101_unconditional_2021": {
+   "media_url": "https://arxiv.org/e-print/2104.10157",
+   "page": "https://arxiv.org/abs/2104.10157",
+   "family": "VideoGPT (VQ-VAE + transformer)",
+   "model_version": "VideoGPT, arXiv:2104.10157 (v1 2021-04-20; figure verified in v2 2021-09-14, PDF page 7)",
+   "created": "2021-09-14",
+   "date_basis": "arXiv v2 revision date (figure in v2 source/PDF); model first public 2021-04-20 (v1)",
+   "creator": "Yan, Zhang, Abbeel, Srinivas, 'VideoGPT:",
+   "license": "CC BY 4.0",
+   "license_basis": "arXiv abs pages v1 and v2 both show licence link http://creativecommons.org/licenses/by/4.0/; the figure is part of the paper. Credit the authors.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "frame_stack",
+    "early_failure_annotation",
+    "gallery"
+   ],
+   "description": "STILL. LaTeX caption (verbatim): '128x128 UCF-101 unconditional samples'. Three strips of frames of generated human-action clips. Frames not viewed. The project page (not licence-cleared) says its samples are 'Non-cherry picked'.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 0,
+    "width": 717,
+    "height": 135,
+    "fps": 0,
+    "size_mb": 0.087,
+    "has_audio": false,
+    "format": "pdf figure (3 embedded JPEG strips of 1238x82/77 px); rasterise before use"
+   },
+   "source_file": "H7.json"
+  },
+  "stylegan_v_fig_1hour_long_videos_sky_2021": {
+   "media_url": "https://arxiv.org/e-print/2112.14683",
+   "page": "https://arxiv.org/abs/2112.14683",
+   "family": "StyleGAN-V (continuous-time video GAN) - with MoCoGAN-HD and DIGAN comparison rows",
+   "model_version": "StyleGAN-V, arXiv:2112.14683 v4 (2022-05-31; v1 2021-12-29), Figure 1 'Examples of 1-hour long videos' (PDF page 1), file images/long-videos-sky.pdf",
+   "created": "2022-05-31",
+   "date_basis": "arXiv v4 revision date (figure verified in v4 source/PDF); model first public 2021-12-29 (v1)",
+   "creator": "Skorokhodov, Tulyakov, Elhoseiny, 'Style",
+   "license": "CC BY 4.0",
+   "license_basis": "arXiv abs pages v1-v4 all carry licence link http://creativecommons.org/licenses/by/4.0/; the figure is part of the paper. The repository (github.com/universome/stylegan-v) is separately 'likely restricted by the NVidia license' and must NOT be used.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "early_failure_annotation",
+    "frame_stack",
+    "split_screen_pair"
+   ],
+   "description": "STILL. From the LaTeX caption: 'Examples of 1-hour long videos, generated with different methods. MoCoGAN-HD fails to generate long videos due to the instability of the underlying LSTM model when unrolled to large lengths. DIGAN struggles to generate long videos due to the entanglement of spatial and temporal positional embeddings. StyleGAN-V (our method) generates plausible videos of arbitrary length and frame-rate.' Three rows of frames (sky timelapse), one per method. Frames not viewed.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 0,
+    "width": 613,
+    "height": 299,
+    "fps": 0,
+    "size_mb": 0.304,
+    "has_audio": false,
+    "format": "pdf figure (3 embedded frame strips about 1920x278 px); rasterise before use"
+   },
+   "source_file": "H7.json"
   }
  },
  "excerpts": {
@@ -1703,18 +1867,6 @@
    },
    "role": "probe"
   },
-  "probe_veo3_owl_badger_deepmind_demo": {
-   "clip": "veo3_owl_badger_deepmind_demo",
-   "in": 0.0,
-   "out": 22.708,
-   "label": {
-    "model": "VEO 3",
-    "year": "2025",
-    "creator": "VulcanSphere",
-    "license": "PD (Commons: AI output)"
-   },
-   "role": "probe"
-  },
   "probe_veo3_visual_kei_lemonade_gemini": {
    "clip": "veo3_visual_kei_lemonade_gemini",
    "in": 0.0,
@@ -1811,18 +1963,6 @@
    },
    "role": "probe"
   },
-  "probe_runway_gen3_alpha_cowboy_2024": {
-   "clip": "runway_gen3_alpha_cowboy_2024",
-   "in": 0.0,
-   "out": 10.542,
-   "label": {
-    "model": "RUNWAY GEN-3 ALPHA",
-    "year": "2024",
-    "creator": "Oronbb",
-    "license": "CC BY 4.0"
-   },
-   "role": "probe"
-  },
   "probe_cogvideox_late_afternoon_swans_2024": {
    "clip": "cogvideox_late_afternoon_swans_2024",
    "in": 0.0,
@@ -1841,18 +1981,6 @@
    "out": 6.125,
    "label": {
     "model": "COGVIDEOX",
-    "year": "2024",
-    "creator": "VulcanSphere",
-    "license": "CC0"
-   },
-   "role": "probe"
-  },
-  "probe_hailuo_video01_cyberpunk_rainy_street_2024": {
-   "clip": "hailuo_video01_cyberpunk_rainy_street_2024",
-   "in": 0.0,
-   "out": 5.64,
-   "label": {
-    "model": "HAILUO",
     "year": "2024",
     "creator": "VulcanSphere",
     "license": "CC0"
@@ -1907,30 +2035,6 @@
    },
    "role": "probe"
   },
-  "probe_videopoet_dog_popcorn_audio_2023": {
-   "clip": "videopoet_dog_popcorn_audio_2023",
-   "in": 0.0,
-   "out": 2.184,
-   "label": {
-    "model": "VIDEOPOET (GOOGLE RESEARCH",
-    "year": "2023",
-    "creator": "VideoPoet / Google Research",
-    "license": "PD (Commons: AI output)"
-   },
-   "role": "probe"
-  },
-  "probe_veo3_chernobyl_room_2025": {
-   "clip": "veo3_chernobyl_room_2025",
-   "in": 0.0,
-   "out": 8.0,
-   "label": {
-    "model": "VEO 3",
-    "year": "2025",
-    "creator": "Global Donald (Wikimedia Commons); gener",
-    "license": "CC0"
-   },
-   "role": "probe"
-  },
   "probe_lvdm_ucf_long_40s": {
    "clip": "lvdm_ucf_long_40s",
    "in": 0.0,
@@ -1964,30 +2068,6 @@
     "year": "2023",
     "creator": "Levon Khachatryan et al., Picsart AI Res",
     "license": "CreativeML OpenRAIL-M"
-   },
-   "role": "probe"
-  },
-  "probe_lavie_teddy_street_base": {
-   "clip": "lavie_teddy_street_base",
-   "in": 0.0,
-   "out": 2.01,
-   "label": {
-    "model": "LAVIE",
-    "year": "2023",
-    "creator": "Vchitect / Shanghai AI Laboratory - LaVi",
-    "license": "Apache-2.0"
-   },
-   "role": "probe"
-  },
-  "probe_lavie_teddy_street_interp24": {
-   "clip": "lavie_teddy_street_interp24",
-   "in": 0.0,
-   "out": 2.54,
-   "label": {
-    "model": "LAVIE",
-    "year": "2023",
-    "creator": "Vchitect / Shanghai AI Laboratory - LaVi",
-    "license": "Apache-2.0"
    },
    "role": "probe"
   },
@@ -2027,66 +2107,6 @@
    },
    "role": "probe"
   },
-  "probe_ltxv_v090_cityscape_pan": {
-   "clip": "ltxv_v090_cityscape_pan",
-   "in": 0.0,
-   "out": 4.84,
-   "label": {
-    "model": "LTX-VIDEO",
-    "year": "2025",
-    "creator": "Lightricks - LTX-Video v0.9.0, 2024",
-    "license": "Apache-2.0"
-   },
-   "role": "probe"
-  },
-  "probe_ltxv_i2v_example_00001": {
-   "clip": "ltxv_i2v_example_00001",
-   "in": 0.0,
-   "out": 5.04,
-   "label": {
-    "model": "LTX-VIDEO",
-    "year": "2025",
-    "creator": "Lightricks - LTX-Video, 2025",
-    "license": "Apache-2.0"
-   },
-   "role": "probe"
-  },
-  "probe_ltxv_iclora_control_00000": {
-   "clip": "ltxv_iclora_control_00000",
-   "in": 0.0,
-   "out": 5.06,
-   "label": {
-    "model": "LTX-VIDEO",
-    "year": "2025",
-    "creator": "Lightricks - LTX-Video IC-LoRA, 2025",
-    "license": "Apache-2.0"
-   },
-   "role": "probe"
-  },
-  "probe_wan21_readme_video_demos": {
-   "clip": "wan21_readme_video_demos",
-   "in": 0.0,
-   "out": 24.0,
-   "label": {
-    "model": "WAN",
-    "year": "2025",
-    "creator": "Wan Team, Alibaba - Wan2.1, 2025",
-    "license": "Apache-2.0 + output-righ"
-   },
-   "role": "probe"
-  },
-  "probe_wan22_readme_video_demos": {
-   "clip": "wan22_readme_video_demos",
-   "in": 0.0,
-   "out": 24.0,
-   "label": {
-    "model": "WAN",
-    "year": "2025",
-    "creator": "Wan Team, Alibaba - Wan2.2, 2025",
-    "license": "Apache-2.0 + output-righ"
-   },
-   "role": "probe"
-  },
   "probe_kandinsky5_sft_10s_example3": {
    "clip": "kandinsky5_sft_10s_example3",
    "in": 0.0,
@@ -2123,18 +2143,6 @@
    },
    "role": "probe"
   },
-  "probe_longcat_motorcycle_4k": {
-   "clip": "longcat_motorcycle_4k",
-   "in": 0.0,
-   "out": 4.0,
-   "label": {
-    "model": "LONGCAT-VIDEO",
-    "year": "2025",
-    "creator": "Meituan LongCat team - LongCat-Video, 20",
-    "license": "MIT"
-   },
-   "role": "probe"
-  },
   "probe_matrix_game3_readme_demo": {
    "clip": "matrix_game3_readme_demo",
    "in": 0.0,
@@ -2144,6 +2152,210 @@
     "year": "2026",
     "creator": "Skywork AI - Matrix-Game-3.0, 2026",
     "license": "Apache-2.0"
+   },
+   "role": "probe"
+  },
+  "probe_dcgan_anime128_63k_2021": {
+   "clip": "dcgan_anime128_63k_2021",
+   "in": 0.0,
+   "out": 13.9,
+   "label": {
+    "model": "DCGAN (GAN IMAGE-GRID TRAI",
+    "year": "2021",
+    "creator": "Zisaac33 / Wikimedia Commons, CC BY-SA 4",
+    "license": "CC BY-SA 4.0"
+   },
+   "role": "probe"
+  },
+  "probe_dcgan_anime128_9k_2021": {
+   "clip": "dcgan_anime128_9k_2021",
+   "in": 0.0,
+   "out": 24.0,
+   "label": {
+    "model": "DCGAN (GAN IMAGE-GRID TRAI",
+    "year": "2021",
+    "creator": "Zisaac33 / Wikimedia Commons, CC BY-SA 4",
+    "license": "CC BY-SA 4.0"
+   },
+   "role": "probe"
+  },
+  "probe_cogvideo_samples_mosaic_2022": {
+   "clip": "cogvideo_samples_mosaic_2022",
+   "in": 0.0,
+   "out": 4.125,
+   "label": {
+    "model": "COGVIDEO",
+    "year": "2022",
+    "creator": "THUDM / CogVideo authors (Hong, Ding, Zh",
+    "license": "Apache-2.0"
+   },
+   "role": "probe"
+  },
+  "probe_cogvideo_highframerate_32frames_strip_2022": {
+   "clip": "cogvideo_highframerate_32frames_strip_2022",
+   "in": 0.0,
+   "out": 0.0,
+   "label": {
+    "model": "COGVIDEO",
+    "year": "2022",
+    "creator": "THUDM / CogVideo authors, Apache-2.0",
+    "license": "Apache-2.0"
+   },
+   "role": "probe"
+  },
+  "probe_tgan_moving_mnist_2016": {
+   "clip": "tgan_moving_mnist_2016",
+   "in": 0.0,
+   "out": 0.8,
+   "label": {
+    "model": "TGAN (TEMPORAL GAN WITH SI",
+    "year": "2017",
+    "creator": "Preferred Networks, Inc. (TGAN), MIT Lic",
+    "license": "MIT"
+   },
+   "role": "probe"
+  },
+  "probe_tgan_golf_2016": {
+   "clip": "tgan_golf_2016",
+   "in": 0.0,
+   "out": 0.8,
+   "label": {
+    "model": "TGAN (TEMPORAL GAN WITH SI",
+    "year": "2017",
+    "creator": "Preferred Networks, Inc. (TGAN), MIT Lic",
+    "license": "MIT"
+   },
+   "role": "probe"
+  },
+  "probe_tgan_ucf101_label_conditional_2016": {
+   "clip": "tgan_ucf101_label_conditional_2016",
+   "in": 0.0,
+   "out": 0.8,
+   "label": {
+    "model": "TGAN (TEMPORAL GAN WITH SI",
+    "year": "2017",
+    "creator": "Preferred Networks, Inc. (TGAN), MIT Lic",
+    "license": "MIT"
+   },
+   "role": "probe"
+  },
+  "probe_tgan2_faceforensics_2018": {
+   "clip": "tgan2_faceforensics_2018",
+   "in": 0.0,
+   "out": 1.1,
+   "label": {
+    "model": "TGANV2 (MULTI-RESOLUTION T",
+    "year": "2020",
+    "creator": "Preferred Networks (TGANv2), MIT License",
+    "license": "MIT"
+   },
+   "role": "probe"
+  },
+  "probe_tats_ucf101_gif_2022": {
+   "clip": "tats_ucf101_gif_2022",
+   "in": 0.0,
+   "out": 10.24,
+   "label": {
+    "model": "TATS (TIME-AGNOSTIC VQGAN ",
+    "year": "2022",
+    "creator": "Songwei Ge et al. (TATS), MIT License, C",
+    "license": "MIT"
+   },
+   "role": "probe"
+  },
+  "probe_tats_sky_long_gif_2022": {
+   "clip": "tats_sky_long_gif_2022",
+   "in": 0.0,
+   "out": 24.0,
+   "label": {
+    "model": "TATS (TIME-AGNOSTIC VQGAN ",
+    "year": "2022",
+    "creator": "Songwei Ge et al. (TATS), MIT License, C",
+    "license": "MIT"
+   },
+   "role": "probe"
+  },
+  "probe_mocogan_hd_afhq_2021": {
+   "clip": "mocogan_hd_afhq_2021",
+   "in": 0.0,
+   "out": 1.3,
+   "label": {
+    "model": "MOCOGAN-HD (STYLEGAN2-BASE",
+    "year": "2021",
+    "creator": "Snap Inc. (MoCoGAN-HD), Copyright (c) 20",
+    "license": "MIT (Snap grant in repo "
+   },
+   "role": "probe"
+  },
+  "probe_mocogan_hd_lsun_church_2021": {
+   "clip": "mocogan_hd_lsun_church_2021",
+   "in": 0.0,
+   "out": 1.3,
+   "label": {
+    "model": "MOCOGAN-HD (STYLEGAN2-BASE",
+    "year": "2021",
+    "creator": "Snap Inc. (MoCoGAN-HD), Copyright (c) 20",
+    "license": "MIT (Snap grant in repo "
+   },
+   "role": "probe"
+  },
+  "probe_mocogan_hd_anime_2021": {
+   "clip": "mocogan_hd_anime_2021",
+   "in": 0.0,
+   "out": 1.3,
+   "label": {
+    "model": "MOCOGAN-HD (STYLEGAN2-BASE",
+    "year": "2021",
+    "creator": "Snap Inc. (MoCoGAN-HD), Copyright (c) 20",
+    "license": "MIT (Snap grant in repo "
+   },
+   "role": "probe"
+  },
+  "probe_stylegan_music_video_ia_2021": {
+   "clip": "stylegan_music_video_ia_2021",
+   "in": 0.0,
+   "out": 24.0,
+   "label": {
+    "model": "STYLEGAN MUSIC VIDEO (INTE",
+    "year": "2021",
+    "creator": "This Music Video Does Not Exist (via Int",
+    "license": "PD (Commons: AI output)"
+   },
+   "role": "probe"
+  },
+  "probe_tats_fig_failure_cases_ucf101_2022": {
+   "clip": "tats_fig_failure_cases_ucf101_2022",
+   "in": 0.0,
+   "out": 0.0,
+   "label": {
+    "model": "TATS (TIME-AGNOSTIC VQGAN ",
+    "year": "2022",
+    "creator": "Ge et al., 'Long Video Generation with T",
+    "license": "CC BY 4.0"
+   },
+   "role": "probe"
+  },
+  "probe_videogpt_fig_ucf101_unconditional_2021": {
+   "clip": "videogpt_fig_ucf101_unconditional_2021",
+   "in": 0.0,
+   "out": 0.0,
+   "label": {
+    "model": "VIDEOGPT (VQ-VAE + TRANSFO",
+    "year": "2021",
+    "creator": "Yan, Zhang, Abbeel, Srinivas, 'VideoGPT:",
+    "license": "CC BY 4.0"
+   },
+   "role": "probe"
+  },
+  "probe_stylegan_v_fig_1hour_long_videos_sky_2021": {
+   "clip": "stylegan_v_fig_1hour_long_videos_sky_2021",
+   "in": 0.0,
+   "out": 0.0,
+   "label": {
+    "model": "STYLEGAN-V (CONTINUOUS-TIM",
+    "year": "2022",
+    "creator": "Skorokhodov, Tulyakov, Elhoseiny, 'Style",
+    "license": "CC BY 4.0"
    },
    "role": "probe"
   }

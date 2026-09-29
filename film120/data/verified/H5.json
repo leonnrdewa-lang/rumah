@@ -1,0 +1,584 @@
+{
+  "agent": "V-H5",
+  "source_file": "/home/user/rumah/film120/data/candidates/H5.json",
+  "checked_on": "2026-09-29",
+  "method": "Cloned 14 repos blobless in the Higgsfield sandbox; for every candidate re-read README and LICENSE at the pinned SHA and at HEAD, git history of LICENSE, of the media file and (pickaxe) of README references; re-ran curl on media_url; re-ffprobed all 18 files; re-checked dates against arXiv abs pages, Hugging Face API createdAt and README news lines; ran a temporal-variance static-overlay scan, OCR (RapidOCR) on sampled frames and Whisper on the Ovi audio. No frame could be viewed.",
+  "limitations": [
+    "No frame of any clip was viewed by anyone; content-level checks (real people, brands, in-scene text) are heuristic only.",
+    "Higgsfield video_analysis jobs queued by H5 were still 'queued' when checked.",
+    "Genmo blog (primary announcement for Mochi 1) not retrievable; Mochi date rests on HF repo metadata and the initial commit.",
+    "api.github.com is rate limited from the sandbox; repository authorship was read through git history and public profile pages.",
+    "Not legal advice: no clip is rated 'clear' because none of the repos names its demo media in a licence; all accepted items rest on repo-level licences and are 'clear_with_conditions' at best."
+  ],
+  "verdicts": [
+    {
+      "cand_id": "lvdm_ucf_long_40s",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit the developer in the source label; include the MIT copyright + permission notice in the credits/rights sheet. Suggested label: 'LVDM (unconditional sample), 2022 - Y. He, T. Yang, Y. Zhang, Y. Shan, Q. Chen - MIT'.",
+        "A human must watch the clip (or each tile) before use and confirm: no identifiable real person, no brand/logo/IP, no in-scene political text, no source watermark that a vertical crop would cut; if a watermark/logo/title exists it must stay visible.",
+        "Say 'sample published with the paper, Nov 2022' - do NOT say the model was released in Nov 2022: pretrained weights only appeared on Hugging Face on 2023-05-01.",
+        "Use only as a small inset / heavily upscaled early-era example (256x256)."
+      ],
+      "issues_found": [
+        "LICENCE HOLDER MISMATCH: root LICENSE (in initial commit, unchanged) reads 'MIT License / Copyright (c) 2022 Cassie'. The authors are Yingqing He (GitHub profile name 'Joy', HKUST) et al. with Tencent AI Lab co-authors; 'Cassie' is not an author. Probably a template artefact but the grantor is not identified, and any employer (HKUST/Tencent) rights are not addressed.",
+        "MIT grants rights in 'the Software and associated documentation files'; media are not named. README (pinned d251dcc) has no licence or output-rights sentence at all. Coverage rests on 'README result gif = documentation asset committed by the repo owner' (argument, not text).",
+        "Unconditional model is trained on UCF-101 (README setup section) - UCF-101 is a dataset of scraped web videos with no stated reuse licence; 'ucf-long' domain is inferred from file name only. Sample content unseen.",
+        "Weights were released later than the sample: HF Yingqing/LVDM createdAt 2023-05-01.",
+        "Heuristic scan (temporal variance + gradient): no persistent static overlay detected (static-edge fraction 0.6%). Not a substitute for viewing.",
+        "No frame of this clip was viewed by the verifier or (per H5) by the hunter; Higgsfield video_analysis jobs were still 'queued' at check time. Content-level red flags (real people, brands, in-scene text) are therefore NOT ruled out; only heuristics were run (temporal-variance static-overlay scan; OCR on sampled frames where resolution allowed)."
+      ],
+      "corrected_fields": {
+        "weights_public_date": "2023-05-01 (HF Yingqing/LVDM createdAt)",
+        "license.copyright_holder_in_file": "Cassie (2022) - not the authors",
+        "watermark_notes": "static-overlay heuristic: none found; unviewed",
+        "readme_section_verified": "'Unconditional Long Video Generation (40 seconds)' lists ucf-long-001.gif"
+      },
+      "http": {
+        "status": 200,
+        "content_length": 8980149,
+        "content_type": "image/gif",
+        "note": "media.githubusercontent.com (Git LFS). ffprobe: gif 256x256, 1000 frames, 25 fps, 40.0 s - matches hunter."
+      },
+      "model_date_corroboration": {
+        "claim": "LVDM unconditional 40 s samples first published 2022-11-23 (arXiv v1 and repo initial commit b7ca138, which adds the gif)",
+        "source_url": "https://arxiv.org/abs/2211.13221",
+        "quote": "Submitted on 23 Nov 2022 (v1), last revised 20 Mar 2023 (this version, v2)"
+      },
+      "confidence": "low"
+    },
+    {
+      "cand_id": "lvdm_t2v_astronaut_horse",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit the developer in the source label; include the MIT copyright + permission notice in the credits/rights sheet. Suggested label: 'LVDM text-to-video, 2023 - He et al. (HKUST / Tencent AI Lab) - MIT'.",
+        "A human must watch the clip (or each tile) before use and confirm: no identifiable real person, no brand/logo/IP, no in-scene political text, no source watermark that a vertical crop would cut; if a watermark/logo/title exists it must stay visible.",
+        "Crop the ~8 px border strip (1032 px canvas vs 1024 content) - the border is not a watermark.",
+        "Do not use the sibling t2v-004.gif ('iron man', brand IP).",
+        "Label as 'text-to-video result, 2023'; weights were released on HF only on 2023-05-01."
+      ],
+      "issues_found": [
+        "Same licence-holder mismatch as lvdm_ucf_long_40s: LICENSE says 'Copyright (c) 2022 Cassie'; not an author; README has no licence/output statement; MIT wording covers 'software and associated documentation files' only.",
+        "Prompt verified: README caption row 2 = \"astronaut riding a horse\" above t2v-002.gif (image row order t2v-001, -002, -003, -007, -005, -004). README acknowledgements state text-to-video results were upscaled with Real-ESRGAN.",
+        "Training data of the T2V model is not stated in the README (cannot exclude watermark-bearing web-video artefacts in outputs). Heuristic scan found no static overlay.",
+        "No frame of this clip was viewed by the verifier or (per H5) by the hunter; Higgsfield video_analysis jobs were still 'queued' at check time. Content-level red flags (real people, brands, in-scene text) are therefore NOT ruled out; only heuristics were run (temporal-variance static-overlay scan; OCR on sampled frames where resolution allowed)."
+      ],
+      "corrected_fields": {
+        "weights_public_date": "2023-05-01 (HF Yingqing/LVDM createdAt)",
+        "license.copyright_holder_in_file": "Cassie (2022) - not the authors",
+        "prompt_verified": "astronaut riding a horse (README caption, 2nd column)"
+      },
+      "http": {
+        "status": 200,
+        "content_length": 5200960,
+        "content_type": "image/gif",
+        "note": "media.githubusercontent.com (Git LFS). ffprobe: gif 1032x1032, 16 frames, 2.08 s - matches hunter."
+      },
+      "model_date_corroboration": {
+        "claim": "LVDM text-to-video results added to README 2023-03-25 (commit c281212 'update readme' adds t2v-002.gif); paper v2 revised 20 Mar 2023",
+        "source_url": "https://arxiv.org/abs/2211.13221",
+        "quote": "Submitted on 23 Nov 2022 (v1), last revised 20 Mar 2023 (this version, v2)"
+      },
+      "confidence": "low"
+    },
+    {
+      "cand_id": "t2vzero_horse_galloping",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: 'Text2Video-Zero - L. Khachatryan et al., Picsart AI Research, 2023 - CreativeML Open RAIL-M'; keep the copyright line 'Copyright (c) 2023 Levon Khachatryan and Andranik Movsisyan and Vahram Tadevosyan and Roberto Henschel and Zhangyang Wang and Shant Navasardyan and Humphrey Shi' in the rights sheet with a link to the LICENSE.",
+        "Film use must respect OpenRAIL-M Attachment A (no harmful/false-info use) - no issue for an explainer, but do not use the clip to imply factual footage.",
+        "A human must watch the clip (or each tile) before use and confirm: no identifiable real person, no brand/logo/IP, no in-scene political text, no source watermark that a vertical crop would cut; if a watermark/logo/title exists it must stay visible.",
+        "Label honestly as an 8-frame, ~3 fps zero-shot result on Stable Diffusion; do not smooth/interpolate without saying so."
+      ],
+      "issues_found": [
+        "Strongest licence text in the batch but not a perfect fit: s.2 grants reproduce/display/distribute of the 'Complementary Material' (defined to include 'accompanying documentation, tutorials, examples'); s.6 says 'Licensor claims no rights in the Output You generate using the Model' - worded for the licensee's outputs, not expressly the authors' README samples. README licence sentence: 'Our code is published under the CreativeML Open RAIL-M license.'",
+        "LICENSE file was added 2023-03-28 (commit 1144cbd) - four days AFTER the gif was committed (2023-03-24); present at pinned SHA fd76734, so the file is covered as of that revision.",
+        "Caption verified in README: 'A horse galloping on a street' (4th column of the t2v results table). Two more gifs with the same prompt exist.",
+        "Heuristic scan: no static overlay. Very low temporal resolution (8 frames).",
+        "No frame of this clip was viewed by the verifier or (per H5) by the hunter; Higgsfield video_analysis jobs were still 'queued' at check time. Content-level red flags (real people, brands, in-scene text) are therefore NOT ruled out; only heuristics were run (temporal-variance static-overlay scan; OCR on sampled frames where resolution allowed)."
+      ],
+      "corrected_fields": {
+        "license.holder_in_file": "Levon Khachatryan et al. (2023) - matches creators",
+        "license_added": "2023-03-28 (after the gif commit)"
+      },
+      "http": {
+        "status": 200,
+        "content_length": 575334,
+        "content_type": "image/gif",
+        "note": "raw.githubusercontent.com. ffprobe: gif 512x512, 8 frames, 2.64 s - matches hunter."
+      },
+      "model_date_corroboration": {
+        "claim": "Text2Video-Zero released 2023-03-23; horse_galloping.gif committed 2023-03-24 (commit 438c5d5 'Results added to README.md')",
+        "source_url": "https://github.com/Picsart-AI-Research/Text2Video-Zero/blob/fd76734e06aadb1dee83d2b7a368b14bdaa35565/README.md",
+        "quote": "[03/23/2023] Paper Text2Video-Zero released!"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "lavie_teddy_street_base",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "LICENCE STATEMENT CONFLICTS WITH PERMISSIVE USE. README (pinned 6ce851e = current HEAD) 'License' section: 'The code is licensed under Apache-2.0, model weights are fully open for academic research and also allow **free** commercial usage. To apply for a commercial license, please contact vchitect@pjlab.org.cn.' The licensor itself points to a separate commercial licence that must be applied for; this contradicts 'free commercial usage' and no sentence says the gallery media are covered by Apache-2.0. Brief rule 1 requires a licence that clearly covers the media; here the developer's own text leaves commercial reuse unresolved.",
+        "Apache-2.0 LICENSE at root has the unfilled template line 'Copyright [yyyy] [name of copyright owner]' (added 2023-11-20, commit c4cf9c7, the same day the gif was uploaded by 'Yaohui').",
+        "README Disclaimer: 'The model was not trained to realistically represent people or events' - fine, but training-data provenance is not stated in the README.",
+        "Gif is displayed in the README (Step 1 sample, prompt in caption) so model attribution is good: date = commit 2023-11-20/21; paper arXiv 2309.15103 submitted 26 Sep 2023.",
+        "Would be revived if Vchitect confirms in writing (vchitect@pjlab.org.cn) that unlimited commercial/promotional reuse of README gallery samples is free.",
+        "No frame of this clip was viewed by the verifier or (per H5) by the hunter; Higgsfield video_analysis jobs were still 'queued' at check time. Content-level red flags (real people, brands, in-scene text) are therefore NOT ruled out; only heuristics were run (temporal-variance static-overlay scan; OCR on sampled frames where resolution allowed)."
+      ],
+      "corrected_fields": {
+        "prompt_verified": "a teddy bear walking on the street, 2k, high quality (README caption at line ~155)"
+      },
+      "http": {
+        "status": 200,
+        "content_length": 1827439,
+        "content_type": "image/gif",
+        "note": "raw.githubusercontent.com. ffprobe: gif 512x320, 16 frames, 8 fps, 2.01 s - matches hunter."
+      },
+      "model_date_corroboration": {
+        "claim": "LaVie paper first submitted 2023-09-26; README gallery gifs committed 2023-11-20/21",
+        "source_url": "https://arxiv.org/abs/2309.15103",
+        "quote": "Submitted on 26 Sep 2023 (v1), last revised 27 Sep 2023 (this version, v2)"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "lavie_teddy_street_interp24",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "LICENCE STATEMENT CONFLICTS WITH PERMISSIVE USE. README (pinned 6ce851e = current HEAD) 'License' section: 'The code is licensed under Apache-2.0, model weights are fully open for academic research and also allow **free** commercial usage. To apply for a commercial license, please contact vchitect@pjlab.org.cn.' The licensor itself points to a separate commercial licence that must be applied for; this contradicts 'free commercial usage' and no sentence says the gallery media are covered by Apache-2.0. Brief rule 1 requires a licence that clearly covers the media; here the developer's own text leaves commercial reuse unresolved.",
+        "Apache-2.0 LICENSE at root has the unfilled template line 'Copyright [yyyy] [name of copyright owner]' (added 2023-11-20, commit c4cf9c7, the same day the gif was uploaded by 'Yaohui').",
+        "README Disclaimer: 'The model was not trained to realistically represent people or events' - fine, but training-data provenance is not stated in the README.",
+        "Gif is displayed in the README (Step 1 sample, prompt in caption) so model attribution is good: date = commit 2023-11-20/21; paper arXiv 2309.15103 submitted 26 Sep 2023.",
+        "Would be revived if Vchitect confirms in writing (vchitect@pjlab.org.cn) that unlimited commercial/promotional reuse of README gallery samples is free.",
+        "No frame of this clip was viewed by the verifier or (per H5) by the hunter; Higgsfield video_analysis jobs were still 'queued' at check time. Content-level red flags (real people, brands, in-scene text) are therefore NOT ruled out; only heuristics were run (temporal-variance static-overlay scan; OCR on sampled frames where resolution allowed).",
+        "This is the interpolation-stage derivative of the base clip; it is only useful as the pair partner of lavie_teddy_street_base, which is rejected."
+      ],
+      "corrected_fields": {},
+      "http": {
+        "status": 200,
+        "content_length": 5323776,
+        "content_type": "image/gif",
+        "note": "raw.githubusercontent.com. ffprobe: gif 512x320, 61 frames, 24 fps, 2.54 s - matches hunter."
+      },
+      "model_date_corroboration": {
+        "claim": "LaVie paper first submitted 2023-09-26; README gallery gifs committed 2023-11-20/21",
+        "source_url": "https://arxiv.org/abs/2309.15103",
+        "quote": "Submitted on 26 Sep 2023 (v1), last revised 27 Sep 2023 (this version, v2)"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "latte1_t2v_4x4_grid",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit the developer and name the licence in the on-screen source label and in the credits/rights sheet; ship a copy of the Apache-2.0 text with the rights file (Apache-2.0 s.4: licence copy, retain notices, mark changes to the excerpt). Suggested label: 'Latte (T2V sample grid), mid-2024 - X. Ma, Y. Wang et al. (Monash / Shanghai AI Lab / NJUPT / S-Lab NTU) - Apache-2.0'.",
+        "Do not show the whole 4x4 mosaic or any tile until each of the 16 tiles has been watched (prompts are unpublished; tile content unknown).",
+        "A human must watch the clip (or each tile) before use and confirm: no identifiable real person, no brand/logo/IP, no in-scene political text, no source watermark that a vertical crop would cut; if a watermark/logo/title exists it must stay visible.",
+        "Date wording: 'mid-2024' (README 2024-05-23, HF repo created 2024-06-03, gif commit 2024-06-04)."
+      ],
+      "issues_found": [
+        "The gif is currently HIDDEN in the README (wrapped in an HTML comment at pinned ad4b85a lines ~74-78) - the authors stopped displaying it; it is not a live official demo. README history does show it displayed on 2024-06-04 (commit e4df630 replaced visuals/latte.gif with visuals/latteT2V.gif under 'Latte-1 for T2V is released!'), which supports the Latte-1 attribution but no caption names the model.",
+        "Licence: README 'The code and model weights are licensed under LICENSE' and root LICENSE is Apache-2.0 (relicensed from MIT '(c) 2023 Xin Ma' on 2024-02-23 by co-author Yaohui, commit d64f997; the gif was added 2024-06-04, after the change). Apache text has the unfilled '[name of copyright owner]' line. Media not named.",
+        "Date conflict: README news 2024-05-23 vs HF maxin-cn/Latte-1 (and LatteT2V) createdAt 2024-06-03T05:28:48Z - use 'mid-2024'.",
+        "Heuristic scan: high-contrast static structure in the upper-right tiles (rows 0-1, cols 2-3 of a 6x8 grid: 9-17% static-edge density) - could be a motionless scene, text or a logo; must be inspected. Tiles are 256x256.",
+        "Tile prompts unpublished, so people/brand content cannot be excluded across 16 tiles.",
+        "No frame of this clip was viewed by the verifier or (per H5) by the hunter; Higgsfield video_analysis jobs were still 'queued' at check time. Content-level red flags (real people, brands, in-scene text) are therefore NOT ruled out; only heuristics were run (temporal-variance static-overlay scan; OCR on sampled frames where resolution allowed)."
+      ],
+      "corrected_fields": {
+        "model_version": "Latte-1 text-to-video (T2V), per README history 2024-06-04; tile prompts unknown",
+        "readme_status": "gif displayed 2024-06-04, now commented out",
+        "watermark_notes": "possible static structure in upper-right tiles; unviewed"
+      },
+      "http": {
+        "status": 200,
+        "content_length": 23910650,
+        "content_type": "application/octet-stream",
+        "note": "raw.githubusercontent.com. ffprobe: gif 1024x1024, 48 frames, 24 fps, 2.0 s - matches hunter."
+      },
+      "model_date_corroboration": {
+        "claim": "Latte-1 text-to-video released 2024-05-23; visuals/latteT2V.gif uploaded 2024-06-04 and put in the README directly under the Latte-1 T2V news (commit e4df630, 3 min later)",
+        "source_url": "https://github.com/Vchitect/Latte/blob/ad4b85a69bd26c66eebd65f4323718c80e7cf449/README.md",
+        "quote": "May 23, 2024 Latte-1 is released! Pre-trained model can be downloaded here. We support both T2V and T2I."
+      },
+      "confidence": "low"
+    },
+    {
+      "cand_id": "mochi1_preview_3x3_grid",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit the developer and name the licence in the on-screen source label and in the credits/rights sheet; ship a copy of the Apache-2.0 text with the rights file (Apache-2.0 s.4: licence copy, retain notices, mark changes to the excerpt). Suggested label: 'Genmo - Mochi 1 preview, 2024 - Apache-2.0'.",
+        "A human must watch the clip (or each tile) before use and confirm: no identifiable real person, no brand/logo/IP, no in-scene political text, no source watermark that a vertical crop would cut; if a watermark/logo/title exists it must stay visible.",
+        "Only single-tile crops (848x480) after each tile has been watched; heavy upscale needed for 9:16.",
+        "Frame it honestly: Mochi README itself says 'minor warping and distortions can also occur' and that it is optimised for photorealistic styles."
+      ],
+      "issues_found": [
+        "ORPHAN ASSET: git history search of README.md (pickaxe -S grid.mp4) finds NO revision that ever referenced assets/grid.mp4; the README hero video is a user-attachments asset outside the tree. Status as an intended public demo is inferred (initial commit by Genmo staff: 22 commits by 'Vedant Roy' + 'ved-genmo' account).",
+        "Licence: root LICENSE Apache-2.0 (initial commit, unchanged; template copyright line unfilled); README: 'We're releasing the model under a permissive Apache 2.0 license.' - model licence, media not named.",
+        "Model attribution is consistent but unproven: 3x3 of 848x480 tiles = Mochi 1's documented native 480p; repo contains only Mochi 1 preview.",
+        "Heuristic scan: bottom-left tile is almost motionless with strong static high-contrast structure (34-36% static-edge density in bottom row, cols 0-1) - could be text/logo or a still scene; top-left tile shows very large temporal change (std ~50) suggesting a fade/cut. Not visible without viewing.",
+        "No OCR text found in 5 sampled frames (grid resolution too low for small tile text).",
+        "No frame of this clip was viewed by the verifier or (per H5) by the hunter; Higgsfield video_analysis jobs were still 'queued' at check time. Content-level red flags (real people, brands, in-scene text) are therefore NOT ruled out; only heuristics were run (temporal-variance static-overlay scan; OCR on sampled frames where resolution allowed)."
+      ],
+      "corrected_fields": {
+        "license.holder_in_file": "none (unfilled Apache template)",
+        "readme_reference": "grid.mp4 never referenced by README (any revision)",
+        "date_source_type": "primary = developer HF repo metadata + initial commit; blog not retrieved"
+      },
+      "http": {
+        "status": 200,
+        "content_length": 6905424,
+        "content_type": "application/octet-stream",
+        "note": "raw.githubusercontent.com. ffprobe: h264 2544x1440, 163 frames, 30 fps, 5.43 s, no audio - matches hunter."
+      },
+      "model_date_corroboration": {
+        "claim": "Mochi 1 preview published 2024-10-22 (HF repo genmo/mochi-1-preview created 2024-10-22T07:36:03Z; repo initial commit 9414124 on 2024-10-22 adds grid.mp4). Genmo blog page not retrievable (Wayback returned nothing); SiliconANGLE 2024-10-22 is a secondary lead only.",
+        "source_url": "https://huggingface.co/api/models/genmo/mochi-1-preview",
+        "quote": "\"createdAt\":\"2024-10-22T07:36:03.000Z\" ; model card: We're releasing the model under a permissive Apache 2.0 license."
+      },
+      "confidence": "low"
+    },
+    {
+      "cand_id": "allegro_demo_video",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit the developer and name the licence in the on-screen source label and in the credits/rights sheet; ship a copy of the Apache-2.0 text with the rights file (Apache-2.0 s.4: licence copy, retain notices, mark changes to the excerpt). The repo NOTICE (added 2024-11-22) also asks: 'we would appreciate it if you give us due credit and feedback when you are using this Work for services or products' - credit 'Rhymes AI - Allegro'.",
+        "A human must watch the clip (or each tile) before use and confirm: no identifiable real person, no brand/logo/IP, no in-scene political text, no source watermark that a vertical crop would cut; if a watermark/logo/title exists it must stay visible.",
+        "Label as 'Allegro (Rhymes AI), Oct 2024'; the exact checkpoint is not stated."
+      ],
+      "issues_found": [
+        "ORPHAN ASSET: no README revision ever referenced demo_video.mp4 (history search). Official-demo status is inferred from the file name only; no prompt, no caption.",
+        "Uploader of the first-commit file is 'nightsnack <nightsnackc@gmail.com>' (GitHub profile 'Larry Tsai', company 'Self'), not a listed paper author (Zhou, Wang, Cai, Yang); the file was renamed (resources/ -> assets/) on 2024-10-21 by the official account nina@rhymes.ai, who also added LICENSE.txt the same day. Affiliation of the uploader unverified.",
+        "Licence: README 'This repo is released under the Apache 2.0 License.'; LICENSE.txt Apache-2.0 (unfilled template line); NOTICE as above. Media not named.",
+        "Consistency with the model spec (README: 88 frames, 720x1280, 15 FPS, 'recommended to use EMA-VFI to interpolate ... to 30 FPS'): file is 175 frames (=2x88-1) at 29 fps, 1280x720 - fits an interpolated Allegro output, but is not proof.",
+        "Heuristic scan and OCR (5 frames): no static overlay, no burnt-in text.",
+        "No frame of this clip was viewed by the verifier or (per H5) by the hunter; Higgsfield video_analysis jobs were still 'queued' at check time. Content-level red flags (real people, brands, in-scene text) are therefore NOT ruled out; only heuristics were run (temporal-variance static-overlay scan; OCR on sampled frames where resolution allowed)."
+      ],
+      "corrected_fields": {
+        "notice_file": "NOTICE asks for due credit (Apache-2.0 + credit request)",
+        "uploader_note": "first-commit uploader is an individual (nightsnack); renamed by official rhymes.ai account",
+        "readme_reference": "demo_video.mp4 never referenced by README"
+      },
+      "http": {
+        "status": 200,
+        "content_length": 1439517,
+        "content_type": "application/octet-stream",
+        "note": "raw.githubusercontent.com. ffprobe: h264 1280x720, 175 frames, 29 fps, 6.03 s, no audio - matches hunter."
+      },
+      "model_date_corroboration": {
+        "claim": "Allegro open-sourced 2024-10-22 (README); paper submitted 2024-10-20; demo_video.mp4 committed 2024-10-20 (first commit 581a8d1); HF rhymes-ai/Allegro createdAt 2024-10-16",
+        "source_url": "https://github.com/rhymes-ai/Allegro/blob/f395a54b015f7e3296c52f59a45b78acf9dd07f6/README.md",
+        "quote": "[2024/10/22] Allegro is open sourced!"
+      },
+      "confidence": "low"
+    },
+    {
+      "cand_id": "ltxv_v090_cityscape_pan",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "LICENCE BASIS BROKEN BY THE LICENSOR'S OWN TEXT. Initial commit 5a592aa (2024-11-21) shipped LICENSE = 'LTX Video 0.9 (LTXV) RAIL-M License dated November 22, 2024', whose definition of 'Complementary Material' includes 'documentation, tutorials, examples' and ends 'Complementary Material is not licensed under this License.' README example gifs are examples, i.e. expressly NOT licensed under it.",
+        "Commit cfbb059 (2024-11-24) replaced LICENSE with Apache-2.0 with the message 'Project: Change license of code (not the weights) to Apache' - Lightricks scoped Apache to code, not to weights or their outputs/examples. README at pinned 4b2d053 has no licence section covering media; HF Lightricks/LTX-Video licence tag is 'other'; README line 152 mentions 'New license for commercial use (OpenRail-M)'. No written statement anywhere grants reuse of the README gifs.",
+        "Model/date/prompt claims themselves check out: caption with the full prompt is in the README initial commit; gif added in initial commit 5a592aa (2024-11-21). HF repo createdAt 2024-10-31 predates the release.",
+        "Reject is licence-driven; revive only with written permission from Lightricks for the README example gifs.",
+        "No frame of this clip was viewed by the verifier or (per H5) by the hunter; Higgsfield video_analysis jobs were still 'queued' at check time. Content-level red flags (real people, brands, in-scene text) are therefore NOT ruled out; only heuristics were run (temporal-variance static-overlay scan; OCR on sampled frames where resolution allowed)."
+      ],
+      "corrected_fields": {},
+      "http": {
+        "status": 200,
+        "content_length": 9024843,
+        "content_type": "image/gif",
+        "note": "media.githubusercontent.com (Git LFS); raw.githubusercontent.com would return a pointer file. ffprobe: gif 384x256, 121 frames, 25 fps, 4.84 s - matches hunter."
+      },
+      "model_date_corroboration": {
+        "claim": "LTX-Video initial release v0.9.0 on 2024-11-21 (README heading); repo initial commit 2024-11-21/22",
+        "source_url": "https://github.com/Lightricks/LTX-Video/blob/4b2d053057623ddd4d0a1d3e9cd28890e9ef487f/README.md",
+        "quote": "November 21th, 2024: Initial release v0.9.0"
+      },
+      "confidence": "high"
+    },
+    {
+      "cand_id": "ltxv_i2v_example_00001",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "LICENCE BASIS BROKEN BY THE LICENSOR'S OWN TEXT. Initial commit 5a592aa (2024-11-21) shipped LICENSE = 'LTX Video 0.9 (LTXV) RAIL-M License dated November 22, 2024', whose definition of 'Complementary Material' includes 'documentation, tutorials, examples' and ends 'Complementary Material is not licensed under this License.' README example gifs are examples, i.e. expressly NOT licensed under it.",
+        "Commit cfbb059 (2024-11-24) replaced LICENSE with Apache-2.0 with the message 'Project: Change license of code (not the weights) to Apache' - Lightricks scoped Apache to code, not to weights or their outputs/examples. README at pinned 4b2d053 has no licence section covering media; HF Lightricks/LTX-Video licence tag is 'other'; README line 152 mentions 'New license for commercial use (OpenRail-M)'. No written statement anywhere grants reuse of the README gifs.",
+        "Image-to-video: the conditioning image is unpublished and of unknown provenance - Lightricks cannot license a third-party input image, and no before-frame exists to check it.",
+        "Model version for this gif is not stated (README gives no caption/prompt); association with the 2025-05-14 13B v0.9.7 news is an inference.",
+        "Heuristic scan: top-left region 94% static (uniform, no edges) - unremarkable.",
+        "No frame of this clip was viewed by the verifier or (per H5) by the hunter; Higgsfield video_analysis jobs were still 'queued' at check time. Content-level red flags (real people, brands, in-scene text) are therefore NOT ruled out; only heuristics were run (temporal-variance static-overlay scan; OCR on sampled frames where resolution allowed)."
+      ],
+      "corrected_fields": {},
+      "http": {
+        "status": 200,
+        "content_length": 9285683,
+        "content_type": "image/gif",
+        "note": "media.githubusercontent.com (Git LFS). ffprobe: gif 640x360, 126 frames, 25 fps, 5.04 s - matches hunter."
+      },
+      "model_date_corroboration": {
+        "claim": "LTX-Video image-to-video example; gif committed 2025-05-14 (commit 39c98ce). Model version for this gif is NOT stated on any page.",
+        "source_url": "https://github.com/Lightricks/LTX-Video/blob/4b2d053057623ddd4d0a1d3e9cd28890e9ef487f/README.md",
+        "quote": "November 21th, 2024: Initial release v0.9.0"
+      },
+      "confidence": "high"
+    },
+    {
+      "cand_id": "ltxv_iclora_control_00000",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "LICENCE BASIS BROKEN BY THE LICENSOR'S OWN TEXT. Initial commit 5a592aa (2024-11-21) shipped LICENSE = 'LTX Video 0.9 (LTXV) RAIL-M License dated November 22, 2024', whose definition of 'Complementary Material' includes 'documentation, tutorials, examples' and ends 'Complementary Material is not licensed under this License.' README example gifs are examples, i.e. expressly NOT licensed under it.",
+        "Commit cfbb059 (2024-11-24) replaced LICENSE with Apache-2.0 with the message 'Project: Change license of code (not the weights) to Apache' - Lightricks scoped Apache to code, not to weights or their outputs/examples. README at pinned 4b2d053 has no licence section covering media; HF Lightricks/LTX-Video licence tag is 'other'; README line 152 mentions 'New license for commercial use (OpenRail-M)'. No written statement anywhere grants reuse of the README gifs.",
+        "Stacked multi-panel (control input + result) layout: the control/reference panel is footage or pose/depth/canny derived from footage of undocumented provenance, probably real people (hunter's own real_person flag). No licence text could cover it.",
+        "Which control model (depth/pose/canny) and which base version made the gif is not stated. 37 MB.",
+        "No frame of this clip was viewed by the verifier or (per H5) by the hunter; Higgsfield video_analysis jobs were still 'queued' at check time. Content-level red flags (real people, brands, in-scene text) are therefore NOT ruled out; only heuristics were run (temporal-variance static-overlay scan; OCR on sampled frames where resolution allowed)."
+      ],
+      "corrected_fields": {},
+      "http": {
+        "status": 200,
+        "content_length": 37147005,
+        "content_type": "image/gif",
+        "note": "media.githubusercontent.com (Git LFS). ffprobe: gif 1024x2048, 81 frames, 16 fps, 5.06 s - matches hunter."
+      },
+      "model_date_corroboration": {
+        "claim": "LTX-Video IC-LoRA control models announced 2025-07-08 (README news); gif committed 2025-07-08 (commit 71d4b5f). Control type/version for this gif not stated.",
+        "source_url": "https://github.com/Lightricks/LTX-Video/blob/4b2d053057623ddd4d0a1d3e9cd28890e9ef487f/README.md",
+        "quote": "July, 8th, 2025: New Control Models Released!"
+      },
+      "confidence": "high"
+    },
+    {
+      "cand_id": "wan21_readme_video_demos",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "NOT A REPO FILE: the reel is a github.com/user-attachments asset embedded in the README ('Video Demos'); it is not in the git tree, so the repo's Apache-2.0 LICENSE.txt does not cover it. The only sentence, 'The models in this repository are licensed under the Apache 2.0 License. We claim no rights over the your generated contents, granting you the freedom to use them...', is addressed to users' own outputs and to the models - it does not license this edited promotional compilation, its overlay graphics or its soundtrack (brief rule 1: publicly accessible is not free to reuse).",
+        "HEAVY BURNT-IN BRANDING/CAPTIONS (OCR of sampled frames, no frame viewed): captions on almost every segment, a Chinese brand logo bottom-right, and a 'Generated by Wan AI' credit line; vertical 9:16 crops of a 1280x720 frame would cut or crowd these and rule 4 forbids removing them.",
+        "Audio track present (music of unknown origin/rights).",
+        "Per-segment provenance unverifiable: reels mix task types and prompts; caption strings such as 'Pixar Style' point to style-imitation of third-party IP; sports/people segments may resemble real persons.",
+        "Asset URL is a mutable GitHub attachment endpoint (302 -> signed S3 URL); HEAD on the signed URL returns 403, GET returns 200/206. Any use would need a local archive.",
+        "Could be revived only by written permission from the Wan team for named segments, or by regenerating comparable clips with the Apache-2.0 open weights.",
+        "No frame of this clip was viewed by the verifier or (per H5) by the hunter; Higgsfield video_analysis jobs were still 'queued' at check time. Content-level red flags (real people, brands, in-scene text) are therefore NOT ruled out; only heuristics were run (temporal-variance static-overlay scan; OCR on sampled frames where resolution allowed).",
+        "OCR sample (every 3 s): overlays 'WanVideo Model', 'Complex Motions', 'Dancer on Ice', 'Woman on Horseback', 'Flying Eagle', 'Fencing Competition', 'Men's Diving', 'Pixar Style', 'Chinese Style', a Chinese 'Happy New Year' title card (52-55 s), logo text '通义万相' bottom-right (x 1142-1279, y 687-717 at 13.5 s), and an unidentified text 'BeyuzHz2012' near the upper right at ~6-8 s (in-scene text or a creator handle - unresolved)."
+      ],
+      "corrected_fields": {},
+      "http": {
+        "status": 200,
+        "content_length": 9586282,
+        "content_type": "video/mp4",
+        "note": "GET after 302 -> S3: 200 (Range request: 206, Content-Range bytes 0-99/9586282). curl -sIL (HEAD) ends 403 Forbidden on the signed S3 URL. ffprobe: h264 1280x720, 25 fps, 62.6 s + audio - matches hunter."
+      },
+      "model_date_corroboration": {
+        "claim": "Wan2.1 released 2025-02-25; reel added to README the same day (commit 04e8653, 2025-02-25T22:54:11+08:00)",
+        "source_url": "https://github.com/Wan-Video/Wan2.1/blob/9737cba9c1c3c4d04b33fcad41c111989865d315/README.md",
+        "quote": "Feb 25, 2025: We've released the inference code and weights of Wan2.1."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "wan22_readme_video_demos",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "NOT A REPO FILE: the reel is a github.com/user-attachments asset embedded in the README ('Video Demos'); it is not in the git tree, so the repo's Apache-2.0 LICENSE.txt does not cover it. The only sentence, 'The models in this repository are licensed under the Apache 2.0 License. We claim no rights over the your generated contents, granting you the freedom to use them...', is addressed to users' own outputs and to the models - it does not license this edited promotional compilation, its overlay graphics or its soundtrack (brief rule 1: publicly accessible is not free to reuse).",
+        "HEAVY BURNT-IN BRANDING/CAPTIONS (OCR of sampled frames, no frame viewed): captions on almost every segment, a Chinese brand logo bottom-right, and a 'Generated by Wan AI' credit line; vertical 9:16 crops of a 1280x720 frame would cut or crowd these and rule 4 forbids removing them.",
+        "Audio track present (music of unknown origin/rights).",
+        "Per-segment provenance unverifiable: reels mix task types and prompts; caption strings such as 'Pixar Style' point to style-imitation of third-party IP; sports/people segments may resemble real persons.",
+        "Asset URL is a mutable GitHub attachment endpoint (302 -> signed S3 URL); HEAD on the signed URL returns 403, GET returns 200/206. Any use would need a local archive.",
+        "Could be revived only by written permission from the Wan team for named segments, or by regenerating comparable clips with the Apache-2.0 open weights.",
+        "No frame of this clip was viewed by the verifier or (per H5) by the hunter; Higgsfield video_analysis jobs were still 'queued' at check time. Content-level red flags (real people, brands, in-scene text) are therefore NOT ruled out; only heuristics were run (temporal-variance static-overlay scan; OCR on sampled frames where resolution allowed).",
+        "OCR sample (every 3 s): 'The First Open-Source MoE Video Generation Model', 'Wan2.2 Open-Source Release', lighting/camera/shot-size teaching captions, a burnt-in 'Generated by Wan AI' line on 16 of 27 sampled frames, and a URL watermark ('https://wan.v...') at ~52 s. The reel is a captioned feature tutorial, not raw model output."
+      ],
+      "corrected_fields": {},
+      "http": {
+        "status": 200,
+        "content_length": 9193286,
+        "content_type": "video/mp4",
+        "note": "GET after 302 -> S3: 200 (Range request: 206, Content-Range bytes 0-99/9193286). curl -sIL (HEAD) ends 403 Forbidden on the signed S3 URL. ffprobe: h264 1280x720, 30 fps, 80.04 s + audio - matches hunter."
+      },
+      "model_date_corroboration": {
+        "claim": "Wan2.2 released 2025-07-28; reel added to README the same day (commit 61a7778, 2025-07-28T20:42:39+08:00)",
+        "source_url": "https://github.com/Wan-Video/Wan2.2/blob/1ea34ff48f87168174e12956e200b1d908b1c5ff/README.md",
+        "quote": "Jul 28, 2025: We've released the inference code and model weights of Wan2.2."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "kandinsky5_sft_10s_example3",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit the developer in the source label; include the MIT copyright + permission notice in the credits/rights sheet. Suggested label: 'Kandinsky Lab - Kandinsky 5.0 T2V Lite (SFT, 10 s), 2025 - MIT' with '(c) 2025 Kandinsky Lab'.",
+        "A human must watch the clip (or each tile) before use and confirm: no identifiable real person, no brand/logo/IP, no in-scene political text, no source watermark that a vertical crop would cut; if a watermark/logo/title exists it must stay visible.",
+        "Avoid ~7.4-8.5 s: frame-to-frame change jumps to 9-15 (mean |delta-luma|, median 1.9) for about a second - a fast morph/whip/cut that the hunter's second excerpt (5.0-9.0 s) overlaps; view before choosing windows. First excerpt 0.5-4.5 s is not affected.",
+        "Label as a 2025 open-weights model sample; it is not evidence of the 2025 Pro model."
+      ],
+      "issues_found": [
+        "MODEL VERSION RESOLVED (hunter left it open): README revision 2ada62a (2025-09-27, 'generation examples added') listed assets/generation_examples/sft/1..6.mp4 under the heading 'Kandinsky 5.0 T2V Lite SFT' (10 s file length matches 'Lite SFT 10s'); the Pro model did not exist until 2025-11-20. The examples were removed from the README 30 minutes later (commit 2240b8b), so the pinned README no longer references the file.",
+        "Provenance good: the mp4 committer 'HapKoM' (GitHub name 'Владимир Корвяков') used the same e-mail (petrovich5000@gmail.com) as the README/LICENSE commits, and Vladimir Korviakov is a listed author of the Kandinsky 5.0 paper (arXiv 2511.14993).",
+        "Licence chronology: file committed 2025-09-27 when the repo had no LICENSE; LICENSE (Apache-2.0) added 2025-09-29; replaced by MIT '(c) 2025 Kandinsky Lab' on 2025-11-20 (commit 6a4cecd 'Pro version'). MIT is what governs at the pinned SHA and HEAD; HF cards say mit. MIT covers 'software and associated documentation files' - media are not named and the README has no licence section.",
+        "No prompt or caption exists; subject unknown. OCR (5 frames): no text. Heuristic: no static overlay.",
+        "No frame of this clip was viewed by the verifier or (per H5) by the hunter; Higgsfield video_analysis jobs were still 'queued' at check time. Content-level red flags (real people, brands, in-scene text) are therefore NOT ruled out; only heuristics were run (temporal-variance static-overlay scan; OCR on sampled frames where resolution allowed)."
+      ],
+      "corrected_fields": {
+        "model_version": "Kandinsky 5.0 T2V Lite SFT (10 s checkpoint)",
+        "container_creation_time": "2025-09-04 (mp4 tag; earlier than release)",
+        "readme_status": "listed in README revision 2ada62a on 2025-09-27, removed 2240b8b",
+        "excerpt_warning": "burst of large frame change at ~7.4-8.5 s"
+      },
+      "http": {
+        "status": 200,
+        "content_length": 8193301,
+        "content_type": "application/octet-stream",
+        "note": "raw.githubusercontent.com. ffprobe: h264 768x512, 241 frames, 24 fps, 10.04 s, no audio; container creation_time 2025-09-04 - matches hunter."
+      },
+      "model_date_corroboration": {
+        "claim": "Kandinsky 5.0 T2V Lite open-sourced 2025-09-29 (README); sft/3.mp4 committed 2025-09-27 (commit 7963fa7); HF Lite-sft repos created 2025-09-26; report arXiv 2511.14993 (19 Nov 2025)",
+        "source_url": "https://github.com/kandinskylab/kandinsky-5/blob/3a74261b957df0446c1969c5cedf8bbb07969ac2/README.md",
+        "quote": "2025/09/29: We have open-sourced `Kandinsky 5.0 T2V Lite` a lite (2B parameters) version of `Kandinsky 5.0 Video`"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "ovi_two_women_audio_video",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit the developer and name the licence in the on-screen source label and in the credits/rights sheet; ship a copy of the Apache-2.0 text with the rights file (Apache-2.0 s.4: licence copy, retain notices, mark changes to the excerpt). Suggested label: 'Character.AI / Yale - Ovi, Oct 2025 - Apache-2.0'.",
+        "A human must watch the clip (or each tile) before use and confirm: no identifiable real person, no brand/logo/IP, no in-scene political text, no source watermark that a vertical crop would cut; if a watermark/logo/title exists it must stay visible.",
+        "Audio: the clip carries generated speech. Whisper (base) transcribes it as \"human's fight for freedom tonight.\" (0-4 s). Either mute it, or use it only if the line is reviewed and clearly not read as a political/protest slogan or a real person's voice; do not use a claim of 'live' footage.",
+        "Label as 'Ovi (initial 2025 release, before the 2025-11-10 Ovi 1.1 update)'."
+      ],
+      "issues_found": [
+        "README revision 088a394 (2025-10-09, 'high res') displayed this file in a 'high_res_results' table - an official demo at the time; the later README no longer references it. Committer 'aaxwaz' = GitHub 'WeiminWang', company 'Character AI' (paper author).",
+        "Licence: root Apache-2.0 (added 2025-10-03, unchanged; HF card apache-2.0); README has no licence, output-rights or misuse sentence; media not named.",
+        "Prompt is truncated in the file name ('Two women stand facing each other in what appears ...'); full prompt unpublished; dialogue and faces unseen - a real-person likeness or a political reading cannot be excluded.",
+        "File name says 704x1280 but the file is landscape 1504x608: resolution/aspect mismatch unexplained (possible re-render or composite).",
+        "OCR (5 frames): only two very low-confidence hits ('4', '4A' at ~3.6-4.6 s); no static overlay by heuristic.",
+        "No frame of this clip was viewed by the verifier or (per H5) by the hunter; Higgsfield video_analysis jobs were still 'queued' at check time. Content-level red flags (real people, brands, in-scene text) are therefore NOT ruled out; only heuristics were run (temporal-variance static-overlay scan; OCR on sampled frames where resolution allowed)."
+      ],
+      "corrected_fields": {
+        "model_version": "Ovi (v1.0-era, file committed 2025-10-09; before Ovi 1.1 of 2025-11-10)",
+        "audio_transcript_whisper_base": "human's fight for freedom tonight.",
+        "readme_status": "shown in README on 2025-10-09, later removed"
+      },
+      "http": {
+        "status": 200,
+        "content_length": 643984,
+        "content_type": "application/octet-stream",
+        "note": "raw.githubusercontent.com. ffprobe: h264 1504x608 24 fps + aac stereo, 5.08 s - matches hunter."
+      },
+      "model_date_corroboration": {
+        "claim": "Ovi paper submitted 2025-09-30; HF chetwinlow1/Ovi created 2025-09-30; this mp4 committed 2025-10-09 (commit 088a394) and shown in the README the same day",
+        "source_url": "https://arxiv.org/abs/2510.01284",
+        "quote": "Submitted on 30 Sep 2025"
+      },
+      "confidence": "low"
+    },
+    {
+      "cand_id": "lance_t2v_demo_01",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit the developer and name the licence in the on-screen source label and in the credits/rights sheet; ship a copy of the Apache-2.0 text with the rights file (Apache-2.0 s.4: licence copy, retain notices, mark changes to the excerpt). Suggested label: 'ByteDance - Lance, 2026 - Apache-2.0'.",
+        "A human must watch the clip (or each tile) before use and confirm: no identifiable real person, no brand/logo/IP, no in-scene political text, no source watermark that a vertical crop would cut; if a watermark/logo/title exists it must stay visible.",
+        "Say 'as published by the developers': resolution/frame rate (1664x896, 24 fps) exceed what the README documents for training (up to 480p, 12 FPS); do not claim native quality. Keep the README's own caveat ('a research project rather than a polished product model ... Output quality may vary') in the framing."
+      ],
+      "issues_found": [
+        "Best-supported in-tree demo of the batch: the README 'Demo > Text-to-Video' table links this exact file (preview gif + mp4 link) and points to the project homepage for more; committed by a ByteDance employee (huangmengqi.98@bytedance.com).",
+        "Licence text is thin: root LICENSE is the standard Apache-2.0 with the unfilled '[yyyy] [name of copyright owner]' line; README 'License' section is only 'Copyright 2025 ByteDance Ltd. and/or its affiliates.' (no licence name); HF card says apache-2.0. Media are not named.",
+        "No prompt published for demo-01. OCR (5 frames): no burnt-in text ('ruga' 0.56 is noise); heuristic: no static overlay.",
+        "Built on Wan2.2/BAGEL/Qwen2.5-VL (README acknowledgements); no extra terms found in the README.",
+        "No frame of this clip was viewed by the verifier or (per H5) by the hunter; Higgsfield video_analysis jobs were still 'queued' at check time. Content-level red flags (real people, brands, in-scene text) are therefore NOT ruled out; only heuristics were run (temporal-variance static-overlay scan; OCR on sampled frames where resolution allowed)."
+      ],
+      "corrected_fields": {
+        "readme_status": "linked from README demo table (verified at pinned SHA)",
+        "resolution_note": "1664x896@24 fps vs README training 480p@12 FPS - undocumented upscale/interpolation"
+      },
+      "http": {
+        "status": 200,
+        "content_length": 7186230,
+        "content_type": "application/octet-stream",
+        "note": "raw.githubusercontent.com. ffprobe: h264 1664x896, 237 frames, 24 fps, 9.875 s, no audio - matches hunter."
+      },
+      "model_date_corroboration": {
+        "claim": "Lance code and weights released 2026-05-18; technical report arXiv 2605.18678 submitted 2026-05-18; HF bytedance-research/Lance created 2026-05-15; demo mp4 committed 2026-05-16",
+        "source_url": "https://github.com/bytedance/Lance/blob/4baeee086648996f6ab12e673cbe461b0b149997/README.md",
+        "quote": "We launched the project homepage and released the initial inference code and model weights on GitHub and Hugging Face."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "longcat_motorcycle_4k",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "PROVENANCE NOT ESTABLISHED: no README revision ever referenced motorcycle.mp4 (history search); no caption, prompt or description exists anywhere. The README documents 720p/30 fps output (480P and 720P options); the file is 3840x2160. Neither the README nor the LongCat-Video technical report (arXiv 2510.22200 HTML, ~108k characters searched) mentions 4K, 2160, 3840 or a motorcycle. Nothing proves this is a LongCat-Video output rather than source/test footage.",
+        "Licence itself is reasonable (MIT; README: 'The model weights are released under the MIT License. Any contributions to this repository are licensed under the MIT License, unless otherwise stated. This license does not grant any rights to use Meituan trademarks or patents.'; committer kangzhuoliang@meituan.com) but MIT covers 'software and associated documentation files' and the file's status as model output/documentation is unproven.",
+        "Subject (motorcycle) could carry brand marks or a rider; unknown. OCR (5 frames): no text. Heuristic: no static overlay.",
+        "Would be revived by written confirmation from Meituan LongCat that the file is a model output and its generation settings.",
+        "No frame of this clip was viewed by the verifier or (per H5) by the hunter; Higgsfield video_analysis jobs were still 'queued' at check time. Content-level red flags (real people, brands, in-scene text) are therefore NOT ruled out; only heuristics were run (temporal-variance static-overlay scan; OCR on sampled frames where resolution allowed)."
+      ],
+      "corrected_fields": {
+        "readme_reference": "never referenced by README in any revision",
+        "resolution_claim": "3840x2160 is undocumented; do not present as native 4K"
+      },
+      "http": {
+        "status": 200,
+        "content_length": 2935117,
+        "content_type": "application/octet-stream",
+        "note": "raw.githubusercontent.com. ffprobe: h264 3840x2160, 120 frames, 30 fps, 4.0 s, no audio - matches hunter."
+      },
+      "model_date_corroboration": {
+        "claim": "LongCat-Video released 2025-10-25 (README, arXiv 2510.22200 v1); motorcycle.mp4 added in the repo's first commit 27d1615 the same day",
+        "source_url": "https://github.com/meituan-longcat/LongCat-Video/blob/6b3f4b8582a8bc3f20f795735f5383716c4ba794/README.md",
+        "quote": "Oct 25, 2025: We've released LongCat-Video, a foundational video generation model."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "matrix_game3_readme_demo",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit the developer and name the licence in the on-screen source label and in the credits/rights sheet; ship a copy of the Apache-2.0 text with the rights file (Apache-2.0 s.4: licence copy, retain notices, mark changes to the excerpt). Suggested label: 'Skywork AI - Matrix-Game 3.0, 2026 - Apache-2.0'. (Root of the repo is MIT, the Matrix-Game-3 subfolder is Apache-2.0; both are permissive - cite Apache-2.0 for this folder.)",
+        "A human must watch the clip (or each tile) before use and confirm: no identifiable real person, no brand/logo/IP, no in-scene political text, no source watermark that a vertical crop would cut; if a watermark/logo/title exists it must stay visible.",
+        "BURNT-IN TITLE: a static 'Matrix-Game 3.0' title sits across the frame centre (about x 23-80%, y 44-60% of a 1920x1080 frame) for the ENTIRE 15 s (OCR at every second). It must not be removed or cropped away; use a letterboxed 16:9 frame inside the 9:16 canvas or drop this clip as a 'hero' shot.",
+        "Because the README says the model trains on 'large-scale automated AAA game data', check every second for game HUD, logos, character IP; if any appears, drop the clip."
+      ],
+      "issues_found": [
+        "HUNTER CLAIM 'README demo' IS WRONG for the pinned revision: neither the root README (its hero video is a user-attachments asset f5387c64...) nor Matrix-Game-3/README.md references matrix-game3.mp4. A README revision on 2026-03-27 (commits 0ec7114 / 0dd18d8) linked an EARLIER blob for 23 minutes; the current blob is the 2026-03-29 replacement and has never been referenced.",
+        "created date corrected: first added 2026-03-27 (commit b8cafe7, 'add video via upload'), current blob dated 2026-03-29; model release 2026-03-27.",
+        "Licence: Matrix-Game-3 README 'This project is licensed under the Apache License, Version 2.0 - see LICENSE.txt' (LICENSE.txt added 2026-03-27) - covers the folder that holds the mp4; root LICENSE is MIT (2025-05-12) - two licences, both permissive.",
+        "It is a composited promo (persistent title overlay, 1080p vs the README's '720p real-time'), not a raw model capture.",
+        "README (Matrix-Game-3) says the data engine 'Combines Unreal Engine-based synthetic data, large-scale automated AAA game data, and real-world video augmentation' - game-IP look-alike risk unresolved. OCR also finds fuzzy 'Space...' text in the first ~4 s (in-scene text or sign).",
+        "No frame of this clip was viewed by the verifier or (per H5) by the hunter; Higgsfield video_analysis jobs were still 'queued' at check time. Content-level red flags (real people, brands, in-scene text) are therefore NOT ruled out; only heuristics were run (temporal-variance static-overlay scan; OCR on sampled frames where resolution allowed)."
+      ],
+      "corrected_fields": {
+        "created": "2026-03-29 (blob date; first added 2026-03-27)",
+        "title": "Matrix-Game-3.0 promo video (in-tree; NOT referenced by README at pinned SHA)",
+        "watermark_notes": "persistent central title 'Matrix-Game 3.0' for the full 15 s (OCR every 1 s); brief rule 4 applies",
+        "risk_flags_add": [
+          "burnt_in_title",
+          "possible_game_ip"
+        ]
+      },
+      "http": {
+        "status": 200,
+        "content_length": 19201824,
+        "content_type": "application/octet-stream",
+        "note": "raw.githubusercontent.com. ffprobe: h264 1920x1080, 450 frames, 30 fps, 15.0 s, no audio - matches hunter."
+      },
+      "model_date_corroboration": {
+        "claim": "Matrix-Game-3.0 released 2026-03-27 (README); HF Skywork/Matrix-Game-3.0 created 2026-03-27T03:23:47Z. The pinned file blob was last replaced 2026-03-29 (commit 7ccb285 'Update the demo video & cases').",
+        "source_url": "https://github.com/SkyworkAI/Matrix-Game/blob/756776d516233027631008761d4d40ddaea3e23a/README.md",
+        "quote": "March 27, 2026: We released Matrix-Game-3.0. This is a real-time and streaming interactive world model with long-horizon Memory."
+      },
+      "confidence": "low"
+    }
+  ],
+  "summary": {
+    "checked": 18,
+    "clear": 0,
+    "clear_with_conditions": 10,
+    "rejected": 8
+  }
+}

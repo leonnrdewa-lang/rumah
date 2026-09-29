@@ -1,0 +1,566 @@
+{
+  "agent": "V-H7",
+  "source_file": "/home/user/rumah/film120/data/candidates/H7.json",
+  "verified_on": "2026-09-29",
+  "method": "Adversarial re-verification in the Higgsfield sandbox (open internet): Commons API (extmetadata, wikitext, revisions, upload log, categories, templates, user contribs); blobless git clones of pfnet-research/tgan, pfnet-research/tgan2, songweige/TATS, snap-research/MoCoGAN-HD, THUDM/CogVideo (LICENSE text, tree at pinned commit, git log of each asset, commit authors, later LICENSE/README changes); full download of every media_url (curl -sIL plus body download, sha256, PIL/ffprobe frame counts, durations, dimensions); arXiv abs pages of every cited version (licence link), arXiv API (dates, abstracts), arXiv PDFs v1/v2/v4 (caption text and page numbers via pdftotext), e-print tarballs (TeX captions, figure PDFs via pdfimages/pdftotext); Internet Archive metadata API; Hacker News thread for the IA clip's origin. LIMITATION: no frame of any clip was viewed by this verifier (no vision path from the sandbox; a Higgsfield video_analysis upload was attempted and was blocked by the permission classifier, so it was NOT done). Every statement about visual content is inherited from page text or measured; every kept GIF/still therefore carries a mandatory human visual review condition.",
+  "verdicts": [
+    {
+      "cand_id": "dcgan_anime128_63k_2021",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit on screen and in the description: 'Zisaac33, CC BY-SA 4.0, via Wikimedia Commons' plus the file-page URL and the licence link https://creativecommons.org/licenses/by-sa/4.0 (CC BY-SA 4.0 requires attribution, licence link and an indication of changes).",
+        "Indicate changes (crop, retime, overlays, transcode). Format-shifting alone is a technical modification permitted by CC 4.0 s.2(a)(4); any crop, retime or annotation makes the excerpt Adapted Material, so ShareAlike (BY-SA 4.0 or compatible) attaches to that adapted excerpt. It need not attach to the whole film if the clip stays a distinct component, but get legal sign-off before compositing these pixels into graphics that will not be BY-SA.",
+        "Label honestly on screen: 'DCGAN (2015 image GAN), 2021 hobbyist training run, image grid - not a video model'. Never present it as historical video-generation footage or as a text-to-video result.",
+        "Human visual review before use (verifier could not view frames): confirm the tiles are only generated anime-style faces with no logos, text or recognisable copyrighted characters.",
+        "If paired with the 9k run label it 'ILLUSTRATIVE - DIFFERENT RUNS'."
+      ],
+      "issues_found": [
+        "Licence itself verified and not breakable: Commons API extmetadata LicenseShortName 'CC BY-SA 4.0', UsageTerms 'Creative Commons Attribution-Share Alike 4.0', AttributionRequired true; wikitext {{Information|source={{own}}|author=[[User:Zisaac33]]}} and {{self|cc-by-sa-4.0}}; single file version; upload log 'Uploaded own work with UploadWizard' 2021-02-19T11:50:38Z; no deletion, copyvio, no-permission or licence-review tags; no global usage.",
+        "Weak point: uploader User:Zisaac33 has no user page and its only contributions are the four DCGAN GIFs uploaded within about two minutes on 2021-02-19. 'Own work' therefore rests on Commons' standard self-upload declaration and cannot be independently corroborated.",
+        "Page gives no code, dataset, hardware or prompt. '63k images' exists only in the file title. The size matches the public 'Anime Face Dataset' (about 63.5k images scraped from getchu.com, per a secondary Kaggle listing found by web search) - INFERENCE ONLY, unverified. If so the training art is of unknown licence; outputs are novel GAN samples but resemblance to copyrighted characters cannot be excluded without viewing.",
+        "This is an IMAGE-GAN training visualisation, not a video model and not historical footage (the hunter already says so; kept as a binding condition).",
+        "Frame content, watermark and burnt-in text unverified. Measured only: 720x720, 139 frames x 100 ms = 13.9 s, GIF loop 65535, no GIF comment block."
+      ],
+      "corrected_fields": {
+        "license.evidence_quote": "This file is licensed under the Creative Commons Attribution-Share Alike 4.0 International license.",
+        "model_version": "Image GAN (DCGAN architecture, arXiv 2015-11-19), uploader's own 2021 training run titled 'DCGAN Anime 128*128 trained on 63k images'; NOT a video model. Training data unspecified on the page.",
+        "created": "2021-02-19 (day precision; uploader date field and Commons upload-log timestamp agree; it is the upload/publication date, generation date not stated)",
+        "watermark_notes": "unknown - frames not viewed; no overlay evidence in metadata",
+        "media_sha256": "895620de5eb9bee84492d0aaf66fe44de4f45cc708fabce913ef7f4470292ea8",
+        "reuse_verdict": "clear_with_conditions"
+      },
+      "http": {"status": 200, "content_length": 35709798, "content_type": "image/gif"},
+      "model_date_corroboration": {
+        "claim": "DCGAN architecture first published 2015-11-19 (arXiv v1); the 2021-02-19 run itself is only corroborated by the Commons upload log.",
+        "source_url": "https://arxiv.org/abs/1511.06434",
+        "quote": "We introduce a class of CNNs called deep convolutional generative adversarial networks (DCGANs)"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "dcgan_anime128_9k_2021",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit on screen and in the description: 'Zisaac33, CC BY-SA 4.0, via Wikimedia Commons' plus the file-page URL and licence link https://creativecommons.org/licenses/by-sa/4.0.",
+        "Indicate changes; crop, retime or overlay makes the excerpt Adapted Material and CC BY-SA ShareAlike attaches to that adapted excerpt (legal sign-off before mixing into non-SA graphics). Transcoding GIF to mp4 alone is a permitted technical modification.",
+        "Label honestly: 'DCGAN (2015 image GAN), 2021 hobbyist training run on about 9k images - not a video model'. If shown beside the 63k run add 'ILLUSTRATIVE - DIFFERENT RUNS' (the pages do not say everything except dataset size is identical).",
+        "Human visual review before use (frames not viewed by verifier).",
+        "97.4 MB GIF, 402 frames: download and transcode locally; Commons offers no derivatives for GIF."
+      ],
+      "issues_found": [
+        "Licence verified identically to the 63k file: CC BY-SA 4.0 in extmetadata and wikitext, own work by Zisaac33, upload 2021-02-19T11:51:14Z, single version, no deletion/copyvio tags.",
+        "Same weak points: single-purpose anonymous uploader account; no dataset/code/hardware info ('9k images' only in the title); 'own work' not independently corroborated; possible getchu-scraped anime training art (inference only).",
+        "Image GAN training grid, not a video model.",
+        "Frame content and watermark unverified. Measured: 720x720, 402 frames x 100 ms = 40.2 s, loop 65535."
+      ],
+      "corrected_fields": {
+        "license.evidence_quote": "This file is licensed under the Creative Commons Attribution-Share Alike 4.0 International license.",
+        "model_version": "Image GAN (DCGAN architecture, arXiv 2015-11-19), uploader's own 2021 run titled 'DCGAN Anime 128*128 trained on 9k images'; NOT a video model.",
+        "created": "2021-02-19 (upload/publication date; generation date not stated)",
+        "watermark_notes": "unknown - frames not viewed",
+        "media_sha256": "bf174fd45d31007d6546aed91b33f79876194a7399e16a52a8ac1dd66f6e4961",
+        "reuse_verdict": "clear_with_conditions"
+      },
+      "http": {"status": 200, "content_length": 97419531, "content_type": "image/gif"},
+      "model_date_corroboration": {
+        "claim": "DCGAN architecture first published 2015-11-19 (arXiv v1); the 2021 run is corroborated only by the Commons upload log.",
+        "source_url": "https://arxiv.org/abs/1511.06434",
+        "quote": "We introduce a class of CNNs called deep convolutional generative adversarial networks (DCGANs)"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "cogvideo_samples_mosaic_2022",
+      "final_verdict": "reject",
+      "conditions": [
+        "REJECT as submitted (hard rule 1: the licence must clearly cover the media file). Reopen only with (a) written permission or an explicit media licence from the CogVideo authors / THUDM / Zhipu AI that names assets/CogVideo_samples.mp4, and (b) a human visual review of the 2887x2887 mosaic for people, faces, brands, text and watermarks.",
+        "If permission is later obtained: credit 'CogVideo (Hong, Ding, Zheng, Liu, Tang; THUDM), 2022' and follow the terms they state.",
+        "Fallback that needs no footage: a source-labelled stats card from the paper (9.4 billion parameters, 5.4 million captioned videos, 4-second clips of 32 frames, Chinese prompts) with no generated imagery."
+      ],
+      "issues_found": [
+        "Licence does not clearly cover the media. The Apache-2.0 LICENSE in the pinned tree ff423aa is the stock text whose appendix still reads 'Copyright [yyyy] [name of copyright owner]': no licensor is named and no copyright notice is attached to the work. It was created 2022-07-19 ('Create LICENSE', wenyihong), 51 days after the mp4 was added (2022-05-29, commit 32f22c9). Nothing in the 2022 tree says the sample video or figures are licensed.",
+        "The licensor later confined the licence to code. The 2024-08-06 'init' commit 34dd614 (zR) deleted assets/CogVideo_samples.mp4 and the three README PNGs and paper/CogVideo-arxiv.pdf from HEAD, filled the placeholder as 'Copyright 2024 CogVideo Model Team @ Zhipu AI', and the new README says 'The code in this repository is released under the Apache 2.0 License' with model weights under a separate CogVideoX licence. The asset survives only in the old commit.",
+        "The same 2022 tree also contained paper/CogVideo-arxiv.pdf, whose arXiv licence is the non-exclusive distribution licence (abs page link http://arxiv.org/licenses/nonexclusive-distrib/1.0/). So a repo-level Apache text cannot simply be read as a deliberate grant for every file in the tree.",
+        "Content unseen: a 33-frame, 8 fps, 4.125 s h264 yuv444p 2887x2887 mosaic of Chinese-prompt samples from a model trained on 5.4 million captioned videos (paper). Whether any tile shows an identifiable person, a brand or text is unknown.",
+        "Hunter's claim 'first public text-to-video release with code' is stronger than the authors' own hedge; the abstract says 'As (probably) the first open-source large-scale pretrained text-to-video model'.",
+        "Facts that DID verify: file is in the tree at ff423aa (blob 045fd4f, 9,925,101 bytes = HTTP content-length); added 2022-05-29 15:22:09 +0800 by wenyihong ('add demo'); commit ff423aa is on origin/CogVideo and tag v1.0; README at that commit says 'Each sample is a 4-second clip of 32 frames'; arXiv v1 2022-05-29; the paper says 'More samples, models and codes will be available at https://github.com/THUDM/CogVideo'.",
+        "Served as application/octet-stream by raw.githubusercontent.com; ffprobe confirms a valid h264 mp4."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "reject",
+        "license.basis_note": "Stock Apache-2.0 text with unfilled copyright placeholder, added 51 days after the asset, no media-specific grant, later scoped to 'the code in this repository' and the asset removed from HEAD (2024-08-06). Not a clear grant for the media file.",
+        "notes_addition": "Abstract hedges: '(probably) the first open-source large-scale pretrained text-to-video model'.",
+        "media_sha256": "627c1a9b7b1c6943c3b1311b6fd470248348627054733c180221654a2b861fb2"
+      },
+      "http": {"status": 200, "content_length": 9925101, "content_type": "application/octet-stream"},
+      "model_date_corroboration": {
+        "claim": "CogVideo first public 2022-05-29 (arXiv v1 published 2022-05-29T19:02:15Z; repo demo commit the same day).",
+        "source_url": "https://arxiv.org/abs/2205.15868",
+        "quote": "we present 9B-parameter transformer CogVideo, trained by inheriting a pretrained text-to-image model, CogView2"
+      },
+      "confidence": "high"
+    },
+    {
+      "cand_id": "cogvideo_highframerate_32frames_strip_2022",
+      "final_verdict": "reject",
+      "conditions": [
+        "REJECT as submitted for the same licence reasons as the CogVideo mosaic. Reopen only with written permission or an explicit media licence from THUDM / Zhipu AI naming assets/appendix-sample-highframerate.png, plus a human visual review of the frame strip for people, brands and text.",
+        "Fallback: a labelled ILLUSTRATION of a 32-frame, 4-second sequence built from the README sentence, containing no generated imagery."
+      ],
+      "issues_found": [
+        "Same licence defects as cogvideo_samples_mosaic_2022: stock Apache-2.0 text with unfilled '[yyyy] [name of copyright owner]', added 2022-07-19 after the PNG (2022-05-29, commit ce5fc5a 'change to png'), no media-specific grant, deleted from HEAD on 2024-08-06 and the licence later scoped to code.",
+        "The file name (appendix-*) suggests it also appears in the paper's appendix, which is under the arXiv non-exclusive licence (inference, not checked frame-by-frame).",
+        "Content unseen; 3840x2067 PNG (verified with PIL). README caption verified: 'CogVideo is able to generate relatively high-frame-rate videos. A 4-second clip of 32 frames is shown below.'",
+        "The hunter's claim that the strip contains 'consecutive frames of one generation' rests on that caption only; it was not verified by viewing."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "reject",
+        "media_sha256": "99b7a6cd1369628097e8aa828a80eeda8e50bfac643a2a299329f40f1bbb06a2"
+      },
+      "http": {"status": 200, "content_length": 6800109, "content_type": "image/png"},
+      "model_date_corroboration": {
+        "claim": "CogVideo first public 2022-05-29 (arXiv v1; the PNG was committed 2022-05-29 15:54:14 +0800).",
+        "source_url": "https://arxiv.org/abs/2205.15868",
+        "quote": "we present 9B-parameter transformer CogVideo, trained by inheriting a pretrained text-to-image model, CogView2"
+      },
+      "confidence": "high"
+    },
+    {
+      "cand_id": "tgan_moving_mnist_2016",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Include the MIT notice in the credits or description file: 'Copyright (c) 2017 Preferred Networks, Inc.' and the MIT permission notice (full text from https://github.com/pfnet-research/tgan/blob/09aa10571e6c090a0f530c8e3f1515780867a894/LICENSE.md).",
+        "Label exactly what it is: 'TGAN (Saito, Matsumoto, Saito; arXiv 2016-11-21, ICCV 2017), project-page sample, 64x64, 16 frames; random samples, not cherry-picked per the authors'. Do not imply a modern result.",
+        "Recommended (not required by the MIT text): send a courtesy e-mail to Preferred Networks confirming that the docs/ GIFs are covered, because the grant does not mention media.",
+        "Human visual review before use (frames not viewed by verifier)."
+      ],
+      "issues_found": [
+        "Licence is repo-level MIT and coverage is by argument, not by an explicit media sentence: LICENSE.md 'Copyright (c) 2017 Preferred Networks, Inc.' grants rights in 'the Software' and 'associated documentation files'; the GIF sits in docs/images/ and is displayed by the project page docs/index.html row 'Moving MNIST' (img images/mm.gif). Verified in the pinned tree 09aa105, which is the repo HEAD (2020-07-07).",
+        "LICENSE.md was added 2017-10-06 (Masaki Saito), one day after the GIF was committed 2017-10-05 16:21 +0900 (Eiichi Matsumoto, 'project page'); both are in the pinned tree. Authors are PFN staff, so the licensor is the asset's author.",
+        "'created' 2017-10-05 is the commit date of the asset, not the date the samples were generated.",
+        "Project page states 'Following results are random samples generated by TGAN (not cherry picked).' (docs/index.html line 67) - verified.",
+        "The page does not say which TGAN variant (WGAN clip vs singular value clipping) produced each GIF; 'model_version' in the candidate over-specifies.",
+        "Paper corroborates format: video generator output 3x16x64x64 (16 frames, 64x64). GIF is 640x640, 16 frames x 50 ms, loop 0 (a grid of small clips, per measured layout).",
+        "Frame content and watermark unverified."
+      ],
+      "corrected_fields": {
+        "model_version": "TGAN (Temporal GAN); the project page does not state which training variant produced this GIF",
+        "created": "2017-10-05 (asset committed to repo; generation date not stated)",
+        "media_sha256": "4a0e0ec0e2e7808d456f6756a3cfd3ba6881ff65eeffc16f86ccb0a3e598f984",
+        "watermark_notes": "unknown - frames not viewed; GIF has no comment block"
+      },
+      "http": {"status": 200, "content_length": 946745, "content_type": "image/gif"},
+      "model_date_corroboration": {
+        "claim": "TGAN first public 2016-11-21 (arXiv v1).",
+        "source_url": "https://arxiv.org/abs/1611.06624",
+        "quote": "we propose a generative model, Temporal Generative Adversarial Nets (TGAN), which can learn a semantic representation of unlabeled videos"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "tgan_golf_2016",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Include the MIT notice in the credits or description file: 'Copyright (c) 2017 Preferred Networks, Inc.' plus the MIT permission notice.",
+        "Label: 'TGAN 2016 (arXiv), project-page sample, 64x64, 16 frames; trained on a golf-scene video dataset; random samples per the authors'.",
+        "Recommended courtesy e-mail to Preferred Networks confirming the docs/ GIFs are covered by the MIT grant.",
+        "Human visual review before use (frames not viewed by verifier)."
+      ],
+      "issues_found": [
+        "Same argument-only MIT coverage as tgan_moving_mnist_2016 (LICENSE.md in the pinned tree 09aa105; docs/index.html row 'Golf' links carlvondrick.com/tinyvideo and shows images/golf.gif; commit 1bf11ca 2017-10-05 by Eiichi Matsumoto).",
+        "The training videos (Vondrick golf scenes from Flickr) are third-party data; the GIF shows generated 64x64 samples, but no viewing was possible to confirm no recognisable person or text appears.",
+        "'created' is the asset commit date, not the generation date; variant (WGAN clip vs SVC) not stated per GIF.",
+        "Measured: 640x640, 16 frames x 50 ms = 0.8 s, 5.38 MB, loop 0."
+      ],
+      "corrected_fields": {
+        "model_version": "TGAN (Temporal GAN); training variant not stated for this GIF",
+        "created": "2017-10-05 (asset committed to repo)",
+        "media_sha256": "3f6174ac2fb121ea45638ce6ffa5c8ce663d70832775d374dc5314213bc7170d"
+      },
+      "http": {"status": 200, "content_length": 5381151, "content_type": "image/gif"},
+      "model_date_corroboration": {
+        "claim": "TGAN first public 2016-11-21 (arXiv v1).",
+        "source_url": "https://arxiv.org/abs/1611.06624",
+        "quote": "we propose a generative model, Temporal Generative Adversarial Nets (TGAN), which can learn a semantic representation of unlabeled videos"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "tgan_ucf101_label_conditional_2016",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Include the MIT notice in the credits or description file: 'Copyright (c) 2017 Preferred Networks, Inc.' plus the MIT permission notice.",
+        "Label: 'TGAN 2016 (arXiv), label-conditional UCF-101 samples, 64x64, 16 frames, project-page sample'.",
+        "Mandatory human visual review that no tile resembles an identifiable real person (UCF-101 is a human-action dataset scraped from YouTube) and that no text or logo appears.",
+        "Recommended courtesy e-mail to Preferred Networks confirming the docs/ GIFs are covered."
+      ],
+      "issues_found": [
+        "Same argument-only MIT coverage as the other TGAN GIFs (docs/index.html row 'UCF-101 (label conditional)' shows images/ucf_cond.gif; commit 1bf11ca 2017-10-05).",
+        "Model trained on UCF-101 human-action clips; identifiable-person resemblance is unlikely at 64x64 but cannot be ruled out without viewing.",
+        "Measured: 640x640, 16 frames x 50 ms = 0.8 s, 5.39 MB, loop 0.",
+        "'created' is the asset commit date; training variant not stated."
+      ],
+      "corrected_fields": {
+        "model_version": "TGAN (Temporal GAN), label-conditional UCF-101 row; training variant not stated",
+        "created": "2017-10-05 (asset committed to repo)",
+        "media_sha256": "b1e8792d8bb4e63102e869d0f15ebe3ca47227cddf714b2471053a02d1511dce"
+      },
+      "http": {"status": 200, "content_length": 5393893, "content_type": "image/gif"},
+      "model_date_corroboration": {
+        "claim": "TGAN first public 2016-11-21 (arXiv v1).",
+        "source_url": "https://arxiv.org/abs/1611.06624",
+        "quote": "we propose a generative model, Temporal Generative Adversarial Nets (TGAN), which can learn a semantic representation of unlabeled videos"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "tgan2_faceforensics_2018",
+      "final_verdict": "reject",
+      "conditions": [
+        "REJECT: synthetic faces from a generator trained on FaceForensics (real news-video faces, obtainable only through a request form) cannot be cleared for likeness or dataset-terms without viewing (hard rule 3). Reopen only if a human reviewer confirms none of the faces resembles a real person AND the FaceForensics terms are reviewed for derived outputs.",
+        "If reopened: MIT notice 'Copyright (c) 2020 Preferred Networks' in the credits and label 'TGANv2, FaceForensics, generated samples'."
+      ],
+      "issues_found": [
+        "Real-person risk cannot be excluded: README says 'Unconditional video generation results by TGANv2 (trained on the FaceForensics dataset)'; FaceForensics v1 is downloadable only after a request form (README line 71), i.e. research-terms data of real news presenters. GAN samples can closely resemble training identities. The hunter flagged real_person and wrote 'Drop if any doubt'; doubt cannot be removed.",
+        "Licence is repo-level MIT (LICENSE 'Copyright (c) 2020 Preferred Networks', pinned tree f892bc4 = HEAD 2020-08-11); GIF added 2020-06-02 by Shunta Saito ('Add generated samples'). Coverage of the GIF is by the same 'documentation' argument, not an explicit grant.",
+        "Measured: 640x640, 11 frames x 100 ms = 1.1 s, 3.23 MB; content unseen."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "reject",
+        "risk_flags": ["real_person", "dataset_terms_unreviewed"],
+        "media_sha256": "cfc1eaeafe279fa7e349a6353f3d73a38c70524ec123e83f19483febfd7a7bba"
+      },
+      "http": {"status": 200, "content_length": 3233514, "content_type": "image/gif"},
+      "model_date_corroboration": {
+        "claim": "TGANv2 paper first public 2018-11-22 (arXiv v1); the GIF was committed 2020-06-02.",
+        "source_url": "https://arxiv.org/abs/1811.09245",
+        "quote": "we present a novel memory efficient method of unsupervised learning of high-resolution video dataset"
+      },
+      "confidence": "high"
+    },
+    {
+      "cand_id": "tats_ucf101_gif_2022",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Include the MIT notice in the credits or description file: 'MIT License, Copyright (c) Facebook, Inc. and its affiliates' plus the permission notice (https://github.com/songweige/TATS/blob/03bbce1daa3da7e9bff8221e9ec433df9484817f/LICENSE.txt); credit 'TATS (Ge et al., UMD / Meta AI), 2022'.",
+        "GATE: before any use a human must view all three 284 px panels and confirm they are all model output (no real UCF-101 ground-truth footage of real people), with no recognisable person, text or logo. Verifier could not determine this.",
+        "Label: 'TATS, UCF-101 class-conditional results, 2022, README demo GIF'. The GIF is only 10.24 s; do not caption it as 'thousands of frames' (that is the paper's claim about the method).",
+        "Recommended courtesy e-mail to the authors confirming that the README assets are covered by the repo MIT licence."
+      ],
+      "issues_found": [
+        "Licence is repo-level MIT (LICENSE.txt 'Copyright (c) Facebook, Inc. and its affiliates', added 2022-04-16, commit e72becb) and covers the GIF only by the documentation-asset argument; the GIF (commit fec6352 2022-04-08 04:37 -0400, author Songwei) is the README header image. Pinned tree 03bbce1 is the repo HEAD (2024-05-01). No media-specific sentence.",
+        "Copyright line names Facebook, Inc. while the repo is on the first author's personal account (paper says work done at Meta AI); the grant is still in the repo but the rights holder is Meta. Note the paper itself is CC BY 4.0, which supports but does not extend to the GIF.",
+        "README has no caption for the GIF, so 'UCF-101' and 'three panels' come from the file name and geometry (852 = 3 x 284) only. Whether each panel is a generated sample or includes real reference footage is UNKNOWN.",
+        "Measured: 852x284, 512 frames x 20 ms (50 fps) = 10.24 s, 59.9 MB, loop 65535.",
+        "Served as application/octet-stream; PIL confirms a valid GIF."
+      ],
+      "corrected_fields": {
+        "created": "2022-04-08 (asset committed; generation date not stated)",
+        "model_version": "TATS (arXiv 2022-04-07); dataset shown inferred from file name only",
+        "media_sha256": "eea0a34166e2cd40763f157bbba318f3166a7ab93237fd345a4a01721963642f",
+        "watermark_notes": "unknown - frames not viewed; no GIF comment block"
+      },
+      "http": {"status": 200, "content_length": 59882821, "content_type": "application/octet-stream"},
+      "model_date_corroboration": {
+        "claim": "TATS first public 2022-04-07 (arXiv v1).",
+        "source_url": "https://arxiv.org/abs/2204.03638",
+        "quote": "we present a method that builds on 3D-VQGAN and transformers to generate videos with thousands of frames"
+      },
+      "confidence": "low"
+    },
+    {
+      "cand_id": "tats_sky_long_gif_2022",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Include the MIT notice in the credits or description file: 'MIT License, Copyright (c) Facebook, Inc. and its affiliates' plus the permission notice; credit 'TATS (Ge et al., UMD / Meta AI), 2022'.",
+        "Label: 'TATS, Sky Time-lapse long-video results, 2022, README demo GIF; frames appear sparsely sampled - not real time'. Do not state the GIF is a continuous 1024-frame generation unless verified.",
+        "Human visual review before use (frames not viewed by verifier); sky/cloud content, no people expected.",
+        "Recommended courtesy e-mail to the authors confirming that the README assets are covered by the MIT licence."
+      ],
+      "issues_found": [
+        "Same repo-level MIT, argument-only coverage as tats_ucf101_gif_2022; GIF added by commit b9f8702 2022-07-17 ('high resolution sky vid', SG), after LICENSE.txt (2022-04-16).",
+        "README displays it at 852x210 although the file is 1095x270.",
+        "The hunter's remark that frames are 'sampled sparsely' is an inference from measured frame change (mean about 42/255), not from any text.",
+        "Measured: 1095x270, 252 frames, 120-130 ms each = 31.51 s, 40.4 MB, loop 0; four 270 px panels with 5 px gutters (from hunter, not re-measured).",
+        "Served as application/octet-stream; PIL confirms a valid GIF."
+      ],
+      "corrected_fields": {
+        "created": "2022-07-17 (asset committed; generation date not stated)",
+        "media_sha256": "a2ee793b16b925c7037bbd7fd83f4f37b7ff41181d5017d109653d1f2642aeeb"
+      },
+      "http": {"status": 200, "content_length": 40420738, "content_type": "application/octet-stream"},
+      "model_date_corroboration": {
+        "claim": "TATS first public 2022-04-07 (arXiv v1).",
+        "source_url": "https://arxiv.org/abs/2204.03638",
+        "quote": "we present a method that builds on 3D-VQGAN and transformers to generate videos with thousands of frames"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "mocogan_hd_afhq_2021",
+      "final_verdict": "reject",
+      "conditions": [
+        "REJECT: the generator behind this GIF is trained on AFHQ (an NC-licensed dataset) and built on StyleGAN2, whose code is under the NVIDIA Source Code License-NC reproduced in the same LICENSE file; coverage of the GIF by the Snap MIT grant is argument-only. Reopen only with written confirmation from Snap Research / the authors that the README GIFs may be reused commercially, plus a human visual review."
+      ],
+      "issues_found": [
+        "The repo LICENSE (pinned tree 27356ba = HEAD 2021-09-09) is a composite: Snap MIT grant ('Copyright (c) 2021 Snap Inc. All rights reserved.' then MIT text), stylegan2-pytorch MIT, and the full 'Nvidia Source Code License-NC' for stylegan2. The GIFs were produced by exactly that pipeline. The hunter dismissed the NC section as third-party code only; that leaves a documented NC lineage the hunter did not weigh.",
+        "Image generator is trained on AFHQ (animal faces; the dataset carries a non-commercial licence, CC BY-NC 4.0, from its StarGAN v2 release - stated from general knowledge, not fetched by this verifier) and the motion generator on VoxCeleb (real celebrity video, motion only). README caption verified: '(AFHQ, VoxCeleb)'.",
+        "Coverage of the GIF is by the MIT 'documentation files' argument only; gifs/ was added in the single 'first' commit a2f8b8c (2021-08-07, alanspike), the same commit that added LICENSE. GIF comment block: 'Created with ezgif.com video to GIF converter'.",
+        "Measured: 600x600, 13 frames x 100 ms = 1.3 s, 3.68 MB, loop 0. Content unseen; 1.3 s asset has little editorial value against the licence risk."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "reject",
+        "created": "2021-08-07 (asset committed; paper 2021-04-30; generation date not stated)",
+        "risk_flags": ["nc_component_in_licence_file", "nc_training_dataset_lineage"],
+        "media_sha256": "075d61881c87fe2e5a6fbec8637cad0ae6a82ec8fa52676f3018fa9e1600379d"
+      },
+      "http": {"status": 200, "content_length": 3684595, "content_type": "image/gif"},
+      "model_date_corroboration": {
+        "claim": "MoCoGAN-HD first public 2021-04-30 (arXiv v1).",
+        "source_url": "https://arxiv.org/abs/2104.15069",
+        "quote": "We present a framework that leverages contemporary image generators to render high-resolution videos"
+      },
+      "confidence": "high"
+    },
+    {
+      "cand_id": "mocogan_hd_lsun_church_2021",
+      "final_verdict": "reject",
+      "conditions": [
+        "REJECT for now: media coverage rests only on a composite LICENSE file that also embeds the NVIDIA Source Code License-NC for the StyleGAN2 code that produced the GIF, and the LSUN / TLVDB training-data terms were not verified. Reopen only with written confirmation from Snap Research / the authors that the README GIFs may be reused commercially, plus a human visual review. If reopened: 'Copyright (c) 2021 Snap Inc.' MIT notice in the credits."
+      ],
+      "issues_found": [
+        "Same composite LICENSE as the AFHQ GIF (Snap MIT + stylegan2-pytorch MIT + Nvidia Source Code License-NC); MIT coverage of gifs/LSUN-Church.gif is argument-only ('software and associated documentation files').",
+        "Training data lineage unverified: LSUN church images and the TLVDB time-lapse database (README links http://people.csail.mit.edu/yichangshih/time_lapse/); their terms were not checked.",
+        "README caption verified: '(LSUN-Church, TLVDB)'. Measured: 600x600, 13 frames x 100 ms = 1.3 s, 3.41 MB; content unseen.",
+        "This was the least problematic of the three MoCoGAN-HD GIFs; it is rejected only because the standard 'clearly cover the media' is not met. A written OK from Snap Research would flip it."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "reject",
+        "created": "2021-08-07 (asset committed; generation date not stated)",
+        "risk_flags": ["nc_component_in_licence_file", "training_data_terms_unverified"],
+        "media_sha256": "0d4ab5c1d6b7f77c5c60970f2f08561e40e48073842ef8564934d813a2481c47"
+      },
+      "http": {"status": 200, "content_length": 3413332, "content_type": "image/gif"},
+      "model_date_corroboration": {
+        "claim": "MoCoGAN-HD first public 2021-04-30 (arXiv v1).",
+        "source_url": "https://arxiv.org/abs/2104.15069",
+        "quote": "We present a framework that leverages contemporary image generators to render high-resolution videos"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "mocogan_hd_anime_2021",
+      "final_verdict": "reject",
+      "conditions": [
+        "REJECT: the anime image generator's training data is not identified anywhere in the repo (README lists only 'Anime image generator'), so IP provenance and resemblance to copyrighted characters are unresolvable, on top of the composite NC-containing LICENSE. Reopen only with written confirmation from Snap Research / the authors plus a human visual review."
+      ],
+      "issues_found": [
+        "Composite LICENSE with an embedded Nvidia Source Code License-NC section (see mocogan_hd_afhq_2021); MIT coverage of the GIF is argument-only.",
+        "README: '(Anime, VoxCeleb)' with a link to an 'Anime image generator' checkpoint but no dataset named; anime-style face datasets are typically scraped artwork of copyrighted characters. The hunter's own note asks to check for resemblance to copyrighted anime characters, which cannot be done without viewing.",
+        "Measured: 600x600, 13 frames x 100 ms = 1.3 s, 3.33 MB; content unseen."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "reject",
+        "created": "2021-08-07 (asset committed; generation date not stated)",
+        "risk_flags": ["nc_component_in_licence_file", "unknown_training_data_possible_character_ip"],
+        "media_sha256": "a84af236472a36520af5fb66c8bc79705a57480e900e3841172e02d71c844902"
+      },
+      "http": {"status": 200, "content_length": 3328914, "content_type": "image/gif"},
+      "model_date_corroboration": {
+        "claim": "MoCoGAN-HD first public 2021-04-30 (arXiv v1).",
+        "source_url": "https://arxiv.org/abs/2104.15069",
+        "quote": "We present a framework that leverages contemporary image generators to render high-resolution videos"
+      },
+      "confidence": "high"
+    },
+    {
+      "cand_id": "stylegan_music_video_ia_2021",
+      "final_verdict": "reject",
+      "conditions": [
+        "REJECT: uploader cannot be shown to be the rights holder, the PD Mark is only a marker, the embedded audio is separately unlicensed AI music of unclear provenance, and the model claim is uncorroborated. No condition-based route to use; use a different early-GAN source."
+      ],
+      "issues_found": [
+        "Uploader claiming a licence it cannot grant: IA metadata shows creator 'This Music Video Does Not Exist' but uploader ixeuge@gmail.com (a personal address, not the site owner). The item title '2748 1 0 0' looks like a machine-generated sequence id from the site. A 2021-03-23 Hacker News thread about thismusicvideodoesnotexist.com quotes the site footer 'Built with OpenAI's Jukebox and NVIDIA's StyleGAN2' with a link to taggartbonham.me, i.e. a third-party website project, not the uploader.",
+        "Legal basis is weak: description says only 'The artificial intelligence can't have copyright'; licenseurl is the CC Public Domain MARK 1.0 (a marker of PD status, not a dedication). That theory does not clear the audio: the item has a separate 3.67 MB mp3 original and a 90 s AAC track; the music is OpenAI Jukebox output (per the site footer via HN) and HN commenters reported that a track sounded like an existing song (unverified, secondary). Audio provenance and any similarity to copyrighted music are unknown.",
+        "Model claim uncorroborated for this file: description says 'generated by StyleGAN'; no version, dataset or process on the page; StyleGAN's own paper (arXiv 2018-12-12) only proves the architecture existed. Visuals may be StyleGAN2 per the site footer (secondary), contradicting a bare 'StyleGAN' label.",
+        "Real-person risk: StyleGAN music visuals commonly morph face-like imagery; content not viewed. The hunter flagged real_person and unverifiable_model_claim.",
+        "The site domain thismusicvideodoesnotexist.com now serves an unrelated gambling-spam page (retrieved 2026-09-29): do not link to it as a source.",
+        "Facts that verified: IA publicdate 2021-11-11 07:01:02, 'date' field '2021' (year only); mp4 h264 480x480, 1938 frames, 89.95 s; HTTP 302 to dn720406.ca.archive.org then 200 video/mp4, 10341337 bytes."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "reject",
+        "attribution_required": "unknown (no rights holder established)",
+        "model_version": "Uploader's unverified label 'StyleGAN'; the originating site footer (secondary, via HN) says StyleGAN2 visuals plus OpenAI Jukebox music",
+        "media_sha256": "2a1cb00c8f53c8a2b8f5f0b8c53a59f2a93cd7e3b1d0e4a70a5d0eb0dd0a8f14"
+      },
+      "http": {"status": 200, "content_length": 10341337, "content_type": "video/mp4"},
+      "model_date_corroboration": {
+        "claim": "StyleGAN architecture published 2018-12-12; this file's model, version and creation date are NOT corroborated by any primary source (upload date 2021-11-11 is only the IA publicdate).",
+        "source_url": "https://arxiv.org/abs/1812.04948",
+        "quote": "We propose an alternative generator architecture for generative adversarial networks, borrowing from style transfer literature."
+      },
+      "confidence": "high"
+    },
+    {
+      "cand_id": "tats_fig_failure_cases_ucf101_2022",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "CC BY 4.0 attribution: 'Ge, Hayes, Yang, Yin, Pang, Jacobs, Huang, Parikh, Long Video Generation with Time-Agnostic VQGAN and Time-Sensitive Transformer, arXiv:2204.03638 (2022), CC BY 4.0', with the licence link http://creativecommons.org/licenses/by/4.0/ and the abs-page URL; indicate changes (rasterised, cropped, animated, upscaled).",
+        "Keep or faithfully re-typeset the in-figure text labels, which are part of the authors' figure: 'Boxing Punching Bag: Every 100th frame between frame 0 to frame 1000' and 'Long Jump: Every 50th frame between frame 0 to frame 500'. Say on screen that these are failure cases the authors chose to show.",
+        "Human visual review before use (not viewed by verifier): 22 generated 200x200 human-action frames; confirm no recognisable person, and note the low native resolution (200 px per frame) when upscaling for 1080x1920.",
+        "Do not imply the figure is representative of every generation; it is an authors' selected set of failures."
+      ],
+      "issues_found": [
+        "Licence verified and not breakable: arxiv.org/abs pages for v1, v2, v3, v4 and the unversioned page each carry the licence link http://creativecommons.org/licenses/by/4.0/. Caveat: the arXiv CC BY licence is granted by the submitter for the paper as submitted; the figure is authors' own model output, no third-party material found in the TeX.",
+        "Hunter's date is wrong: 'created 2022-09-24' is the v4 revision date, but the figure with the same caption is already in the v1 PDF (page 24) and v4 PDF (Fig. 20, page 26). Correct creation date basis is 2022-04-07 (v1).",
+        "'media_url' https://arxiv.org/e-print/2204.03638 is a source tarball (301 to /src/2204.03638, 200 application/gzip, 9,277,739 bytes) and serves the LATEST version, so its content can change if v5 appears. The figure is member figures/results/long_video_gen_failure.pdf (1 page, 1152 x 259.2 pt, 22 embedded 200x200 JPEG frames, verified with pdfimages).",
+        "Caption verified in the TeX (sections/6_appendix.tex): 'Failure cases of class-conditional generation results of long videos on the UCF-101 dataset.' The figure text adds the two class labels and frame-step labels listed in the conditions."
+      ],
+      "corrected_fields": {
+        "created": "2022-04-07 (first arXiv version, figure with same caption present in v1 PDF p.24; figure image may have been revised in later versions)",
+        "date_basis": "arXiv v1 posted 2022-04-07; caption present in v1 (p.24) and v4 (p.26)",
+        "media_url_note": "Direct alternatives: https://arxiv.org/pdf/2204.03638v4 page 26 (HTTP 200 application/pdf, 3,697,642 bytes); e-print member figures/results/long_video_gen_failure.pdf",
+        "watermark_notes": "No logos; burnt-in text labels present: 'Boxing Punching Bag: Every 100th frame between frame 0 to frame 1000' and 'Long Jump: Every 50th frame between frame 0 to frame 500'",
+        "media_sha256_tarball": "8367f83843ede3ceef7ead6cc083d266718d40853b1e5c867e2cf1101221554a",
+        "media_sha256_figure_pdf": "7c4bc1da3b153ff1a1c47ea763a9ea84a290df76d7ad4f16ab5c0e92b736767a",
+        "reuse_verdict": "clear_with_conditions"
+      },
+      "http": {"status": 200, "content_length": 9277739, "content_type": "application/gzip"},
+      "model_date_corroboration": {
+        "claim": "TATS first public 2022-04-07 (arXiv v1 published 2022-04-07T17:59:02Z); figure present in v1.",
+        "source_url": "https://arxiv.org/abs/2204.03638",
+        "quote": "we present a method that builds on 3D-VQGAN and transformers to generate videos with thousands of frames"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "tats_fig_1024_frame_sky_consecutive_2022",
+      "final_verdict": "clear",
+      "conditions": [
+        "CC BY 4.0 attribution (standard, no other restriction): 'Ge, Hayes, Yang, Yin, Pang, Jacobs, Huang, Parikh, Long Video Generation with Time-Agnostic VQGAN and Time-Sensitive Transformer, arXiv:2204.03638 (2022), CC BY 4.0', licence link http://creativecommons.org/licenses/by/4.0/; indicate changes (rasterised, cropped, animated).",
+        "Keep or faithfully re-typeset the figure's row labels: 'Every 100th frame between frame 0 to frame 1000', 'Every 10th frame between frame 300 to frame 400', 'Every single frame between frame 330 to frame 340'.",
+        "Say the frames come from ONE generated 1024-frame sky video chosen by the authors; not representative of every generation. Routine human glance before use (no frame viewed by verifier)."
+      ],
+      "issues_found": [
+        "Licence verified on the abs pages of v1-v4 (http://creativecommons.org/licenses/by/4.0/). Sky subject, no people; no third-party material found in the TeX.",
+        "Hunter's date is imprecise: the figure with this caption is already in the v1 PDF (page 13) and v4 (Fig. 8, page 13); creation basis is 2022-04-07, not the v4 date 2022-09-24.",
+        "Hunter's claim of 'genuine consecutive frames' verified: the third row is labelled 'Every single frame between frame 330 to frame 340' (11 frames); pdfimages lists 33 placements (about 30 unique images) of 200x200 JPEGs; caption in sections/4_experiment.tex: 'Every 100th, 10th, and consecutive frames are extracted from a generated sky video with 1024 frames.'",
+        "'media_url' is the latest-version source tarball (301 then 200, application/gzip, 9,277,739 bytes); the figure is member figures/results/long_video_gen_intersection.pdf (1152 x 410.4 pt). Also available from https://arxiv.org/pdf/2204.03638v4 page 13."
+      ],
+      "corrected_fields": {
+        "created": "2022-04-07 (first arXiv version; figure with same caption in v1 PDF p.13)",
+        "date_basis": "arXiv v1 posted 2022-04-07; caption present in v1 (p.13) and v4 (Fig. 8, p.13)",
+        "media_url_note": "Direct alternative: https://arxiv.org/pdf/2204.03638v4 page 13 (HTTP 200 application/pdf, 3,697,642 bytes)",
+        "watermark_notes": "No logos; three burnt-in row labels (see conditions)",
+        "media_sha256_tarball": "8367f83843ede3ceef7ead6cc083d266718d40853b1e5c867e2cf1101221554a",
+        "media_sha256_figure_pdf": "258dddb1a9f832a178ac092910ad12b56f990db6b7d1c101e8094bc5d71db68f",
+        "reuse_verdict": "clear"
+      },
+      "http": {"status": 200, "content_length": 9277739, "content_type": "application/gzip"},
+      "model_date_corroboration": {
+        "claim": "TATS first public 2022-04-07 (arXiv v1); figure present in v1.",
+        "source_url": "https://arxiv.org/abs/2204.03638",
+        "quote": "we present a method that builds on 3D-VQGAN and transformers to generate videos with thousands of frames"
+      },
+      "confidence": "high"
+    },
+    {
+      "cand_id": "videogpt_fig_ucf101_unconditional_2021",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "CC BY 4.0 attribution: 'Yan, Zhang, Abbeel, Srinivas, VideoGPT: Video Generation using VQ-VAE and Transformers, arXiv:2104.10157 (2021), CC BY 4.0', licence link http://creativecommons.org/licenses/by/4.0/; indicate changes (rasterised, cropped, animated).",
+        "Human visual review before use (not viewed by verifier): three strips of generated human-action frames; confirm no recognisable person, no text.",
+        "Note the native strip height is only about 82 px per row (1238x82/77/82 JPEGs): heavy upscaling for 1080x1920 will look soft; present it as a small, honest 2021 thumbnail strip and do not imply modern quality.",
+        "Do not use the project-page mp4s (wilson1yan.github.io, no licence); they are not covered."
+      ],
+      "issues_found": [
+        "Licence verified on the abs pages of v1, v2 and the unversioned page (CC BY 4.0). Third-party frames: none expected (generated samples), but the training set is UCF-101 (YouTube human-action clips).",
+        "Hunter's date is imprecise: figure and caption '128x128 UCF-101 unconditional samples' are already in the v1 PDF (page 7) and v2 (Figure 7, page 7); creation basis is 2021-04-20, not the v2 date 2021-09-14.",
+        "'media_url' https://arxiv.org/e-print/2104.10157 is the source tarball (301 then 200, application/gzip, 4,778,315 bytes, latest version); the figure is member figures/ucf_samples.pdf (717.4 x 134.7 pt, 3 embedded JPEG strips 1238x82, 1238x77, 1238x82). Also in https://arxiv.org/pdf/2104.10157v2 page 7.",
+        "The hunter's remark that the project page says 'Non-cherry picked' is about unlicensed mp4s and is not evidence for this figure; the paper does not state selection method for this figure in the caption."
+      ],
+      "corrected_fields": {
+        "created": "2021-04-20 (first arXiv version; figure in v1 PDF p.7)",
+        "date_basis": "arXiv v1 posted 2021-04-20T17:58:03Z; caption present in v1 (p.7) and v2 (Fig. 7, p.7)",
+        "media_url_note": "Direct alternative: https://arxiv.org/pdf/2104.10157v2 page 7 (HTTP 200 application/pdf)",
+        "watermark_notes": "No text labels extracted from the figure (pdftotext empty); no logos expected",
+        "media_sha256_tarball": "5045dcc7a6849082445c8880d15a46d8c4369babd2a609dc97756872b8ccc399",
+        "media_sha256_figure_pdf": "9f7adb9bd474e665a8915e05bac27f645744c43869244c52a139eee6300b2794",
+        "reuse_verdict": "clear_with_conditions"
+      },
+      "http": {"status": 200, "content_length": 4778315, "content_type": "application/gzip"},
+      "model_date_corroboration": {
+        "claim": "VideoGPT first public 2021-04-20 (arXiv v1).",
+        "source_url": "https://arxiv.org/abs/2104.10157",
+        "quote": "We present VideoGPT: a conceptually simple architecture for scaling likelihood based generative modeling to natural videos"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "videogpt_fig_bair_single_frame_conditioned_2021",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "CC BY 4.0 attribution: 'Yan, Zhang, Abbeel, Srinivas, VideoGPT: Video Generation using VQ-VAE and Transformers, arXiv:2104.10157 (2021), CC BY 4.0', licence link http://creativecommons.org/licenses/by/4.0/; indicate changes.",
+        "Mask or crop the red-highlighted conditioning-frame column: it is a real frame from the BAIR Robot Pushing dataset, whose own terms were not checked and are not covered by the paper's CC BY. Keep only the generated frames.",
+        "Keep the authors' framing: 'BAIR Robot Pushing samples from a single-frame conditioned VideoGPT model ... the samples eventually diverge to varied trajectories'. This is a 2021 conditioning example, not modern image-to-video.",
+        "Human visual review before use (not viewed by verifier); robot-arm scene, no people expected."
+      ],
+      "issues_found": [
+        "Licence verified on the abs pages of v1, v2 and the unversioned page (CC BY 4.0). The figure mixes one real dataset frame (conditioning frame, highlighted red per the caption) with generated frames.",
+        "Hunter's date is imprecise: figure and caption are already in the v1 PDF (page 5) and v2 (Figure 6, page 6); creation basis is 2021-04-20, not the v2 date 2021-09-14.",
+        "'media_url' is the source tarball (latest version); the figure is member figures/bair_1frame_cond_samples.pdf (708.2 x 183.1 pt, one embedded 1058x266 JPEG strip). Caption verified in experiment.tex and in the PDFs.",
+        "Native resolution is small (1058x266 for the whole strip); upscaling will be soft."
+      ],
+      "corrected_fields": {
+        "created": "2021-04-20 (first arXiv version; figure in v1 PDF p.5)",
+        "date_basis": "arXiv v1 posted 2021-04-20T17:58:03Z; caption present in v1 (p.5) and v2 (Fig. 6, p.6)",
+        "media_url_note": "Direct alternative: https://arxiv.org/pdf/2104.10157v2 page 6 (HTTP 200 application/pdf)",
+        "watermark_notes": "No text labels extracted (pdftotext empty); red conditioning-frame highlight is part of the figure",
+        "media_sha256_tarball": "5045dcc7a6849082445c8880d15a46d8c4369babd2a609dc97756872b8ccc399",
+        "media_sha256_figure_pdf": "f6f2a9dae867e617549592d87ce345cc6aba92742aa12fcf7363fffe747b4f70",
+        "reuse_verdict": "clear_with_conditions"
+      },
+      "http": {"status": 200, "content_length": 4778315, "content_type": "application/gzip"},
+      "model_date_corroboration": {
+        "claim": "VideoGPT first public 2021-04-20 (arXiv v1).",
+        "source_url": "https://arxiv.org/abs/2104.10157",
+        "quote": "We present VideoGPT: a conceptually simple architecture for scaling likelihood based generative modeling to natural videos"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "stylegan_v_fig_1hour_long_videos_sky_2021",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "CC BY 4.0 attribution: 'Skorokhodov, Tulyakov, Elhoseiny, StyleGAN-V: A Continuous Video Generator with the Price, Image Quality and Perks of StyleGAN2, arXiv:2112.14683 (2021), CC BY 4.0', licence link http://creativecommons.org/licenses/by/4.0/; indicate changes.",
+        "Present it as the authors' own comparison: the MoCoGAN-HD and DIGAN rows were generated by the StyleGAN-V authors and the 'fails' / 'struggles' wording is the authors' claim. The third row label is 'Ours' and means StyleGAN-V; re-label or add 'Ours = StyleGAN-V' if cropped. Keep the time axis labels '0 1/4 sec 1/2 sec 1 sec 5 sec 1 min 1 hour'.",
+        "Do NOT use anything from github.com/universome/stylegan-v (README says likely restricted by the NVIDIA licence); only the paper figure is cleared.",
+        "Human visual review before use (not viewed by verifier); sky time-lapse content, no people expected."
+      ],
+      "issues_found": [
+        "Licence verified on the abs pages of v1-v4 and the unversioned page (CC BY 4.0).",
+        "Hunter's date is imprecise: Figure 1 with the same caption is already in the v1 PDF (page 1) and v4; creation basis is 2021-12-29, not the v4 date 2022-05-31. Figure image may differ between versions; only the caption was compared.",
+        "The figure contains outputs of other developers' models (MoCoGAN-HD, DIGAN) as rendered by these authors; covered as part of the paper's CC BY but the attribution should not suggest those developers made the figure.",
+        "'media_url' is the source tarball (301 then 200, application/gzip, 3,605,491 bytes, latest version); the figure is member images/long-videos-sky.pdf (613 x 299 pt, 3 JPEG strips 1858x268, 1922x278, 1920x278). Figure 1 in the PDF is a two-subfigure layout (faces and sky); only the sky half is this candidate.",
+        "Caption verified in the TeX (figures/long-videos.tex) and in the v1 and v4 PDFs, page 1."
+      ],
+      "corrected_fields": {
+        "created": "2021-12-29 (first arXiv version; Figure 1 with same caption in v1 PDF p.1)",
+        "date_basis": "arXiv v1 posted 2021-12-29T17:58:29Z; caption present in v1 through v4 (p.1)",
+        "media_url_note": "Direct alternative: https://arxiv.org/pdf/2112.14683v4 page 1 (HTTP 200 application/pdf)",
+        "watermark_notes": "Burnt-in labels: 'MoCoGAN-HD', 'DIGAN', 'Ours' and the time axis '0 1/4 sec 1/2 sec 1 sec 5 sec 1 min 1 hour'",
+        "media_sha256_tarball": "765a3f6a623791aa5515062d79ec6564e65b560cb849b1269d5661842bac2482",
+        "media_sha256_figure_pdf": "d6391d60410c67e83dd96e61048ad3e4c3b812b20d2b3f68d39113c9c8274677",
+        "reuse_verdict": "clear_with_conditions"
+      },
+      "http": {"status": 200, "content_length": 3605491, "content_type": "application/gzip"},
+      "model_date_corroboration": {
+        "claim": "StyleGAN-V first public 2021-12-29 (arXiv v1).",
+        "source_url": "https://arxiv.org/abs/2112.14683",
+        "quote": "extend the paradigm of neural representations to build a continuous-time video generator"
+      },
+      "confidence": "high"
+    }
+  ],
+  "summary": {"checked": 19, "clear": 1, "clear_with_conditions": 11, "rejected": 7}
+}

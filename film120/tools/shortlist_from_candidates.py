@@ -27,16 +27,20 @@ def main():
     out = sys.argv[1]; skip = set(); maxspan = 30.0
     if '--skip' in sys.argv: skip = set(sys.argv[sys.argv.index('--skip') + 1].split(','))
     if '--max-span' in sys.argv: maxspan = float(sys.argv[sys.argv.index('--max-span') + 1])
-    verd = {}
+    verd = {}; url_verdicts = {}
     for f in glob.glob(os.path.join(HERE, 'data/verified/H*.json')):
         for v in json.load(open(f))['verdicts']: verd.setdefault(v['cand_id'], v)
+    for f in glob.glob(os.path.join(HERE, 'data/candidates/H*.json')):           # strictest verdict per media URL wins (two hunters can find the same file and two verifiers can disagree)
+        for c in json.load(open(f))['candidates']:
+            v = verd.get(c['cand_id'])
+            if v: url_verdicts.setdefault(c['media_url'].split('?')[0], []).append(v['final_verdict'])
     clips, excerpts, seen, by_url = {}, {}, set(), {}
     for f in sorted(glob.glob(os.path.join(HERE, 'data/candidates/H*.json'))):
         for c in json.load(open(f))['candidates']:
             cid = c['cand_id']
             if cid in seen or cid in skip: continue
             v = verd.get(cid); fv = v['final_verdict'] if v else 'unverified'
-            if fv == 'reject': continue
+            if fv == 'reject' or 'reject' in url_verdicts.get(c['media_url'].split('?')[0], []): continue
             u = c['media_url'].split('?')[0]
             if u in by_url:
                 if fv != 'unverified' and clips[by_url[u]]['verdict'] == 'unverified': del clips[by_url[u]]; del excerpts['probe_' + by_url[u]]           # a verified duplicate replaces an unverified one
