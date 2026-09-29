@@ -9,6 +9,7 @@ from engine.gfx import clamp, lerp, prog, ease_io, ease_out, kinetic
 NAME = 'contact'
 STYLE = 'now'
 T0, T1 = 83.0, 90.0
+HERO_T0 = T0 + .1                    # the hero tile plays from here without looping; seq11's first hero continues the same clip time (needs >= ~10.5 s of footage)
 TW, TH = 304, 210
 GX, GY = 20, 20
 
@@ -37,9 +38,9 @@ def render(ctx, t):
         G.draw_text(c, ex.label.get('year', ''), 'mono', 20, tx + 10, ty + 8, WHITE, alpha=al * (1 - e_exp), track=.04, shadow=4)
         G.draw_text(c, ex.label.get('model', '').upper(), 'monor', 16, tx + 10, ty + TH - 28, (236, 232, 222), alpha=al * (1 - e_exp), track=.03, shadow=4)
     if hero_draw:
-        eid, tx, ty, al = hero_draw; big, mode = kit.hero_frame(ctx, eid, max(0.0, t - T0), dur=T1 - T0 + 3)
+        eid, tx, ty, al = hero_draw; big, mode = kit.hero_frame(ctx, eid, max(0.0, t - HERO_T0), dur=T1 - T0 + 3)
         X0, Y0, X1, Y1 = lerp(tx, 0, e_exp), lerp(ty, 0, e_exp), lerp(tx + TW, W, e_exp), lerp(ty + TH, H, e_exp)
-        rw, rh = max(2, int(X1 - X0)), max(2, int(Y1 - Y0)); a_ = kit.tile_image(ctx, eid, max(0.0, t - T0), rw, rh, max_h=720); b_ = kit.window_from(big, X0, Y0, X1, Y1, lerp(.36, 1.0, e_exp)); mx = ease_io(prog(e_exp, .5, 1.0))
+        rw, rh = max(2, int(X1 - X0)), max(2, int(Y1 - Y0)); a_ = kit.tile_image(ctx, eid, max(0.0, t - HERO_T0), rw, rh, loop=False, max_h=720); b_ = kit.window_from(big, X0, Y0, X1, Y1, lerp(.36, 1.0, e_exp)); mx = ease_io(prog(e_exp, .5, 1.0))
         img = a_ if mx <= 0 else (a_.astype(np.float32) * (1 - mx) + b_.astype(np.float32) * mx).astype(np.uint8)
         if e_exp < .02: ui.panel(c, img, int(tx), int(ty), alpha=al, shadow=False, ticks=False)
         else:

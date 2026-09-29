@@ -461,7 +461,8 @@
    "heroes": [
     {
      "ex": "e2",
-     "dur": 3.5
+     "dur": 3.5,
+     "continue_seq10": true
     },
     {
      "ex": "e3",

@@ -1,5 +1,5 @@
 """SEQUENCE - Hero shots (S6: 90-104 s).  Let the best recent clips breathe (3-5 s each) with minimal overlay.
-Cast (plan.cast.seq11): heroes = [ {"ex": excerpt id, "dur": 3.6, "zoom": [1.0, 1.08], "note": null | "STILL VISIBLE: ...", "note_src": "developer page"} ... ] (4-6); the first hero continues the tile that expanded in seq10 (hero 0 = same excerpt).
+Cast (plan.cast.seq11): heroes = [ {"ex": excerpt id, "dur": 3.6, "zoom": [1.0, 1.08], "note": null | "STILL VISIBLE: ...", "note_src": "developer page", "continue_seq10": true (hero 0 only)} ... ] (4-6); hero 0 = the excerpt of the tile that expanded in seq10.
 Overlay per shot: source label only (placed off any profiled watermark) + a thin playhead bar (the Spine, receded).  One shot may carry a short, sourced limitation note."""
 import numpy as np
 from engine import gfx as G, ui, kit, transitions as TR
@@ -25,7 +25,10 @@ def _starts(ctx, n):
 
 def shot(ctx, i, t, ts):
     h = _heroes(ctx)[i]; u = max(0.0, t - ts[i]); ex = ctx.ex(h['ex']); dur = (ts[i + 1] if i + 1 < len(ts) else T1) - ts[i]
-    img, mode = kit.hero_frame(ctx, h['ex'], u + (T1 - T0 if False else 0) + (T0 - T0), zoom=tuple(h.get('zoom', (1.0, 1.08))), dur=dur + .3, drift=h.get('drift', 0.0))
+    if i == 0 and h.get('continue_seq10'):                       # same clip time and zoom curve as the tile that expanded in seq10
+        from seq import seq10_contact as C
+        img, mode = kit.hero_frame(ctx, h['ex'], max(0.0, t - C.HERO_T0), zoom=(1.0, 1.08), dur=C.T1 - C.T0 + 3)
+    else: img, mode = kit.hero_frame(ctx, h['ex'], u, zoom=tuple(h.get('zoom', (1.0, 1.08))), dur=dur + .3, drift=h.get('drift', 0.0))
     c = img.copy(); G.gradient_v(c, 1180, H, 0, .5)
     if u < .5: c = G.scale_about(c, 1 + .015 * (1 - u / .5))
     # minimal overlay: label + playhead
