@@ -74,6 +74,8 @@ def montage(ctx, t, collapse=0.0, alpha_all=1.0):
     if t < beat_t(1):                                                  # the point: drops to the centre, swells, detonates
         a = ease_io(prog(t, T0 + .3, T0 + .62)); y = lerp(SPINE_Y, CY, a); r = lerp(5, 26, kinetic(prog(t, T0 + .55, beat_t(1)) )) if t > T0 + .55 else 5
         gl = clamp(prog(t, T0 + .3, beat_t(1)))
+        for gr, ga in ((280, 16), (190, 20), (110, 26)):                # soft volt glow round the point (also keeps the opening beat from reading as a black frame)
+            G.vector(c, lambda d, ss, ox, oy, gr=gr, ga=ga: d.ellipse([(CX - gr - ox) * ss, (y - gr - oy) * ss, (CX + gr - ox) * ss, (y + gr - oy) * ss], fill=VOLT + (int(ga * (.6 + .4 * gl)),)), bbox=(CX - gr - 4, y - gr - 4, 2 * gr + 8, 2 * gr + 8))
         G.vector(c, lambda d, ss, ox, oy: d.ellipse([(CX - r - ox) * ss, (y - r - oy) * ss, (CX + r - ox) * ss, (y + r - oy) * ss], fill=VOLT + (255,)), bbox=(CX - 60, y - 60, 120, 120))
         return c
     since = t - beat_t(1)
