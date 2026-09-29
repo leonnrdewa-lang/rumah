@@ -162,7 +162,7 @@ def transition(kind, a, b, p, ring=D.PAPER):
             out[y0:y0 + hh] = np.roll(out[y0:y0 + hh], dx, 1)
         return D.chroma(out, int(14 * (1 - p)))
     if kind == 'whip':
-        e = ease_io(p); off = int(e * W * 1.05)
+        e = ease_io(p); off = int(e * W)
         cat = np.concatenate([a, b], 1); win = cat[:, off:off + W]
         return D.motion_blur_h(win, int(260 * np.sin(np.pi * clamp(p))) + 2)
     if kind == 'zoomthrough':

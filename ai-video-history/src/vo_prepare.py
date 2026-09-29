@@ -81,6 +81,22 @@ def main():
                 nx = next((tm[k][0] for k in range(i + 1, len(tm)) if tm[k]), len(y) / SR - TAIL)
                 gaps = [k for k in range(len(tm)) if tm[k] is None]
                 tm[i] = (pl, max(pl + 0.05, min(nx, pl + 0.4)))
+        # snap word edges to the real silences of the tightened take (ASR times drift around pauses)
+        env = 20 * np.log10(np.sqrt((y[:len(y) // HOP * HOP].reshape(-1, HOP) ** 2).mean(1)) + 1e-9); act = env > env.max() - 40
+        runs, i0 = [], None
+        for k, a_ in enumerate(act):
+            if not a_ and i0 is None: i0 = k
+            if a_ and i0 is not None:
+                if k - i0 >= 6: runs.append((i0 * HOP / SR, k * HOP / SR))
+                i0 = None
+        tm = [list(t_) for t_ in tm]
+        for a_, b_ in runs:
+            for i in range(len(tm)):
+                if a_ - .35 <= tm[i][0] < b_ + .02 and tm[i][0] < b_ - .01 and (i == 0 or tm[i - 1][0] < b_ - .02): tm[i][0] = b_        # word begins after the silence
+                if a_ - .02 <= tm[i][1] <= b_ + .40 and tm[i][1] > a_ + .01 and (i + 1 >= len(tm) or tm[i + 1][0] >= a_ - .05): tm[i][1] = min(tm[i][1], a_) if tm[i][0] < a_ else tm[i][1]
+        for i in range(len(tm)):
+            if i: tm[i][0] = max(tm[i][0], tm[i - 1][0] + .06)
+            tm[i][1] = max(tm[i][1], tm[i][0] + .10)
         info[n] = dict(file=f'L{n}.wav', dur=round(len(y) / SR, 3), text=LINES[n], removed_s=round(sum(b - a for a, b in removed), 2),
                        words=[dict(w=sw[i], s=round(tm[i][0], 3), e=round(tm[i][1], 3)) for i in range(len(sw))],
                        asr=' '.join(w[0] for w in asr[n]))
