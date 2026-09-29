@@ -41,7 +41,7 @@ PY
 preview)
   export FFMPEG=$(command -v ffmpeg); cd $R && python3 render.py --plan $W/data/edit_plan.json --script $R/data/script.json --vo $W/data/vo/vo.json --out $W/prev --fonts $HOME/fonts --preview "$1" --streams 16 ;;
 render)  # render frames A..B seconds into out/part_XXX.mp4 (chunks of 60 frames, 5 workers)
-  export FFMPEG=$(command -v ffmpeg); mkdir -p $W/out; cd $R && python3 render.py --plan $W/data/edit_plan.json --script $R/data/script.json --vo $W/data/vo/vo.json --out $W/out --fonts $HOME/fonts --range $1,$2 --part-offset ${3:-0} --workers 5 --streams 16 ;;
+  export FFMPEG=$(command -v ffmpeg); mkdir -p $W/out; cd $R && python3 render.py --plan $W/data/edit_plan.json --script $R/data/script.json --vo $W/data/vo/vo.json --out $W/out --fonts $HOME/fonts --range $1,$2 --part-offset ${3:-0} --workers 8 --streams 16 ;;
 mux)     # concat parts -> video.mp4 (exactly 3600 frames)
   cd $W/out && ls part_*.mp4 | sort | sed "s/^/file '/;s/$/'/" > list.txt && ffmpeg -y -v error -f concat -safe 0 -i list.txt -c copy video_raw.mp4 && ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames,width,height -of csv=p=0 video_raw.mp4 ;;
 audio)   # cue sheet -> licensed layers -> mix (narration + score + procedural/licensed SFX) -> -14 LUFS / TP -1.5 master, exactly 120.000 s
