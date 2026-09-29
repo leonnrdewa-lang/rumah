@@ -1,0 +1,397 @@
+# Research source index
+
+319 distinct source pages cited by the verified research pool (6 researcher files). Each claim in the pool carries a verbatim quote checked against the fetched page.
+
+## Researchers
+
+- **R1** - Early research and the first public text/video tools, 2014-2023 (video GANs to Lumiere, Jan 2024) - 58 distinct pages
+- **R2** - OpenAI (Sora) and Google (Veo, Flow, Genie, Gemini Omni), 2024 through 2026-09-29 - 53 distinct pages
+- **R3** - Runway, Luma, Pika, Midjourney, Adobe, Stability, Genmo, Lightricks, Meta, Amazon, xAI: video-model milestones, 2023 to 2026-09-29 - 71 distinct pages
+- **R4** - Chinese labs and open models: Kling (Kuaishou), Hailuo/MiniMax, ByteDance Seedance, Alibaba Wan, Tencent HunyuanVideo, Vidu (ShengShu), Zhipu CogVideoX. Verified against primary sources through 2026-09-29. - 70 distinct pages
+- **R5** - Control features - what verified control tools existed, when, and in which product (image-to-video, first/last frame, camera control, references, editing, native audio, multi-shot, extend, 4K) - 100 distinct pages
+- **R6** - Honest limitations and the state of the art at 2026-09-29 - 98 distinct pages
+
+## Hosts
+
+- arxiv.org: 42
+- kling.ai: 22
+- lumalabs.ai: 20
+- pika.art: 16
+- huggingface.co: 15
+- runwayml.com: 15
+- blog.google: 13
+- raw.githubusercontent.com: 10
+- www.prnewswire.com: 10
+- openai.com: 9
+- deepmind.google: 9
+- seed.bytedance.com: 9
+- ai.google.dev: 8
+- help.openai.com: 8
+- x.com: 8
+- github.com: 7
+- x.ai: 6
+- www.alibabacloud.com: 6
+- research.runwayml.com: 5
+- www.minimax.io: 5
+- stability.ai: 4
+- ai.meta.com: 4
+- developers.googleblog.com: 4
+- developers.openai.com: 4
+- the-decoder.com: 3
+- docs.cloud.google.com: 3
+- news.adobe.com: 3
+- blog.adobe.com: 3
+- cdn.syndication.twimg.com: 3
+- phenaki.video: 2
+- gemini.google: 2
+- storage.googleapis.com: 2
+- ltx.io: 2
+- aws.amazon.com: 2
+- docs.x.ai: 2
+- docs.z.ai: 2
+- imagen.research.google: 1
+- petapixel.com: 1
+- 80.lv: 1
+- api.github.com: 1
+- research.google: 1
+- lumiere-video.github.io: 1
+- variety.com: 1
+- cloud.google.com: 1
+- workspace.google.com: 1
+- workspaceupdates.googleblog.com: 1
+- docs.dev.runwayml.com: 1
+- updates.midjourney.com: 1
+- docs.midjourney.com: 1
+- www.genmo.ai: 1
+- about.fb.com: 1
+- www.nasdaq.com: 1
+- www.technologyreview.com: 1
+- www1.hkexnews.hk: 1
+- www.byteplus.com: 1
+- ai.byteplus.com: 1
+- platform.minimax.io: 1
+- www.alibabagroup.com: 1
+- en.prnasia.com: 1
+- www.linkedin.com: 1
+
+## Pages
+
+- http://web.archive.org/web/20221009175715/https://phenaki.video/ (R1; 3 claim(s))
+- http://web.archive.org/web/20221009175715id_/https://phenaki.video/ (R5; 2 claim(s))
+- http://web.archive.org/web/20230206152229/https://research.runwayml.com/gen1 (R1; 2 claim(s))
+- http://web.archive.org/web/20230206152229id_/https://research.runwayml.com/gen1 (R5; 2 claim(s))
+- http://web.archive.org/web/20230320132942/https://research.runwayml.com/gen2 (R1, R6; 5 claim(s))
+- http://web.archive.org/web/20230320132942id_/https://research.runwayml.com/gen2 (R5; 3 claim(s))
+- http://web.archive.org/web/20231128213259/https://pika.art/launch (R1, R6; 7 claim(s))
+- http://web.archive.org/web/20231128213259id_/https://pika.art/launch (R5; 3 claim(s))
+- http://web.archive.org/web/20240216001508id_/https://openai.com/sora (R5; 5 claim(s))
+- http://web.archive.org/web/20240505060353id_/https://openai.com/index/video-generation-models-as-world-simulators (R5; 10 claim(s))
+- http://web.archive.org/web/20240515001805id_/https://deepmind.google/technologies/veo/ (R5; 4 claim(s))
+- http://web.archive.org/web/20240612171544id_/https://lumalabs.ai/dream-machine (R5; 3 claim(s))
+- http://web.archive.org/web/20240916191449id_/https://lumalabs.ai/dream-machine/api (R5; 6 claim(s))
+- http://web.archive.org/web/20241209203752id_/https://openai.com/index/sora-is-here/ (R5; 6 claim(s))
+- http://web.archive.org/web/20241214042200id_/https://pika.art/login (R5; 2 claim(s))
+- http://web.archive.org/web/20250227221552id_/https://pika.art/login (R5; 2 claim(s))
+- http://web.archive.org/web/20250930222332id_/https://openai.com/index/sora-2/ (R5; 9 claim(s))
+- http://web.archive.org/web/20251001215022id_/https://help.openai.com/en/articles/12456897-getting-started-with-the-sora-app (R5; 1 claim(s))
+- http://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes (R5; 10 claim(s))
+- http://web.archive.org/web/20260630192218id_/https://help.openai.com/en/articles/20001152-what-to-know-about-the-sora-discontinuation (R5; 2 claim(s))
+- http://web.archive.org/web/20260731062553id_/https://seed.bytedance.com/en/seedance2_5 (R5; 3 claim(s))
+- http://web.archive.org/web/20260905025756id_/https://x.ai/news/grok-imagine-video-1-5-references (R5; 5 claim(s))
+- http://web.archive.org/web/20260926150326id_/https://x.ai/news/grok-imagine-video-1-5 (R5; 3 claim(s))
+- https://80.lv/articles/runway-s-gen-2-has-been-officially-released/ (R1; 1 claim(s))
+- https://about.fb.com/news/2025/09/introducing-vibes-ai-videos/ (R3; 2 claim(s))
+- https://ai.byteplus.com/en/activity/seedance2-5 (R4; 1 claim(s))
+- https://ai.google.dev/gemini-api/docs/changelog (R2, R5, R6; 19 claim(s))
+- https://ai.google.dev/gemini-api/docs/deprecations (R2; 4 claim(s))
+- https://ai.google.dev/gemini-api/docs/models/gemini-omni-flash (R2; 2 claim(s))
+- https://ai.google.dev/gemini-api/docs/models/veo-3.1-lite-generate-preview (R2, R5; 4 claim(s))
+- https://ai.google.dev/gemini-api/docs/omni (R2, R5, R6; 16 claim(s))
+- https://ai.google.dev/gemini-api/docs/veo (R2, R5, R6; 13 claim(s))
+- https://ai.google.dev/gemini-api/docs/video (R2; 2 claim(s))
+- https://ai.meta.com/blog/emu-text-to-video-generation-image-editing-research/ (R1; 2 claim(s))
+- https://ai.meta.com/blog/generative-ai-text-to-video/ (R1, R6; 6 claim(s))
+- https://ai.meta.com/blog/introducing-muse-image-muse-video-msl/ (R3, R6; 14 claim(s))
+- https://ai.meta.com/blog/movie-gen-media-foundation-models-generative-ai-video/ (R3, R5, R6; 25 claim(s))
+- https://api.github.com/repos/guoyww/AnimateDiff/commits?per_page=100&since=2023-07-03T00:00:00Z&until=2023-08-05T00:00:00Z (R1; 1 claim(s))
+- https://app.klingai.com/global/dev/document-api/apiReference/model/imageToVideo (R5; 6 claim(s))
+- https://arxiv.org/abs/1609.02612 (R1; 1 claim(s))
+- https://arxiv.org/abs/1611.06624 (R1; 1 claim(s))
+- https://arxiv.org/abs/1707.04993 (R1; 1 claim(s))
+- https://arxiv.org/abs/2111.12417 (R1; 1 claim(s))
+- https://arxiv.org/abs/2204.03458 (R1, R6; 4 claim(s))
+- https://arxiv.org/abs/2205.15868 (R1, R6; 4 claim(s))
+- https://arxiv.org/abs/2209.14792 (R1, R6; 4 claim(s))
+- https://arxiv.org/abs/2210.02303 (R6; 2 claim(s))
+- https://arxiv.org/abs/2210.02399 (R5, R6; 3 claim(s))
+- https://arxiv.org/abs/2212.09478 (R5; 3 claim(s))
+- https://arxiv.org/abs/2302.03011 (R1, R5; 3 claim(s))
+- https://arxiv.org/abs/2307.04725 (R1; 2 claim(s))
+- https://arxiv.org/abs/2308.06571 (R1; 1 claim(s))
+- https://arxiv.org/abs/2311.10709 (R1; 2 claim(s))
+- https://arxiv.org/abs/2311.15127 (R1, R3; 2 claim(s))
+- https://arxiv.org/abs/2311.16933 (R5; 3 claim(s))
+- https://arxiv.org/abs/2312.03641 (R5; 4 claim(s))
+- https://arxiv.org/abs/2401.12945 (R1; 2 claim(s))
+- https://arxiv.org/abs/2404.02101 (R5; 3 claim(s))
+- https://arxiv.org/abs/2408.06072 (R4; 1 claim(s))
+- https://arxiv.org/abs/2408.15239 (R5; 3 claim(s))
+- https://arxiv.org/abs/2410.13720 (R3; 1 claim(s))
+- https://arxiv.org/abs/2412.03603 (R4; 1 claim(s))
+- https://arxiv.org/abs/2503.14489 (R3, R5; 2 claim(s))
+- https://arxiv.org/abs/2503.20314 (R4; 1 claim(s))
+- https://arxiv.org/abs/2506.09113 (R4, R5; 4 claim(s))
+- https://arxiv.org/abs/2512.13507 (R4, R5; 4 claim(s))
+- https://arxiv.org/abs/2601.03233 (R3, R5; 2 claim(s))
+- https://arxiv.org/abs/2604.14148 (R4, R5; 4 claim(s))
+- https://arxiv.org/pdf/1609.02612 (R1; 1 claim(s))
+- https://arxiv.org/pdf/1611.06624 (R1; 1 claim(s))
+- https://arxiv.org/pdf/1707.04993 (R1; 2 claim(s))
+- https://arxiv.org/pdf/1907.06571 (R1; 3 claim(s))
+- https://arxiv.org/pdf/2111.12417 (R1; 2 claim(s))
+- https://arxiv.org/pdf/2204.03458 (R1; 1 claim(s))
+- https://arxiv.org/pdf/2205.15868 (R1, R6; 4 claim(s))
+- https://arxiv.org/pdf/2209.14792 (R1, R6; 6 claim(s))
+- https://arxiv.org/pdf/2210.02303 (R1, R6; 7 claim(s))
+- https://arxiv.org/pdf/2210.02399 (R1; 3 claim(s))
+- https://arxiv.org/pdf/2302.03011 (R1; 1 claim(s))
+- https://arxiv.org/pdf/2312.14125 (R1; 2 claim(s))
+- https://arxiv.org/pdf/2401.12945 (R1; 3 claim(s))
+- https://aws.amazon.com/blogs/aws/amazon-nova-reel-1-1-featuring-up-to-2-minutes-multi-shot-videos/ (R3, R5, R6; 12 claim(s))
+- https://aws.amazon.com/blogs/aws/introducing-amazon-nova-frontier-intelligence-and-industry-leading-price-performance/ (R3; 4 claim(s))
+- https://blog.adobe.com/en/publish/2025/07/17/firefly-adds-new-video-capabilities-industry-leading-ai-models-generate-sound-effects-feature (R3; 4 claim(s))
+- https://blog.adobe.com/en/publish/2025/12/16/adobe-firefly-improves-ai-video-creation-tools-new-models-unlimited-generations (R3, R5; 7 claim(s))
+- https://blog.adobe.com/en/publish/2026/04/15/adobe-extends-leadership-video-unleashing-new-ai-powered-creation-firefly-reinventing-color-editors-in-premiere (R3; 2 claim(s))
+- https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-omni-flash-nano-banana-2-lite/ (R2; 2 claim(s))
+- https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-omni/ (R2, R5, R6; 26 claim(s))
+- https://blog.google/innovation-and-ai/models-and-research/google-deepmind/project-genie/ (R2, R6; 9 claim(s))
+- https://blog.google/innovation-and-ai/models-and-research/google-labs/new-creative-controls-google-flow/ (R2, R5; 6 claim(s))
+- https://blog.google/innovation-and-ai/models-and-research/google-labs/video-image-generation-update-december-2024/ (R2, R6; 12 claim(s))
+- https://blog.google/innovation-and-ai/products/generative-media-models-io-2025/ (R2, R5, R6; 33 claim(s))
+- https://blog.google/innovation-and-ai/products/google-generative-ai-veo-imagen-3/ (R2, R6; 8 claim(s))
+- https://blog.google/innovation-and-ai/products/veo-updates-flow/ (R2, R5, R6; 20 claim(s))
+- https://blog.google/innovation-and-ai/technology/ai/google-io-2026-all-our-announcements/ (R2, R5; 10 claim(s))
+- https://blog.google/innovation-and-ai/technology/ai/veo-3-1-ingredients-to-video/ (R2, R5, R6; 18 claim(s))
+- https://blog.google/innovation-and-ai/technology/ai/veo-3-1-lite/ (R2; 4 claim(s))
+- https://blog.google/innovation-and-ai/technology/developers-tools/build-with-gemini-omni-1-1-flash/ (R2, R5, R6; 21 claim(s))
+- https://blog.google/technology/ai/google-flow-veo-ai-filmmaking-tool/ (R5; 9 claim(s))
+- https://cdn.openai.com/pdf/50d5973c-c4ff-4c2d-986f-c72b5d0ff069/sora_2_system_card.pdf (R6; 3 claim(s))
+- https://cdn.syndication.twimg.com/tweet-result?id=2019064918960668819&token=4w72v1x8cxn&lang=en (R6; 1 claim(s))
+- https://cdn.syndication.twimg.com/tweet-result?id=2085339761284104529&token=51zadce6ne5&lang=en (R6; 1 claim(s))
+- https://cdn.syndication.twimg.com/tweet-result?id=2104596718067257458&token=53nsa4elcev&lang=en (R6; 1 claim(s))
+- https://cloud.google.com/blog/products/ai-machine-learning/veo-3-1-lite-and-a-new-veo-upscaling-capability-on-vertex-ai (R2; 1 claim(s))
+- https://deepmind.google/blog/genie-3-a-new-frontier-for-world-models/ (R2; 3 claim(s))
+- https://deepmind.google/discover/blog/generating-audio-for-video/ (R5; 4 claim(s))
+- https://deepmind.google/models/model-cards/gemini-omni-flash/ (R2, R5, R6; 12 claim(s))
+- https://deepmind.google/models/model-cards/veo-3-1-lite/ (R2; 1 claim(s))
+- https://deepmind.google/models/veo/ (R2, R6; 3 claim(s))
+- https://developers.googleblog.com/en/introducing-veo-3-1-and-new-creative-capabilities-in-the-gemini-api/ (R2, R5; 13 claim(s))
+- https://developers.googleblog.com/en/veo-2-video-generation-now-generally-available/ (R2; 2 claim(s))
+- https://developers.googleblog.com/en/veo-3-and-veo-3-fast-new-pricing-new-configurations-and-better-resolution/ (R2; 3 claim(s))
+- https://developers.googleblog.com/veo-3-now-available-gemini-api/ (R2; 3 claim(s))
+- https://developers.openai.com/api/docs/changelog (R2; 7 claim(s))
+- https://developers.openai.com/api/docs/deprecations (R2, R6; 5 claim(s))
+- https://developers.openai.com/api/docs/guides/video-generation (R2, R5, R6; 17 claim(s))
+- https://developers.openai.com/api/docs/models/sora-2 (R2; 2 claim(s))
+- https://docs.byteplus.com/en/docs/ModelArk/1520757 (R6; 1 claim(s))
+- https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/content-credentials (R6; 1 claim(s))
+- https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/veo/3-0-generate (R2; 3 claim(s))
+- https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/veo/3-1-generate (R2; 3 claim(s))
+- https://docs.dev.runwayml.com/guides/models/ (R3, R6; 2 claim(s))
+- https://docs.x.ai/developers/release-notes (R6; 1 claim(s))
+- https://docs.x.ai/docs/release-notes (R3; 4 claim(s))
+- https://docs.z.ai/guides/video/cogvideox-3 (R4; 2 claim(s))
+- https://docs.z.ai/release-notes/new-released (R4; 1 claim(s))
+- https://en.prnasia.com/releases/global/shengshu-launches-vidu-q3-reference-to-video-with-expanded-visual-and-audio-capabilities-528832.shtml (R4; 1 claim(s))
+- https://gemini.google/overview/video-generation/ (R2, R6; 5 claim(s))
+- https://github.com/THUDM/CogVideo (R4; 7 claim(s))
+- https://github.com/Tencent-Hunyuan/HunyuanVideo (R4; 3 claim(s))
+- https://github.com/Tencent-Hunyuan/HunyuanVideo-1.5 (R4, R6; 8 claim(s))
+- https://github.com/Tencent-Hunyuan/HunyuanVideo-1.5/blob/main/LICENSE (R4; 1 claim(s))
+- https://github.com/Tencent-Hunyuan/HunyuanVideo/blob/main/LICENSE.txt (R4; 3 claim(s))
+- https://github.com/Wan-Video/Wan2.1 (R4, R6; 8 claim(s))
+- https://github.com/Wan-Video/Wan2.2 (R4, R5; 11 claim(s))
+- https://huggingface.co/Lightricks/LTX-2/raw/main/README.md (R3, R5; 6 claim(s))
+- https://huggingface.co/Lightricks/LTX-Video/raw/main/README.md (R3; 2 claim(s))
+- https://huggingface.co/MiniMaxAI/MiniMax-H3 (R4; 2 claim(s))
+- https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE (R4; 3 claim(s))
+- https://huggingface.co/ali-vilab/modelscope-damo-text-to-video-synthesis/raw/main/README.md (R6; 2 claim(s))
+- https://huggingface.co/api/models/CompVis/stable-diffusion-v1-4/commits/main (R1; 1 claim(s))
+- https://huggingface.co/api/models/MiniMaxAI/MiniMax-H3/commits/main (R4; 1 claim(s))
+- https://huggingface.co/api/models/ali-vilab/modelscope-damo-text-to-video-synthesis/commits/main (R6; 1 claim(s))
+- https://huggingface.co/api/models/cerspense/zeroscope_v2_576w/commits/main (R1; 1 claim(s))
+- https://huggingface.co/api/models/damo-vilab/modelscope-damo-text-to-video-synthesis/commits/main (R1; 1 claim(s))
+- https://huggingface.co/cerspense/zeroscope_v2_576w/raw/main/README.md (R1; 2 claim(s))
+- https://huggingface.co/cerspense/zeroscope_v2_XL/raw/main/README.md (R1; 1 claim(s))
+- https://huggingface.co/damo-vilab/modelscope-damo-text-to-video-synthesis/raw/main/README.md (R1; 3 claim(s))
+- https://huggingface.co/damo-vilab/text-to-video-ms-1.7b/raw/main/README.md (R1; 3 claim(s))
+- https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt/raw/main/README.md (R1, R3, R5, R6; 17 claim(s))
+- https://imagen.research.google/video/ (R1; 1 claim(s))
+- https://kling.ai/blog/limitations-of-current-ai-video-generation-technology (R4, R6; 6 claim(s))
+- https://kling.ai/docs/user-policy (R6; 1 claim(s))
+- https://kling.ai/document-api/apiReference/updateNotice (R4, R6; 5 claim(s))
+- https://kling.ai/quickstart/ai-video-character-consistency (R5; 2 claim(s))
+- https://kling.ai/quickstart/ai-video-start-end-frames (R5; 2 claim(s))
+- https://kling.ai/quickstart/how-to-animate-image-parts (R5; 1 claim(s))
+- https://kling.ai/quickstart/klingai-video-3-model-user-guide (R5; 4 claim(s))
+- https://kling.ai/release-note/release-history (R4, R5; 24 claim(s))
+- https://kling.ai/release-note/release-notes/2025041522 (R4; 1 claim(s))
+- https://kling.ai/release-note/release-notes/2025052696 (R4; 2 claim(s))
+- https://kling.ai/release-note/release-notes/2025082114 (R4; 1 claim(s))
+- https://kling.ai/release-note/release-notes/2025091961 (R4; 1 claim(s))
+- https://kling.ai/release-note/release-notes/4titicw2vg (R4; 1 claim(s))
+- https://kling.ai/release-note/release-notes/Kling_3_Turbo (R4, R6; 4 claim(s))
+- https://kling.ai/release-note/release-notes/Kling_4 (R4, R6; 17 claim(s))
+- https://kling.ai/release-note/release-notes/Kling_4?type=dialog (R5; 12 claim(s))
+- https://kling.ai/release-note/release-notes/c605hp1tzd (R4; 3 claim(s))
+- https://kling.ai/release-note/release-notes/rybo04kstj (R4; 1 claim(s))
+- https://kling.ai/release-note/release-notes/vaxrndo66h (R4; 4 claim(s))
+- https://kling.ai/release-note/release-notes/whbvu8hsip (R4, R6; 10 claim(s))
+- https://kling.ai/release-note/release-notes/z8zeqsxwol (R4; 2 claim(s))
+- https://kling.ai/release-note/release-notes/z8zeqsxwol?type=dialog (R5; 3 claim(s))
+- https://ltx.io/model/ltx-2-5 (R3, R5, R6; 8 claim(s))
+- https://ltx.io/newsroom (R3, R5, R6; 5 claim(s))
+- https://lumalabs.ai/changelog (R5; 2 claim(s))
+- https://lumalabs.ai/changelog/camera-angle-concepts-launch (R3; 1 claim(s))
+- https://lumalabs.ai/changelog/camera-motion-concepts-launch (R3, R5; 3 claim(s))
+- https://lumalabs.ai/changelog/introducing-ray2 (R3; 6 claim(s))
+- https://lumalabs.ai/changelog/reframe-is-here (R3; 1 claim(s))
+- https://lumalabs.ai/changelog/welcome-to-the-all-new-dream-machine (R3, R5; 2 claim(s))
+- https://lumalabs.ai/learning-hub/ray3-faq (R5; 2 claim(s))
+- https://lumalabs.ai/news/introducing-luma-scenes (R3; 1 claim(s))
+- https://lumalabs.ai/news/introducing-modify-video (R3, R5; 6 claim(s))
+- https://lumalabs.ai/news/introducing-ray-3-2 (R3, R5, R6; 17 claim(s))
+- https://lumalabs.ai/news/minimax-h3-now-available-in-luma-agents (R3; 2 claim(s))
+- https://lumalabs.ai/news/ray2-is-coming-to-adobe-firefly (R3; 2 claim(s))
+- https://lumalabs.ai/news/ray3 (R3, R5, R6; 12 claim(s))
+- https://lumalabs.ai/news/ray3-modify (R3, R5; 11 claim(s))
+- https://lumalabs.ai/news/ray3_14 (R3; 3 claim(s))
+- https://lumalabs.ai/news/seedance-2.5-live-in-luma (R3; 2 claim(s))
+- https://lumiere-video.github.io/ (R1; 1 claim(s))
+- https://news.adobe.com/news/2024/09/091124-adobe-previews-firefly-video-model (R3; 2 claim(s))
+- https://news.adobe.com/news/2024/10/101424-adobe-launches-firefly-video-model (R3; 3 claim(s))
+- https://news.adobe.com/news/2025/02/firefly-web-app-commercially-safe (R3; 6 claim(s))
+- https://petapixel.com/2023/03/20/runway-gen-2-is-the-first-publicly-available-text-to-video-generator (R1; 1 claim(s))
+- https://pika.art/blog/welcome-to-the-new-pika (R3, R6; 5 claim(s))
+- https://platform.minimax.io/docs/release-notes/models (R4, R6; 5 claim(s))
+- https://radiancefields.com/luma-ai-launches-keyframes-for-dream-machine (R5; 2 claim(s))
+- https://raw.githubusercontent.com/Lightricks/LTX-2/main/README.md (R5; 1 claim(s))
+- https://raw.githubusercontent.com/Lightricks/LTX-Video/main/README.md (R3, R5; 16 claim(s))
+- https://raw.githubusercontent.com/Stability-AI/generative-models/main/README.md (R1, R3, R5; 4 claim(s))
+- https://raw.githubusercontent.com/THUDM/CogVideo/CogVideo/README.md (R1, R6; 4 claim(s))
+- https://raw.githubusercontent.com/THUDM/CogVideo/main/README.md (R1; 1 claim(s))
+- https://raw.githubusercontent.com/deforum-art/deforum-stable-diffusion/main/README.md (R1; 1 claim(s))
+- https://raw.githubusercontent.com/deforum-art/sd-webui-deforum/main/README.md (R1; 1 claim(s))
+- https://raw.githubusercontent.com/genmoai/mochi/main/README.md (R3; 1 claim(s))
+- https://raw.githubusercontent.com/guoyww/AnimateDiff/main/README.md (R1, R5; 11 claim(s))
+- https://raw.githubusercontent.com/microsoft/NUWA/main/README.md (R1; 1 claim(s))
+- https://research.google/blog/videopoet-a-large-language-model-for-zero-shot-video-generation/ (R1; 6 claim(s))
+- https://research.runwayml.com/scale-speed-and-stepping-stones-the-path-to-gen-2 (R1; 8 claim(s))
+- https://runwayml.com/changelog (R3, R5, R6; 76 claim(s))
+- https://runwayml.com/product/aleph-2 (R3, R5, R6; 10 claim(s))
+- https://runwayml.com/product/ruby (R3, R6; 4 claim(s))
+- https://runwayml.com/research/gen-1 (R1; 1 claim(s))
+- https://runwayml.com/research/introducing-act-one (R3; 4 claim(s))
+- https://runwayml.com/research/introducing-gen-3-alpha (R3, R6; 12 claim(s))
+- https://runwayml.com/research/introducing-gwm-worlds-2 (R3; 4 claim(s))
+- https://runwayml.com/research/introducing-runway-aleph (R3, R5; 7 claim(s))
+- https://runwayml.com/research/introducing-runway-gen-4 (R3, R5, R6; 13 claim(s))
+- https://runwayml.com/research/introducing-runway-gen-4.5 (R3, R5, R6; 17 claim(s))
+- https://runwayml.com/research/introducing-runway-gwm-1 (R3, R5, R6; 14 claim(s))
+- https://runwayml.com/research/more-control-fidelity-and-expressibility (R5; 5 claim(s))
+- https://runwayml.com/research/scale-speed-and-stepping-stones-the-path-to-gen-2 (R5; 5 claim(s))
+- https://runwayml.com/safety (R6; 1 claim(s))
+- https://seed.bytedance.com/en/blog/official-launch-of-seedance-2-0 (R5; 8 claim(s))
+- https://seed.bytedance.com/en/blog/one-take-creation-flexible-referencing-introducing-seedance-2-5 (R4, R6; 16 claim(s))
+- https://seed.bytedance.com/en/blog/seedance-2-0-official-launch (R4, R6; 17 claim(s))
+- https://seed.bytedance.com/en/blog/sound-and-vision-all-in-one-take-the-official-release-of-seedance-1-5-pro (R4; 4 claim(s))
+- https://seed.bytedance.com/en/blog/tech-report-of-seedance-1-0-is-now-publicly-available (R4, R6; 7 claim(s))
+- https://seed.bytedance.com/en/public_papers/seedance-2-0-advancing-video-generation-for-world-complexity (R4, R6; 2 claim(s))
+- https://seed.bytedance.com/en/seedance (R5; 1 claim(s))
+- https://seed.bytedance.com/en/seedance2_5 (R4; 1 claim(s))
+- https://seekingalpha.com/pr/19978699-kuaishou-kling-ai-unveils-multi-image-reference-feature-to-further-tackle-ai-video (R5; 1 claim(s))
+- https://stability.ai/news-updates/introducing-stable-virtual-camera-multi-view-video-generation-with-3d-camera-control (R3, R5; 7 claim(s))
+- https://stability.ai/news-updates/stable-video-diffusion-open-ai-video-model (R3, R5; 10 claim(s))
+- https://stability.ai/news/stable-diffusion-public-release (R1; 2 claim(s))
+- https://stability.ai/news/stable-video-diffusion-open-ai-video-model (R1; 4 claim(s))
+- https://storage.googleapis.com/deepmind-media/Model-Cards/Veo-3-Model-Card.pdf (R6; 2 claim(s))
+- https://storage.googleapis.com/deepmind-media/veo/Veo-3-Tech-Report.pdf (R2, R6; 7 claim(s))
+- https://support.google.com/gemini/answer/17405358?hl=en&co=GENIE.Platform%3DDesktop (R6; 3 claim(s))
+- https://the-decoder.com/ai-video-generator-kling-releases-version-1-5-with-impressive-features/ (R5; 1 claim(s))
+- https://the-decoder.com/pika-labs-releases-ai-video-generator-2-0-with-new-features/ (R5; 1 claim(s))
+- https://the-decoder.com/runway-gen-2-is-the-latest-text-to-video-model/ (R1; 2 claim(s))
+- https://updates.midjourney.com/introducing-our-v1-video-model/ (R3, R5, R6; 23 claim(s))
+- https://variety.com/2026/digital/news/openai-shutting-down-sora-video-disney-1236698277/ (R2; 2 claim(s))
+- https://web.archive.org/web/20230607130619id_/https://runwayml.com/ (R6; 2 claim(s))
+- https://web.archive.org/web/20240216001508id_/https://openai.com/sora (R2, R6; 16 claim(s))
+- https://web.archive.org/web/20240505060353id_/https://openai.com/index/video-generation-models-as-world-simulators (R2, R6; 14 claim(s))
+- https://web.archive.org/web/20240515001805id_/https://deepmind.google/technologies/veo/ (R2, R6; 10 claim(s))
+- https://web.archive.org/web/20240612171544id_/https://lumalabs.ai/dream-machine (R3; 5 claim(s))
+- https://web.archive.org/web/20240612171718id_/https://lumalabs.ai/dream-machine (R6; 4 claim(s))
+- https://web.archive.org/web/20241002231602id_/https://pika.art/login (R3; 1 claim(s))
+- https://web.archive.org/web/20241002231711id_/https://pika.art/home (R3; 3 claim(s))
+- https://web.archive.org/web/20241209203752id_/https://openai.com/index/sora-is-here/ (R2, R6; 23 claim(s))
+- https://web.archive.org/web/20241212040129id_/https://pika.art/login (R3; 1 claim(s))
+- https://web.archive.org/web/20241214042200id_/https://pika.art/login (R3; 2 claim(s))
+- https://web.archive.org/web/20241216210327id_/https://deepmind.google/technologies/veo/veo-1/ (R2; 1 claim(s))
+- https://web.archive.org/web/20250126143433id_/https://pika.art/login (R3; 1 claim(s))
+- https://web.archive.org/web/20250128011343id_/https://pika.art/login (R3; 1 claim(s))
+- https://web.archive.org/web/20250227135111id_/https://pika.art/login (R3; 1 claim(s))
+- https://web.archive.org/web/20250227221552id_/https://pika.art/login (R3; 2 claim(s))
+- https://web.archive.org/web/20250415173653id_/https://ai.google.dev/gemini-api/docs/video (R2; 1 claim(s))
+- https://web.archive.org/web/20250520233928id_/https://deepmind.google/models/veo/ (R2, R6; 5 claim(s))
+- https://web.archive.org/web/20250530194309id_/https://gemini.google/overview/video-generation/ (R2, R6; 3 claim(s))
+- https://web.archive.org/web/20250930222332id_/https://openai.com/index/sora-2/ (R2; 18 claim(s))
+- https://web.archive.org/web/20251001010400id_/https://openai.com/index/sora-2/ (R6; 7 claim(s))
+- https://web.archive.org/web/20251001215022id_/https://help.openai.com/en/articles/12456897-getting-started-with-the-sora-app (R2, R6; 5 claim(s))
+- https://web.archive.org/web/20251120095119id_/https://pika.art/login (R3; 1 claim(s))
+- https://web.archive.org/web/20251122034331id_/https://pika.art/login (R3; 1 claim(s))
+- https://web.archive.org/web/20251201030755id_/https://docs.midjourney.com/hc/en-us/articles/37460773864589-Video (R3; 3 claim(s))
+- https://web.archive.org/web/20260131213706id_/https://x.ai/news/grok-imagine-api (R3; 4 claim(s))
+- https://web.archive.org/web/20260302074720id_/https://pika.art/login (R3; 1 claim(s))
+- https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes (R2, R6; 28 claim(s))
+- https://web.archive.org/web/20260328020111id_/https://help.openai.com/en/articles/20001152-what-to-know-about-the-sora-discontinuation (R2, R6; 3 claim(s))
+- https://web.archive.org/web/20260328185054id_/https://help.openai.com/en/articles/20001071-sora-1-sunset-faq (R2; 1 claim(s))
+- https://web.archive.org/web/20260606151713id_/https://x.ai/news/grok-imagine-1-5 (R3; 3 claim(s))
+- https://web.archive.org/web/20260630192218id_/https://help.openai.com/en/articles/20001152-what-to-know-about-the-sora-discontinuation (R2, R6; 3 claim(s))
+- https://web.archive.org/web/20260905025756id_/https://x.ai/news/grok-imagine-video-1-5-references (R3; 6 claim(s))
+- https://web.archive.org/web/20260926150326id_/https://x.ai/news/grok-imagine-video-1-5 (R3, R6; 9 claim(s))
+- https://workspace.google.com/blog/product-announcements/introducing-gemini-omni-flash-in-google-vids (R2; 2 claim(s))
+- https://workspaceupdates.googleblog.com/2026/09/gemini-omni-11-flash-now-in-vids-with-improved-extension-quality-1080p-and-duration-control.html (R2; 2 claim(s))
+- https://www.alibabacloud.com/blog/alibaba-unveils-wan2-6-series-enabling-everyone-to-star-in-videos_602742 (R4; 6 claim(s))
+- https://www.alibabacloud.com/blog/alibaba-unveils-wan2-7-video-to-elevate-creators-from-executors-to-directors_603009 (R4; 4 claim(s))
+- https://www.alibabacloud.com/blog/alibaba-unveils-wan3-0-with-twice-as-long-video-outputs-from-a-richer-variety-of-inputs_603439 (R4, R6; 3 claim(s))
+- https://www.alibabacloud.com/blog/wan3-0-30-second-ai-video-generation-from-any-input_603452 (R4, R6; 7 claim(s))
+- https://www.alibabacloud.com/blog/wan3-0-at-general-availability-capabilities-benchmarks-pricing-and-the-workflows-it-changes_603505 (R4; 1 claim(s))
+- https://www.alibabacloud.com/en/press-room/alibabacloudunveilsstrategicroadmaps (R4; 3 claim(s))
+- https://www.alibabagroup.com/en-US/document-1831486012178563072 (R4; 1 claim(s))
+- https://www.barchart.com/story/news/29812569/kling-ai-launches-game-changing-motion-brush-and-camera-movements-features-in-kling-15-model (R5; 9 claim(s))
+- https://www.byteplus.com/en/activity/seedance2-0 (R4; 1 claim(s))
+- https://www.genmo.ai/blog/mochi-1-a-new-sota-in-open-text-to-video (R3, R6; 11 claim(s))
+- https://www.linkedin.com/posts/runwayml_director-mode-available-now-in-gen-2-activity-7107714145134727169-9ODR (R5; 2 claim(s))
+- https://www.minimax.io/blog/minimax-h3 (R4, R6; 10 claim(s))
+- https://www.minimax.io/news/minimax-hailuo-02 (R4, R6; 8 claim(s))
+- https://www.minimax.io/news/minimax-hailuo-23 (R4, R6; 4 claim(s))
+- https://www.minimax.io/news/s2v-01-release (R5; 3 claim(s))
+- https://www.minimax.io/news/video-01 (R4; 3 claim(s))
+- https://www.nasdaq.com/press-release/kuaishou-launches-full-beta-testing-kling-ai-global-users-elevates-model-capabilities (R4, R6; 4 claim(s))
+- https://www.prnewswire.com/news-releases/kling-ai-launches-video-2-6-model-with-simultaneous-audio-visual-generation-capability-redefining-ai-video-creation-workflow-302634067.html (R5; 2 claim(s))
+- https://www.prnewswire.com/news-releases/kling-o1-launches-as-the-worlds-first-unified-multimodal-video-model-302630630.html (R5; 3 claim(s))
+- https://www.prnewswire.com/news-releases/shengshu-technology-unveils-vidu-s1-bringing-real-time-interactive-generation-to-ai-video-302817626.html (R4; 3 claim(s))
+- https://www.prnewswire.com/news-releases/shengshu-technology-unveils-vidu-s2-bringing-real-time-interaction-and-editing-to-ai-video-302879976.html (R4, R6; 4 claim(s))
+- https://www.prnewswire.com/news-releases/starring-ai-vidu-q2-brings-performances-to-life-302570537.html (R4; 2 claim(s))
+- https://www.prnewswire.com/news-releases/vidu-1-5-launch-marks-new-emergence-in-multimodal-ai-to-introduce-groundbreaking-consistency-controls-that-reshape-the-future-of-ai-video-production-302304364.html (R5; 3 claim(s))
+- https://www.prnewswire.com/news-releases/vidu-introduces-subject-consistency-in-ai-video-creation-302244956.html (R5; 4 claim(s))
+- https://www.prnewswire.com/news-releases/vidu-q1-model-launches-globally-offering-unmatched-realistic-vfx-capabilities-from-generating-cinematic-transitions-to-high-fidelity-sound-effects-with-just-a-few-simple-inputs-302433278.html (R4; 5 claim(s))
+- https://www.prnewswire.com/news-releases/vidu-q1-model-update-unveils-multi-reference-feature-supporting-up-to-seven-image-inputs-302499846.html (R5; 4 claim(s))
+- https://www.prnewswire.com/news-releases/vidu-showcases-china-speed-in-advancing-ai-video-into-production-at-global-creativity-week-302675040.html (R4, R6; 8 claim(s))
+- https://www.technologyreview.com/2024/06/19/1094027/kling-kuaishou-video-ai-china/ (R4; 1 claim(s))
+- https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0325/2025032500309.pdf (R4; 1 claim(s))
+- https://x.com/Alibaba_Wan/status/1970697244740591917 (R4; 1 claim(s))
+- https://x.com/Alibaba_Wan/status/2085339761284104529 (R4, R6; 2 claim(s))
+- https://x.com/Kling_ai/status/1815973596738769299 (R4; 1 claim(s))
+- https://x.com/Kling_ai/status/1836615107918598236 (R4; 2 claim(s))
+- https://x.com/Kling_ai/status/1859935337797320782 (R4; 2 claim(s))
+- https://x.com/Kling_ai/status/1869599147046871488 (R4; 1 claim(s))
+- https://x.com/Kling_ai/status/2019064918960668819 (R4, R6; 2 claim(s))
+- https://x.com/Kling_ai/status/2104596718067257458 (R4, R6; 2 claim(s))
