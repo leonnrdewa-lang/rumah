@@ -42,6 +42,15 @@ class Stream:
             if f is None: break
             self.buf.append(f)
             if len(self.buf) > 4: self.buf.pop(0); self.base += 1
+        if not self.buf and idx > 0:                                       # seek landed after the last source frame (low-fps sources): restart earlier and hold the last frame
+            for back in (8, 30, 90):
+                self._start(max(0, idx - back))
+                while not self.eof:
+                    f = self._read()
+                    if f is None: break
+                    self.buf.append(f)
+                    if len(self.buf) > 4: self.buf.pop(0); self.base += 1
+                if self.buf: break
         if not self.buf: raise RuntimeError(f'no frame decoded from {self.path} at {self.t_in + idx / FPS:.2f}s (unreadable file or seek past the end)')
         return self.buf[min(idx - self.base, len(self.buf) - 1)] if idx >= self.base else self.buf[0]
 
