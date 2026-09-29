@@ -15,7 +15,7 @@ class Stream:
     def _start(self, idx):
         self.close(); self.base = idx; self.buf = []; self.eof = False
         ss = max(0.0, self.t_in + idx / FPS)
-        self.p = subprocess.Popen([FFMPEG, '-v', 'error', '-ss', f'{ss:.3f}', '-i', self.path, '-an', '-vf', f'fps={FPS},scale={self.w}:{self.h}:flags=bicubic',
+        self.p = subprocess.Popen([FFMPEG, '-v', 'error', '-threads', '2', '-ss', f'{ss:.3f}', '-i', self.path, '-an', '-vf', f'fps={FPS},scale={self.w}:{self.h}:flags=bicubic',
                                    '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, bufsize=self.fsz * 2)
     def close(self):
         if self.p:
@@ -55,7 +55,7 @@ class Footage:
         m = self.man[cid]; dh = min(m['height'], max_h); dw = int(round(dh * m['width'] / m['height'] / 2)) * 2; dh = dh // 2 * 2
         key = (cid, round(t_in, 3), dw, dh); st = self.streams.get(key)
         if st is None:
-            if len(self.streams) >= 5:
+            if len(self.streams) >= 4:
                 k0 = next(iter(self.streams)); self.streams.pop(k0).close()
             st = self.streams[key] = Stream(m['local'] if os.path.exists(m['local']) else os.path.join(self.dir, os.path.basename(m['local'])), t_in, dw, dh)
         x = (src_t - t_in) * FPS; i = int(np.floor(x)); a = x - i

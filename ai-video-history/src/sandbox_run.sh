@@ -22,7 +22,7 @@ if has audio; then
   python3 src/make_srt.py vo_clean/vo.json out/subtitles.srt
 fi
 if has render; then
-  python3 src/render.py --footage footage --vo vo_clean/vo.json --out out --fonts /home/user/fonts --workers ${WORKERS:-8} ${RANGE:+--range $RANGE} > out/render.log 2>&1; tail -3 out/render.log
+  python3 src/render.py --footage footage --vo vo_clean/vo.json --out out --fonts /home/user/fonts --workers ${WORKERS:-6} ${RANGE:+--range $RANGE} > out/render.log 2>&1; tail -3 out/render.log
 fi
 if has mux; then
   # two-pass loudness normalisation to -14 LUFS / -1 dBTP, then mux
