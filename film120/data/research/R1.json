@@ -1,0 +1,537 @@
+{
+  "agent": "R1",
+  "topic": "Early research and the first public text/video tools, 2014-2023 (video GANs to Lumiere, Jan 2024)",
+  "milestones": [
+    {
+      "id": "vgan_2016",
+      "developer": "MIT (Vondrick, Torralba) and UMBC (Pirsiavash)",
+      "family": "Video GANs",
+      "version": "Generating Videos with Scene Dynamics (VGAN)",
+      "event": "paper",
+      "date": "2016-09-08",
+      "date_precision": "day",
+      "headline": "A GAN generated tiny 64x64 clips of about a second from noise, with separate foreground and background streams, learned from unlabeled video.",
+      "specs": {"max_clip_s": 1.28, "resolution": "64x64", "fps": 25, "audio": null, "notes": "32 frames at 25 fps = 1.28 s (derived; paper says 'a little over a second'). Unconditional (no text prompt). NIPS 2016."},
+      "claims": [
+        {"claim": "arXiv v1 submitted 8 Sep 2016; abstract says the model generates 'tiny videos up to a second'.", "quote": "this model can generate tiny videos up to a second at full frame rate better than simple baselines", "source_url": "https://arxiv.org/abs/1609.02612", "source_kind": "paper", "retrieved": true},
+        {"claim": "Output spec: 32 frames, 64x64, native 25 fps.", "quote": "We extract frames at native frame rate (25 fps). We use 32-frame videos of spatial resolution 64 × 64.", "source_url": "https://arxiv.org/pdf/1609.02612", "source_kind": "paper", "retrieved": true}
+      ],
+      "confidence": "high",
+      "notes": "arXiv abs page lists 'Submitted on 8 Sep 2016 (v1), last revised 26 Oct 2016 (v3)'; abs comments: 'NIPS 2016'."
+    },
+    {
+      "id": "tgan_2016",
+      "developer": "Preferred Networks",
+      "family": "Video GANs",
+      "version": "TGAN (Temporal Generative Adversarial Nets with Singular Value Clipping)",
+      "event": "paper",
+      "date": "2016-11-21",
+      "date_precision": "day",
+      "headline": "Split video generation into a temporal generator (per-frame latent codes) and an image generator, trained stably with Wasserstein GAN plus singular value clipping.",
+      "specs": {"max_clip_s": null, "resolution": "64x64", "fps": null, "audio": null, "notes": "Fixed length of 16 frames (per the MoCoGAN paper, which compared against it). Unconditional. Published ICCV 2017 (arXiv comment: 'to appear in ICCV 2017'); v3 revised 18 Aug 2017."},
+      "claims": [
+        {"claim": "arXiv v1 submitted 21 Nov 2016; introduces TGAN.", "quote": "Temporal Generative Adversarial Nets (TGAN), which can learn a semantic representation of unlabeled videos, and is capable of generating videos", "source_url": "https://arxiv.org/abs/1611.06624", "source_kind": "paper", "retrieved": true},
+        {"claim": "Training data pipeline gives 16-frame, 64-pixel clips.", "quote": "randomly extracted 16 frames, and cropped a center square with 64 pixels", "source_url": "https://arxiv.org/pdf/1611.06624", "source_kind": "paper", "retrieved": true},
+        {"claim": "A later paper states TGAN produces fixed 16-frame videos (VGAN 32 frames).", "quote": "The VGAN and TGAN implementations can only generate fixed-length videos (32 frames and 16 frames correspondingly).", "source_url": "https://arxiv.org/pdf/1707.04993", "source_kind": "paper", "retrieved": true}
+      ],
+      "confidence": "high",
+      "notes": "Brief listed 'TGAN 2017': the arXiv first version is Nov 2016; the ICCV publication is 2017."
+    },
+    {
+      "id": "mocogan_2017",
+      "developer": "Snap Research and NVIDIA",
+      "family": "Video GANs",
+      "version": "MoCoGAN (Motion and Content decomposed GAN)",
+      "event": "paper",
+      "date": "2017-07-17",
+      "date_precision": "day",
+      "headline": "Separated 'what is in the video' (content) from 'how it moves' (motion) so one subject could be given different motions.",
+      "specs": {"max_clip_s": null, "resolution": "64x64", "fps": null, "audio": null, "notes": "Experiments used 64x64 frames and 16-frame videos; length can vary because frames are generated sequentially by a recurrent network. Unconditional/class-conditioned; no text prompts."},
+      "claims": [
+        {"claim": "arXiv v1 submitted 17 Jul 2017; framework maps random vectors to frames.", "quote": "The proposed framework generates a video by mapping a sequence of random vectors to a sequence of video frames.", "source_url": "https://arxiv.org/abs/1707.04993", "source_kind": "paper", "retrieved": true},
+        {"claim": "Dataset spec used in experiments.", "quote": "the image resolution was 64 × 64 and video length was 16.", "source_url": "https://arxiv.org/pdf/1707.04993", "source_kind": "paper", "retrieved": true}
+      ],
+      "confidence": "high",
+      "notes": "Brief listed 'MoCoGAN 2018': arXiv v1 is 17 Jul 2017 (v2 14 Dec 2017). The CVPR 2018 venue is commonly cited but was NOT visible in the retrieved arXiv page or PDF text, so it is not asserted here."
+    },
+    {
+      "id": "dvdgan_2019",
+      "developer": "DeepMind",
+      "family": "Video GANs",
+      "version": "DVD-GAN (Dual Video Discriminator GAN)",
+      "event": "paper",
+      "date": "2019-07-15",
+      "date_precision": "day",
+      "headline": "Scaled video GANs to Kinetics-600: up to 256x256 pixels or up to 48 frames (4 s), though not both at once.",
+      "specs": {"max_clip_s": 4, "resolution": "up to 256x256", "fps": null, "audio": null, "notes": "256x256 and 48 frames are separate maxima: the paper compares 12-frame videos across 64/128/256 resolutions and shows 48-frame samples at 64x64. Class-conditional, no text prompts."},
+      "claims": [
+        {"claim": "arXiv v1 submitted 15 Jul 2019; contribution statement gives resolution and length maxima.", "quote": "produces high-quality samples at resolutions up to 256 × 256 and lengths up to 48 frames", "source_url": "https://arxiv.org/pdf/1907.06571", "source_kind": "paper", "retrieved": true},
+        {"claim": "Duration of the longest samples.", "quote": "DVD-GAN is able to generate plausible videos at all resolutions and with length spanning up to 4 seconds (48 frames)", "source_url": "https://arxiv.org/pdf/1907.06571", "source_kind": "paper", "retrieved": true}
+      ],
+      "confidence": "high",
+      "notes": "Abstract on https://arxiv.org/abs/1907.06571 retrieved (Submitted 15 Jul 2019, v2 25 Sep 2019)."
+    },
+    {
+      "id": "nuwa_2021",
+      "developer": "Microsoft Research Asia and Peking University",
+      "family": "Transformer visual synthesis",
+      "version": "NÜWA",
+      "event": "paper",
+      "date": "2021-11-24",
+      "date_precision": "day",
+      "headline": "One 3D-transformer model handled text-to-image, text-to-video, video prediction and text-guided video editing.",
+      "specs": {"max_clip_s": 4, "resolution": "336x336 default; 128x128 in the Kinetics text-to-video comparison", "fps": 2.5, "audio": null, "notes": "10 frames sampled at 2.5 fps = 4 s (derived) in the training representation. Public GitHub repo (microsoft/NUWA) listed only README, NUWA.md, NUWAInfinity.md, SECURITY.md and assets when retrieved: no weights or code seen."},
+      "claims": [
+        {"claim": "arXiv v1 submitted 24 Nov 2021; abstract states the T2V result.", "quote": "NÜWA achieves state-of-the-art results on text-to-image generation, text-to-video generation, video prediction, etc.", "source_url": "https://arxiv.org/abs/2111.12417", "source_kind": "paper", "retrieved": true},
+        {"claim": "Video representation: 10 frames at 2.5 fps.", "quote": "we sample 10 frames from a video with 2.5 fps", "source_url": "https://arxiv.org/pdf/2111.12417", "source_kind": "paper", "retrieved": true},
+        {"claim": "Default resolution.", "quote": "Although the default visual resolution is 336 × 336", "source_url": "https://arxiv.org/pdf/2111.12417", "source_kind": "paper", "retrieved": true},
+        {"claim": "Official repo dates the NUWA update 2021/11/26 (two days after the arXiv date).", "quote": "Update 2021/11/26", "source_url": "https://raw.githubusercontent.com/microsoft/NUWA/main/README.md", "source_kind": "docs", "retrieved": true}
+      ],
+      "confidence": "high",
+      "notes": "Research paper only; not a public tool."
+    },
+    {
+      "id": "video_diffusion_models_2022",
+      "developer": "Google (Brain)",
+      "family": "Video diffusion",
+      "version": "Video Diffusion Models",
+      "event": "paper",
+      "date": "2022-04-07",
+      "date_precision": "day",
+      "headline": "Extended image diffusion to video, with first results on text-conditioned video generation and 64-frame 128x128 extensions.",
+      "specs": {"max_clip_s": null, "resolution": "128x128 (from 64x64 base)", "fps": null, "audio": null, "notes": "Trained on ~16-frame chunks and extended block-autoregressively to 64 frames. Output fps is not stated for the samples; the paper's mention of 'at least 24 frames per second' describes typical source videos, not the model output."},
+      "claims": [
+        {"claim": "arXiv v1 submitted 7 Apr 2022 (v2 22 Jun 2022); first text-conditioned results.", "quote": "We present the first results on a large text-conditioned video generation task", "source_url": "https://arxiv.org/abs/2204.03458", "source_kind": "paper", "retrieved": true},
+        {"claim": "Sample sizes: 16 frames at 64x64 upsampled and extended to 64 frames at 128x128.", "quote": "extending 16x64x64 low resolution samples at frameskip 4 to 64x128x128 samples at frameskip 1", "source_url": "https://arxiv.org/pdf/2204.03458", "source_kind": "paper", "retrieved": true}
+      ],
+      "confidence": "high",
+      "notes": "Project page linked from the abstract: https://video-diffusion.github.io/ (not fetched)."
+    },
+    {
+      "id": "cogvideo_2022",
+      "developer": "Tsinghua University and BAAI (THUDM)",
+      "family": "CogVideo",
+      "version": "CogVideo",
+      "event": "open_weights",
+      "date": "2022-05-29",
+      "date_precision": "day",
+      "headline": "A 9-billion-parameter text-to-video transformer with released code, weights and a web demo; prompts had to be Chinese.",
+      "specs": {"max_clip_s": 4, "resolution": "480x480 (160x160 generated, upsampled by CogView2)", "fps": 8, "audio": null, "notes": "4 s / 32 frames = 8 fps (derived). Trained on 5.4M captioned 160x160 videos. The current main-branch README says the code in the repository is Apache-2.0 (that README mainly covers the later CogVideoX line); the licence of the 2022 CogVideo weights was not verified here."},
+      "claims": [
+        {"claim": "arXiv v1 submitted 29 May 2022; authors call it (probably) the first open-source large-scale text-to-video model.", "quote": "As (probably) the first open-source large-scale pretrained text-to-video model, CogVideo outperforms all publicly available models at a large margin", "source_url": "https://arxiv.org/abs/2205.15868", "source_kind": "paper", "retrieved": true},
+        {"claim": "Clip length and frame count.", "quote": "Each sample is a 4-second clip of 32 frames", "source_url": "https://arxiv.org/pdf/2205.15868", "source_kind": "paper", "retrieved": true},
+        {"claim": "Resolution.", "quote": "CogVideo can generate high-resolution (480×480) videos", "source_url": "https://arxiv.org/pdf/2205.15868", "source_kind": "paper", "retrieved": true},
+        {"claim": "Code and model released; Chinese input only.", "quote": "Currently we only supports simplified Chinese input.", "source_url": "https://raw.githubusercontent.com/THUDM/CogVideo/CogVideo/README.md", "source_kind": "docs", "retrieved": true},
+        {"claim": "Main README dates the open-sourcing 2022/5/19 (ten days BEFORE the arXiv/initial-commit date 2022-05-29; see notes).", "quote": "We have open-sourced the CogVideo video generation model", "source_url": "https://raw.githubusercontent.com/THUDM/CogVideo/main/README.md", "source_kind": "docs", "retrieved": true},
+        {"claim": "Runway's CTO calls CogVideo the state of the art around Sept 2022.", "quote": "The state-of-the-art model around that time was CogVideo", "source_url": "https://research.runwayml.com/scale-speed-and-stepping-stones-the-path-to-gen-2", "source_kind": "official_blog", "retrieved": true}
+      ],
+      "confidence": "medium",
+      "notes": "Date discrepancy: README news line says 2022/5/19; GitHub 'Initial commit' is 2022-05-29T06:46Z and 'add demo' 2022-05-29T07:22Z; arXiv v1 is 2022-05-29. I use 2022-05-29 and treat 5/19 as unverified/likely typo. Text prompts are Chinese (paper Fig.1: 'The actual text inputs are in Chinese'). Demo: https://models.aminer.cn/cogvideo/ and a Hugging Face Space (THUDM/CogVideo), both linked in the README."
+    },
+    {
+      "id": "stable_diffusion_public_release_2022",
+      "developer": "Stability AI (with CompVis and Runway)",
+      "family": "Stable Diffusion",
+      "version": "Stable Diffusion (v1.4 weights)",
+      "event": "open_weights",
+      "date": "2022-08-22",
+      "date_precision": "day",
+      "headline": "Open image model that anyone could run and modify; it became the base for frame-by-frame animation tools (Deforum) and later video models.",
+      "specs": {"max_clip_s": null, "resolution": null, "fps": null, "audio": null, "notes": "Image model, not a video model. Released under a Creative ML OpenRAIL-M licence."},
+      "claims": [
+        {"claim": "Stability's blog dates the public release 'Aug 22' (the page shows no year; year inferred from the HF weight upload 2022-08-20 and Runway's account).", "quote": "It is our pleasure to announce the public release of stable diffusion", "source_url": "https://stability.ai/news/stable-diffusion-public-release", "source_kind": "official_blog", "retrieved": true},
+        {"claim": "Licence.", "quote": "The model is being released under a Creative ML OpenRAIL-M license.", "source_url": "https://stability.ai/news/stable-diffusion-public-release", "source_kind": "official_blog", "retrieved": true},
+        {"claim": "Runway's CTO places the release in August 2022 (Gen models came together in Sept 2022, 'the month prior').", "quote": "After the Stable Diffusion release in the month prior", "source_url": "https://research.runwayml.com/scale-speed-and-stepping-stones-the-path-to-gen-2", "source_kind": "official_blog", "retrieved": true},
+        {"claim": "Hugging Face repo CompVis/stable-diffusion-v1-4: weights commit dated 2022-08-20T13:31:24Z (HF API metadata).", "quote": "add  weights", "source_url": "https://huggingface.co/api/models/CompVis/stable-diffusion-v1-4/commits/main", "source_kind": "model_card", "retrieved": true}
+      ],
+      "confidence": "high",
+      "notes": "Included because the brief scopes 'Stable-Diffusion-based frame-by-frame animation'. Year missing on the Stability page itself; corroborated by HF metadata and Runway's interview."
+    },
+    {
+      "id": "deforum_2022",
+      "developer": "Deforum (community of developers and artists)",
+      "family": "Stable Diffusion frame-by-frame animation",
+      "version": "Deforum Stable Diffusion (Colab notebook; later AUTOMATIC1111 extension)",
+      "event": "public_release",
+      "date": "2022",
+      "date_precision": "year",
+      "headline": "Community notebook and web-UI extension that made Stable Diffusion animate by generating one image per frame, giving the flickering, morphing 'AI video' look.",
+      "specs": {"max_clip_s": null, "resolution": null, "fps": null, "audio": null, "notes": "Per-frame image generation with motion parameters, not a video model. Repos are MIT-licensed code (LICENSE files fetched); generated media licence depends on the user."},
+      "claims": [
+        {"claim": "Deforum's README describes a Colab notebook implementation.", "quote": "Our implementation is written in an IPython notebook and was designed for use with Google Colab.", "source_url": "https://raw.githubusercontent.com/deforum-art/deforum-stable-diffusion/main/README.md", "source_kind": "docs", "retrieved": true},
+        {"claim": "AUTOMATIC1111 extension repo (GitHub API created_at 2022-10-14T22:29:12Z).", "quote": "Deforum Stable Diffusion — official extension for AUTOMATIC1111's webui", "source_url": "https://raw.githubusercontent.com/deforum-art/sd-webui-deforum/main/README.md", "source_kind": "docs", "retrieved": true},
+        {"claim": "Runway's CTO names Deforum as the per-frame approach with a distinctive style.", "quote": "While per-frame image generation methods (like Deforum) have created a distinctive style that can be aesthetically pleasing", "source_url": "https://research.runwayml.com/scale-speed-and-stepping-stones-the-path-to-gen-2", "source_kind": "official_blog", "retrieved": true},
+        {"claim": "Why per-frame generation flickers (frame-consistency explainer).", "quote": "you’ll get a lot of flicker and changes in content between each frame", "source_url": "https://research.runwayml.com/scale-speed-and-stepping-stones-the-path-to-gen-2", "source_kind": "official_blog", "retrieved": true}
+      ],
+      "confidence": "low",
+      "notes": "Exact first-release date NOT established. GitHub API created_at: deforum/stable-diffusion 2022-08-18T06:16:02Z (a fork whose README links Deforum_Stable_Diffusion.ipynb; earliest commit 2021-12-21 is inherited fork history); deforum-art/sd-webui-deforum 2022-10-14T22:29:12Z (the AUTOMATIC1111 extension repo); deforum-art/deforum-stable-diffusion 2022-10-28T23:17:50Z (history begins with 'Initial commit'/'first commit' that day, i.e. a repo re-creation). Hence year precision only. The current README carries a notice that the project is no longer maintained."
+    },
+    {
+      "id": "make_a_video_2022",
+      "developer": "Meta AI",
+      "family": "Make-A-Video",
+      "version": "Make-A-Video",
+      "event": "announcement",
+      "date": "2022-09-29",
+      "date_precision": "day",
+      "headline": "Meta showed text-to-video learned from text-image pairs plus unlabeled video, with brief clips; a demo was only planned.",
+      "specs": {"max_clip_s": null, "resolution": "768x768", "fps": null, "audio": null, "notes": "Pipeline: 16 frames at 64x64 -> frame interpolation to 76 frames -> 256x256 -> 768x768. Fps is a conditioning input (training used random fps 1-30); the paper does not state a single output fps or duration in the text retrieved."},
+      "claims": [
+        {"claim": "Meta AI blog post dated September 29, 2022 announces the system and its 'brief' clips.", "quote": "a new AI system that lets people turn text prompts into brief, high-quality video clips", "source_url": "https://ai.meta.com/blog/generative-ai-text-to-video/", "source_kind": "official_blog", "retrieved": true},
+        {"claim": "Release status at announcement: paper published, demo only planned.", "quote": "we’re sharing details in a research paper and plan to release a demo experience", "source_url": "https://ai.meta.com/blog/generative-ai-text-to-video/", "source_kind": "official_blog", "retrieved": true},
+        {"claim": "arXiv v1 dated 29 Sep 2022.", "quote": "We propose Make-A-Video -- an approach for directly translating the tremendous recent progress in Text-to-Image (T2I) generation to Text-to-Video (T2V).", "source_url": "https://arxiv.org/abs/2209.14792", "source_kind": "paper", "retrieved": true},
+        {"claim": "Frame count after interpolation.", "quote": "to upsample a 16 frame video to 76 frames", "source_url": "https://arxiv.org/pdf/2209.14792", "source_kind": "paper", "retrieved": true},
+        {"claim": "Final resolution.", "quote": "increased in resolution to 256 × 256 by SRtl and 768 × 768 by SRh", "source_url": "https://arxiv.org/pdf/2209.14792", "source_kind": "paper", "retrieved": true}
+      ],
+      "confidence": "high",
+      "notes": "Project site https://makeavideo.studio/ (retrieved) shows sample clips and a research-paper link. No official page retrieved states that a public generator was ever launched (absence not proven)."
+    },
+    {
+      "id": "imagen_video_2022",
+      "developer": "Google Research (Brain Team)",
+      "family": "Imagen",
+      "version": "Imagen Video",
+      "event": "paper",
+      "date": "2022-10-05",
+      "date_precision": "day",
+      "headline": "A cascade of video diffusion models produced 1280x768 clips at 24 fps for 5.3 seconds; Google withheld the model.",
+      "specs": {"max_clip_s": 5.3, "resolution": "1280x768", "fps": 24, "audio": null, "notes": "128 frames. Cascade of base model plus spatial and temporal super-resolution models. The project page has no date; date is the arXiv v1 submission."},
+      "claims": [
+        {"claim": "arXiv v1 submitted 5 Oct 2022; final output spec.", "quote": "generates high definition 1280×768 (width × height) videos at 24 frames per second, for 128 frames (≈ 5.3 seconds)", "source_url": "https://arxiv.org/pdf/2210.02303", "source_kind": "paper", "retrieved": true},
+        {"claim": "Abstract on the arXiv page and on Google's project page.", "quote": "We present Imagen Video, a text-conditional video generation system based on a cascade of video diffusion models.", "source_url": "https://imagen.research.google/video/", "source_kind": "official_blog", "retrieved": true},
+        {"claim": "Release status.", "quote": "We have decided not to release the Imagen Video model or its source code until these concerns are mitigated.", "source_url": "https://arxiv.org/pdf/2210.02303", "source_kind": "paper", "retrieved": true}
+      ],
+      "confidence": "high",
+      "notes": "arXiv abs page https://arxiv.org/abs/2210.02303 retrieved (Submitted 5 Oct 2022)."
+    },
+    {
+      "id": "phenaki_2022",
+      "developer": "Google Brain",
+      "family": "Phenaki",
+      "version": "Phenaki",
+      "event": "paper",
+      "date": "2022-10-05",
+      "date_precision": "day",
+      "headline": "Generated long videos from a story-like sequence of changing prompts, with clips of minutes despite training on 1.4-second videos.",
+      "specs": {"max_clip_s": 120, "resolution": null, "fps": 8, "audio": null, "notes": "Trained on 1.4 s videos at 8 fps (1.8B-parameter model). The project page demonstrates a 2-minute story built from a long prompt sequence (a chained demo, not a single-shot generation). Resolution of the released demos not stated in the text retrieved (128x128 appears only in an evaluation appendix)."},
+      "claims": [
+        {"claim": "arXiv v1 submitted 5 Oct 2022; variable length claim.", "quote": "The videos can be long (minutes) even though the model is trained on 1.4 seconds videos (at 8 fps).", "source_url": "https://arxiv.org/pdf/2210.02399", "source_kind": "paper", "retrieved": true},
+        {"claim": "Google's project page, first archived 2022-10-09 (Wayback), describes the system.", "quote": "A model for generating videos from text, with prompts that can change over time, and videos that can be as long as multiple minutes.", "source_url": "http://web.archive.org/web/20221009175715/https://phenaki.video/", "source_kind": "archived_official", "retrieved": true},
+        {"claim": "Two-minute demo on the project page.", "quote": "This 2-minute story was generated using a long sequence of prompts", "source_url": "http://web.archive.org/web/20221009175715/https://phenaki.video/", "source_kind": "archived_official", "retrieved": true},
+        {"claim": "Release status.", "quote": "our decision not to release the underlying models, code, data or interactive demo at this time", "source_url": "https://arxiv.org/pdf/2210.02399", "source_kind": "paper", "retrieved": true}
+      ],
+      "confidence": "high",
+      "notes": "Possible earlier OpenReview (ICLR 2023 submission) exposure could not be checked: api.openreview.net returned a 403 challenge. See unverified_leads."
+    },
+    {
+      "id": "gen1_announcement_2023",
+      "developer": "Runway",
+      "family": "Runway Gen",
+      "version": "Gen-1",
+      "event": "announcement",
+      "date": "2023-02-06",
+      "date_precision": "day",
+      "headline": "Runway announced Gen-1, a video-to-video model that restyled existing footage from text or image prompts while keeping its structure.",
+      "specs": {"max_clip_s": null, "resolution": null, "fps": null, "audio": null, "notes": "Not text-to-video: it needs a source video. The research paper trained on 8-frame batches at 448x256 (training setting, not product output). First archived capture of the Gen-1 page (2023-02-06) shows 'Request Access', i.e. not yet public."},
+      "claims": [
+        {"claim": "Earliest Wayback capture of the Gen-1 page (2023-02-06 15:22 UTC) with a 'Request Access' button.", "quote": "Use words and images to generate new videos out of existing ones.", "source_url": "http://web.archive.org/web/20230206152229/https://research.runwayml.com/gen1", "source_kind": "archived_official", "retrieved": true},
+        {"claim": "Paper submitted the same day (arXiv 2302.03011, 6 Feb 2023).", "quote": "we present a structure and content-guided video diffusion model that edits videos based on visual or textual descriptions of the desired output", "source_url": "https://arxiv.org/abs/2302.03011", "source_kind": "paper", "retrieved": true},
+        {"claim": "Current Runway page lists the modes (stylization, storyboard, mask, render, customization).", "quote": "Transfer the style of any image or prompt to every frame of your video.", "source_url": "https://runwayml.com/research/gen-1", "source_kind": "official_blog", "retrieved": true},
+        {"claim": "Training setting in the paper.", "quote": "we use video batches containing 8 frames sampled four frames apart with a resolution of 448 × 256", "source_url": "https://arxiv.org/pdf/2302.03011", "source_kind": "paper", "retrieved": true}
+      ],
+      "confidence": "high",
+      "notes": "Public availability date of Gen-1 (reported 2023-03-27 web, iOS app April 2023) is NOT verified from a primary source: see unverified_leads."
+    },
+    {
+      "id": "modelscope_t2v_2023",
+      "developer": "ModelScope (Alibaba-affiliated team; model card lists an alibaba-inc.com contact)",
+      "family": "ModelScope text-to-video",
+      "version": "text-to-video-synthesis / ModelScopeT2V (1.7B parameters)",
+      "event": "open_weights",
+      "date": "2023-03-19",
+      "date_precision": "day",
+      "headline": "An open 1.7B-parameter text-to-video diffusion model anyone could run, English prompts only, research use only.",
+      "specs": {"max_clip_s": null, "resolution": null, "fps": null, "audio": null, "notes": "Output size/length not stated on the model card. Paper trains on 16 frames sampled at 3 fps. Licence metadata on the HF repo: cc-by-nc-4.0 (the diffusers mirror's card body says CC-BY-NC-ND). Non-commercial either way: NOT reusable for the film."},
+      "claims": [
+        {"claim": "HF repo damo-vilab/modelscope-damo-text-to-video-synthesis: 'initial commit' 2023-03-19T10:27:15Z (HF API commit metadata); diffusers mirror created 2023-03-22.", "quote": "initial commit", "source_url": "https://huggingface.co/api/models/damo-vilab/modelscope-damo-text-to-video-synthesis/commits/main", "source_kind": "model_card", "retrieved": true},
+        {"claim": "Model size.", "quote": "The overall model parameters are about 1.7 billion.", "source_url": "https://huggingface.co/damo-vilab/modelscope-damo-text-to-video-synthesis/raw/main/README.md", "source_kind": "model_card", "retrieved": true},
+        {"claim": "Language support.", "quote": "Only English input is supported.", "source_url": "https://huggingface.co/damo-vilab/modelscope-damo-text-to-video-synthesis/raw/main/README.md", "source_kind": "model_card", "retrieved": true},
+        {"claim": "Scope of use.", "quote": "This model is meant for research purposes.", "source_url": "https://huggingface.co/damo-vilab/text-to-video-ms-1.7b/raw/main/README.md", "source_kind": "model_card", "retrieved": true},
+        {"claim": "Paper (arXiv 2308.06571, 12 Aug 2023) says it evolves from Stable Diffusion.", "quote": "ModelScopeT2V, a text-to-video synthesis model that evolves from a text-to-image synthesis model (i.e., Stable Diffusion)", "source_url": "https://arxiv.org/abs/2308.06571", "source_kind": "paper", "retrieved": true}
+      ],
+      "confidence": "medium",
+      "notes": "Date is Hugging Face commit metadata of the official mirror, not a developer announcement; the original repo lives on modelscope.cn (not fetched). Paper posted 5 months later (2023-08-12)."
+    },
+    {
+      "id": "gen2_announcement_2023",
+      "developer": "Runway",
+      "family": "Runway Gen",
+      "version": "Gen-2",
+      "event": "announcement",
+      "date": "2023-03-20",
+      "date_precision": "day",
+      "headline": "Runway announced Gen-2, adding text-to-video and image-to-video; access was through Discord early access, not yet open to everyone.",
+      "specs": {"max_clip_s": null, "resolution": null, "fps": null, "audio": null, "notes": "No clip length, resolution or fps in the primary Runway pages retrieved. Secondary reports mention 3 to 4 second clips (unverified). Runway's current Gen-2 research page carries a 'Feb 2023' label; the first Wayback capture of the page is 2023-03-20."},
+      "claims": [
+        {"claim": "First Wayback capture (2023-03-20 13:29 UTC) of the Gen-2 research page, with 'Join Discord'.", "quote": "A multi-modal AI system that can generate novel videos with text, images, or video clips.", "source_url": "http://web.archive.org/web/20230320132942/https://research.runwayml.com/gen2", "source_kind": "archived_official", "retrieved": true},
+        {"claim": "Text-to-video mode described on the same archived page.", "quote": "Or, using nothing but words (Text to Video).", "source_url": "http://web.archive.org/web/20230320132942/https://research.runwayml.com/gen2", "source_kind": "archived_official", "retrieved": true},
+        {"claim": "PetaPixel (dated Mar 20, 2023) embeds Runway's own tweet of March 20, 2023.", "quote": "Introducing, Text to Video. With Gen-2.", "source_url": "https://petapixel.com/2023/03/20/runway-gen-2-is-the-first-publicly-available-text-to-video-generator", "source_kind": "secondary", "retrieved": true},
+        {"claim": "The Decoder's original article was dated March 20, 2023.", "quote": "Original article dated March 20, 2023", "source_url": "https://the-decoder.com/runway-gen-2-is-the-latest-text-to-video-model/", "source_kind": "secondary", "retrieved": true}
+      ],
+      "confidence": "high",
+      "notes": "Archived page later versions (2023-04 to 2023-06) still show 'Join Discord', consistent with early access through June 2023."
+    },
+    {
+      "id": "gen2_public_release_2023",
+      "developer": "Runway",
+      "family": "Runway Gen",
+      "version": "Gen-2",
+      "event": "public_release",
+      "date": "2023-06",
+      "date_precision": "month",
+      "headline": "Gen-2 text-to-video became available to general users in Runway's browser app and iOS app in June 2023.",
+      "specs": {"max_clip_s": null, "resolution": null, "fps": null, "audio": null, "notes": "Secondary reports say 4-second clips at launch (unverified). Image-to-video with arbitrary starting frames arrived as a later 'large update' before Sept 2023 per Runway's CTO."},
+      "claims": [
+        {"claim": "Runway's own interview page (28 Sept 2023) places the introduction of Gen-2 in June 2023.", "quote": "introducing Gen-2 in June 2023", "source_url": "https://research.runwayml.com/scale-speed-and-stepping-stones-the-path-to-gen-2", "source_kind": "official_blog", "retrieved": true},
+        {"claim": "Same page: Gen-2 removed the need for a source video.", "quote": "A few months later, we released Gen-2, which removed the need for structure conditioning and tackled text-guided video generation directly.", "source_url": "https://research.runwayml.com/scale-speed-and-stepping-stones-the-path-to-gen-2", "source_kind": "official_blog", "retrieved": true},
+        {"claim": "The Decoder update dated June 06, 2023 (page dated Jun 7, 2023).", "quote": "Runway Gen-2 is now available in the browser and smartphone app for iOS", "source_url": "https://the-decoder.com/runway-gen-2-is-the-latest-text-to-video-model/", "source_kind": "secondary", "retrieved": true},
+        {"claim": "80.lv article dated 09 June 2023.", "quote": "The new text-to-video generative AI is now available on web and mobile devices.", "source_url": "https://80.lv/articles/runway-s-gen-2-has-been-officially-released/", "source_kind": "secondary", "retrieved": true}
+      ],
+      "confidence": "medium",
+      "notes": "Month is supported by a Runway primary page; the exact day (2023-06-06 vs 06-07) rests on secondary reports only, so month precision is used."
+    },
+    {
+      "id": "zeroscope_v2_2023",
+      "developer": "cerspense (independent creator)",
+      "family": "ModelScope derivatives",
+      "version": "zeroscope_v2 576w and zeroscope_v2 XL",
+      "event": "open_weights",
+      "date": "2023-06-21",
+      "date_precision": "day",
+      "headline": "A watermark-free ModelScope fine-tune with better 16:9 output and a 1024x576 upscaling model, popular in community workflows.",
+      "specs": {"max_clip_s": null, "resolution": "576x320 (576w); 1024x576 (XL)", "fps": null, "audio": null, "notes": "Trained on 9,923 clips / 29,769 tagged frames at 24 frames. Licence cc-by-nc-4.0: non-commercial, NOT reusable for the film."},
+      "claims": [
+        {"claim": "HF repo cerspense/zeroscope_v2_576w: 'initial commit' 2023-06-21T19:10:41Z (HF API commit metadata); XL repo created 2023-06-21T23:29Z.", "quote": "initial commit", "source_url": "https://huggingface.co/api/models/cerspense/zeroscope_v2_576w/commits/main", "source_kind": "model_card", "retrieved": true},
+        {"claim": "576w model card.", "quote": "A watermark-free Modelscope-based video model optimized for producing high-quality 16:9 compositions and a smooth video output.", "source_url": "https://huggingface.co/cerspense/zeroscope_v2_576w/raw/main/README.md", "source_kind": "model_card", "retrieved": true},
+        {"claim": "Training clips and resolution of the 576w model.", "quote": "using 9,923 clips and 29,769 tagged frames at 24 frames, 576x320 resolution", "source_url": "https://huggingface.co/cerspense/zeroscope_v2_576w/raw/main/README.md", "source_kind": "model_card", "retrieved": true},
+        {"claim": "XL model card.", "quote": "A watermark-free Modelscope-based video model capable of generating high quality video at 1024 x 576.", "source_url": "https://huggingface.co/cerspense/zeroscope_v2_XL/raw/main/README.md", "source_kind": "model_card", "retrieved": true}
+      ],
+      "confidence": "medium",
+      "notes": "Date is HF commit metadata (no announcement post retrieved). Earlier zeroscope v1 not investigated."
+    },
+    {
+      "id": "animatediff_v1_2023",
+      "developer": "Chinese University of Hong Kong, Shanghai AI Laboratory, Stanford (Guo et al.)",
+      "family": "AnimateDiff",
+      "version": "AnimateDiff v1 (mm_sd_v14.ckpt / mm_sd_v15.ckpt)",
+      "event": "open_weights",
+      "date": "2023-07",
+      "date_precision": "month",
+      "headline": "A plug-and-play motion module that animated any personalized Stable Diffusion checkpoint without per-model tuning; code and weights were public in July 2023.",
+      "specs": {"max_clip_s": null, "resolution": null, "fps": null, "audio": null, "notes": "Clip length/resolution for v1 not verified from retrieved text. A later SDXL-Beta README section says 1024x1024x16 frames. Code is Apache-2.0 (LICENSE added 2023-07-11); motion-module weights on HF are tagged apache-2.0 (HF API createdAt 2023-07-18)."},
+      "claims": [
+        {"claim": "arXiv v1 submitted 10 Jul 2023.", "quote": "we present AnimateDiff, a practical framework for animating personalized T2I models without requiring model-specific tuning", "source_url": "https://arxiv.org/abs/2307.04725", "source_kind": "paper", "retrieved": true},
+        {"claim": "Official README section for the first version is dated 2023.07.", "quote": "The first version of AnimateDiff!", "source_url": "https://raw.githubusercontent.com/guoyww/AnimateDiff/main/README.md", "source_kind": "docs", "retrieved": true},
+        {"claim": "Apache-2.0 LICENSE commit dated 2023-07-11T06:43:36Z in the official repo (GitHub API); the earlier 'add code' commit (2023-07-09) still said code was coming soon.", "quote": "add LICENSE", "source_url": "https://api.github.com/repos/guoyww/AnimateDiff/commits?per_page=100&since=2023-07-03T00:00:00Z&until=2023-08-05T00:00:00Z", "source_kind": "docs", "retrieved": true}
+      ],
+      "confidence": "medium",
+      "notes": "Exact public-release day within 2023-07-09..2023-07-14 not pinned: the README's 'Code will be released very soon' line was still present at the 2023-07-09 'add code' commit and gone by 2023-07-11; weight links appear in the README by 2023-07-14. Brief listed 'AnimateDiff (Jul 2023)'."
+    },
+    {
+      "id": "animatediff_v2_2023",
+      "developer": "Guo et al. (CUHK / Shanghai AI Laboratory / Stanford)",
+      "family": "AnimateDiff",
+      "version": "AnimateDiff v2 (mm_sd_v15_v2.ckpt) with MotionLoRA",
+      "event": "version_release",
+      "date": "2023-09",
+      "date_precision": "month",
+      "headline": "Larger-resolution motion module plus MotionLoRA adapters giving eight basic camera movements.",
+      "specs": {"max_clip_s": null, "resolution": null, "fps": null, "audio": null, "notes": "MotionLoRA checkpoints are small (77 MB each per README)."},
+      "claims": [
+        {"claim": "README section dated 2023.09 describes the camera-move adapters.", "quote": "We also support MotionLoRA of eight basic camera movements.", "source_url": "https://raw.githubusercontent.com/guoyww/AnimateDiff/main/README.md", "source_kind": "docs", "retrieved": true},
+        {"claim": "Scale-up training.", "quote": "is trained upon larger resolution and batch size", "source_url": "https://raw.githubusercontent.com/guoyww/AnimateDiff/main/README.md", "source_kind": "docs", "retrieved": true}
+      ],
+      "confidence": "medium",
+      "notes": "Month from README headings only (no day-level source retrieved). An SDXL-Beta motion module is listed as 2023.11 in the same README."
+    },
+    {
+      "id": "animatediff_v3_sparsectrl_2023",
+      "developer": "Guo et al. (CUHK / Shanghai AI Laboratory / Stanford)",
+      "family": "AnimateDiff",
+      "version": "AnimateDiff v3 and SparseCtrl",
+      "event": "version_release",
+      "date": "2023-12",
+      "date_precision": "month",
+      "headline": "Added RGB-image and scribble control encoders so a few keyframes or sketches could steer the animation.",
+      "specs": {"max_clip_s": null, "resolution": null, "fps": null, "audio": null, "notes": "SparseCtrl is a separate paper (arXiv 2311.16933, cited in README; not fetched)."},
+      "claims": [
+        {"claim": "README section dated 2023.12.", "quote": "which can take abitary number of condition maps to control the animation contents", "source_url": "https://raw.githubusercontent.com/guoyww/AnimateDiff/main/README.md", "source_kind": "docs", "retrieved": true},
+        {"claim": "Developer-stated limitation for v3.", "quote": "Small fickering is noticable;", "source_url": "https://raw.githubusercontent.com/guoyww/AnimateDiff/main/README.md", "source_kind": "docs", "retrieved": true}
+      ],
+      "confidence": "medium",
+      "notes": "Quotes preserve the README's original typos ('abitary', 'fickering', 'noticable')."
+    },
+    {
+      "id": "pika_1_0_2023",
+      "developer": "Pika (Pika Labs)",
+      "family": "Pika",
+      "version": "Pika 1.0",
+      "event": "announcement",
+      "date": "2023-11-28",
+      "date_precision": "day",
+      "headline": "Pika unveiled Pika 1.0, a new model for generating and editing video in several styles, with a new web app; access started via a waitlist.",
+      "specs": {"max_clip_s": null, "resolution": null, "fps": null, "audio": null, "notes": "The announcement page states no clip length, resolution or fps."},
+      "claims": [
+        {"claim": "Pika's own launch page, archived 2023-11-28 21:32 UTC, is headed with the date.", "quote": "Announcing Pika November 28, 2023", "source_url": "http://web.archive.org/web/20231128213259/https://pika.art/launch", "source_kind": "archived_official", "retrieved": true},
+        {"claim": "What Pika 1.0 is.", "quote": "a new AI model capable of generating and editing videos in diverse styles such as 3D animation, anime, cartoon and cinematic", "source_url": "http://web.archive.org/web/20231128213259/https://pika.art/launch", "source_kind": "archived_official", "retrieved": true},
+        {"claim": "Access model at announcement: waitlist.", "quote": "You can join the waitlist for Pika 1.0 at https://pika.art", "source_url": "http://web.archive.org/web/20231128213259/https://pika.art/launch", "source_kind": "archived_official", "retrieved": true},
+        {"claim": "Pre-1.0 Discord beta ran about six months.", "quote": "When we started Pika six months ago", "source_url": "http://web.archive.org/web/20231128213259/https://pika.art/launch", "source_kind": "archived_official", "retrieved": true}
+      ],
+      "confidence": "high",
+      "notes": "Opening to all users (reported early Dec 2023 by Tom's Guide/Yahoo) is NOT verified from a primary source; see unverified_leads."
+    },
+    {
+      "id": "svd_2023",
+      "developer": "Stability AI",
+      "family": "Stable Video Diffusion",
+      "version": "Stable Video Diffusion (SVD, 14 frames) and SVD-XT (25 frames)",
+      "event": "open_weights",
+      "date": "2023-11-21",
+      "date_precision": "day",
+      "headline": "Stability released open image-to-video weights making 14 or 25 frames at 576x1024, under a research-only licence.",
+      "specs": {"max_clip_s": 4, "resolution": "576x1024", "fps": "customizable 3 to 30", "audio": null, "notes": "Image-to-video only at release (text-to-video weights not released). Model card: videos 'rather short (<= 4sec)'. Released as a 'research preview', not for commercial use at that stage."},
+      "claims": [
+        {"claim": "Stability blog (page shows 'Nov 21', no year): two image-to-video models, 14 and 25 frames.", "quote": "capable of generating 14 and 25 frames at customizable frame rates between 3 and 30 frames per second", "source_url": "https://stability.ai/news/stable-video-diffusion-open-ai-video-model", "source_kind": "official_blog", "retrieved": true},
+        {"claim": "Official GitHub README dates the release November 21, 2023.", "quote": "We are releasing Stable Video Diffusion, an image-to-video model, for research purposes", "source_url": "https://raw.githubusercontent.com/Stability-AI/generative-models/main/README.md", "source_kind": "docs", "retrieved": true},
+        {"claim": "Model card resolution and frame count for SVD-XT.", "quote": "This model was trained to generate 25 frames at resolution 576x1024 given a context frame of the same size", "source_url": "https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt/raw/main/README.md", "source_kind": "model_card", "retrieved": true},
+        {"claim": "Commercial-use status at release.", "quote": "this model is not intended for real-world or commercial applications at this stage", "source_url": "https://stability.ai/news/stable-video-diffusion-open-ai-video-model", "source_kind": "official_blog", "retrieved": true},
+        {"claim": "Paper (arXiv 2311.15127, 25 Nov 2023).", "quote": "We present Stable Video Diffusion - a latent video diffusion model for high-resolution, state-of-the-art text-to-video and image-to-video generation.", "source_url": "https://arxiv.org/abs/2311.15127", "source_kind": "paper", "retrieved": true}
+      ],
+      "confidence": "high",
+      "notes": "HF API createdAt for the two repos is 2023-11-20 (repos created a day before the public post). Licence on HF is 'stable-video-diffusion-community' (later revisions may differ; not used for reuse decisions here)."
+    },
+    {
+      "id": "emu_video_2023",
+      "developer": "Meta (GenAI)",
+      "family": "Emu",
+      "version": "Emu Video",
+      "event": "announcement",
+      "date": "2023-11-16",
+      "date_precision": "day",
+      "headline": "Meta described a two-step text-to-image-then-video method giving 512x512, four-second, 16 fps clips, as a research milestone.",
+      "specs": {"max_clip_s": 4, "resolution": "512x512", "fps": 16, "audio": null, "notes": "Research announcement; blog does not describe a public generator. Model itself produces 8 or 16 frames at low fps, then a separate interpolation model outputs 37 frames at 16 fps (paper)."},
+      "claims": [
+        {"claim": "Meta blog dated November 16, 2023 gives the output spec.", "quote": "uses just two diffusion models to generate 512x512 four-second long videos at 16 frames per second", "source_url": "https://ai.meta.com/blog/emu-text-to-video-generation-image-editing-research/", "source_kind": "official_blog", "retrieved": true},
+        {"claim": "arXiv v1 submitted 17 Nov 2023; factorised approach.", "quote": "We present Emu Video, a text-to-video generation model that factorizes the generation into two steps", "source_url": "https://arxiv.org/abs/2311.10709", "source_kind": "paper", "retrieved": true},
+        {"claim": "Meta compares against Runway Gen-2 and Pika (its own human evaluation, not an independent benchmark).", "quote": "Our model outperforms commercial solutions such as RunwayML's Gen2 and Pika Labs.", "source_url": "https://arxiv.org/abs/2311.10709", "source_kind": "paper", "retrieved": true}
+      ],
+      "confidence": "high",
+      "notes": "Project page https://emu-video.metademolab.com/ returned almost no text (JS site)."
+    },
+    {
+      "id": "videopoet_2023",
+      "developer": "Google Research",
+      "family": "VideoPoet",
+      "version": "VideoPoet",
+      "event": "announcement",
+      "date": "2023-12-19",
+      "date_precision": "day",
+      "headline": "A large language model generated video and matching audio from text, images or video; it makes short clips and extends them second by second.",
+      "specs": {"max_clip_s": 10, "resolution": "128x128 base tokens; spatial super-resolution stage (example 17x896x512 in paper)", "fps": 8, "audio": "yes (audio predicted from generated 2-second video clips, per blog)", "notes": "Base tokenizer covers 17 frames / 2.125 s at 8 fps; longer videos up to 10 s by repeatedly predicting the next second. Blog says outputs are portrait by default. No public release stated in the retrieved pages."},
+      "claims": [
+        {"claim": "Google Research blog dated December 19, 2023.", "quote": "a large language model (LLM) that is capable of a wide variety of video generation tasks, including text-to-video, image-to-video", "source_url": "https://research.google/blog/videopoet-a-large-language-model-for-zero-shot-video-generation/", "source_kind": "official_blog", "retrieved": true},
+        {"claim": "Portrait default (relevant to vertical formats).", "quote": "By default, the VideoPoet model generates videos in portrait orientation to tailor its output towards short-form content.", "source_url": "https://research.google/blog/videopoet-a-large-language-model-for-zero-shot-video-generation/", "source_kind": "official_blog", "retrieved": true},
+        {"claim": "Extension mechanism.", "quote": "We are able to generate longer videos simply by conditioning on the last 1 second of video and predicting the next 1 second.", "source_url": "https://research.google/blog/videopoet-a-large-language-model-for-zero-shot-video-generation/", "source_kind": "official_blog", "retrieved": true},
+        {"claim": "Audio from the same model.", "quote": "VideoPoet is also capable of generating audio.", "source_url": "https://research.google/blog/videopoet-a-large-language-model-for-zero-shot-video-generation/", "source_kind": "official_blog", "retrieved": true},
+        {"claim": "Paper (arXiv 2312.14125, 21 Dec 2023): tokenizer spec.", "quote": "MAGVIT-v2 tokenizes 17-frame 2.125-second 128×128 resolution videos sampled at 8 fps", "source_url": "https://arxiv.org/pdf/2312.14125", "source_kind": "paper", "retrieved": true},
+        {"claim": "Paper: 10-second extension.", "quote": "VideoPoet can synthesize coherent long videos of up to 10 seconds by autoregressively extending the content", "source_url": "https://arxiv.org/pdf/2312.14125", "source_kind": "paper", "retrieved": true}
+      ],
+      "confidence": "high",
+      "notes": "Project page https://sites.research.google/videopoet/ retrieved (no date on page). Research demo only as far as retrieved pages show."
+    },
+    {
+      "id": "lumiere_2024",
+      "developer": "Google Research",
+      "family": "Lumiere",
+      "version": "Lumiere",
+      "event": "paper",
+      "date": "2024-01-23",
+      "date_precision": "day",
+      "headline": "A Space-Time U-Net generated a whole 5-second clip in one pass (80 frames at 16 fps), aiming for more coherent motion.",
+      "specs": {"max_clip_s": 5, "resolution": "1024x1024 (after spatial super-resolution from 128x128)", "fps": 16, "audio": null, "notes": "Paper Fig. 3 lists 128x128x80 at 16 fps then 1024x1024x80 at 16 fps, 5 s. Also image-to-video, inpainting, stylised generation. Research paper only; no public release seen in retrieved pages."},
+      "claims": [
+        {"claim": "arXiv v1 submitted 23 Jan 2024; single-pass design.", "quote": "a Space-Time U-Net architecture that generates the entire temporal duration of the video at once, through a single pass in the model", "source_url": "https://arxiv.org/abs/2401.12945", "source_kind": "paper", "retrieved": true},
+        {"claim": "Clip length and frame rate.", "quote": "generate 80 frames at 16fps (or 5 seconds", "source_url": "https://arxiv.org/pdf/2401.12945", "source_kind": "paper", "retrieved": true},
+        {"claim": "Output size in the pipeline figure text.", "quote": "1024X1024X80 16fps, 5sec", "source_url": "https://arxiv.org/pdf/2401.12945", "source_kind": "paper", "retrieved": true},
+        {"claim": "Google project page identifies the work.", "quote": "LUMIERE A Space-Time Diffusion Model for Video Generation", "source_url": "https://lumiere-video.github.io/", "source_kind": "official_blog", "retrieved": true}
+      ],
+      "confidence": "high",
+      "notes": "Outside the 2023 boundary by a few weeks, included because the brief scoped it."
+    }
+  ],
+  "capabilities": [
+    {"capability": "Text prompt to short video clip (research demos)", "product": "Make-A-Video", "date": "2022-09-29", "quote": "a new AI system that lets people turn text prompts into brief, high-quality video clips", "source_url": "https://ai.meta.com/blog/generative-ai-text-to-video/", "source_kind": "official_blog"},
+    {"capability": "Video from an image, and variations of an existing video", "product": "Make-A-Video", "date": "2022-09-29", "quote": "The system can also create videos from images or take existing videos and create new ones that are similar.", "source_url": "https://ai.meta.com/blog/generative-ai-text-to-video/", "source_kind": "official_blog"},
+    {"capability": "High-definition (1280x768, 24 fps, 5.3 s) text-to-video via cascaded diffusion", "product": "Imagen Video", "date": "2022-10-05", "quote": "generates high definition 1280×768 (width × height) videos at 24 frames per second, for 128 frames (≈ 5.3 seconds)", "source_url": "https://arxiv.org/pdf/2210.02303", "source_kind": "paper"},
+    {"capability": "Long videos from a changing sequence of prompts (a story)", "product": "Phenaki", "date": "2022-10-05", "quote": "A model for generating videos from text, with prompts that can change over time, and videos that can be as long as multiple minutes.", "source_url": "http://web.archive.org/web/20221009175715/https://phenaki.video/", "source_kind": "archived_official"},
+    {"capability": "Open-source text-to-video with released code and weights", "product": "CogVideo", "date": "2022-05-29", "quote": "The code and model for text-to-video generation is now available!", "source_url": "https://raw.githubusercontent.com/THUDM/CogVideo/CogVideo/README.md", "source_kind": "docs"},
+    {"capability": "Restyle existing footage from a text or image prompt while keeping its structure (video-to-video)", "product": "Runway Gen-1", "date": "2023-02-06", "quote": "Use words and images to generate new videos out of existing ones.", "source_url": "http://web.archive.org/web/20230206152229/https://research.runwayml.com/gen1", "source_kind": "archived_official"},
+    {"capability": "Text-to-video, text+image-to-video and image-to-video modes in one system", "product": "Runway Gen-2", "date": "2023-03-20", "quote": "Mode 02: Text + Image to Video Generate a video using a driving image and a text prompt", "source_url": "http://web.archive.org/web/20230320132942/https://research.runwayml.com/gen2", "source_kind": "archived_official"},
+    {"capability": "Image-to-video from arbitrary starting frames (Gen-2 update before Sept 2023)", "product": "Runway Gen-2", "date": "2023-09-28", "quote": "we pushed a large update to the model that allowed using arbitrary starting frames to generate videos using image-to-video", "source_url": "https://research.runwayml.com/scale-speed-and-stepping-stones-the-path-to-gen-2", "source_kind": "official_blog"},
+    {"capability": "Open text-to-video diffusion model runnable by anyone (English prompts)", "product": "ModelScope text-to-video-synthesis", "date": "2023-03-19", "quote": "Only English input is supported.", "source_url": "https://huggingface.co/damo-vilab/modelscope-damo-text-to-video-synthesis/raw/main/README.md", "source_kind": "model_card"},
+    {"capability": "Animate any personalized Stable Diffusion model with a plug-in motion module, no per-model tuning", "product": "AnimateDiff v1", "date": "2023-07", "quote": "a practical framework for animating personalized T2I models without requiring model-specific tuning", "source_url": "https://arxiv.org/abs/2307.04725", "source_kind": "paper"},
+    {"capability": "Basic camera-move control via small adapters", "product": "AnimateDiff v2 MotionLoRA", "date": "2023-09", "quote": "We also support MotionLoRA of eight basic camera movements.", "source_url": "https://raw.githubusercontent.com/guoyww/AnimateDiff/main/README.md", "source_kind": "docs"},
+    {"capability": "Sparse image/scribble conditioning of an animation", "product": "AnimateDiff v3 SparseCtrl", "date": "2023-12", "quote": "which can take abitary number of condition maps to control the animation contents", "source_url": "https://raw.githubusercontent.com/guoyww/AnimateDiff/main/README.md", "source_kind": "docs"},
+    {"capability": "Generate and edit video in several styles (3D, anime, cartoon, cinematic)", "product": "Pika 1.0", "date": "2023-11-28", "quote": "a new AI model capable of generating and editing videos in diverse styles such as 3D animation, anime, cartoon and cinematic", "source_url": "http://web.archive.org/web/20231128213259/https://pika.art/launch", "source_kind": "archived_official"},
+    {"capability": "Image-to-video with 14 or 25 frames at adjustable frame rate (open weights)", "product": "Stable Video Diffusion", "date": "2023-11-21", "quote": "capable of generating 14 and 25 frames at customizable frame rates between 3 and 30 frames per second", "source_url": "https://stability.ai/news/stable-video-diffusion-open-ai-video-model", "source_kind": "official_blog"},
+    {"capability": "Two-step text-to-image then image-to-video, 512x512, 4 s, 16 fps", "product": "Emu Video", "date": "2023-11-16", "quote": "uses just two diffusion models to generate 512x512 four-second long videos at 16 frames per second", "source_url": "https://ai.meta.com/blog/emu-text-to-video-generation-image-editing-research/", "source_kind": "official_blog"},
+    {"capability": "Video and audio from one language model; portrait by default", "product": "VideoPoet", "date": "2023-12-19", "quote": "By default, the VideoPoet model generates videos in portrait orientation to tailor its output towards short-form content.", "source_url": "https://research.google/blog/videopoet-a-large-language-model-for-zero-shot-video-generation/", "source_kind": "official_blog"},
+    {"capability": "Extend a clip by predicting the next second repeatedly (up to 10 s)", "product": "VideoPoet", "date": "2023-12-19", "quote": "We are able to generate longer videos simply by conditioning on the last 1 second of video and predicting the next 1 second.", "source_url": "https://research.google/blog/videopoet-a-large-language-model-for-zero-shot-video-generation/", "source_kind": "official_blog"},
+    {"capability": "Whole 5-second clip generated in a single pass for global temporal consistency", "product": "Lumiere", "date": "2024-01-23", "quote": "a Space-Time U-Net architecture that generates the entire temporal duration of the video at once, through a single pass in the model", "source_url": "https://arxiv.org/abs/2401.12945", "source_kind": "paper"}
+  ],
+  "limitations": [
+    {"developer": "Runway", "statement": "Generating video frame by frame with an image model causes flicker and content changes between frames (the reason for dedicated video models).", "quote": "you’ll get a lot of flicker and changes in content between each frame", "source_url": "https://research.runwayml.com/scale-speed-and-stepping-stones-the-path-to-gen-2"},
+    {"developer": "Stability AI", "statement": "SVD clips are short and not perfectly photorealistic.", "quote": "The generated videos are rather short (<= 4sec), and the model does not achieve perfect photorealism.", "source_url": "https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt/raw/main/README.md"},
+    {"developer": "Stability AI", "statement": "SVD is not steered by text.", "quote": "The model cannot be controlled through text.", "source_url": "https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt/raw/main/README.md"},
+    {"developer": "Stability AI", "statement": "SVD cannot write legible text.", "quote": "The model cannot render legible text.", "source_url": "https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt/raw/main/README.md"},
+    {"developer": "Stability AI", "statement": "SVD faces and people can be wrong.", "quote": "Faces and people in general may not be generated properly.", "source_url": "https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt/raw/main/README.md"},
+    {"developer": "Stability AI", "statement": "SVD may produce clips with no or little motion.", "quote": "The model may generate videos without motion, or very slow camera pans.", "source_url": "https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt/raw/main/README.md"},
+    {"developer": "Stability AI", "statement": "Research preview only at launch.", "quote": "this model is not intended for real-world or commercial applications at this stage", "source_url": "https://stability.ai/news/stable-video-diffusion-open-ai-video-model"},
+    {"developer": "Tsinghua University / BAAI (CogVideo)", "statement": "Only Chinese prompts were supported in the released code.", "quote": "Currently we only supports simplified Chinese input.", "source_url": "https://raw.githubusercontent.com/THUDM/CogVideo/CogVideo/README.md"},
+    {"developer": "Meta AI (Make-A-Video)", "statement": "Cannot learn text-to-motion associations that only exist in video (e.g. left-to-right vs right-to-left hand wave); longer, multi-scene stories left for future work.", "quote": "our approach can not learn associations between text and phenomenon that can only be inferred in videos.", "source_url": "https://arxiv.org/pdf/2209.14792"},
+    {"developer": "Meta AI (Make-A-Video)", "statement": "Web-trained models reflect and may amplify social biases.", "quote": "our models have learnt and likely exaggerated social biases", "source_url": "https://arxiv.org/pdf/2209.14792"},
+    {"developer": "Google Research (Imagen Video)", "statement": "Model withheld because of safety and bias concerns.", "quote": "We have decided not to release the Imagen Video model or its source code until these concerns are mitigated.", "source_url": "https://arxiv.org/pdf/2210.02303"},
+    {"developer": "Google Brain (Phenaki)", "statement": "Models, code, data and demo withheld.", "quote": "our decision not to release the underlying models, code, data or interactive demo at this time", "source_url": "https://arxiv.org/pdf/2210.02399"},
+    {"developer": "DeepMind (DVD-GAN)", "statement": "At higher resolutions coherent objects were harder to generate.", "quote": "At higher resolutions, generating coherent objects becomes more difficult", "source_url": "https://arxiv.org/pdf/1907.06571"},
+    {"developer": "ModelScope", "statement": "Weak on complex compositions.", "quote": "The performance of this model needs to be improved on complex compositional generation tasks.", "source_url": "https://huggingface.co/damo-vilab/text-to-video-ms-1.7b/raw/main/README.md"},
+    {"developer": "ModelScope", "statement": "Not built to depict real people or events.", "quote": "The model was not trained to realistically represent people or events", "source_url": "https://huggingface.co/damo-vilab/text-to-video-ms-1.7b/raw/main/README.md"},
+    {"developer": "AnimateDiff authors", "statement": "v3 still shows small flicker.", "quote": "Small fickering is noticable;", "source_url": "https://raw.githubusercontent.com/guoyww/AnimateDiff/main/README.md"},
+    {"developer": "Google Research (Lumiere)", "statement": "No multi-shot videos or scene transitions.", "quote": "our method is not designed to generate videos that consist of multiple shots, or that involve transitions between scenes.", "source_url": "https://arxiv.org/pdf/2401.12945"}
+  ],
+  "unverified_leads": [
+    {"lead": "Runway Gen-1 opened to the public on 2023-03-27 (web) and via an iOS app on about 2023-04-25.", "why_unverified": "Only secondary hits (Tom's Guide, Business Insider India, TechCrunch dated 2023-04-25 in URL); no Runway primary page/changelog from 2023 could be retrieved (Wayback availability API had no Gen-1 captures after Feb 2023; the changelog only begins Jan 2024)."},
+    {"lead": "Runway Gen-2 general availability on exactly 2023-06-06 or 2023-06-07 (web + iOS).", "why_unverified": "The Decoder update says June 06, 2023 and 80.lv is dated 09 June 2023 (both secondary); Runway's own interview only says 'June 2023'. Runway's tweets and blog could not be fetched."},
+    {"lead": "Gen-2 launch clips being about 3-4 seconds.", "why_unverified": "The Decoder mentions a 'three-second video scene'; a search summary mentions 4-second clips. No Runway primary page retrieved states clip length, resolution or fps."},
+    {"lead": "Pika 1.0 opened to everyone (waitlist dropped) in early December 2023.", "why_unverified": "Reported by Tom's Guide/Yahoo; Pika's own launch page (2023-11-28) only offers a waitlist; no later primary page retrieved. pika.art/blog fetched but had no matching text."},
+    {"lead": "Phenaki appeared publicly on OpenReview (ICLR 2023 submission) around 29 Sept 2022, before the arXiv posting of 5 Oct 2022.", "why_unverified": "openreview.net API returned a 403 challenge from the sandbox, so submission dates could not be read."},
+    {"lead": "Deforum's first notebook release date (Aug-Oct 2022).", "why_unverified": "GitHub repos were forked/re-created (created_at 2022-08-18, 2022-10-14, 2022-10-28); no dated release notes or announcement found."},
+    {"lead": "MoCoGAN was published at CVPR 2018.", "why_unverified": "Venue not present in the retrieved arXiv page or PDF text; only the arXiv dates (2017-07-17 v1, 2017-12-14 v2) were verified."},
+    {"lead": "Viral 'celebrity eating spaghetti' clip made with ModelScope in late March 2023 as the emblem of early T2V.", "why_unverified": "Not sourced from any primary page in this task; it depicts a real identifiable person, so it must not be used as footage under the brief's rules."},
+    {"lead": "CogVideo README claim that the model was open-sourced on 2022/5/19.", "why_unverified": "Contradicted by the GitHub initial commit (2022-05-29) and the arXiv date (2022-05-29); likely a typo, but not confirmed."},
+    {"lead": "Public availability of Emu Video, VideoPoet and Lumiere as products.", "why_unverified": "The retrieved Meta/Google pages describe research announcements only; absence of a public demo cannot be proven from these pages."},
+    {"lead": "Any public generator ever launched for Make-A-Video after the 'plan to release a demo experience' statement.", "why_unverified": "Only the 2022-09-29 announcement and the project site were retrieved; no later primary evidence of a launch or of cancellation."}
+  ],
+  "corrections_to_common_beliefs": [
+    "Make-A-Video (29 Sep 2022), Imagen Video (5 Oct 2022) and Phenaki (5 Oct 2022) were research announcements, not products. Imagen Video and Phenaki papers explicitly say the models/demos were not released; Meta's post says it only 'plan[s] to release a demo experience'.",
+    "Runway Gen-2 was announced on 2023-03-20 (first archived page capture and Runway's tweet as embedded by PetaPixel) but stayed Discord early access until general availability in June 2023; Runway's own page on Gen-2 carries a 'Feb 2023' label that does not match the first archived capture.",
+    "Runway Gen-1 (announced 2023-02-06, 'Request Access') was video-to-video, i.e. it needed a source clip; text-to-video arrived with Gen-2.",
+    "'First publicly available text-to-video' is contested: CogVideo (code, weights and web demo, May 2022) and ModelScope text-to-video (weights on Hugging Face, 2023-03-19) were public before Gen-2's June 2023 general release, though CogVideo required Chinese prompts and ModelScope was research-only, non-commercial.",
+    "Pika 1.0 was announced on 2023-11-28 with a waitlist, not released to everyone that day (Pika's launch page: 'You can join the waitlist for Pika 1.0').",
+    "Stable Video Diffusion (2023-11-21) shipped as image-to-video only (14- and 25-frame models at 576x1024, up to about 4 s), as a research preview not for commercial use; text-to-video and text control were not part of the released weights.",
+    "Early open video models are non-commercial: ModelScope (cc-by-nc-4.0; diffusers-mirror card body says CC-BY-NC-ND) and zeroscope v2 (cc-by-nc-4.0) cannot be reused in the film. AnimateDiff code is Apache-2.0 but its outputs' rights depend on the base image model used.",
+    "Deforum-style 'AI animation' was not a video model: it generated one Stable Diffusion image per frame, which is why it flickered (Runway's CTO: per-frame generation gives 'a lot of flicker and changes in content between each frame').",
+    "Early GAN/diffusion clips were tiny: VGAN 64x64 for 32 frames (~1.3 s at 25 fps); TGAN and MoCoGAN 16 frames at 64x64; DVD-GAN up to 256x256 or 48 frames (4 s) but not both; NUWA about 4 s at 2.5 fps; CogVideo 4 s at 480x480; Imagen Video's 5.3 s at 1280x768 was a paper spec, with the model withheld at announcement.",
+    "Dates on the brief: TGAN's first arXiv version is Nov 2016 (ICCV 2017 is the publication), MoCoGAN's is Jul 2017 (not 2018), and Video Diffusion Models (Apr 2022) predate CogVideo (May 2022).",
+    "VideoPoet's blog says it generates portrait video by default and can produce audio, but the audio is predicted from generated 2-second clips and the long-video mode extends by one second at a time up to about 10 s (paper)."
+  ]
+}

@@ -1,0 +1,393 @@
+{
+  "agent": "V-H2",
+  "source_file": "/home/user/rumah/film120/data/candidates/H2.json",
+  "verified_on": "2026-09-29",
+  "method_notes": [
+    "All 14 media_url values re-fetched with curl -sIL from the Higgsfield sandbox: HTTP 200, content-length identical to the hunter's and to Commons imageinfo size; the 8 files under 6 MB were downloaded in full and their SHA-1 matched the Commons-registered SHA-1 (gen1, gen2dog, gen2wave, gen3, swans, painting, hailuo, unk). ffprobe of all 14 URLs confirmed width/height/fps/duration/audio-stream claims.",
+    "Commons wikitext, extmetadata, upload log, templates, categories, deletion-request mentions and uploader contribution lists re-read via the Commons API (User-Agent set). YouTube licence rows for the 4 YouTube-sourced files re-read independently from Wayback captures (fetched over http:// because https to web.archive.org failed from the sandbox); page video-id, title, channel handle, date text and 'License' metadata row all match the Commons source template.",
+    "Model/date primary sources re-fetched: Stability AI (SD public release, SVD), Runway research pages (Gen-1, Gen-2, Gen-3 Alpha), THUDM/CogVideo README and arXiv API (2408.06072 published 2024-08-12), MiniMax news post, CompVis LICENSE, CogVideoX-5b LICENSE, SVD LICENSE.md, Runway ToS Wayback captures (2023-03-31, 2023-07-20, 2024-09-03), Hailuo ToS Wayback 2024-12-23 and current Hailuo subscription terms.",
+    "No frame of any clip was viewed. Two Higgsfield video_analysis results (SD park 480p transcode; CogVideoX painter) were completed at verification time and were read as unverified tool descriptions only (they invent audio for silent clips). Overlay checks are pixel-statistics heuristics (static + high-gradient pixels in corners/bands); they cannot detect burnt-in subtitles or semi-transparent marks and are NOT a substitute for viewing.",
+    "Gen-2 public-availability date (June 2023) and Gen-1 web availability remain secondary-only; the Runway research pages carry only 'Feb 2023' labels. Gen-3 Alpha page is an announcement (2024-06-17), not a release date."
+  ],
+  "verdicts": [
+    {
+      "cand_id": "sd14_benlisquare_park_2022",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: Benlisquare, 'Algorithmically-generated animation of young woman in park', Wikimedia Commons, CC BY-SA 4.0 (dual-licensed with GFDL) with link to the file page and to the licence; indicate changes (crop to 9:16, trim, grade).",
+        "ShareAlike: any adapted material made from this clip (crop, retime, overlay, grade) must be offered under CC BY-SA 4.0 or a compatible licence; decide once for the whole film how the credits page states this (legal call: separate excerpt vs adaptation).",
+        "Do not show the generation prompt on screen: it names a living artist (Greg Rutkowski, who publicly objected to his name being used in AI prompts) and contains sexualised negative-prompt terms.",
+        "Frame-review for suggestiveness before use (Commons categories 'Cleavage of young women' and 'Cleavage in AI art' are attached to the file).",
+        "Label as AI-generated; OpenRAIL-M s.6 says 'No use of the output can contravene any provision as stated in the License' (Attachment A use restrictions) - a lawful, non-deceptive documentary use complies.",
+        "104 MB / 83 Mbps VP9 1024x1024: work from a proxy; square source needs a 9:16 crop/pad decision."
+      ],
+      "issues_found": [
+        "Commons deletion request 'Files uploaded by Benlisquare' (opened 2022-12-27, derivative-work / COM:PCP concern about AI outputs) listed this exact file; closed 'Kept' on 2023-05-31 (only three fan-art images deleted). The file's upload log shows no deletion. Residual: the training-data derivative question is legally unsettled; the hunter did not mention this history.",
+        "Prompt contains 'art by greg rutkowski and Alphonse Mucha'; an earlier related DR (Hakurei Reimu images) was deleted mainly on COM:FAN grounds and discussed the Rutkowski point. Not a defect of this file, but a reputational/ethical reason to keep the prompt off screen.",
+        "Hunter's OpenRAIL-M quote was truncated; verbatim s.6: 'Except as set forth herein, Licensor claims no rights in the Output You generate using the Model. You are accountable for the Output you generate and its subsequent uses. No use of the output can contravene any provision as stated in the License.'",
+        "Hunter verdict 'clear' downgraded to clear_with_conditions (SA obligation, DR history, content-review need).",
+        "Higgsfield analysis of the 480p transcode (completed, tool description only, unverified) describes a young woman with brown hair and bangs in a white sleeveless dress changing from park to beach; nothing explicit; its audio commentary is invented (file has no audio stream).",
+        "Corner/band static-overlay heuristic on the 480p transcode found no static overlay (limits as per method_notes)."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "clear_with_conditions",
+        "license.id": "CC BY-SA 4.0 (dual-licensed with GFDL via {{self|cc-by-sa-4.0|GFDL}}; either may be chosen)",
+        "commons_first_upload": "2022-10-02T11:04:18Z by Benlisquare (single file version, sha1 11431067a650f94423020fc475f336b8490ce235)",
+        "commons_deletion_history": "Listed in Commons:Deletion requests/Files uploaded by Benlisquare (2022-12-27); closed Kept 2023-05-31 by Howcheng",
+        "license.model_output_clause_verbatim": "Except as set forth herein, Licensor claims no rights in the Output You generate using the Model. You are accountable for the Output you generate and its subsequent uses. No use of the output can contravene any provision as stated in the License."
+      },
+      "http": {"status": 200, "content_length": 104379671, "content_type": "video/webm"},
+      "model_date_corroboration": {
+        "claim": "Stable Diffusion v1-4 publicly released 2022-08-22 (v1.4 named as the recommended weights); HF repo CompVis/stable-diffusion-v1-4 createdAt 2022-08-20T13:26:13Z; clip dated 2022-10-02",
+        "source_url": "https://stability.ai/news-updates/stable-diffusion-public-release",
+        "quote": "The recommended model weights are v1.4 470k"
+      },
+      "confidence": "high"
+    },
+    {
+      "cand_id": "sd14_benlisquare_flowers_2022",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Courtesy credit recommended although the tag is public domain: Benlisquare, Wikimedia Commons, generated with Stable Diffusion v1-4; label the licence as 'Public domain (Commons PD-algorithm)'.",
+        "Licence rests on the Commons PD-algorithm tag (US-law basis) plus the uploader's own statement 'As the creator of the output video, I release this video under the licence displayed within the template below'; the rendered template warns that the UK and Hong Kong give computer-generated works 50 years of protection - the uploader's release covers that gap in practice, but record it.",
+        "Keep the prompt off screen (names living artists such as Carne Griffiths and Lilia Alvarado, and asks for an 'instagram model' look).",
+        "Frame-review before use; 1024x1024 square needs a 9:16 crop/pad decision; 102 MB proxy."
+      ],
+      "issues_found": [
+        "Also listed in Commons:Deletion requests/Files uploaded by Benlisquare (2022-12-27); closed Kept 2023-05-31. Not mentioned by the hunter.",
+        "File page carries only {{PD-algorithm}} (no CC grant); Commons extmetadata Restrictions = 'ai'. A community assertion rather than a licence text; H1 rated it clear, hunter likely; final: clear_with_conditions.",
+        "Model claim solid (page names Stable Diffusion V1-4, AUTOMATIC1111, Animation Script v0.6, ffmpeg frame prefix 20221003183716 = 2022-10-03); creation date = Commons date/upload 2022-10-03T10:32:38Z.",
+        "Static-overlay heuristic on the 480p transcode: none found (limits as per method_notes)."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "clear_with_conditions",
+        "commons_first_upload": "2022-10-03T10:32:38Z by Benlisquare (sha1 82e981f555fa0177335ded9487be5d0277974e3c)",
+        "commons_deletion_history": "Listed in Commons:Deletion requests/Files uploaded by Benlisquare (2022-12-27); closed Kept 2023-05-31"
+      },
+      "http": {"status": 200, "content_length": 102304755, "content_type": "video/webm"},
+      "model_date_corroboration": {
+        "claim": "Stable Diffusion v1-4 publicly released 2022-08-22; clip dated 2022-10-03",
+        "source_url": "https://stability.ai/news-updates/stable-diffusion-public-release",
+        "quote": "The recommended model weights are v1.4 470k"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "runway_gen1_watercolor_elephants_2023",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: Oronbb, 'Gen-1 IMG 9350 - Watercolor painting, scenic landscape, soft', Wikimedia Commons, CC BY-SA 4.0, with link; indicate changes.",
+        "ShareAlike applies to any adaptation (crop/retime/grade).",
+        "Label as 'Runway Gen-1 (video-to-video style transfer), 2023' - never as text-to-video; the motion/structure comes from the uploader's own footage.",
+        "Model version rests only on the file name (Runway-style auto-name 'Gen-1 <input>, <style prompt>') plus the Hebrew word 'RunwayML'; say 'per uploader' in the source label.",
+        "Visually profile for a Runway corner logo before use (heuristics found none)."
+      ],
+      "issues_found": [
+        "Input video (elephants in Tanzania, 'IMG_9350') is asserted as the uploader's own work; it is not on Commons and cannot be independently checked (Oronbb's 81 uploads contain no Tanzania material).",
+        "Model claim not independently provable from page text: no English description, no Gen number in the description (only in the file name).",
+        "Runway ToS in force on the clip date (Last Updated Feb 15, 2023, Wayback 2023-03-31) only says 'Company does not claim ownership of Your Content'; the explicit sentence 'The Company does not claim ownership of any of your Inputs or Outputs.' appears from the July 18, 2023 version (Wayback 2023-07-20) and is still in the April 11, 2024 version (Wayback 2024-09-03). The hunter cited only the later versions.",
+        "Gen-1 public-availability date not corroborated by a primary source (research page is labelled 'Feb 2023' only).",
+        "Frame statistics: very high temporal variance (mean luma std about 62/255 at 6 fps sampling) - consistent with strong flicker/cuts; no static overlay in corners or bands."
+      ],
+      "corrected_fields": {
+        "created": "2023-04-09 is the Commons upload/date field; the generation date could be earlier",
+        "reuse_verdict": "clear_with_conditions",
+        "commons_first_upload": "2023-04-09T05:13:57Z by Oronbb (sha1 b864503f3852ed4fdc0798a204be6b80696a9069, verified by download)",
+        "runway_tos_versions": "Feb 15, 2023 (no Outputs clause); Jul 18, 2023 and Apr 11, 2024 (Outputs clause)"
+      },
+      "http": {"status": 200, "content_length": 5148736, "content_type": "video/webm"},
+      "model_date_corroboration": {
+        "claim": "Runway Gen-1 announced Feb 2023 (research page date label)",
+        "source_url": "https://runway.com/research/gen-1",
+        "quote": "Gen-1 uses words and images to generate new videos out of existing ones."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "runway_gen2_dog_podium_2023",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: Lwneal, 'Gen2-Example-Dog-Podium', Wikimedia Commons, CC BY-SA 4.0; indicate changes; ShareAlike applies to adaptations.",
+        "Editorial sign-off needed on political adjacency: prompt names the White House press corps and a US flag appears (Commons category 'Videos of the national flag of the United States', also tagged 'AI slop'). No real person, no election/propaganda content, but the BRIEF bars political clips - decide once; do not show the prompt on screen.",
+        "Label 'Runway Gen-2, 2023 (per uploader)'."
+      ],
+      "issues_found": [
+        "Model claim is the uploader's own text ('Video generated by Runway Gen2 from the prompt ... seed 839976695'); technical specs are consistent with early Gen-2 (ffprobe: 896x512, 24 fps, 4.000 s) but that is not proof.",
+        "Uploader Lwneal has 22 edits and 7 uploads (other AI work is stills/music); nothing suspicious found; source {{own}}.",
+        "Runway ToS 2023-07-18 version (Wayback 2023-07-20) verified: 'The Company does not claim ownership of any of your Inputs or Outputs.'",
+        "Gen-2 public-availability date (June 2023) is secondary-only; the research page carries a 'Feb 2023' label; clip date 2023-08-04 falls after either.",
+        "Static-overlay heuristic: the only static high-contrast structure is a centre-bottom band (259,418)-(632,455), consistent with a podium in a static shot; no corner overlay."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "clear_with_conditions",
+        "risk_flags": ["political (mild, editorial)"],
+        "commons_first_upload": "2023-08-04T07:22:37Z by Lwneal (sha1 e3906b84657097076f72333c85b435ea8106c382, verified by download)"
+      },
+      "http": {"status": 200, "content_length": 267637, "content_type": "video/webm"},
+      "model_date_corroboration": {
+        "claim": "Runway Gen-2 exists as a text/image/video-to-video model (research page dated Feb 2023); clip dated 2023-08-04",
+        "source_url": "https://runway.com/research/gen-2",
+        "quote": "Gen-2 is a multimodal AI system that can generate novel videos with text, images or video clips."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "runway_gen2_wave_still_to_video_2023",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "Model version is not stated anywhere: Hebrew description says only 'wave animated from a still image using RunwayML'; 'Gen-2' is the hunter's inference from the 4 s / 24 fps / Aug 2023 profile. The BRIEF requires model name AND version to be verifiable.",
+        "Provenance of the starting still is unknown: the uploader marks the whole file {{own}} and licenses it CC BY-SA 4.0, but the still is not on Commons (none of Oronbb's 81 uploads is a matching wave image), so the grant may not cover the still that drives the video.",
+        "Creation date is only the Commons upload date 2023-08-12.",
+        "Licence text itself is valid (CC BY-SA 4.0, verified on the rendered page) and the file is technically fine (1024x640, 24 fps, 4.000 s, sha1 verified) - the rejection is for label/provenance, not for a licence defect. Redundant with the Gen-1 / Gen-2 / Gen-3 lineage already available.",
+        "If a fallback is ever needed it can only be labelled 'Runway (version not stated), Aug 2023, Oronbb, CC BY-SA 4.0' and requires visual review of the still's content."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "reject",
+        "model_version": "Runway (RunwayML), version not stated",
+        "commons_first_upload": "2023-08-12T14:10:58Z by Oronbb (sha1 6ba44b65e3d7aacdaba716cb55f8b1d4d50bd8f7, verified by download)"
+      },
+      "http": {"status": 200, "content_length": 479429, "content_type": "video/webm"},
+      "model_date_corroboration": {
+        "claim": "Not corroborable: only 'RunwayML' is stated, no Gen version",
+        "source_url": null,
+        "quote": null
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "runway_gen3_alpha_cowboy_2024",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: Oronbb (Wikimedia Commons; the page's author label reads 'Runway ML' but links to User:Oronbb), CC BY 4.0, generated with Runway Gen-3 Alpha; indicate changes. The page also carries {{PD-algorithm}}; apply the stricter CC BY 4.0 credit.",
+        "Input still: the file name shows the start image came from 'pikaso texttoimage' (Freepik Pikaso, an AI image tool whose free plan reportedly requires attribution to Freepik - secondary source only, terms not retrieved). Either add 'Input image: Freepik Pikaso (AI-generated)' to the credits or ask the uploader; treat as unresolved.",
+        "Label 'Runway Gen-3 Alpha (announced 2024-06-17), clip uploaded 2024-09-20 (per uploader)'; do not call it Turbo."
+      ],
+      "issues_found": [
+        "Author label '[[User:Oronbb|Runway ML]]' is odd and could be misread as Runway claiming authorship; the uploader and licensor is Oronbb.",
+        "Dual tags {{self|cc-by-4.0}} and {{PD-algorithm}} on one page: not contradictory for reuse, but attribution is only guaranteed under CC BY.",
+        "Model claim rests on Runway's file-name pattern 'Gen-3 Alpha <seed>, <prompt>, <input image>' (inference) and specs: ffprobe confirms 1280x768, 24 fps, 10.542 s; Runway ToS April 11, 2024 (Wayback 2024-09-03) verified: 'The Company does not claim ownership of any of your Inputs or Outputs.'",
+        "Runway's page is an announcement dated June 17, 2024 ('Gen-3 Alpha will be released with a new set of safeguards'), not a public-release date; clip date 2024-09-20 is upload date.",
+        "Description text is only 'Cowboy riding in the desert' (labelled Hebrew but written in English); no prompt or seed text beyond the file name.",
+        "Static-overlay heuristic: none found."
+      ],
+      "corrected_fields": {
+        "created": "2024-09-20 (Commons upload; generation date could be earlier)",
+        "reuse_verdict": "clear_with_conditions",
+        "commons_first_upload": "2024-09-20T12:52:47Z by Oronbb (sha1 d659df321152adf3029ec1295ffc99e1c47f0e5e, verified by download)"
+      },
+      "http": {"status": 200, "content_length": 1596755, "content_type": "video/webm"},
+      "model_date_corroboration": {
+        "claim": "Runway Gen-3 Alpha announced 2024-06-17",
+        "source_url": "https://runway.com/research/introducing-gen-3-alpha",
+        "quote": "Runway Gen-3 Alpha: AI Video Generation with Temporal Control June 17, 2024"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "runway_gen2_execute_short_film_2024",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: Vincent Chang Deng, 'EXECUTE // dark Sci-Fi AI-short film' (YouTube, 26 Jun 2024), CC BY 3.0, via Wikimedia Commons, with link; indicate that the excerpt was cropped/trimmed (CC BY 3.0 requires marking adaptations).",
+        "Use VIDEO ONLY: audio is the creator's own music plus ElevenLabs synthetic voices ('Michael', 'Emily', 'Antoni'); the YouTube CC BY flag was not checked for the audio track separately.",
+        "Commons {{LicenseReview}} is still open ('License review needed (video)'); licence evidence is the YouTube licence flag seen in a Wayback capture. Keep the Wayback URL in the credits file and re-check the live YouTube page if any access exists before final render.",
+        "Commons category 'Videos with English subtitles but without closed captioning in English' implies burnt-in English subtitles: choose an excerpt without them or accept them; they cannot be detected by the pixel heuristics.",
+        "Frame-review for violence before choosing an excerpt (dark sci-fi genre; content unviewed).",
+        "Label 'Runway Gen-2 (per creator), published 2024-06-26' - this is a LATE Gen-2 work made around Gen-3's announcement, not a 2023 clip; do not imply 2023."
+      ],
+      "issues_found": [
+        "Independent Wayback check (http://web.archive.org/web/20241004173249id_/... capture of youtube.com/watch?v=Z346NFRSPg4): title 'EXECUTE // dark Sci-Fi AI-short film', channel handle /@ChangDeng, dateText 'Jun 26, 2024', metadata row License = 'Creative Commons Attribution license (reuse allowed)'. Matches the Commons {{From YouTube}} / {{YouTube CC-BY|Vincent Chang Deng}} template. Confirmed.",
+        "Model claim comes only from the creator's YouTube/Commons description: 'Video generation: Runway Gen-2'. Input images for image-to-video are not disclosed.",
+        "Commons categories 'AI misgeneration' and 'AI-generated voice' present; content is a fictional narrative (no real person named).",
+        "The YouTube CC BY flag only covers what the uploader owns; music is stated as by the same creator.",
+        "ffprobe: 1920x1080, 24 fps, 603.355 s, opus audio; 481.69 MB - use the Commons 480p/1080p transcodes for editing."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "clear_with_conditions",
+        "created": "2024-06-26 (YouTube publish date); Commons upload 2024-10-04T17:04:43Z by Prototyperspective via video2commons",
+        "license.evidence_url": "http://web.archive.org/web/20241004173249id_/https://www.youtube.com/watch?v=Z346NFRSPg4&gl=US&hl=en"
+      },
+      "http": {"status": 200, "content_length": 481690068, "content_type": "video/webm"},
+      "model_date_corroboration": {
+        "claim": "Creator states Runway Gen-2; Gen-2 research page labelled Feb 2023 (Gen-3 Alpha already announced 2024-06-17)",
+        "source_url": "https://runway.com/research/gen-2",
+        "quote": "Gen-2 is a multimodal AI system that can generate novel videos with text, images or video clips."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "svd_robo_knightwolf_music_video_2023",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: Sorelius Beats, 'Robo Knightwolf - AI Animation - Stable Video Diffusion - Original Music' (YouTube, 20 Dec 2023), CC BY 3.0, via Wikimedia Commons, with link; indicate cropping/trimming.",
+        "Brand/IP frame review is mandatory: tags '#knightrider #airwolf' evoke licensed properties; reject any excerpt with a recognisable KITT-like car or Airwolf-like helicopter or on-screen brand text.",
+        "Prefer video only; music is stated as original by the creator but was not checked for samples.",
+        "Label 'Stable Video Diffusion (per creator; SD checkpoint 'Juggernaut Final'), Dec 2023'. The description says 'Stable Diffusion/Stable Video Diffusion' - it does not prove that SVD produced every shot.",
+        "Commons {{LicenseReview}} still open; keep the Wayback URL as licence evidence."
+      ],
+      "issues_found": [
+        "Independent Wayback check (http://web.archive.org/web/20240413212045id_/... capture of youtube.com/watch?v=kvpj4Dqib_0): title 'Robo Knightwolf - AI Animation - Stable Video Diffusion - Original Music #aianimation #aiart', ownerChannelName 'Sorelius Beats' (/@sorelius_beats), publishDate 2023-12-20T17:36:13-08:00 (= 2023-12-21 UTC), lengthSeconds 102, License row 'Creative Commons Attribution license (reuse allowed)'. Confirmed.",
+        "SVD model licence: the November 2023 licence text in force when the clip was made was not readable; the current LICENSE.md (Stability AI Community License, updated July 5, 2024) says 'As between You and Stability AI, You own any outputs generated from the Models or Derivative Works to the extent permitted by applicable law.' The hunter's caveat about the 'research preview / not for commercial applications' wording (Stability post, Nov 21) stands as an unresolved, low-probability constraint on the creator, not on downstream reusers of a CC BY video.",
+        "Content unviewed; no static overlay found on the 480p transcode (first 100 s at 3 fps).",
+        "ffprobe: 3840x2160, 30 fps, 102.101 s, opus audio, 212.6 MB - use the 480p/1080p transcodes."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "clear_with_conditions",
+        "created": "2023-12-20 (YouTube publishDate, Pacific time; 2023-12-21 UTC as on Commons)",
+        "license.evidence_url": "http://web.archive.org/web/20240413212045id_/https://www.youtube.com/watch?v=kvpj4Dqib_0"
+      },
+      "http": {"status": 200, "content_length": 212611274, "content_type": "video/webm"},
+      "model_date_corroboration": {
+        "claim": "Stable Video Diffusion released 2023-11-21 (research preview); HF repo stabilityai/stable-video-diffusion-img2vid createdAt 2023-11-20",
+        "source_url": "https://stability.ai/news-updates/stable-video-diffusion-open-ai-video-model",
+        "quote": "Today, we are releasing Stable Video Diffusion, our first foundation model for generative video based on the image model Stable Diffusion."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "sd_deliberate_morph_animation_2023",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "Cannot be labelled with a verifiable model or method: description is only 'fantasy art #stablediffusion #Deliberate #LowRa #dehancer'. Nothing says whether the 435 s clip is video generation, an image-morph slideshow, or a visualisation of Stable Diffusion image generation; SD version not stated; Dehancer film-emulation post-processing is mentioned.",
+        "Would be a mislabel risk in a film about generative VIDEO evolution; it is not evidence of any video model's capability.",
+        "Licence chain itself checked: Wayback capture (http://web.archive.org/web/20251004193756id_/...D-Y9GJ39sK4) shows title '01 animation of stable diffusion generation, AI, dehancer, relax video', channel /@VladPluzhnikov, dateText 'May 16, 2023', License row 'Creative Commons Attribution license (reuse allowed)'; Commons {{LicenseReview}} still open. So the rejection is for model/method unverifiability, not for a licence defect.",
+        "ffprobe: 1920x1080, 30 fps, 435.000 s, no audio stream, 151.4 MB."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "reject",
+        "model_version": "Stable Diffusion (version unstated; checkpoint 'Deliberate' and 'LowRa' per creator hashtags); method unknown"
+      },
+      "http": {"status": 200, "content_length": 151430319, "content_type": "video/webm"},
+      "model_date_corroboration": {
+        "claim": "Only the existence of Stable Diffusion (public release 2022-08-22) is corroborated; nothing about this clip's method or version",
+        "source_url": "https://stability.ai/news-updates/stable-diffusion-public-release",
+        "quote": "It is our pleasure to announce the public release of stable diffusion"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "vortex_witches_wood_multitool_2024",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "No shot-level model attribution: the 'Our Toolkit' block is channel boilerplate (Stable Diffusion XL, DALL-E 3, Runway Gen 2, Leonardo, Lexica, Kaiber, Deforum, Sad Talker, Topaz upscaler); Commons itself files it under 'Videos by unidentified AI software'. A source label with a model is impossible.",
+        "Audio is AI music/voices from third-party services named in the description (Suno, Aiva, Soundraw, MusicGen, ElevenLabs); the uploader's YouTube CC BY flag cannot be assumed to pass rights that those tools' terms may not give to the user - so the soundtrack is unusable and the video-only route leaves an unlabellable mix of tools.",
+        "Sad Talker (face animation) is in the toolkit; whether any real person's face was animated is unknown; theme is 'AI-generated women' / witches - suggestiveness unviewed.",
+        "Licence chain checked: Wayback capture (http://web.archive.org/web/20240318193031id_/...JOA81hby0Dc): title 'Witches Wood [AI Animation + AI Music]', channel /@VortexProjectStudios, publishDate 2024-01-12T19:06:01-08:00, License row 'Creative Commons Attribution license (reuse allowed)'; Commons {{LicenseReview}} still open. Rejection is for model/provenance, not a licence defect.",
+        "ffprobe: 3840x2160, 60 fps, 68.441 s, opus audio, 171.1 MB."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "reject",
+        "model_version": "Multiple tools, none attributable to a shot"
+      },
+      "http": {"status": 200, "content_length": 171120459, "content_type": "video/webm"},
+      "model_date_corroboration": {
+        "claim": "Creator lists SDXL / DALL-E 3 / Runway Gen 2 / Kaiber / Deforum as channel toolkit; no per-shot model; publish date 2024-01-12",
+        "source_url": "http://web.archive.org/web/20240318193031id_/https://www.youtube.com/watch?v=JOA81hby0Dc",
+        "quote": "Where we use tools like Stable Diffusion XL, DALL·E 3, and Runway Gen 2 to explore AI and its capabilities."
+      },
+      "confidence": "high"
+    },
+    {
+      "cand_id": "cogvideox_late_afternoon_swans_2024",
+      "final_verdict": "clear",
+      "conditions": [
+        "Courtesy credit recommended, not required: VulcanSphere (Wikimedia Commons), CC0; generated with CogVideoX-5B (Zhipu AI / THUDM).",
+        "Label the year as 2024 with the honest note 'generated 2024-12-24; model open-sourced Aug 2024'."
+      ],
+      "issues_found": [
+        "Not a defect: 8 fps output (720x480, 49 frames, 6.125 s) needs frame interpolation for a 24/30 fps timeline.",
+        "Licence: uploader template {{User:VulcanSphere/AI-CC0-videos}} renders as CC0 (where copyright exists) plus PD-algorithm (US); uploader VulcanSphere is an established Commons user (autopatrolled, 43k edits) and is the prompter; upload log shows a single upload 2024-12-24T09:01:38Z.",
+        "Model licence verified verbatim (CogVideoX-5b LICENSE): 'The intellectual property rights of the generated content belong to the user to the extent permitted by applicable local laws.' Its commercial-use registration requirement applies to using the model weights, not to downstream use of a CC0 output.",
+        "Page says generated in the THUDM CogVideoX-5B Hugging Face Space; specs (720x480, 8 fps, 49 frames) match the CogVideoX README; the exact Space build at generation time cannot be verified. Prompt is a long, LLM-style description (no real person or brand).",
+        "No static overlay (all four corners and bands); sha1 matches Commons."
+      ],
+      "corrected_fields": {
+        "created": "2024-12-24 is the generation/upload date, NOT the model debut (Aug 2024)"
+      },
+      "http": {"status": 200, "content_length": 274586, "content_type": "video/webm"},
+      "model_date_corroboration": {
+        "claim": "CogVideoX-5B open-sourced 2024-08-27 (2B on 2024-08-06); arXiv 2408.06072 first submitted 2024-08-12",
+        "source_url": "https://raw.githubusercontent.com/THUDM/CogVideo/main/README.md",
+        "quote": "2024/8/27: We have open-sourced a larger model in the CogVideoX series, CogVideoX-5B."
+      },
+      "confidence": "high"
+    },
+    {
+      "cand_id": "cogvideox_painting_with_the_breeze_2024",
+      "final_verdict": "clear",
+      "conditions": [
+        "Courtesy credit recommended, not required: VulcanSphere (Wikimedia Commons), CC0; generated with CogVideoX-5B (Zhipu AI / THUDM).",
+        "Label the year as 2024 with the honest note 'generated 2024-12-24; model open-sourced Aug 2024'."
+      ],
+      "issues_found": [
+        "Same licence and model chain as the swans clip (VulcanSphere CC0 template, CogVideoX-5b licence assigns output IP to the user); upload log single upload 2024-12-24T09:04:40Z.",
+        "Bottom-right corner is static but very dark (mean luma 16/255, max 29): dark scenery, no overlay detected.",
+        "Synthetic person (prompt: middle-aged man with green hair painting by the sea); no real identity. Higgsfield analysis (completed, unverified tool description) matches the prompt; its audio commentary is invented for a silent file.",
+        "8 fps output; needs interpolation."
+      ],
+      "corrected_fields": {
+        "created": "2024-12-24 is the generation/upload date, NOT the model debut (Aug 2024)"
+      },
+      "http": {"status": 200, "content_length": 238329, "content_type": "video/webm"},
+      "model_date_corroboration": {
+        "claim": "CogVideoX-5B open-sourced 2024-08-27; arXiv 2408.06072 first submitted 2024-08-12",
+        "source_url": "https://raw.githubusercontent.com/THUDM/CogVideo/main/README.md",
+        "quote": "2024/8/27: We have open-sourced a larger model in the CogVideoX series, CogVideoX-5B."
+      },
+      "confidence": "high"
+    },
+    {
+      "cand_id": "hailuo_video01_cyberpunk_rainy_street_2024",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Courtesy credit recommended: VulcanSphere (Wikimedia Commons), CC0; generated with Hailuo AI (MiniMax).",
+        "Label 'Hailuo AI (MiniMax), generated 2024-12-24; version not stated (MiniMax Video-01 launched 2024-08-31)'. Do not print 'Video-01' as fact.",
+        "Resolve or accept the platform-terms residual risk (see issues) before using in a commercial release."
+      ],
+      "issues_found": [
+        "Hailuo terms (Wayback capture 2024-12-23, Last Modified 09/16/2024): 'We do not claim ownership of User Contributions or User Generated Content.' but also 'These Terms of Use permit you to use the Website for your personal, non-commercial use only.' Current subscription terms (updated 7/14/2025): free-plan downloads carry a watermark and the express statement of ownership/commercial rights applies to 'content you generate and download while on a paid subscription plan'. The Dec-2024 subscription terms were not retrievable. If this clip came from a free plan the uploader's CC0 dedication could exceed what the platform grants; the absence of a watermark (patch analysis: no static overlay in any corner, min bottom-right patch temporal std 15) suggests a paid-plan or watermark-free export but does not prove it.",
+        "Model version is not stated on the page (inference from 1280x720/25 fps/5.64 s is only consistent with Video-01-era output).",
+        "Licence block is the uploader's {{User:VulcanSphere/AI-CC0-videos}} (CC0 where eligible + PD-algorithm US); uploader is the prompter; upload 2024-12-24T11:07:48Z.",
+        "Prompt: 'A hoodie man walking forward in the rainy cyberpunk street, carrying an umbrella' - synthetic person; no brand/real person stated; content unviewed.",
+        "sha1 matches Commons; ffprobe 1280x720, 25 fps, 5.640 s."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "clear_with_conditions",
+        "model_version": "Hailuo AI (MiniMax), version not stated",
+        "created": "2024-12-24 is the generation/upload date, not the model debut (2024-08-31)"
+      },
+      "http": {"status": 200, "content_length": 3117507, "content_type": "video/webm"},
+      "model_date_corroboration": {
+        "claim": "MiniMax Video-01 (Hailuo AI) launched 2024-08-31; clip generated 2024-12-24 with an unstated Hailuo version",
+        "source_url": "https://www.minimax.io/news/video-01",
+        "quote": "MiniMax has officially launched its first AI-native video generation model, video-01."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "unknown_model_oct2022_textprompt_clip",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "Model/tool is not stated ('A clip created using artificial intelligence based on a textual prompt window'); Commons files it under 'Videos by unidentified AI software'. No primary source can corroborate any model, and the only date is the Commons upload date 2022-10-22. Fails BRIEF rule 5 and the film's source-label requirement (model, year, creator, licence): 'tool not stated' cannot be shown as evidence of any capability.",
+        "Whether the clip is generated from a text prompt at all is the uploader's unverified statement.",
+        "Licence itself is valid: rendered CC BY-SA 4.0, {{own}}, uploader Oronbb, sha1 552e805f2df4f4e90004a004fdf91c4f8a64a107 verified by download; ffprobe 512x512, 24 fps, 12.084 s; no static overlay; very high temporal variance (mean luma std 66/255) consistent with an unstable early diffusion animation. Rejection is for unverifiable model/date, not a licence defect.",
+        "Only remedy: ask Commons user Oronbb for the tool name; until then not usable."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "reject",
+        "model_version": "unknown"
+      },
+      "http": {"status": 200, "content_length": 2289446, "content_type": "video/webm"},
+      "model_date_corroboration": {
+        "claim": "Not corroborable: tool not stated; only upload date 2022-10-22",
+        "source_url": null,
+        "quote": null
+      },
+      "confidence": "high"
+    }
+  ],
+  "summary": {"checked": 14, "clear": 2, "clear_with_conditions": 8, "rejected": 4}
+}

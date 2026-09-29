@@ -1,0 +1,987 @@
+{
+  "agent": "V-H1",
+  "source_file": "/home/user/rumah/film120/data/candidates/H1.json",
+  "verified_on": "2026-09-29",
+  "method": "Independent re-check in the Higgsfield sandbox: Commons API (live wikitext, full revision history of every licence tag, log events, deletion-request and talk pages, user groups), rendered Template:PD-algorithm and VulcanSphere licence template, curl -sIL of every media_url plus sha1 comparison with Commons imageinfo, Wayback copy of openai.com/sora (prompt-to-file mapping, statements, footer, download links), OpenAI Terms snapshot, developer CDN originals downloaded and frame-diffed (1 fps gray) against the Commons copies, ffprobe/volumedetect/scene-spike analysis, temporal-median corner rendering to detect burned-in watermarks, primary-source fetches (blog.google, gemini.google release notes, research.google, stability.ai, CompVis LICENSE, about.fb.com, deepmind.google). No frame was viewed by me; every visual statement is pixel analysis or metadata.",
+  "global_notes": [
+    "None of OpenAI, Google DeepMind or Google Research publishes a reuse licence for these demos. Every Sora/Veo-demo clearance rests on Commons' PD-algorithm tag (uploader assertion). OpenAI's site says '(c) 2015 - 2024 OpenAI' and its Terms claim all rights in its Services, so this is a residual-risk decision for the project, not a grant.",
+    "Only VulcanSphere's CC0 clips (Veo 3, Veo 3.1) and the Veo 2 clock (CC0 by the generator) rest on an explicit creator dedication; the two VulcanSphere Veo clips carry a burned-in 'Veo' watermark that must stay visible.",
+    "Licence history matters: Commons tags change. The SD 1.4 clip's PD-algorithm tag was put there by an anonymous IP; the creator's own grant was CC BY-SA 4.0/GFDL.",
+    "Lead for other hunters (not evaluated): deepmind.google/models/veo/ hosts about 69 sample-video URLs on storage.googleapis.com/gdm-deepmind-com-prod-public (e.g. veo__controls__camera-controls__*.mp4, veo__controls__character-consistency__output-*.webm) under a page credit line 'All the clips were generated directly with Veo without modifications'; reuse terms not checked.",
+    "Higgsfield video-analysis jobs were not used: the shared queue holds 50+ queued jobs that had not started."
+  ],
+  "verdicts": [
+    {
+      "cand_id": "sora_photoreal_train_glenfinnan",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Project must accept in writing that the licence basis is Commons' PD-algorithm assertion only (no OpenAI licence; UK/HK computer-generated-work protection and OpenAI's blanket (c) notice remain residual risks).",
+        "No legal attribution or share-alike, but keep the on-screen source label: 'Sora, OpenAI, Feb 2024, public domain (Wikimedia Commons PD-algorithm)'. Credit OpenAI/Sora as creator, never the Commons uploader.",
+        "Present as a curated developer demo of an early model; OpenAI's own page says 'The current model has weaknesses.' Do not imply every generation is like this.",
+        "Do not overlay the error callouts as fact until someone has watched the clip and timestamped each defect."
+      ],
+      "issues_found": [
+        "Licence basis is only the Commons {{PD-algorithm}} tag (a no-human-authorship assertion by a Commons uploader), not a licence from OpenAI. Tag confirmed on the live wikitext (2026-09-29) and in the rendered Template:PD-algorithm, whose full text continues 'and does not contain sufficient human authorship to support a copyright claim' and warns that UK/Hong Kong give computer-generated works 50 years.",
+        "Counter-indicators on OpenAI's side (hunter did not report them): page footer 'OpenAI © 2015 – 2024'; OpenAI Terms of Use (Wayback 2024-03-01) 'We and our affiliates own all rights, title, and interest in and to the Services' and 'Modify, copy, lease, sell or distribute any of our Services'. The hunter's supporting Terms quote ('own the Output') governs users of ChatGPT/DALL-E and is not a grant to the public; Sora was not a public service in Feb 2024. No OpenAI reuse licence found anywhere.",
+        "Supporting evidence re-verified: the Wayback page (HTTP 200) says 'All videos on this page were generated directly by Sora without modification.', is dated 'Published February 15, MMXXIV', lists this clip's exact prompt and .mp4, and every demo has a 'Download video' link to cdn.openai.com.",
+        "Hunter said the file was imported directly from cdn.openai.com. The Commons upload log actually says 'Imported media from uploads:...' (video2commons upload by DancingPhilosopher, 2024-03-22); the source field cites the CDN URL. Content is nevertheless frame-identical to the CDN original (mean abs 0.23). No LicenseReview tag ever existed on this file.",
+        "The error list (second track, extra chimney, distorted 4th-carriage windows) is Commons editor commentary, not OpenAI's; I could not view frames, so it is unverified. Wikitext calls the train 'resembling the Jacobite train' (real steam service, real landmark): low brand risk, not zero.",
+        "Commons 'date' field 2024-03-22 is the upload day, not the creation day."
+      ],
+      "corrected_fields": {
+        "created": "2024-02-15 = OpenAI page publication date (generation date not stated; on or before this day). Commons 'date' field may show an upload day instead.",
+        "licence_tag_verified": "{{PD-algorithm}} present in current wikitext of File:Photoreal-train.webm",
+        "developer_original": {
+          "url": "https://cdn.openai.com/sora/videos/photoreal-train.mp4",
+          "http": 200,
+          "content_type": "video/mp4",
+          "content_length": 5889386
+        },
+        "frame_diff_vs_developer_original_1fps_gray_256px": {
+          "mean_abs": 0.23,
+          "max_8x8_block_mean": 0.61,
+          "max_corner_mean": 0.26,
+          "verdict": "same content and timing; no overlay/logo/caption added in the Commons copy"
+        },
+        "sha1_of_downloaded_file_matches_commons_imageinfo": true,
+        "watermark": {
+          "present": false,
+          "basis": "frame diff vs OpenAI CDN original shows nothing added; no static overlay found by corner analysis; frames not viewed by me. Feb-2024 Sora demos are not known to carry marks."
+        },
+        "import_provenance": "video2commons upload (not a URL import); source field cites https://openai.com/sora and the CDN mp4",
+        "media_verified": {
+          "duration_s": 8.533,
+          "size": "1920x1080",
+          "fps": 30,
+          "audio": false,
+          "video_codec": "vp9"
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 7578299,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Sora (text-to-video) was published by OpenAI on 2024-02-15 and this clip and its prompt are listed on that page (Wayback snapshot 2024-02-16 07:35:15Z; page text 'Published February 15, MMXXIV').",
+        "source_url": "https://web.archive.org/web/20240216073515id_/https://openai.com/sora",
+        "quote": "Introducing Sora, our text-to-video model."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "sora_mitten_astronaut_trailer",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Project must accept in writing that the licence basis is Commons' PD-algorithm assertion only (no OpenAI licence; UK/HK computer-generated-work protection and OpenAI's blanket (c) notice remain residual risks).",
+        "No legal attribution or share-alike, but keep the on-screen source label: 'Sora, OpenAI, Feb 2024, public domain (Wikimedia Commons PD-algorithm)'. Credit OpenAI/Sora as creator, never the Commons uploader.",
+        "Present as a curated developer demo of an early model; OpenAI's own page says 'The current model has weaknesses.' Do not imply every generation is like this.",
+        "Excerpt boundaries must sit on the verified cut times; do not claim identity persistence across cuts until viewed."
+      ],
+      "issues_found": [
+        "Licence basis is only the Commons {{PD-algorithm}} tag (a no-human-authorship assertion by a Commons uploader), not a licence from OpenAI. Tag confirmed on the live wikitext (2026-09-29) and in the rendered Template:PD-algorithm, whose full text continues 'and does not contain sufficient human authorship to support a copyright claim' and warns that UK/Hong Kong give computer-generated works 50 years.",
+        "Counter-indicators on OpenAI's side (hunter did not report them): page footer 'OpenAI © 2015 – 2024'; OpenAI Terms of Use (Wayback 2024-03-01) 'We and our affiliates own all rights, title, and interest in and to the Services' and 'Modify, copy, lease, sell or distribute any of our Services'. The hunter's supporting Terms quote ('own the Output') governs users of ChatGPT/DALL-E and is not a grant to the public; Sora was not a public service in Feb 2024. No OpenAI reuse licence found anywhere.",
+        "Supporting evidence re-verified: the Wayback page (HTTP 200) says 'All videos on this page were generated directly by Sora without modification.', is dated 'Published February 15, MMXXIV', lists this clip's exact prompt and .mp4, and every demo has a 'Download video' link to cdn.openai.com.",
+        "Commons review history: the importer added {{LicenseReview}} on 2024-02-17; it was removed on 2024-02-21 in a batch edit (summary 'Doing 1 replacements.') by user '1989' (image-reviewer group) with no review-pass template left behind. Sibling File:Art-museum.webm still carries the open tag. Weak, undocumented approval.",
+        "Commons description is only the file name; the prompt was matched by me on the OpenAI page: 'A movie trailer featuring the adventures of the 30 year old space man wearing a red wool knitted motorcycle helmet, blue sky, salt desert, cinematic style, shot on 35mm film, vivid colors.'",
+        "Nine hard cuts reproduced exactly (1.03, 3.80, 5.27, 6.90, 8.87, 9.67, 12.63, 13.40, 15.07 s). OpenAI says Sora can make 'multiple shots within a single generated video', but the page does not say which demo shows this; do not assert character persistence across cuts without watching."
+      ],
+      "corrected_fields": {
+        "created": "2024-02-15 = OpenAI page publication date (generation date not stated; on or before this day). Commons 'date' field may show an upload day instead.",
+        "licence_tag_verified": "{{PD-algorithm}} present in current wikitext of File:Mitten-astronaut.webm",
+        "developer_original": {
+          "url": "https://cdn.openai.com/sora/videos/mitten-astronaut.mp4",
+          "http": 200,
+          "content_type": "video/mp4",
+          "content_length": 54498572
+        },
+        "frame_diff_vs_developer_original_1fps_gray_256px": {
+          "mean_abs": 0.33,
+          "max_8x8_block_mean": 0.81,
+          "max_corner_mean": 0.31,
+          "verdict": "same content and timing; no overlay/logo/caption added in the Commons copy"
+        },
+        "sha1_of_downloaded_file_matches_commons_imageinfo": true,
+        "watermark": {
+          "present": false,
+          "basis": "frame diff vs OpenAI CDN original shows nothing added; no static overlay found by corner analysis; frames not viewed by me. Feb-2024 Sora demos are not known to carry marks."
+        },
+        "media_verified": {
+          "duration_s": 17.066,
+          "size": "1920x1080",
+          "fps": 30,
+          "audio": false
+        },
+        "cuts_s": [
+          1.03,
+          3.8,
+          5.27,
+          6.9,
+          8.87,
+          9.67,
+          12.63,
+          13.4,
+          15.07
+        ]
+      },
+      "http": {
+        "status": 200,
+        "content_length": 8684826,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Sora (text-to-video) was published by OpenAI on 2024-02-15 and this clip and its prompt are listed on that page (Wayback snapshot 2024-02-16 07:35:15Z; page text 'Published February 15, MMXXIV').",
+        "source_url": "https://web.archive.org/web/20240216073515id_/https://openai.com/sora",
+        "quote": "Introducing Sora, our text-to-video model."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "sora_ships_in_coffee",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Project must accept in writing that the licence basis is Commons' PD-algorithm assertion only (no OpenAI licence; UK/HK computer-generated-work protection and OpenAI's blanket (c) notice remain residual risks).",
+        "No legal attribution or share-alike, but keep the on-screen source label: 'Sora, OpenAI, Feb 2024, public domain (Wikimedia Commons PD-algorithm)'. Credit OpenAI/Sora as creator, never the Commons uploader.",
+        "Present as a curated developer demo of an early model; OpenAI's own page says 'The current model has weaknesses.' Do not imply every generation is like this."
+      ],
+      "issues_found": [
+        "Licence basis is only the Commons {{PD-algorithm}} tag (a no-human-authorship assertion by a Commons uploader), not a licence from OpenAI. Tag confirmed on the live wikitext (2026-09-29) and in the rendered Template:PD-algorithm, whose full text continues 'and does not contain sufficient human authorship to support a copyright claim' and warns that UK/Hong Kong give computer-generated works 50 years.",
+        "Counter-indicators on OpenAI's side (hunter did not report them): page footer 'OpenAI © 2015 – 2024'; OpenAI Terms of Use (Wayback 2024-03-01) 'We and our affiliates own all rights, title, and interest in and to the Services' and 'Modify, copy, lease, sell or distribute any of our Services'. The hunter's supporting Terms quote ('own the Output') governs users of ChatGPT/DALL-E and is not a grant to the public; Sora was not a public service in Feb 2024. No OpenAI reuse licence found anywhere.",
+        "Supporting evidence re-verified: the Wayback page (HTTP 200) says 'All videos on this page were generated directly by Sora without modification.', is dated 'Published February 15, MMXXIV', lists this clip's exact prompt and .mp4, and every demo has a 'Download video' link to cdn.openai.com.",
+        "Commons review history: the importer added {{LicenseReview}} on 2024-02-17; it was removed on 2024-02-21 in a batch edit (summary 'Doing 1 replacements.') by user '1989' (image-reviewer group) with no review-pass template left behind. Sibling File:Art-museum.webm still carries the open tag. Weak, undocumented approval.",
+        "Prompt matched on the OpenAI page: 'Photorealistic closeup video of two pirate ships battling each other as they sail inside a cup of coffee.' No red flags found; whether the fluid physics look convincing is unverified (not viewed)."
+      ],
+      "corrected_fields": {
+        "created": "2024-02-15 = OpenAI page publication date (generation date not stated; on or before this day). Commons 'date' field may show an upload day instead.",
+        "licence_tag_verified": "{{PD-algorithm}} present in current wikitext of File:Ships-in-coffee.webm",
+        "developer_original": {
+          "url": "https://cdn.openai.com/sora/videos/ships-in-coffee.mp4",
+          "http": 200,
+          "content_type": "video/mp4",
+          "content_length": 29689334
+        },
+        "frame_diff_vs_developer_original_1fps_gray_256px": {
+          "mean_abs": 0.34,
+          "max_8x8_block_mean": 0.67,
+          "max_corner_mean": 0.33,
+          "verdict": "same content and timing; no overlay/logo/caption added in the Commons copy"
+        },
+        "sha1_of_downloaded_file_matches_commons_imageinfo": true,
+        "watermark": {
+          "present": false,
+          "basis": "frame diff vs OpenAI CDN original shows nothing added; no static overlay found by corner analysis; frames not viewed by me. Feb-2024 Sora demos are not known to carry marks."
+        },
+        "media_verified": {
+          "duration_s": 15.0,
+          "size": "1920x1080",
+          "fps": 30,
+          "audio": false
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 25216666,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Sora (text-to-video) was published by OpenAI on 2024-02-15 and this clip and its prompt are listed on that page (Wayback snapshot 2024-02-16 07:35:15Z; page text 'Published February 15, MMXXIV').",
+        "source_url": "https://web.archive.org/web/20240216073515id_/https://openai.com/sora",
+        "quote": "Introducing Sora, our text-to-video model."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "sora_monster_melting_candle",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Project must accept in writing that the licence basis is Commons' PD-algorithm assertion only (no OpenAI licence; UK/HK computer-generated-work protection and OpenAI's blanket (c) notice remain residual risks).",
+        "No legal attribution or share-alike, but keep the on-screen source label: 'Sora, OpenAI, Feb 2024, public domain (Wikimedia Commons PD-algorithm)'. Credit OpenAI/Sora as creator, never the Commons uploader.",
+        "Present as a curated developer demo of an early model; OpenAI's own page says 'The current model has weaknesses.' Do not imply every generation is like this.",
+        "A human must watch the clip and confirm it does not resemble a specific animated-film character before it enters the cut; otherwise drop it."
+      ],
+      "issues_found": [
+        "Licence basis is only the Commons {{PD-algorithm}} tag (a no-human-authorship assertion by a Commons uploader), not a licence from OpenAI. Tag confirmed on the live wikitext (2026-09-29) and in the rendered Template:PD-algorithm, whose full text continues 'and does not contain sufficient human authorship to support a copyright claim' and warns that UK/Hong Kong give computer-generated works 50 years.",
+        "Counter-indicators on OpenAI's side (hunter did not report them): page footer 'OpenAI © 2015 – 2024'; OpenAI Terms of Use (Wayback 2024-03-01) 'We and our affiliates own all rights, title, and interest in and to the Services' and 'Modify, copy, lease, sell or distribute any of our Services'. The hunter's supporting Terms quote ('own the Output') governs users of ChatGPT/DALL-E and is not a grant to the public; Sora was not a public service in Feb 2024. No OpenAI reuse licence found anywhere.",
+        "Supporting evidence re-verified: the Wayback page (HTTP 200) says 'All videos on this page were generated directly by Sora without modification.', is dated 'Published February 15, MMXXIV', lists this clip's exact prompt and .mp4, and every demo has a 'Download video' link to cdn.openai.com.",
+        "Commons review history: the importer added {{LicenseReview}} on 2024-02-17; it was removed on 2024-02-21 in a batch edit (summary 'Doing 1 replacements.') by user '1989' (image-reviewer group) with no review-pass template left behind. Sibling File:Art-museum.webm still carries the open tag. Weak, undocumented approval.",
+        "Hunter's precautionary brand_ip flag cannot be cleared or confirmed because frames cannot be viewed. Only indirect evidence: colour analysis of 3 frames shows 96-97% of saturated pixels in red/orange hues (not the blue/teal palette of Sulley-type characters); silhouette/face look-alike risk is still unassessed. Prompt describes a generic 'short fluffy monster', 'art style is 3D and realistic'.",
+        "Coded height is 1088 (padded), not 1080."
+      ],
+      "corrected_fields": {
+        "created": "2024-02-15 = OpenAI page publication date (generation date not stated; on or before this day). Commons 'date' field may show an upload day instead.",
+        "licence_tag_verified": "{{PD-algorithm}} present in current wikitext of File:Monster-with-melting-candle.webm",
+        "developer_original": {
+          "url": "https://cdn.openai.com/sora/videos/monster-with-melting-candle.mp4",
+          "http": 200,
+          "content_type": "video/mp4",
+          "content_length": 17008925
+        },
+        "frame_diff_vs_developer_original_1fps_gray_256px": {
+          "mean_abs": 0.31,
+          "max_8x8_block_mean": 0.77,
+          "max_corner_mean": 0.34,
+          "verdict": "same content and timing; no overlay/logo/caption added in the Commons copy"
+        },
+        "sha1_of_downloaded_file_matches_commons_imageinfo": true,
+        "watermark": {
+          "present": false,
+          "basis": "frame diff vs OpenAI CDN original shows nothing added; no static overlay found by corner analysis; frames not viewed by me. Feb-2024 Sora demos are not known to carry marks."
+        },
+        "media_verified": {
+          "duration_s": 8.533,
+          "size": "1920x1088",
+          "fps": 30,
+          "audio": false
+        },
+        "ip_lookalike_check": "unresolved (colour analysis only)"
+      },
+      "http": {
+        "status": 200,
+        "content_length": 10356492,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Sora (text-to-video) was published by OpenAI on 2024-02-15 and this clip and its prompt are listed on that page (Wayback snapshot 2024-02-16 07:35:15Z; page text 'Published February 15, MMXXIV').",
+        "source_url": "https://web.archive.org/web/20240216073515id_/https://openai.com/sora",
+        "quote": "Introducing Sora, our text-to-video model."
+      },
+      "confidence": "low"
+    },
+    {
+      "cand_id": "sora_big_sur_drone",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Project must accept in writing that the licence basis is Commons' PD-algorithm assertion only (no OpenAI licence; UK/HK computer-generated-work protection and OpenAI's blanket (c) notice remain residual risks).",
+        "No legal attribution or share-alike, but keep the on-screen source label: 'Sora, OpenAI, Feb 2024, public domain (Wikimedia Commons PD-algorithm)'. Credit OpenAI/Sora as creator, never the Commons uploader.",
+        "Present as a curated developer demo of an early model; OpenAI's own page says 'The current model has weaknesses.' Do not imply every generation is like this."
+      ],
+      "issues_found": [
+        "Licence basis is only the Commons {{PD-algorithm}} tag (a no-human-authorship assertion by a Commons uploader), not a licence from OpenAI. Tag confirmed on the live wikitext (2026-09-29) and in the rendered Template:PD-algorithm, whose full text continues 'and does not contain sufficient human authorship to support a copyright claim' and warns that UK/Hong Kong give computer-generated works 50 years.",
+        "Counter-indicators on OpenAI's side (hunter did not report them): page footer 'OpenAI © 2015 – 2024'; OpenAI Terms of Use (Wayback 2024-03-01) 'We and our affiliates own all rights, title, and interest in and to the Services' and 'Modify, copy, lease, sell or distribute any of our Services'. The hunter's supporting Terms quote ('own the Output') governs users of ChatGPT/DALL-E and is not a grant to the public; Sora was not a public service in Feb 2024. No OpenAI reuse licence found anywhere.",
+        "Supporting evidence re-verified: the Wayback page (HTTP 200) says 'All videos on this page were generated directly by Sora without modification.', is dated 'Published February 15, MMXXIV', lists this clip's exact prompt and .mp4, and every demo has a 'Download video' link to cdn.openai.com.",
+        "Commons review history: the importer added {{LicenseReview}} on 2024-02-17; it was removed on 2024-02-21 in a batch edit (summary 'Doing 1 replacements.') by user '1989' (image-reviewer group) with no review-pass template left behind. Sibling File:Art-museum.webm still carries the open tag. Weak, undocumented approval.",
+        "The hunter had NOT compared this file with the CDN original; I did (mean abs 0.34, max block 0.73, max corner 0.35): identical, no overlay.",
+        "Commons page has only the file name; prompt matched on the OpenAI page (Big Sur 'garay point beach', drone view). Real place name, no brand/person."
+      ],
+      "corrected_fields": {
+        "created": "2024-02-15 = OpenAI page publication date (generation date not stated; on or before this day). Commons 'date' field may show an upload day instead.",
+        "licence_tag_verified": "{{PD-algorithm}} present in current wikitext of File:Big-sur.webm",
+        "developer_original": {
+          "url": "https://cdn.openai.com/sora/videos/big-sur.mp4",
+          "http": 200,
+          "content_type": "video/mp4",
+          "content_length": 17049093
+        },
+        "frame_diff_vs_developer_original_1fps_gray_256px": {
+          "mean_abs": 0.34,
+          "max_8x8_block_mean": 0.73,
+          "max_corner_mean": 0.35,
+          "verdict": "same content and timing; no overlay/logo/caption added in the Commons copy"
+        },
+        "sha1_of_downloaded_file_matches_commons_imageinfo": true,
+        "watermark": {
+          "present": false,
+          "basis": "frame diff vs OpenAI CDN original shows nothing added; no static overlay found by corner analysis; frames not viewed by me. Feb-2024 Sora demos are not known to carry marks."
+        },
+        "media_verified": {
+          "duration_s": 8.533,
+          "size": "1920x1088",
+          "fps": 30,
+          "audio": false
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 19515991,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Sora (text-to-video) was published by OpenAI on 2024-02-15 and this clip and its prompt are listed on that page (Wayback snapshot 2024-02-16 07:35:15Z; page text 'Published February 15, MMXXIV').",
+        "source_url": "https://web.archive.org/web/20240216073515id_/https://openai.com/sora",
+        "quote": "Introducing Sora, our text-to-video model."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "sora_victoria_pigeon_vertical",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Project must accept in writing that the licence basis is Commons' PD-algorithm assertion only (no OpenAI licence; UK/HK computer-generated-work protection and OpenAI's blanket (c) notice remain residual risks).",
+        "No legal attribution or share-alike, but keep the on-screen source label: 'Sora, OpenAI, Feb 2024, public domain (Wikimedia Commons PD-algorithm)'. Credit OpenAI/Sora as creator, never the Commons uploader.",
+        "Present as a curated developer demo of an early model; OpenAI's own page says 'The current model has weaknesses.' Do not imply every generation is like this.",
+        "720p-native: any full-height use in a 1080x1920 frame is a 1.5x upscale; disclose or use as an inset."
+      ],
+      "issues_found": [
+        "Licence basis is only the Commons {{PD-algorithm}} tag (a no-human-authorship assertion by a Commons uploader), not a licence from OpenAI. Tag confirmed on the live wikitext (2026-09-29) and in the rendered Template:PD-algorithm, whose full text continues 'and does not contain sufficient human authorship to support a copyright claim' and warns that UK/Hong Kong give computer-generated works 50 years.",
+        "Counter-indicators on OpenAI's side (hunter did not report them): page footer 'OpenAI © 2015 – 2024'; OpenAI Terms of Use (Wayback 2024-03-01) 'We and our affiliates own all rights, title, and interest in and to the Services' and 'Modify, copy, lease, sell or distribute any of our Services'. The hunter's supporting Terms quote ('own the Output') governs users of ChatGPT/DALL-E and is not a grant to the public; Sora was not a public service in Feb 2024. No OpenAI reuse licence found anywhere.",
+        "Supporting evidence re-verified: the Wayback page (HTTP 200) says 'All videos on this page were generated directly by Sora without modification.', is dated 'Published February 15, MMXXIV', lists this clip's exact prompt and .mp4, and every demo has a 'Download video' link to cdn.openai.com.",
+        "Commons review history: the importer added {{LicenseReview}} on 2024-02-17; it was removed on 2024-02-21 in a batch edit (summary 'Doing 1 replacements.') by user '1989' (image-reviewer group) with no review-pass template left behind. Sibling File:Art-museum.webm still carries the open tag. Weak, undocumented approval.",
+        "Native 720x1280, 40.0 s confirmed by ffprobe. The CDN original carries a silent AAC track (-91 dB); the Commons copy has no audio track. Prompt matched on the OpenAI page."
+      ],
+      "corrected_fields": {
+        "created": "2024-02-15 = OpenAI page publication date (generation date not stated; on or before this day). Commons 'date' field may show an upload day instead.",
+        "licence_tag_verified": "{{PD-algorithm}} present in current wikitext of File:Victoria-crowned-pigeon.webm",
+        "developer_original": {
+          "url": "https://cdn.openai.com/sora/videos/victoria-crowned-pigeon.mp4",
+          "http": 200,
+          "content_type": "video/mp4",
+          "content_length": 53258780
+        },
+        "frame_diff_vs_developer_original_1fps_gray_256px": {
+          "mean_abs": 0.43,
+          "max_8x8_block_mean": 1.05,
+          "max_corner_mean": 0.42,
+          "verdict": "same content and timing; no overlay/logo/caption added in the Commons copy"
+        },
+        "sha1_of_downloaded_file_matches_commons_imageinfo": true,
+        "watermark": {
+          "present": false,
+          "basis": "frame diff vs OpenAI CDN original shows nothing added; no static overlay found by corner analysis; frames not viewed by me. Feb-2024 Sora demos are not known to carry marks."
+        },
+        "media_verified": {
+          "duration_s": 40.0,
+          "size": "720x1280",
+          "fps": 30,
+          "audio": false
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 29667755,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Sora (text-to-video) was published by OpenAI on 2024-02-15 and this clip and its prompt are listed on that page (Wayback snapshot 2024-02-16 07:35:15Z; page text 'Published February 15, MMXXIV').",
+        "source_url": "https://web.archive.org/web/20240216073515id_/https://openai.com/sora",
+        "quote": "Introducing Sora, our text-to-video model."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "sora_cat_on_bed",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Project must accept in writing that the licence basis is Commons' PD-algorithm assertion only (no OpenAI licence; UK/HK computer-generated-work protection and OpenAI's blanket (c) notice remain residual risks).",
+        "No legal attribution or share-alike, but keep the on-screen source label: 'Sora, OpenAI, Feb 2024, public domain (Wikimedia Commons PD-algorithm)'. Credit OpenAI/Sora as creator, never the Commons uploader.",
+        "Present as a curated developer demo of an early model; OpenAI's own page says 'The current model has weaknesses.' Do not imply every generation is like this.",
+        "Do not annotate a specific defect until the timestamp has been confirmed by eye."
+      ],
+      "issues_found": [
+        "Licence basis is only the Commons {{PD-algorithm}} tag (a no-human-authorship assertion by a Commons uploader), not a licence from OpenAI. Tag confirmed on the live wikitext (2026-09-29) and in the rendered Template:PD-algorithm, whose full text continues 'and does not contain sufficient human authorship to support a copyright claim' and warns that UK/Hong Kong give computer-generated works 50 years.",
+        "Counter-indicators on OpenAI's side (hunter did not report them): page footer 'OpenAI © 2015 – 2024'; OpenAI Terms of Use (Wayback 2024-03-01) 'We and our affiliates own all rights, title, and interest in and to the Services' and 'Modify, copy, lease, sell or distribute any of our Services'. The hunter's supporting Terms quote ('own the Output') governs users of ChatGPT/DALL-E and is not a grant to the public; Sora was not a public service in Feb 2024. No OpenAI reuse licence found anywhere.",
+        "Supporting evidence re-verified: the Wayback page (HTTP 200) says 'All videos on this page were generated directly by Sora without modification.', is dated 'Published February 15, MMXXIV', lists this clip's exact prompt and .mp4, and every demo has a 'Download video' link to cdn.openai.com.",
+        "Commons review history: the importer added {{LicenseReview}} on 2024-02-17; it was removed on 2024-02-21 in a batch edit (summary 'Doing 1 replacements.') by user '1989' (image-reviewer group) with no review-pass template left behind. Sibling File:Art-museum.webm still carries the open tag. Weak, undocumented approval.",
+        "'AI misgeneration' is a Commons category added by editor Zaxxon0 on 2025-12-31, not an OpenAI statement, and the page does not say what is wrong or when. Do not call out a specific defect without watching the clip.",
+        "Categories include 'AI-generated women' and 'Women in bed in art': a synthetic person in bed with a cat; the prompt and metadata indicate no sexual content, but frames were not viewed."
+      ],
+      "corrected_fields": {
+        "created": "2024-02-15 = OpenAI page publication date (generation date not stated; on or before this day). Commons 'date' field may show an upload day instead.",
+        "licence_tag_verified": "{{PD-algorithm}} present in current wikitext of File:Cat-on-bed.webm",
+        "developer_original": {
+          "url": "https://cdn.openai.com/sora/videos/cat-on-bed.mp4",
+          "http": 200,
+          "content_type": "video/mp4",
+          "content_length": 16693526
+        },
+        "frame_diff_vs_developer_original_1fps_gray_256px": {
+          "mean_abs": 0.34,
+          "max_8x8_block_mean": 0.72,
+          "max_corner_mean": 0.35,
+          "verdict": "same content and timing; no overlay/logo/caption added in the Commons copy"
+        },
+        "sha1_of_downloaded_file_matches_commons_imageinfo": true,
+        "watermark": {
+          "present": false,
+          "basis": "frame diff vs OpenAI CDN original shows nothing added; no static overlay found by corner analysis; frames not viewed by me. Feb-2024 Sora demos are not known to carry marks."
+        },
+        "media_verified": {
+          "duration_s": 8.533,
+          "size": "1920x1088",
+          "fps": 30,
+          "audio": false
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 15549324,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Sora (text-to-video) was published by OpenAI on 2024-02-15 and this clip and its prompt are listed on that page (Wayback snapshot 2024-02-16 07:35:15Z; page text 'Published February 15, MMXXIV').",
+        "source_url": "https://web.archive.org/web/20240216073515id_/https://openai.com/sora",
+        "quote": "Introducing Sora, our text-to-video model."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "sora_tokyo_walk_60s",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Project must accept in writing that the licence basis is Commons' PD-algorithm assertion only (no OpenAI licence; UK/HK computer-generated-work protection and OpenAI's blanket (c) notice remain residual risks).",
+        "No legal attribution or share-alike, but keep the on-screen source label: 'Sora, OpenAI, Feb 2024, public domain (Wikimedia Commons PD-algorithm)'. Credit OpenAI/Sora as creator, never the Commons uploader.",
+        "Present as a curated developer demo of an early model; OpenAI's own page says 'The current model has weaknesses.' Do not imply every generation is like this.",
+        "Source the master from the Commons file or the identical OpenAI CDN original only, never from YouTube; credit OpenAI/Sora, not the YouTube channel.",
+        "Do not describe as a single continuous minute-long shot; drop the silent audio track."
+      ],
+      "issues_found": [
+        "Licence basis is only the Commons {{PD-algorithm}} tag (a no-human-authorship assertion by a Commons uploader), not a licence from OpenAI. Tag confirmed on the live wikitext (2026-09-29) and in the rendered Template:PD-algorithm, whose full text continues 'and does not contain sufficient human authorship to support a copyright claim' and warns that UK/Hong Kong give computer-generated works 50 years.",
+        "Counter-indicators on OpenAI's side (hunter did not report them): page footer 'OpenAI © 2015 – 2024'; OpenAI Terms of Use (Wayback 2024-03-01) 'We and our affiliates own all rights, title, and interest in and to the Services' and 'Modify, copy, lease, sell or distribute any of our Services'. The hunter's supporting Terms quote ('own the Output') governs users of ChatGPT/DALL-E and is not a grant to the public; Sora was not a public service in Feb 2024. No OpenAI reuse licence found anywhere.",
+        "Supporting evidence re-verified: the Wayback page (HTTP 200) says 'All videos on this page were generated directly by Sora without modification.', is dated 'Published February 15, MMXXIV', lists this clip's exact prompt and .mp4, and every demo has a 'Download video' link to cdn.openai.com.",
+        "Rule-3 sensitivity: this Commons file was imported by video2commons from a THIRD-PARTY YouTube re-upload (RetroFuturista channel, video tRSdt5kmeW0; Commons upload by Kelly The Angel 2024-02-16), not from OpenAI; the file page is in 'Media from YouTube'. The content is proven identical to OpenAI's own CDN original (frame diff below), the third party owns nothing, and the licence claim is the same PD-algorithm assertion as the direct imports, so I keep it, but a literal reading of 'never use YouTube downloads' could exclude it. Orchestrator decision needed.",
+        "A hard discontinuity at 36.6 s is present in both the Commons file and the OpenAI original (I re-measured both: single-frame difference 69.0 vs neighbours about 6.7): not verifiably one continuous take.",
+        "Commons copy has an Opus audio track that is digital silence (-91 dB); the OpenAI original has no audio. Duration 60.001 s vs original 59.967 s (re-encode).",
+        "Prompt on the Commons page matches the OpenAI page verbatim. Synthetic woman, no real person; must always be labelled AI-generated."
+      ],
+      "corrected_fields": {
+        "created": "2024-02-15 = OpenAI page publication date (generation date not stated; on or before this day). Commons 'date' field may show an upload day instead.",
+        "licence_tag_verified": "{{PD-algorithm}} present in current wikitext of File:OpenAI_Sora_in_Action-_Tokyo_Walk.webm",
+        "developer_original": {
+          "url": "https://cdn.openai.com/sora/videos/tokyo-walk.mp4",
+          "http": 200,
+          "content_type": "video/mp4",
+          "content_length": 48439249
+        },
+        "frame_diff_vs_developer_original_1fps_gray_256px": {
+          "mean_abs": 1.04,
+          "max_8x8_block_mean": 3.27,
+          "max_corner_mean": 1.33,
+          "verdict": "same content and timing; no overlay/logo/caption added in the Commons copy"
+        },
+        "sha1_of_downloaded_file_matches_commons_imageinfo": true,
+        "watermark": {
+          "present": false,
+          "basis": "frame diff vs OpenAI CDN original shows nothing added; no static overlay found by corner analysis; frames not viewed by me. Feb-2024 Sora demos are not known to carry marks."
+        },
+        "media_verified": {
+          "duration_s": 60.001,
+          "size": "1920x1080",
+          "fps": 30,
+          "audio": "opus, silent (-91 dB)"
+        },
+        "hard_cut_s": 36.61,
+        "commons_source_channel": "RetroFuturista (third party, not OpenAI)"
+      },
+      "http": {
+        "status": 200,
+        "content_length": 14436472,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Sora (text-to-video) was published by OpenAI on 2024-02-15 and this clip and its prompt are listed on that page (Wayback snapshot 2024-02-16 07:35:15Z; page text 'Published February 15, MMXXIV').",
+        "source_url": "https://web.archive.org/web/20240216073515id_/https://openai.com/sora",
+        "quote": "Introducing Sora, our text-to-video model."
+      },
+      "confidence": "low"
+    },
+    {
+      "cand_id": "sora_gold_rush_fake_archive",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Project must accept in writing that the licence basis is Commons' PD-algorithm assertion only (no OpenAI licence; UK/HK computer-generated-work protection and OpenAI's blanket (c) notice remain residual risks).",
+        "No legal attribution or share-alike, but keep the on-screen source label: 'Sora, OpenAI, Feb 2024, public domain (Wikimedia Commons PD-algorithm)'. Credit OpenAI/Sora as creator, never the Commons uploader.",
+        "Present as a curated developer demo of an early model; OpenAI's own page says 'The current model has weaknesses.' Do not imply every generation is like this.",
+        "Source the master from the Commons file or the identical OpenAI CDN original only, never from YouTube; credit OpenAI/Sora, not the YouTube channel.",
+        "Show only with an explicit on-screen 'AI-generated, not archival' label; drop the silent audio track."
+      ],
+      "issues_found": [
+        "Licence basis is only the Commons {{PD-algorithm}} tag (a no-human-authorship assertion by a Commons uploader), not a licence from OpenAI. Tag confirmed on the live wikitext (2026-09-29) and in the rendered Template:PD-algorithm, whose full text continues 'and does not contain sufficient human authorship to support a copyright claim' and warns that UK/Hong Kong give computer-generated works 50 years.",
+        "Counter-indicators on OpenAI's side (hunter did not report them): page footer 'OpenAI © 2015 – 2024'; OpenAI Terms of Use (Wayback 2024-03-01) 'We and our affiliates own all rights, title, and interest in and to the Services' and 'Modify, copy, lease, sell or distribute any of our Services'. The hunter's supporting Terms quote ('own the Output') governs users of ChatGPT/DALL-E and is not a grant to the public; Sora was not a public service in Feb 2024. No OpenAI reuse licence found anywhere.",
+        "Supporting evidence re-verified: the Wayback page (HTTP 200) says 'All videos on this page were generated directly by Sora without modification.', is dated 'Published February 15, MMXXIV', lists this clip's exact prompt and .mp4, and every demo has a 'Download video' link to cdn.openai.com.",
+        "Rule-3 sensitivity: this Commons file was imported by video2commons from a THIRD-PARTY YouTube re-upload (RetroFuturista channel, video ZJcnUo2JsFg; Commons upload by Kelly The Angel 2024-02-16; editor PascalHD then edited the page 'providing the original sources and author, not a re-upload from YouTube'), not from OpenAI; the file page is in 'Media from YouTube'. The content is proven identical to OpenAI's own CDN original (frame diff below), the third party owns nothing, and the licence claim is the same PD-algorithm assertion as the direct imports, so I keep it, but a literal reading of 'never use YouTube downloads' could exclude it. Orchestrator decision needed.",
+        "Commons description contains third-party marketing text and a retrofuturista.com link; only the one-line prompt 'Historical footage of California during the gold rush.' matches OpenAI's page.",
+        "Misinformation-adjacent look (synthetic 'archival' footage). 1280x720 in the Commons copy; the CDN original is also 720p. Opus audio track is digital silence (-91 dB)."
+      ],
+      "corrected_fields": {
+        "created": "2024-02-15 = OpenAI page publication date (generation date not stated; on or before this day). Commons 'date' field may show an upload day instead.",
+        "licence_tag_verified": "{{PD-algorithm}} present in current wikitext of File:OpenAI_Sora_in_Action-_Gold_Rush.webm",
+        "developer_original": {
+          "url": "https://cdn.openai.com/sora/videos/gold-rush.mp4",
+          "http": 200,
+          "content_type": "video/mp4",
+          "content_length": 44452469
+        },
+        "frame_diff_vs_developer_original_1fps_gray_256px": {
+          "mean_abs": 1.2,
+          "max_8x8_block_mean": 2.77,
+          "max_corner_mean": 1.47,
+          "verdict": "same content and timing; no overlay/logo/caption added in the Commons copy"
+        },
+        "sha1_of_downloaded_file_matches_commons_imageinfo": true,
+        "watermark": {
+          "present": false,
+          "basis": "frame diff vs OpenAI CDN original shows nothing added; no static overlay found by corner analysis; frames not viewed by me. Feb-2024 Sora demos are not known to carry marks."
+        },
+        "media_verified": {
+          "duration_s": 25.021,
+          "size": "1280x720",
+          "fps": 30,
+          "audio": "opus, silent (-91 dB)"
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 3019625,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Sora (text-to-video) was published by OpenAI on 2024-02-15 and this clip and its prompt are listed on that page (Wayback snapshot 2024-02-16 07:35:15Z; page text 'Published February 15, MMXXIV').",
+        "source_url": "https://web.archive.org/web/20240216073515id_/https://openai.com/sora",
+        "quote": "Introducing Sora, our text-to-video model."
+      },
+      "confidence": "low"
+    },
+    {
+      "cand_id": "sora_wooly_mammoth",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Project must accept in writing that the licence basis is Commons' PD-algorithm assertion only (no OpenAI licence; UK/HK computer-generated-work protection and OpenAI's blanket (c) notice remain residual risks).",
+        "No legal attribution or share-alike, but keep the on-screen source label: 'Sora, OpenAI, Feb 2024, public domain (Wikimedia Commons PD-algorithm)'. Credit OpenAI/Sora as creator, never the Commons uploader.",
+        "Present as a curated developer demo of an early model; OpenAI's own page says 'The current model has weaknesses.' Do not imply every generation is like this.",
+        "Source the master from the Commons file or the identical OpenAI CDN original only, never from YouTube; credit OpenAI/Sora, not the YouTube channel.",
+        "Drop the silent audio track."
+      ],
+      "issues_found": [
+        "Licence basis is only the Commons {{PD-algorithm}} tag (a no-human-authorship assertion by a Commons uploader), not a licence from OpenAI. Tag confirmed on the live wikitext (2026-09-29) and in the rendered Template:PD-algorithm, whose full text continues 'and does not contain sufficient human authorship to support a copyright claim' and warns that UK/Hong Kong give computer-generated works 50 years.",
+        "Counter-indicators on OpenAI's side (hunter did not report them): page footer 'OpenAI © 2015 – 2024'; OpenAI Terms of Use (Wayback 2024-03-01) 'We and our affiliates own all rights, title, and interest in and to the Services' and 'Modify, copy, lease, sell or distribute any of our Services'. The hunter's supporting Terms quote ('own the Output') governs users of ChatGPT/DALL-E and is not a grant to the public; Sora was not a public service in Feb 2024. No OpenAI reuse licence found anywhere.",
+        "Supporting evidence re-verified: the Wayback page (HTTP 200) says 'All videos on this page were generated directly by Sora without modification.', is dated 'Published February 15, MMXXIV', lists this clip's exact prompt and .mp4, and every demo has a 'Download video' link to cdn.openai.com.",
+        "Rule-3 sensitivity: this Commons file was imported by video2commons from a THIRD-PARTY YouTube re-upload (Edzai Zvobwo's channel, video wS4VSTwvbDc; Commons upload by Kelly The Angel 2024-02-16), not from OpenAI; the file page is in 'Media from YouTube'. The content is proven identical to OpenAI's own CDN original (frame diff below), the third party owns nothing, and the licence claim is the same PD-algorithm assertion as the direct imports, so I keep it, but a literal reading of 'never use YouTube downloads' could exclude it. Orchestrator decision needed.",
+        "Commons description repeats the prompt and adds YouTube hashtags '#OpenAI #AI #sora'; prompt matches the OpenAI page verbatim. Commons 'date' 2024-02-16 is the upload day. Opus audio track is digital silence; the CDN original has a silent AAC track."
+      ],
+      "corrected_fields": {
+        "created": "2024-02-15 = OpenAI page publication date (generation date not stated; on or before this day). Commons 'date' field may show an upload day instead.",
+        "licence_tag_verified": "{{PD-algorithm}} present in current wikitext of File:Wooly_Mammoth_by_OpenAI_Sora.webm",
+        "developer_original": {
+          "url": "https://cdn.openai.com/sora/videos/wooly-mammoth.mp4",
+          "http": 200,
+          "content_type": "video/mp4",
+          "content_length": 13106672
+        },
+        "frame_diff_vs_developer_original_1fps_gray_256px": {
+          "mean_abs": 0.85,
+          "max_8x8_block_mean": 2.11,
+          "max_corner_mean": 1.08,
+          "verdict": "same content and timing; no overlay/logo/caption added in the Commons copy"
+        },
+        "sha1_of_downloaded_file_matches_commons_imageinfo": true,
+        "watermark": {
+          "present": false,
+          "basis": "frame diff vs OpenAI CDN original shows nothing added; no static overlay found by corner analysis; frames not viewed by me. Feb-2024 Sora demos are not known to carry marks."
+        },
+        "media_verified": {
+          "duration_s": 10.021,
+          "size": "1920x1080",
+          "fps": 30,
+          "audio": "opus, silent (-91 dB)"
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 9648963,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Sora (text-to-video) was published by OpenAI on 2024-02-15 and this clip and its prompt are listed on that page (Wayback snapshot 2024-02-16 07:35:15Z; page text 'Published February 15, MMXXIV').",
+        "source_url": "https://web.archive.org/web/20240216073515id_/https://openai.com/sora",
+        "quote": "Introducing Sora, our text-to-video model."
+      },
+      "confidence": "low"
+    },
+    {
+      "cand_id": "veo3_owl_badger_deepmind_demo",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Highest-risk clip retained. Project must accept in writing that the licence rests only on VulcanSphere's Commons {{PD-algorithm}} tag; Google DeepMind has issued no reuse licence. If the project needs a developer grant, request press permission from Google DeepMind before use.",
+        "Source the master only from the Commons file or Google's own hosted copy (URL in corrected_fields), never from YouTube; credit 'Google DeepMind, Veo 3, May 2025' (no legal attribution required).",
+        "Label as a curated flagship demo; do not imply typical output."
+      ],
+      "issues_found": [
+        "Tag {{PD-algorithm}} was applied by the importer (VulcanSphere, yt-dlp rip of the Google DeepMind YouTube upload vv6Ryg5iyh8; category 'Videos downloaded with yt-dlp'), not by Google. Rule 3 ('YouTube downloads') is technically touched.",
+        "NEW supporting evidence the hunter missed: Google's own Veo page (deepmind.google/models/veo/, fetched 2026-09-29) hosts this exact video and prints the same three-part owl/badger prompt, and its credits say 'All the clips were generated directly with Veo without modifications'. The Commons file is frame-identical to Google's hosted copy (mean abs 0.84 at 1 fps, offset 0; audio-envelope correlation 1.00).",
+        "Weak point: the file is 22.7 s and the prompt has three separately prompted parts; that is longer than a single generation (the 8-second figure is verified here only for Veo 2 in Gemini), so it is very likely a sequence of several generations. Audio RMS drops to about -65 dB at ~5.5-7.0 s and -63 dB at ~15-16 s, consistent with joins, though no hard visual cut exists (no diff spikes in either copy). 'Without modification' refers to clips, so Google's assembly/mixing of the sequence is not documented, and the PD tag's condition 'does not contain sufficient human authorship' is not proven for the joined sequence.",
+        "The Google page statement is from the page as it stands in Sep 2026; I cannot show the May 2025 wording. Google ToS quote the hunter cited ('Google won't claim ownership over that content') applies to users of services generating content, not to Google's own demo; verified only as text.",
+        "Commons 'date' 2025-05-21 is the YouTube upload day per the yt-dlp import; I could not read the YouTube page (consent stub), so upload date is unconfirmed. Veo 3 announcement 2025-05-20 is confirmed.",
+        "No static overlay/watermark detected in any corner (heuristic on 4K median frame; frames not viewed). Pre-dates Google's 2025-05-30 visible-watermark rollout."
+      ],
+      "corrected_fields": {
+        "created": "2025-05 (Veo 3 launch window; exact day unconfirmed)",
+        "developer_hosted_original": {
+          "url": "https://storage.googleapis.com/gdm-deepmind-com-prod-public/media/media/veo__veo-3__owl.webm",
+          "http": 200,
+          "content_type": "video/webm",
+          "content_length": 4065596,
+          "size": "1920x1080",
+          "fps": 24,
+          "duration_s": 22.667,
+          "audio": "opus"
+        },
+        "developer_page": "https://deepmind.google/models/veo/",
+        "commons_file_media": {
+          "duration_s": 22.708,
+          "size": "3840x2160",
+          "fps": 24,
+          "audio": "yes, mean -27.4 dB"
+        },
+        "watermark": {
+          "present": false,
+          "basis": "no static overlay found in any corner; not viewed"
+        },
+        "sha1_of_downloaded_file_matches_commons_imageinfo": true
+      },
+      "http": {
+        "status": 200,
+        "content_length": 29293365,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Veo 3 announced by Google DeepMind on 2025-05-20 (blog.google page dated May 20, 2025); owl/badger prompt is on the DeepMind Veo page.",
+        "source_url": "https://blog.google/technology/ai/generative-media-models-io-2025/",
+        "quote": "Introducing Veo 3 and Imagen 4, and a new tool for filmmaking called Flow."
+      },
+      "confidence": "low"
+    },
+    {
+      "cand_id": "veo3_visual_kei_lemonade_gemini",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Keep the burned-in 'Veo' watermark visible at bottom-right (approx x 1206-1250, y 668-688 in the 1280x720 frame). A centre 9:16 crop would remove it, so use full-width fit (pillarbox/blur fill) or a crop that keeps the mark.",
+        "Courtesy credit (not required by CC0): 'VulcanSphere / Google Veo 3 / CC0 (Wikimedia Commons)'."
+      ],
+      "issues_found": [
+        "Hunter listed watermark as 'unknown'. Found: a static white 'Veo' wordmark in the bottom-right corner (temporal-median frame, corner crop rendered as text; glyphs read V-e-o). Consistent with Google's 2025-05-30 rule ('a visible watermark to all videos, except for videos generated by Ultra members in Flow'). This corroborates that the clip came from Google's Veo product.",
+        "Licence verified: file uses {{User:VulcanSphere/AI-CC0-videos}} (unchanged since upload 2025-09-05), which renders CC0 1.0 for UK/China and {{PD-algorithm}} for the US; the person who prompted it (VulcanSphere) is the licensor. Template text says 'text-to-image (txt2img)' although this is txt2video (template typo). Page also says attribution 'is not mandatory'.",
+        "Model variant is not stated: the page says 'Veo 3', which could be Veo 3 or Veo 3 Fast (both in Gemini). Audio track present (-25.0 dB mean), consistent with a Veo 3-class model (Veo 2 has no audio).",
+        "The prompt is not identical to the 3.1 sibling ('downtempo music ... tranquil and undisturbed atmosphere' vs 'visual kei music'); do not present as a controlled comparison.",
+        "Generated in the consumer Gemini app; Google ToS 'Google won't claim ownership over that content' verified as text, but Gemini-specific terms were not reviewed."
+      ],
+      "corrected_fields": {
+        "created": "2025-08-24 (uploader-stated generation date; upload 2025-09-05)",
+        "watermark": {
+          "present": true,
+          "text": "Veo",
+          "position": "bottom-right",
+          "approx_box_px_in_1280x720": "x 1206-1250, y 668-688",
+          "how_found": "pixel analysis of the temporal median frame; frames not viewed"
+        },
+        "licence": {
+          "id": "CC0 1.0 (creator) + PD-algorithm (US)",
+          "attribution_required": false,
+          "sharealike": false
+        },
+        "sha1_of_downloaded_file_matches_commons_imageinfo": true,
+        "media_verified": {
+          "duration_s": 8.008,
+          "size": "1280x720",
+          "fps": 24,
+          "audio": "yes"
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 995894,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Veo 3 announced 2025-05-20 (page dated May 20, 2025); Gemini app carried Veo 3 by Aug 2025 (Google 2025-05-30 post on Veo 3 in Gemini).",
+        "source_url": "https://blog.google/technology/ai/generative-media-models-io-2025/",
+        "quote": "Introducing Veo 3 and Imagen 4, and a new tool for filmmaking called Flow."
+      },
+      "confidence": "high"
+    },
+    {
+      "cand_id": "veo31_visual_kei_lemonade_flow",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Keep the burned-in 'Veo' watermark visible at bottom-right (approx x 1831-1893, y 1034-1058 in the 1920x1088 frame); do not centre-crop it out.",
+        "Courtesy credit (not required by CC0): 'VulcanSphere / Google Veo 3.1 Fast / CC0 (Wikimedia Commons)'."
+      ],
+      "issues_found": [
+        "Hunter listed watermark as 'unknown' and my first automatic edge test also missed it (semi-transparent), but rendering the temporal-median corner crop as text shows a white 'Veo' wordmark at bottom-right. So the uploader was not exempt from Google's visible-watermark rule.",
+        "Licence verified: {{User:VulcanSphere/AI-CC0-videos}} (CC0 1.0 for UK/China; PD-algorithm for US), unchanged since upload 2025-10-16; creator is the prompter. Template typo 'text-to-image' noted.",
+        "'Veo 3.1 Fast' is stated only by the uploader (page: 'generated with Veo 3.1 Fast ... upscaled to 1080p', source Google Flow). Veo 3.1 and 3.1 Fast both shipped 2025-10-15 (Google developer blog: 'Today, we are releasing Veo 3.1 and Veo 3.1 Fast in paid preview in the Gemini API'; the same post says Veo 3.1 is also available in the Gemini app and Flow); the Fast variant cannot be verified from the file. Clip date 2025-10-16 fits.",
+        "1920x1088 is a padded coded height; audio present (-25.0 dB).",
+        "Prompts of the pair differ; not a controlled benchmark."
+      ],
+      "corrected_fields": {
+        "created": "2025-10-16",
+        "watermark": {
+          "present": true,
+          "text": "Veo",
+          "position": "bottom-right",
+          "approx_box_px_in_1920x1088": "x 1831-1893, y 1034-1058",
+          "how_found": "pixel analysis of the temporal median frame; frames not viewed"
+        },
+        "licence": {
+          "id": "CC0 1.0 (creator) + PD-algorithm (US)",
+          "attribution_required": false,
+          "sharealike": false
+        },
+        "sha1_of_downloaded_file_matches_commons_imageinfo": true,
+        "media_verified": {
+          "duration_s": 8.0,
+          "size": "1920x1088",
+          "fps": 24,
+          "audio": "yes"
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 10349973,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Veo 3.1 announced 2025-10-15 (blog.google page dated Oct 15, 2025); Veo 3.1 Fast released same day per Google developer blog.",
+        "source_url": "https://blog.google/technology/ai/veo-updates-flow/",
+        "quote": "Introducing Veo 3.1 and advanced capabilities in Flow"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "veo3_chernobyl_room_180deg",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "Model claim rests only on the uploader's words ('generated with using Google's Veo-3', author 'Google Veo-3'); nothing in the file corroborates it. No visible Veo watermark was detected although Google's 2025-05-30 rule puts one on all Gemini videos except Ultra-in-Flow, and the uploader's tool and tier are unstated (Brief rule 5: uncorroborated).",
+        "The file is not raw model output: the uploader replaced it on 2025-08-10 with the summary 'Framerate issues (fixed)'. It is now 1920x1080 at 30 fps with 15 near-duplicate frames spaced about 5 frames apart, i.e. a 24-to-30 fps conversion, unlike the 24 fps of every other Veo file checked. Median frame-to-frame difference is very high (14 on a 0-255 scale at 160x90), so heavy grain/noise; the hunter's scene-detector events at 2.9-4.3 s coincide with the largest differences I measured (3.1-3.6 s).",
+        "Licence itself (self CC0 + PD-algorithm, by the person who prompted it, unchanged since upload) is fine; rejection is on provenance/model-claim grounds. Prompt is conversational ('You can make the video a bit darker ... you can also add dust'), suggesting a chat-mediated generation whose settings are unknown.",
+        "Content is an unsettling abandoned room with a doll's head; adds little to the film. Better-documented Veo 3 clips exist (VulcanSphere pair)."
+      ],
+      "corrected_fields": {
+        "created": "2025-08-10 (Commons upload/date; generation time unknown)",
+        "licence_history": "unchanged: {{self|cc-zero}} + {{PD-algorithm}} since 2025-08-10",
+        "media_verified": {
+          "duration_s": 8.0,
+          "size": "1920x1080",
+          "fps": 30,
+          "audio": "yes, mean -27.5 dB"
+        },
+        "sha1_of_downloaded_file_matches_commons_imageinfo": true,
+        "watermark": {
+          "present": "not detected",
+          "basis": "no static text found by corner analysis; scene content dominates, inconclusive"
+        },
+        "salvage_path": "Would need the uploader's generation record (tool, tier, original file) to reinstate."
+      },
+      "http": {
+        "status": 200,
+        "content_length": 13203697,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Veo 3 existed from 2025-05-20, but nothing corroborates that THIS clip is Veo 3.",
+        "source_url": "https://blog.google/technology/ai/generative-media-models-io-2025/",
+        "quote": "Introducing Veo 3 and Imagen 4, and a new tool for filmmaking called Flow."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "veo2_clock_gemini_advanced",
+      "final_verdict": "clear",
+      "conditions": [],
+      "issues_found": [
+        "Licence verified and clean: {{PD-algorithm}} since upload (2025-05-19) plus {{Cc-zero}} added on 2026-04-12 by the same uploader/prompter (FallingGravity). CC0 is a creator dedication, so the later addition is valid. No deletion request, no review tag, no talk page. Rendered Cc-zero text: 'This file is made available under the Creative Commons CC0 1.0 Universal Public Domain Dedication.'",
+        "Model/date claim corroborated by three independent facts: Gemini release note 2025.04.22 ('Starting today, Gemini Advanced subscribers can generate high-quality, 8-second videos using Veo 2.'), clip is exactly 8.0 s with no audio track (Veo 3 always adds audio), and clip date 2025-05-18 precedes the Veo 3 launch (2025-05-20) and the visible-watermark rollout (2025-05-30). Veo 2 announced 2024-12-16 (blog.google).",
+        "No text/logo found in the bottom-right corner (median-frame analysis); the other corners are inconclusive because the scene is static. Not viewed.",
+        "Whether the clock 'works' is not stated on the page; judge visually before making any claim. Prompt 'create a video of a working clock' is un-engineered.",
+        "Cosmetic: two Commons editors moved categories (2025-10-12, 2026-05-26); no licence relevance."
+      ],
+      "corrected_fields": {
+        "created": "2025-05-18",
+        "licence": {
+          "id": "CC0 1.0 + PD-algorithm",
+          "attribution_required": false,
+          "sharealike": false
+        },
+        "watermark": {
+          "present": false,
+          "basis": "none found in bottom-right; other corners inconclusive (static scene); not viewed"
+        },
+        "sha1_of_downloaded_file_matches_commons_imageinfo": true,
+        "media_verified": {
+          "duration_s": 8.0,
+          "size": "1280x720",
+          "fps": 24,
+          "audio": false
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 938048,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Veo 2 was available to Gemini Advanced subscribers from 2025-04-22 (8-second videos); Veo 2 itself announced 2024-12-16 (blog.google/technology/google-labs/video-image-generation-update-december-2024/: 'We’re announcing new versions of Veo and Imagen, ...').",
+        "source_url": "https://gemini.google/release-notes/",
+        "quote": "Starting today, Gemini Advanced subscribers can generate high-quality, 8-second videos using Veo 2."
+      },
+      "confidence": "high"
+    },
+    {
+      "cand_id": "videopoet_cat_piano_with_audio",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "Licence not established: {{LicenseReview}} has been open since the 2024-02-21 import; a 2025-11-02 deletion request (out of scope) was closed 'Kept' on 2025-12-30 on scope grounds only, and an IP commenter there wrote 'This doesn't seem generated by uploader'. Google's VideoPoet site states no reuse licence. PD-algorithm was applied by the importer, and there is no developer statement of unmodified model output.",
+        "Provenance mismatch found: the current VideoPoet site lists this demo as cat_piano_with_audio_316D789F.mp4, but the Commons file is 3EB0CD1F, an older asset from the 2023-12-20 Google storage upload (still HTTP 200). The Commons page has no caption; the hunter matched the caption 'A pink cat playing piano in the forest' by file name only.",
+        "The site describes these as 'Video-to-audio: VideoPoet can also output audio to match an input video without using any text as guidance', so the picture may be an input video rather than VideoPoet text-to-video output; the site does not say the clip was generated from the caption.",
+        "Technical: 2.18 s, 8 fps, 512x896, mono audio; Commons editors categorise it 'AI slop'. Very low value for a hero excerpt."
+      ],
+      "corrected_fields": {
+        "created": "2023-12-19/20 (VideoPoet post dated 2023-12-19; Google asset last-modified 2023-12-20 01:25 GMT); clip-specific creation claim otherwise unverified",
+        "media_verified": {
+          "duration_s": 2.184,
+          "size": "512x896",
+          "fps": 8,
+          "audio": "yes, mean -22.2 dB"
+        },
+        "sha1_of_downloaded_file_matches_commons_imageinfo": true,
+        "salvage_path": "Ask Google Research for permission, or use only the linked project-page video if a licence appears."
+      },
+      "http": {
+        "status": 200,
+        "content_length": 166765,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "VideoPoet introduced by Google Research in a blog post dated December 19, 2023.",
+        "source_url": "https://research.google/blog/videopoet-a-large-language-model-for-zero-shot-video-generation/",
+        "quote": "a large language model (LLM) that is capable of a wide variety of video generation tasks"
+      },
+      "confidence": "high"
+    },
+    {
+      "cand_id": "sd14_flowers_img2img_animation_2022",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Treat the licence as CC BY-SA 4.0 (and GFDL), the creator's original grant: credit 'Benlisquare, Stable Diffusion v1-4 (CompVis / Stability AI), CC BY-SA 4.0, Wikimedia Commons' on screen and in the description.",
+        "Share-alike: any adapted version of this footage (crop to 9:16, colour, overlays) must be offered under CC BY-SA 4.0 or a compatible licence, with the original licence link; keep it as a discrete excerpt rather than fusing it into new composited material.",
+        "Human visual check for content suitability before use (young woman, 'instagram model' prompt); not viewed by me."
+      ],
+      "issues_found": [
+        "HUNTER ERROR: the hunter reported the licence as PD-algorithm 'released by the creator'. Revision history shows the creator's template was {{self|cc-by-sa-4.0|GFDL}} from upload (2022-10-03) until 2024-08-13, when anonymous IP 100.14.73.132 replaced it with {{PD-algorithm}} (summary 'correct license template'). The creator's sentence 'I release this video under the licence displayed within the template below' therefore points at CC BY-SA 4.0/GFDL. His sibling clip still carries that licence. Relying on PD-algorithm here would rest on an edit the creator did not make; CC BY-SA 4.0 is the safe basis.",
+        "A Commons deletion request covering this file (nominated 2022-12-27 for derivative-work concerns about artist-style prompts; the request 'Files uploaded by Benlisquare' was closed Kept 2023-05-31: 'there is no specific copyright being violated'). The prompt names five artists (Albert Lynch, Carne Griffiths, Franz Xaver Winterhalter, Lilia Alvarado, Sophie Anderson), some probably still living (not checked). Residual style/derivative risk is low but not zero.",
+        "Model date: Stable Diffusion public release page says 'Aug 22' (no year on the page); the year comes from CreativeML Open RAIL-M 'dated August 22, 2022'. Model licence section 6 verified: 'Licensor claims no rights in the Output You generate using the Model.' Not a video model: frame-by-frame img2img (denoise 0.4), 300 frames at 30 fps.",
+        "The animation script link on the page (github.com/Animator-Anon/Animator) now returns 404; the script cannot be inspected.",
+        "102.3 MB, 1024x1024, no Commons transcode; a proxy is needed for editing. No visible watermark found (corner analysis)."
+      ],
+      "corrected_fields": {
+        "licence": {
+          "id": "CC BY-SA 4.0 + GFDL (creator, original); current tag PD-algorithm added by anonymous IP 2024-08-13",
+          "attribution_required": true,
+          "sharealike": true
+        },
+        "created": "2022-10-03",
+        "watermark": {
+          "present": false,
+          "basis": "none found by corner analysis; not viewed"
+        },
+        "sha1_of_downloaded_file_matches_commons_imageinfo": true,
+        "media_verified": {
+          "duration_s": 10.0,
+          "size": "1024x1024",
+          "fps": 30,
+          "audio": false
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 102304755,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "Stable Diffusion publicly released 2022-08-22 (Stability post headed 'Aug 22'; year from CompVis LICENSE 'dated August 22, 2022').",
+        "source_url": "https://stability.ai/news/stable-diffusion-public-release",
+        "quote": "It is our pleasure to announce the public release of stable diffusion"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "deepdream_ouroboros_2021",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Base image of the render is not stated on the page. Same-day sibling uploads suggest it is the uploader's own Schiller-Gymnasium Hof photo (unverified inference). Watch the clip for identifiable people, logos or third-party artwork before use.",
+        "Label as 'DeepDream (Google algorithm, 2015), render by PantheraLeo1359531, 2021, CC0'; never as a text-to-video model or an early video-generation example."
+      ],
+      "issues_found": [
+        "Licence verified and clean: {{self|cc-zero}} by the creator ('Own work'), unchanged since upload 2021-09-26; API extmetadata LicenseShortName 'CC0'. Attribution not required, no share-alike.",
+        "Not a video-generation model and 5 fps: choppy. Dated 2021 although the algorithm is from 2015 (Google Research 'Inceptionism' post, page dated June 18, 2015). The film may only use it as visual pre-history.",
+        "Google's DeepDream code licence (Apache-2.0) covers code, not this render; irrelevant to the video's licence."
+      ],
+      "corrected_fields": {
+        "created": "2021-09-26",
+        "licence": {
+          "id": "CC0 1.0",
+          "attribution_required": false,
+          "sharealike": false
+        },
+        "watermark": {
+          "present": false,
+          "basis": "none found by corner analysis; not viewed"
+        },
+        "sha1_of_downloaded_file_matches_commons_imageinfo": true,
+        "media_verified": {
+          "duration_s": 24.0,
+          "size": "1000x912",
+          "fps": 5,
+          "audio": false
+        }
+      },
+      "http": {
+        "status": 200,
+        "content_length": 103277371,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "DeepDream/Inceptionism published by Google Research; blog page dated June 18, 2015 (this render is 2021).",
+        "source_url": "https://research.google/blog/inceptionism-going-deeper-into-neural-networks/",
+        "quote": "Inceptionism: Going Deeper into Neural Networks"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "meta_ai_imagine_llama_2025",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "Model/date claim cannot be corroborated. The page says only 'Meta AI Imagine' (generated 2025-07-01). Meta's own 2025-06-11 post (about.fb.com/news/2025/06/edit-videos-with-meta-ai/) launched video EDITING and describes 'our goal of bringing you AI video generation and editing across our apps'; I found no Meta primary source showing text-to-video in Meta AI on 2025-07-01, and Vibes launched 2025-09-25. The hunter's Movie Gen link is unsupported: no Meta source says Meta AI Imagine used Movie Gen (16 fps is consistent with secondary descriptions of Movie Gen, which proves nothing).",
+        "A small static text overlay is present at bottom-right (about x 692-745, y 735-745 in the 768x768 frame); its shape is consistent with a 'Meta AI' wordmark but I did not view it. The hunter had listed watermark as unknown.",
+        "Brand/IP: the prompt 'A representation of Meta AI and Llama' asks for the developer's own brands; the output may contain Meta/Llama marks. Unresolved without viewing.",
+        "Licence itself (VulcanSphere CC0 template + PD-algorithm) is intact since upload, but Meta's terms for meta.ai outputs could not be retrieved (facebook.com/legal/ai-terms is a JS shell) and the hunter also did not check them.",
+        "Very low value: 4 s, 16 fps, square, no audio."
+      ],
+      "corrected_fields": {
+        "created": "2025-07-01 (uploader-stated; uncorroborated)",
+        "watermark": {
+          "present": "probable",
+          "text": "small text overlay, consistent with 'Meta AI'",
+          "position": "bottom-right",
+          "approx_box_px_in_768x768": "x 692-745, y 735-745"
+        },
+        "sha1_of_downloaded_file_matches_commons_imageinfo": true,
+        "media_verified": {
+          "duration_s": 4.001,
+          "size": "768x768",
+          "fps": 16,
+          "audio": false
+        },
+        "salvage_path": "Reinstate only with a Meta primary source dating text-to-video in Meta AI to this window and a visual check for Meta/Llama logos."
+      },
+      "http": {
+        "status": 200,
+        "content_length": 433411,
+        "content_type": "video/webm"
+      },
+      "model_date_corroboration": {
+        "claim": "No primary source found that dates text-to-video 'Imagine' in Meta AI by 2025-07-01; Meta's 2025-06-11 post covers video editing only.",
+        "source_url": "https://about.fb.com/news/2025/06/edit-videos-with-meta-ai/",
+        "quote": "Later this year, you’ll be able to edit videos alongside Meta AI with your own text prompts"
+      },
+      "confidence": "medium"
+    }
+  ],
+  "summary": {
+    "checked": 19,
+    "clear": 1,
+    "clear_with_conditions": 15,
+    "rejected": 3
+  }
+}

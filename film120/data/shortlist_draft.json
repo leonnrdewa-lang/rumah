@@ -1,0 +1,2153 @@
+{
+ "clips": {
+  "sora_photoreal_train_glenfinnan": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Photoreal-train.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Photoreal-train.webm",
+   "family": "Sora",
+   "model_version": "Sora (text-to-video model), as stated on the Commons page; no version number exists for the 2024 preview. Corroborated: OpenAI page 'Introducing Sora, our text-to-video model'.",
+   "created": "2024-02-15",
+   "date_basis": "openai.com/sora 'Published February 15, MMXXIV'; photoreal-train.mp4 is listed on the 2024-02-16 Wayback snapshot. Commons date field says 2024-03-22 (upload day).",
+   "creator": "OpenAI demo",
+   "license": "PD (Commons: AI output)",
+   "license_basis": "Tag text from Template:PD-algorithm shown on the file page. File was imported directly from cdn.openai.com; OpenAI's page says all its demo videos were 'generated directly by Sora without modification' (supporting quote, see supporting_evidence). Not a developer-issued licence.",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Project must accept in writing that the licence basis is Commons' PD-algorithm assertion only (no OpenAI licence; UK/HK computer-generated-work protection and OpenAI's blanket (c) notice remain residual risks).",
+    "No legal attribution or share-alike, but keep the on-screen source label: 'Sora, OpenAI, Feb 2024, public domain (Wikimedia Commons PD-algorithm)'. Credit OpenAI/Sora as creator, never the Commons uploader.",
+    "Present as a curated developer demo of an early model; OpenAI's own page says 'The current model has weaknesses.' Do not imply every generation is like this.",
+    "Do not overlay the error callouts as fact until someone has watched the clip and timestamped each defect."
+   ],
+   "risk_flags": [],
+   "story_roles": [
+    "early_failure_annotation",
+    "milestone"
+   ],
+   "description": "Steam train leaving an arched viaduct in green Scottish highlands, sunny sky. Commons description states the render is inaccurate: a second track was added, the train has an extra chimney, and the fourth carriage's windows are distorted.",
+   "prompt": "The Glenfinnan Viaduct is a historic railway bridge in Scotland, UK, that crosses over the west highland line between the towns of Mallaig and Fort William. It is a stunning sight as a steam train leaves the bridge, traveling over the arch-covered viaduct. The landscape is dotted with lush greenery and rocky mountains, creating a picturesque backdrop for the train journey. The sky is blue and the sun is shining, making for a beautiful day to explore this majestic spot.",
+   "listed_media": {
+    "duration_s": 8.533,
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "size_mb": 7.58,
+    "has_audio": false,
+    "format": "webm"
+   },
+   "source_file": "H1.json"
+  },
+  "sora_mitten_astronaut_trailer": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/0/0b/Mitten-astronaut.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Mitten-astronaut.webm",
+   "family": "Sora",
+   "model_version": "Sora (text-to-video model); file titled 'Mitten-astronaut' from OpenAI CDN",
+   "created": "2024-02-15",
+   "date_basis": "openai.com/sora 'Published February 15, MMXXIV'; mitten-astronaut.mp4 on the 2024-02-16 Wayback snapshot; Commons import 2024-02-17.",
+   "creator": "OpenAI demo",
+   "license": "PD (Commons: AI output)",
+   "license_basis": "Same basis as all First-videos-by-Sora files: direct import of the OpenAI CDN mp4; OpenAI says demo videos were generated without modification. Commons uploader assertion, not a developer licence.",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Project must accept in writing that the licence basis is Commons' PD-algorithm assertion only (no OpenAI licence; UK/HK computer-generated-work protection and OpenAI's blanket (c) notice remain residual risks).",
+    "No legal attribution or share-alike, but keep the on-screen source label: 'Sora, OpenAI, Feb 2024, public domain (Wikimedia Commons PD-algorithm)'. Credit OpenAI/Sora as creator, never the Commons uploader.",
+    "Present as a curated developer demo of an early model; OpenAI's own page says 'The current model has weaknesses.' Do not imply every generation is like this.",
+    "Excerpt boundaries must sit on the verified cut times; do not claim identity persistence across cuts until viewed."
+   ],
+   "risk_flags": [],
+   "story_roles": [
+    "milestone",
+    "hero"
+   ],
+   "description": "Commons page has only the file name. From the OpenAI prompt: a movie-trailer style piece about a 30-year-old spaceman in a red knitted motorcycle helmet, blue sky, salt desert, 35mm look. Scene-cut detector finds 9 hard cuts (identical in the OpenAI original), so it is a multi-shot edit generated in one output.",
+   "prompt": "A movie trailer featuring the adventures of the 30 year old space man wearing a red wool knitted motorcycle helmet, blue sky, salt desert, cinematic style, shot on 35mm film, vivid colors.",
+   "listed_media": {
+    "duration_s": 17.066,
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "size_mb": 8.68,
+    "has_audio": false,
+    "format": "webm"
+   },
+   "source_file": "H1.json"
+  },
+  "sora_ships_in_coffee": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/2/2e/Ships-in-coffee.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Ships-in-coffee.webm",
+   "family": "Sora",
+   "model_version": "Sora (text-to-video model); file titled 'Ships-in-coffee' from OpenAI CDN",
+   "created": "2024-02-15",
+   "date_basis": "openai.com/sora 'Published February 15, MMXXIV'; ships-in-coffee.mp4 on the 2024-02-16 Wayback snapshot; Commons import 2024-02-17.",
+   "creator": "OpenAI demo",
+   "license": "PD (Commons: AI output)",
+   "license_basis": "Direct import of the OpenAI CDN mp4; OpenAI says demo videos were generated without modification. Commons uploader assertion, not a developer licence.",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Project must accept in writing that the licence basis is Commons' PD-algorithm assertion only (no OpenAI licence; UK/HK computer-generated-work protection and OpenAI's blanket (c) notice remain residual risks).",
+    "No legal attribution or share-alike, but keep the on-screen source label: 'Sora, OpenAI, Feb 2024, public domain (Wikimedia Commons PD-algorithm)'. Credit OpenAI/Sora as creator, never the Commons uploader.",
+    "Present as a curated developer demo of an early model; OpenAI's own page says 'The current model has weaknesses.' Do not imply every generation is like this."
+   ],
+   "risk_flags": [],
+   "story_roles": [
+    "hero",
+    "gallery"
+   ],
+   "description": "Commons page has only a file name and 'a short AI-generated video'. From the OpenAI prompt: photorealistic close-up of two pirate ships battling as they sail inside a cup of coffee.",
+   "prompt": "Photorealistic closeup video of two pirate ships battling each other as they sail inside a cup of coffee.",
+   "listed_media": {
+    "duration_s": 15.0,
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "size_mb": 25.22,
+    "has_audio": false,
+    "format": "webm"
+   },
+   "source_file": "H1.json"
+  },
+  "sora_monster_melting_candle": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Monster-with-melting-candle.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Monster-with-melting-candle.webm",
+   "family": "Sora",
+   "model_version": "Sora (text-to-video model); file titled 'Monster-with-melting-candle' from OpenAI CDN",
+   "created": "2024-02-15",
+   "date_basis": "openai.com/sora 'Published February 15, MMXXIV'; monster-with-melting-candle.mp4 on the 2024-02-16 Wayback snapshot; Commons import 2024-02-17.",
+   "creator": "OpenAI demo",
+   "license": "PD (Commons: AI output)",
+   "license_basis": "Direct import of the OpenAI CDN mp4; OpenAI says demo videos were generated without modification. Commons uploader assertion, not a developer licence.",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "low",
+   "conditions": [
+    "Project must accept in writing that the licence basis is Commons' PD-algorithm assertion only (no OpenAI licence; UK/HK computer-generated-work protection and OpenAI's blanket (c) notice remain residual risks).",
+    "No legal attribution or share-alike, but keep the on-screen source label: 'Sora, OpenAI, Feb 2024, public domain (Wikimedia Commons PD-algorithm)'. Credit OpenAI/Sora as creator, never the Commons uploader.",
+    "Present as a curated developer demo of an early model; OpenAI's own page says 'The current model has weaknesses.' Do not imply every generation is like this.",
+    "A human must watch the clip and confirm it does not resemble a specific animated-film character before it enters the cut; otherwise drop it."
+   ],
+   "risk_flags": [
+    "brand_ip"
+   ],
+   "story_roles": [
+    "gallery",
+    "hero"
+   ],
+   "description": "Commons page has only the file name. From the OpenAI prompt: 3D, realistic-style animated close-up of a short fluffy monster kneeling beside a melting red candle, warm dramatic lighting.",
+   "prompt": "Animated scene features a close-up of a short fluffy monster kneeling beside a melting red candle. The art style is 3D and realistic, with a focus on lighting and texture. The mood of the painting is one of wonder and curiosity, as the monster gazes at the flame with wide eyes and open mouth. Its pose and expression convey a sense of innocence and playfulness, as if it is exploring the world around it for the first time. The use of warm colors and dramatic lighting further enhances the cozy atmosphere of the image.",
+   "listed_media": {
+    "duration_s": 8.533,
+    "width": 1920,
+    "height": 1088,
+    "fps": 30,
+    "size_mb": 10.36,
+    "has_audio": false,
+    "format": "webm"
+   },
+   "source_file": "H1.json"
+  },
+  "sora_big_sur_drone": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/a/a7/Big-sur.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Big-sur.webm",
+   "family": "Sora",
+   "model_version": "Sora (text-to-video model); file titled 'Big-sur' from OpenAI CDN",
+   "created": "2024-02-15",
+   "date_basis": "openai.com/sora 'Published February 15, MMXXIV'; big-sur.mp4 on the 2024-02-16 Wayback snapshot; Commons import 2024-02-17.",
+   "creator": "OpenAI demo",
+   "license": "PD (Commons: AI output)",
+   "license_basis": "Direct import of the OpenAI CDN mp4; OpenAI says demo videos were generated without modification. Commons uploader assertion, not a developer licence.",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Project must accept in writing that the licence basis is Commons' PD-algorithm assertion only (no OpenAI licence; UK/HK computer-generated-work protection and OpenAI's blanket (c) notice remain residual risks).",
+    "No legal attribution or share-alike, but keep the on-screen source label: 'Sora, OpenAI, Feb 2024, public domain (Wikimedia Commons PD-algorithm)'. Credit OpenAI/Sora as creator, never the Commons uploader.",
+    "Present as a curated developer demo of an early model; OpenAI's own page says 'The current model has weaknesses.' Do not imply every generation is like this."
+   ],
+   "risk_flags": [],
+   "story_roles": [
+    "hero",
+    "gallery"
+   ],
+   "description": "From the OpenAI prompt: drone view of waves crashing against rugged cliffs, golden setting-sun light, small island with lighthouse in the distance. Commons page has only the file name (a duplicate AV1 copy with the prompt exists as File:Sora big-sur.webm).",
+   "prompt": "Drone view of waves crashing against the rugged cliffs along Big Sur\u2019s garay point beach. The crashing blue waters create white-tipped waves, while the golden light of the setting sun illuminates the rocky shore. A small island with a lighthouse sits in the distance, and green shrubbery covers the cliff\u2019s edge. The steep drop from the road down to the beach is a dramatic feat, with the cliff\u2019s edges jutting out over the sea. This is a view that captures the raw beauty of the coast and the rugged landscape of the Pacific Coast Highway.",
+   "listed_media": {
+    "duration_s": 8.533,
+    "width": 1920,
+    "height": 1088,
+    "fps": 30,
+    "size_mb": 19.52,
+    "has_audio": false,
+    "format": "webm"
+   },
+   "source_file": "H1.json"
+  },
+  "sora_victoria_pigeon_vertical": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/6/65/Victoria-crowned-pigeon.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Victoria-crowned-pigeon.webm",
+   "family": "Sora",
+   "model_version": "Sora (text-to-video model); file titled 'Victoria-crowned-pigeon' from OpenAI CDN",
+   "created": "2024-02-15",
+   "date_basis": "openai.com/sora 'Published February 15, MMXXIV'; victoria-crowned-pigeon.mp4 on the 2024-02-16 Wayback snapshot; Commons import 2024-02-17.",
+   "creator": "OpenAI demo",
+   "license": "PD (Commons: AI output)",
+   "license_basis": "Direct import of the OpenAI CDN mp4; OpenAI says demo videos were generated without modification. Commons uploader assertion, not a developer licence.",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Project must accept in writing that the licence basis is Commons' PD-algorithm assertion only (no OpenAI licence; UK/HK computer-generated-work protection and OpenAI's blanket (c) notice remain residual risks).",
+    "No legal attribution or share-alike, but keep the on-screen source label: 'Sora, OpenAI, Feb 2024, public domain (Wikimedia Commons PD-algorithm)'. Credit OpenAI/Sora as creator, never the Commons uploader.",
+    "Present as a curated developer demo of an early model; OpenAI's own page says 'The current model has weaknesses.' Do not imply every generation is like this.",
+    "720p-native: any full-height use in a 1080x1920 frame is a 1.5x upscale; disclose or use as an inset."
+   ],
+   "risk_flags": [],
+   "story_roles": [
+    "gallery",
+    "hero"
+   ],
+   "description": "Commons page has only the file name. From the OpenAI prompt: close-up of a Victoria crowned pigeon with blue plumage, red chest, lacy crest, red eye, head tilted, blurred background. File is portrait 720x1280.",
+   "prompt": "This close-up shot of a Victoria crowned pigeon showcases its striking blue plumage and red chest. Its crest is made of delicate, lacy feathers, while its eye is a striking red color. The bird\u2019s head is tilted slightly to the side, giving the impression of it looking regal and majestic. The background is blurred, drawing attention to the bird\u2019s striking appearance.",
+   "listed_media": {
+    "duration_s": 40.0,
+    "width": 720,
+    "height": 1280,
+    "fps": 30,
+    "size_mb": 29.67,
+    "has_audio": false,
+    "format": "webm"
+   },
+   "source_file": "H1.json"
+  },
+  "sora_cat_on_bed": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/f/f7/Cat-on-bed.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Cat-on-bed.webm",
+   "family": "Sora",
+   "model_version": "Sora (text-to-video model); file titled 'Cat-on-bed' from OpenAI CDN",
+   "created": "2024-02-15",
+   "date_basis": "openai.com/sora 'Published February 15, MMXXIV'; cat-on-bed.mp4 on the 2024-02-16 Wayback snapshot; Commons import 2024-02-17.",
+   "creator": "OpenAI demo",
+   "license": "PD (Commons: AI output)",
+   "license_basis": "Direct import of the OpenAI CDN mp4; OpenAI says demo videos were generated without modification. Commons uploader assertion, not a developer licence.",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Project must accept in writing that the licence basis is Commons' PD-algorithm assertion only (no OpenAI licence; UK/HK computer-generated-work protection and OpenAI's blanket (c) notice remain residual risks).",
+    "No legal attribution or share-alike, but keep the on-screen source label: 'Sora, OpenAI, Feb 2024, public domain (Wikimedia Commons PD-algorithm)'. Credit OpenAI/Sora as creator, never the Commons uploader.",
+    "Present as a curated developer demo of an early model; OpenAI's own page says 'The current model has weaknesses.' Do not imply every generation is like this.",
+    "Do not annotate a specific defect until the timestamp has been confirmed by eye."
+   ],
+   "risk_flags": [],
+   "story_roles": [
+    "early_failure_annotation",
+    "gallery"
+   ],
+   "description": "Commons page has only the file name; Commons editors put it in 'AI misgeneration' and 'AI-generated women/cats'. From the OpenAI prompt: a cat wakes its sleeping owner demanding breakfast; owner ignores it, cat tries new tactics, owner produces treats from under the pillow.",
+   "prompt": "A cat waking up its sleeping owner demanding breakfast. The owner tries to ignore the cat, but the cat tries new tactics and finally the owner pulls out a secret stash of treats from under the pillow to hold the cat off a little longer.",
+   "listed_media": {
+    "duration_s": 8.533,
+    "width": 1920,
+    "height": 1088,
+    "fps": 30,
+    "size_mb": 15.55,
+    "has_audio": false,
+    "format": "webm"
+   },
+   "source_file": "H1.json"
+  },
+  "sora_gold_rush_fake_archive": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/0/02/OpenAI_Sora_in_Action-_Gold_Rush.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:OpenAI_Sora_in_Action-_Gold_Rush.webm",
+   "family": "Sora",
+   "model_version": "Sora (text-to-video model), per Commons title 'OpenAI Sora in Action'",
+   "created": "2024-02-15",
+   "date_basis": "openai.com/sora 'Published February 15, MMXXIV' (gold-rush.mp4 on the 2024-02-16 Wayback snapshot). Commons date field 2024-02-15; upload 2024-02-16 from a third-party YouTube re-upload.",
+   "creator": "OpenAI demo",
+   "license": "PD (Commons: AI output)",
+   "license_basis": "OpenAI page lists the same prompt/video (gold-rush.mp4). Commons copy is a third-party re-upload; frame comparison with the OpenAI CDN original: mean abs diff 1.20 (max block 2.35) over 25 frames, no overlay/offset. Uploader assertion; no developer licence.",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "low",
+   "conditions": [
+    "Project must accept in writing that the licence basis is Commons' PD-algorithm assertion only (no OpenAI licence; UK/HK computer-generated-work protection and OpenAI's blanket (c) notice remain residual risks).",
+    "No legal attribution or share-alike, but keep the on-screen source label: 'Sora, OpenAI, Feb 2024, public domain (Wikimedia Commons PD-algorithm)'. Credit OpenAI/Sora as creator, never the Commons uploader.",
+    "Present as a curated developer demo of an early model; OpenAI's own page says 'The current model has weaknesses.' Do not imply every generation is like this.",
+    "Source the master from the Commons file or the identical OpenAI CDN original only, never from YouTube; credit OpenAI/Sora, not the YouTube channel.",
+    "Show only with an explicit on-screen 'AI-generated, not archival' label; drop the silent audio track."
+   ],
+   "risk_flags": [],
+   "story_roles": [
+    "gallery"
+   ],
+   "description": "Commons description is marketing text plus the prompt: 'Historical footage of California during the gold rush.' Audio track exists but is digital silence (mean -91 dB); drop it.",
+   "prompt": "Historical footage of California during the gold rush.",
+   "listed_media": {
+    "duration_s": 25.021,
+    "width": 1280,
+    "height": 720,
+    "fps": 30,
+    "size_mb": 3.02,
+    "has_audio": true,
+    "format": "webm"
+   },
+   "source_file": "H1.json"
+  },
+  "sora_wooly_mammoth": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/4/4c/Wooly_Mammoth_by_OpenAI_Sora.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Wooly_Mammoth_by_OpenAI_Sora.webm",
+   "family": "Sora",
+   "model_version": "Sora (text-to-video model), per Commons description 'using OpenAI's Sora'",
+   "created": "2024-02-15",
+   "date_basis": "openai.com/sora 'Published February 15, MMXXIV' (wooly-mammoth.mp4 on the 2024-02-16 Wayback snapshot). Commons date field 2024-02-16 (upload day); source is a third-party YouTube re-upload.",
+   "creator": "OpenAI demo",
+   "license": "PD (Commons: AI output)",
+   "license_basis": "OpenAI page lists the same prompt/video (wooly-mammoth.mp4). Commons copy is a third-party re-upload; frame comparison with the OpenAI CDN original: mean abs diff 0.85 (max block 1.65) over 10 frames, no overlay/offset. Uploader assertion; no developer licence.",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "low",
+   "conditions": [
+    "Project must accept in writing that the licence basis is Commons' PD-algorithm assertion only (no OpenAI licence; UK/HK computer-generated-work protection and OpenAI's blanket (c) notice remain residual risks).",
+    "No legal attribution or share-alike, but keep the on-screen source label: 'Sora, OpenAI, Feb 2024, public domain (Wikimedia Commons PD-algorithm)'. Credit OpenAI/Sora as creator, never the Commons uploader.",
+    "Present as a curated developer demo of an early model; OpenAI's own page says 'The current model has weaknesses.' Do not imply every generation is like this.",
+    "Source the master from the Commons file or the identical OpenAI CDN original only, never from YouTube; credit OpenAI/Sora, not the YouTube channel.",
+    "Drop the silent audio track."
+   ],
+   "risk_flags": [],
+   "story_roles": [
+    "gallery",
+    "hero"
+   ],
+   "description": "Several giant woolly mammoths tread through a snowy meadow, fur blowing in the wind, snow-covered trees and mountains behind, warm afternoon light, low camera view, depth of field (from prompt on the page). Audio track is digital silence (mean -91 dB); drop it.",
+   "prompt": "Several giant wooly mammoths approach treading through a snowy meadow, their long wooly fur lightly blows in the wind as they walk, snow covered trees and dramatic snow capped mountains in the distance, mid afternoon light with wispy clouds and a sun high in the distance creates a warm glow, the low camera view is stunning capturing the large furry mammal with beautiful photography, depth of field.",
+   "listed_media": {
+    "duration_s": 10.021,
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "size_mb": 9.65,
+    "has_audio": true,
+    "format": "webm"
+   },
+   "source_file": "H1.json"
+  },
+  "veo3_owl_badger_deepmind_demo": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/e/ef/Veo_3_demo_Owl_and_Badger.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Veo_3_demo_Owl_and_Badger.webm",
+   "family": "Veo",
+   "model_version": "Veo 3 (page: 'Created with Veo 3 - our new state-of-the-art video generation model')",
+   "created": "2025-05-21",
+   "date_basis": "Commons date field 2025-05-21 (YouTube upload day); Veo 3 announced 2025-05-20 (blog.google I/O post). Video is on Google DeepMind's YouTube channel (oEmbed).",
+   "creator": "VulcanSphere",
+   "license": "PD (Commons: AI output)",
+   "license_basis": "Commons tag on an official Google DeepMind demo re-hosted by a third party via yt-dlp. Google has not published a reuse licence for the clip. Supporting: the page text says 'Created with Veo 3', and the multi-part prompt (with Audio: lines) shows the score and effects were prompted, i.e. generated natively. Whether Google added any human-authored editing to join segments is not stated (no cuts detected, but soft joins are possible).",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "low",
+   "conditions": [
+    "Highest-risk clip retained. Project must accept in writing that the licence rests only on VulcanSphere's Commons {{PD-algorithm}} tag; Google DeepMind has issued no reuse licence. If the project needs a developer grant, request press permission from Google DeepMind before use.",
+    "Source the master only from the Commons file or Google's own hosted copy (URL in corrected_fields), never from YouTube; credit 'Google DeepMind, Veo 3, May 2025' (no legal attribution required).",
+    "Label as a curated flagship demo; do not imply typical output."
+   ],
+   "risk_flags": [],
+   "story_roles": [
+    "hero",
+    "milestone"
+   ],
+   "description": "From the Commons/DeepMind description and prompt: a wise old owl circles in a moonlit sky then lands beside a nervous badger on a forest path; the badger says they left behind a 'ball' that bounced higher than it can jump, the owl asks what manner of magic that is; owl flies off, badger runs off, a squirrel hurries past through dry leaves. Audio (wings, birdsong, dialogue, light orchestral score) is described as prompted. Audio measured: mean -27.4 dB, max -7.6 dB.",
+   "prompt": "A follow shot of a wise old owl high in the air, peeking through the clouds in a moonlit sky above a forest. The wise old owl carefully circles a clearing looking around to the forest floor. After a few moments, it dives down to a moonlit path and sits next to a badger. Audio: wings flapping, birdsong, loud and pleasant wind rustling and the sound of intermittent pleasant sounds buzzing, twigs snapping underfoot, croaking. A light orchestral score with woodwinds throughout with a cheerful, optimistic rhythm, full of innocent curiosity. [continues with a dialogue segment and an exit segment; full text on the Commons page]",
+   "listed_media": {
+    "duration_s": 22.708,
+    "width": 3840,
+    "height": 2160,
+    "fps": 24,
+    "size_mb": 29.29,
+    "has_audio": true,
+    "format": "webm"
+   },
+   "source_file": "H1.json"
+  },
+  "veo3_visual_kei_lemonade_gemini": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/1/14/Visual_Kei_Man_Enjoys_Lemonade_%28Veo_3%29.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Visual_Kei_Man_Enjoys_Lemonade_(Veo_3).webm",
+   "family": "Veo",
+   "model_version": "Veo 3 (page title '(Veo 3)'; source 'Generated in Gemini'); Veo 3 variant (Fast/standard) not stated",
+   "created": "2025-08-24",
+   "date_basis": "Commons date field 2025-08-24 (uploader's generation date); upload 2025-09-05. Veo 3 was available in Gemini to Pro/Ultra by then (blog.google, gemini.google release notes).",
+   "creator": "VulcanSphere",
+   "license": "CC0",
+   "license_basis": "Licence template shown on the file page ({{User:VulcanSphere/AI-CC0-videos}}): the person who prompted/generated the clip releases it under CC0 where copyright exists (UK, China) and PD-algorithm where none exists (US). Attribution 'not mandatory'. The template says txt2img although the clip is txt2video (template typo).",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "high",
+   "conditions": [
+    "Keep the burned-in 'Veo' watermark visible at bottom-right (approx x 1206-1250, y 668-688 in the 1280x720 frame). A centre 9:16 crop would remove it, so use full-width fit (pillarbox/blur fill) or a crop that keeps the mark.",
+    "Courtesy credit (not required by CC0): 'VulcanSphere / Google Veo 3 / CC0 (Wikimedia Commons)'."
+   ],
+   "risk_flags": [],
+   "story_roles": [
+    "split_screen_pair",
+    "gallery"
+   ],
+   "description": "Generative video of a young man with lime-green hair, eyeglasses and visual kei / gothic attire alone in a bistro sipping iced lemonade, downtempo music in the background (from prompt). Audio track present (mean -25 dB).",
+   "prompt": "A lime green-haired young adult man, wearing eyeglasses, with visual kei and gothic attire in a bistro, alone, sipping a glass of ice lemonade. He is completely at ease, lost in his thoughts, with downtempo music in the background, creating a tranquil and undisturbed atmosphere",
+   "listed_media": {
+    "duration_s": 8.008,
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "size_mb": 1.0,
+    "has_audio": true,
+    "format": "webm"
+   },
+   "source_file": "H1.json"
+  },
+  "veo31_visual_kei_lemonade_flow": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/d/df/Visual_Kei_Man_Enjoys_Lemonade_%28Veo_3.1%29.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Visual_Kei_Man_Enjoys_Lemonade_(Veo_3.1).webm",
+   "family": "Veo",
+   "model_version": "Veo 3.1 Fast (page: 'generated with Veo 3.1 Fast', upscaled to 1080p; source Google Flow)",
+   "created": "2025-10-16",
+   "date_basis": "Commons date field and upload timestamp 2025-10-16; Google released Veo 3.1 and Veo 3.1 Fast on 2025-10-15 (blog.google; developers.googleblog.com).",
+   "creator": "VulcanSphere",
+   "license": "CC0",
+   "license_basis": "Same VulcanSphere licence template as the Veo 3 clip: creator's CC0 release plus PD-algorithm. Attribution 'not mandatory'.",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Keep the burned-in 'Veo' watermark visible at bottom-right (approx x 1831-1893, y 1034-1058 in the 1920x1088 frame); do not centre-crop it out.",
+    "Courtesy credit (not required by CC0): 'VulcanSphere / Google Veo 3.1 Fast / CC0 (Wikimedia Commons)'."
+   ],
+   "risk_flags": [],
+   "story_roles": [
+    "split_screen_pair",
+    "milestone"
+   ],
+   "description": "Young adult man with lime-green hair, eyeglasses and visual kei / gothic attire alone in a bistro sipping iced lemonade, visual kei music in the background (from prompt). Audio present (mean -25 dB).",
+   "prompt": "A lime green-haired young adult man, wearing eyeglasses, with visual kei and gothic attire in a bistro, alone, sipping a glass of ice lemonade. He is completely at ease, lost in his thoughts, with visual kei music in the background",
+   "listed_media": {
+    "duration_s": 8.0,
+    "width": 1920,
+    "height": 1088,
+    "fps": 24,
+    "size_mb": 10.35,
+    "has_audio": true,
+    "format": "webm"
+   },
+   "source_file": "H1.json"
+  },
+  "veo2_clock_gemini_advanced": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/0/03/Clock_by_Veo_2.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Clock_by_Veo_2.webm",
+   "family": "Veo",
+   "model_version": "Veo 2 (page: author 'Veo 2; prompted by FallingGravity', source 'Gemini')",
+   "created": "2025-05-18",
+   "date_basis": "Commons date field 2025-05-18 (upload 2025-05-19). Veo 2 announced 2024-12-16 and added to Gemini Advanced on 2025-04-22 (8-second videos), before Veo 3 launched 2025-05-20.",
+   "creator": "FallingGravity (Commons), generated with",
+   "license": "CC0",
+   "license_basis": "File page carries {{PD-algorithm}} and {{Cc-zero}} chosen by the uploader who wrote the prompt. cc-zero sentence is the standard template text (verified on the VulcanSphere template rendering that embeds {{cc-zero}}).",
+   "verdict": "clear",
+   "verdict_confidence": "high",
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "gallery",
+    "early_failure_annotation"
+   ],
+   "description": "Short video created with the prompt 'create a video of a working clock' in Gemini Advanced. No audio track.",
+   "prompt": "create a video of a working clock",
+   "listed_media": {
+    "duration_s": 8.0,
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "size_mb": 0.94,
+    "has_audio": false,
+    "format": "webm"
+   },
+   "source_file": "H1.json"
+  },
+  "sd14_flowers_img2img_animation_2022": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Algorithmically-generated_animation_of_young_woman_adorned_with_flowers.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Algorithmically-generated_animation_of_young_woman_adorned_with_flowers.webm",
+   "family": "Stable Diffusion (frame-by-frame img2img animation)",
+   "model_version": "Stable Diffusion V1-4 (page: 'Stable Diffusion V1-4 AI diffusion model'), AUTOMATIC1111 web UI and the 'Stable Diffusion Animation Script v0.6' (Animator-Anon)",
+   "created": "2022-10-03",
+   "date_basis": "Commons date field 2022-10-03 and upload 2022-10-03; SD v1-4 public release 2022-08-22 (Stability AI post; CompVis licence dated August 22, 2022).",
+   "creator": "Benlisquare",
+   "license": "PD (Commons: AI output)",
+   "license_basis": "Uploader is the person who ran the generation and states it is released under the shown licence, which is {{PD-algorithm}}. Model licence (CreativeML Open RAIL-M) also disclaims rights in outputs (see supporting_evidence).",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Treat the licence as CC BY-SA 4.0 (and GFDL), the creator's original grant: credit 'Benlisquare, Stable Diffusion v1-4 (CompVis / Stability AI), CC BY-SA 4.0, Wikimedia Commons' on screen and in the description.",
+    "Share-alike: any adapted version of this footage (crop to 9:16, colour, overlays) must be offered under CC BY-SA 4.0 or a compatible licence, with the original licence link; keep it as a discrete excerpt rather than fusing it into new composited material.",
+    "Human visual check for content suitability before use (young woman, 'instagram model' prompt); not viewed by me."
+   ],
+   "risk_flags": [],
+   "story_roles": [
+    "hook_early",
+    "early_failure_annotation",
+    "frame_stack"
+   ],
+   "description": "10-second, 300-frame animation: each frame is an img2img (denoise 0.4) pass from the previous one with keyframed prompts - flowers at 0 s, 'face closer to camera' at 2 s, 'eye contact with viewer' at 6 s, 'disdain, angry glare' at 8-10 s (keyframe table on the page).",
+   "prompt": "Base image prompt: instagram model in art style of Albert Lynch and Carne Griffiths and Franz Xaver Winterhalter and Lilia Alvarado and Sophie Anderson, highly detailed, sharp focus illustration, artstation hq, (detailed face), (((full body))), (((standing))). Negative: (bad anatomy) (portrait). Keyframed animation prompts per page (denoise 0.4, 30 fps, 300 frames).",
+   "listed_media": {
+    "duration_s": 10.0,
+    "width": 1024,
+    "height": 1024,
+    "fps": 30,
+    "size_mb": 102.3,
+    "has_audio": false,
+    "format": "webm"
+   },
+   "source_file": "H1.json"
+  },
+  "deepdream_ouroboros_2021": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/5/51/DeepDream_Ouroboros20210926_02.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:DeepDream_Ouroboros20210926_02.webm",
+   "family": "DeepDream",
+   "model_version": "DeepDream (page: 'Example of a DeepDream Ouroboros rendering'); the algorithm dates from Google's 2015 'Inceptionism' work; this render is 2021",
+   "created": "2021-09-26",
+   "date_basis": "Commons date field and upload 2021-09-26 (render date). Algorithm origin: Google Research blog 'Inceptionism' dated June 18, 2015.",
+   "creator": "PantheraLeo1359531",
+   "license": "CC0",
+   "license_basis": "File page carries {{self|cc-zero}} by the creator ('Own work'); licence name confirmed as 'CC0' in Commons extmetadata. Sentence is the standard cc-zero template text.",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Base image of the render is not stated on the page. Same-day sibling uploads suggest it is the uploader's own Schiller-Gymnasium Hof photo (unverified inference). Watch the clip for identifiable people, logos or third-party artwork before use.",
+    "Label as 'DeepDream (Google algorithm, 2015), render by PantheraLeo1359531, 2021, CC0'; never as a text-to-video model or an early video-generation example."
+   ],
+   "risk_flags": [],
+   "story_roles": [
+    "hook_early",
+    "gallery"
+   ],
+   "description": "Page text: an image is rotated by a certain number of degrees per frame and the DeepDream structures are advanced by one iteration per frame. 5 fps. Categories link it to a school (Schiller-Gymnasium Hof); the source image content is not described.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 24.0,
+    "width": 1000,
+    "height": 912,
+    "fps": 5,
+    "size_mb": 103.28,
+    "has_audio": false,
+    "format": "webm"
+   },
+   "source_file": "H1.json"
+  },
+  "sd14_benlisquare_park_2022": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/a/a2/Algorithmically-generated_animation_of_young_woman_in_park.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Algorithmically-generated_animation_of_young_woman_in_park.webm",
+   "family": "Stable Diffusion v1-4 frame-by-frame img2img animation (AUTOMATIC1111 + animation script)",
+   "model_version": "Page: 'Stable Diffusion V1-4 AI diffusion model' via 'Stable Diffusion web UI created by AUTOMATIC1111' and 'Stable Diffusion Animation Script'. Corroborated: v1-4 weights repo existed on Hugging Face from 2022-08-20 (HF API createdAt); public SD release 2022-08-22 (Stability AI post metadata). Commons Structured Data also lists software used = Stable Diffusion and stores the prompt.",
+   "created": "2022-10-02",
+   "date_basis": "Commons Date field 2022-10-02 = first-upload timestamp 2022-10-02 (uploader Benlisquare); ffmpeg command on page shows frame prefix 20221002045131.",
+   "creator": "Benlisquare",
+   "license": "CC BY-SA 4.0",
+   "license_basis": "Uploader is the person who ran the generation and states the release; page licence tag is CC BY-SA 4.0 + GFDL. Model licence (CreativeML Open RAIL-M section 6, checked in CompVis/stable-diffusion LICENSE): 'Licensor claims no rights in the Output You generate using the Model.'",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "high",
+   "conditions": [
+    "Credit: Benlisquare, 'Algorithmically-generated animation of young woman in park', Wikimedia Commons, CC BY-SA 4.0 (dual-licensed with GFDL) with link to the file page and to the licence; indicate changes (crop to 9:16, trim, grade).",
+    "ShareAlike: any adapted material made from this clip (crop, retime, overlay, grade) must be offered under CC BY-SA 4.0 or a compatible licence; decide once for the whole film how the credits page states this (legal call: separate excerpt vs adaptation).",
+    "Do not show the generation prompt on screen: it names a living artist (Greg Rutkowski, who publicly objected to his name being used in AI prompts) and contains sexualised negative-prompt terms.",
+    "Frame-review for suggestiveness before use (Commons categories 'Cleavage of young women' and 'Cleavage in AI art' are attached to the file).",
+    "Label as AI-generated; OpenRAIL-M s.6 says 'No use of the output can contravene any provision as stated in the License' (Attachment A use restrictions) - a lawful, non-deceptive documentary use complies.",
+    "104 MB / 83 Mbps VP9 1024x1024: work from a proxy; square source needs a 9:16 crop/pad decision."
+   ],
+   "risk_flags": [],
+   "story_roles": [
+    "hook_early",
+    "early_failure_annotation",
+    "frame_stack"
+   ],
+   "description": "Page text: 10-second, 300-frame animation of a young woman in a park, 30 fps, one txt2img frame upscaled to 1024x1024 then 300 img2img passes (denoise 0.4). Keyframes: 'park background' at 0-2 s, 'ocean view background, hair blowing in wind' at 4-6 s, 'ocean view background, smirk' at 8-10 s.",
+   "prompt": "txt2img: 'portrait of young woman, medium shot, ((beautiful face)), high detail, collarbones, art by greg rutkowski and Alphonse Mucha, park background, bright lighting, facing camera'. Negative: 'out of frame, extra fingers, mutated hands, ((poorly drawn hands)), ((poorly drawn face)), (((mutation))), (((deformed))), ((ugly)), blurry, ((bad anatomy)), (((bad proportions))), ((extra limbs)), extra face, ((pubic hair)), nipples, hat'. Steps 50, Euler a, CFG 8, 512x512 then SD upscale; animation: denoise 0.4, 30 fps, 10 s.",
+   "listed_media": {
+    "duration_s": 10.0,
+    "width": 1024,
+    "height": 1024,
+    "fps": 30,
+    "size_mb": 104.38,
+    "has_audio": false,
+    "format": "webm"
+   },
+   "source_file": "H2.json"
+  },
+  "runway_gen1_watercolor_elephants_2023": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Gen-1_IMG_9350_-_Watercolor_painting%2C_scenic_landscape%2C_soft.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Gen-1_IMG_9350_-_Watercolor_painting,_scenic_landscape,_soft.webm",
+   "family": "Runway Gen-1",
+   "model_version": "Page/title: 'Gen-1 IMG 9350 - Watercolor painting, scenic landscape, soft' and Hebrew description 'video of elephants in Tanzania - after conversion to watercolor style using RunwayML' (video-to-video style transfer). Corroborated: Runway Gen-1 research page (dated Feb 2023) and Runway Gen-1 tool page (Wayback 2023-06-18). The 'Gen-1 <input filename>, <style prompt>' file-name pattern is Runway's own auto-naming (inference, not documented on the page).",
+   "created": "2023-04-09",
+   "date_basis": "Commons Date field 2023-04-09 = first-upload timestamp 2023-04-09; Gen-1 was announced Feb 2023 (Runway research page).",
+   "creator": "Oronbb",
+   "license": "CC BY-SA 4.0",
+   "license_basis": "{{self|cc-by-sa-4.0}}, source {{own}}, author = uploader Oronbb, who also generated the clip in his own Runway account. Runway Terms of Use (Wayback 2023-07-20 and 2024-09-03): 'The Company does not claim ownership of any of your Inputs or Outputs.' Input video (elephants in Tanzania) is asserted as own work; not independently checkable.",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Credit: Oronbb, 'Gen-1 IMG 9350 - Watercolor painting, scenic landscape, soft', Wikimedia Commons, CC BY-SA 4.0, with link; indicate changes.",
+    "ShareAlike applies to any adaptation (crop/retime/grade).",
+    "Label as 'Runway Gen-1 (video-to-video style transfer), 2023' - never as text-to-video; the motion/structure comes from the uploader's own footage.",
+    "Model version rests only on the file name (Runway-style auto-name 'Gen-1 <input>, <style prompt>') plus the Hebrew word 'RunwayML'; say 'per uploader' in the source label.",
+    "Visually profile for a Runway corner logo before use (heuristics found none)."
+   ],
+   "risk_flags": [],
+   "story_roles": [
+    "milestone",
+    "control_demo",
+    "early_failure_annotation",
+    "split_screen_pair"
+   ],
+   "description": "Page text: a video of elephants in Tanzania after conversion to a watercolor style with Runway (title carries the style prompt 'Watercolor painting, scenic landscape, soft'). Pixel statistics: mean frame-to-frame luma change rises from 5.6 to 12.1 (/255) across the clip and falls in the last second.",
+   "prompt": "Style prompt visible only as the (truncated) file title: 'Watercolor painting, scenic landscape, soft'",
+   "listed_media": {
+    "duration_s": 5.12,
+    "width": 896,
+    "height": 512,
+    "fps": 25,
+    "size_mb": 5.15,
+    "has_audio": false,
+    "format": "webm"
+   },
+   "source_file": "H2.json"
+  },
+  "runway_gen2_dog_podium_2023": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/d/dc/Gen2-Example-Dog-Podium.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Gen2-Example-Dog-Podium.webm",
+   "family": "Runway Gen-2",
+   "model_version": "Page text: 'Video generated by Runway Gen2 from the prompt ..., seed 839976695'. Corroborated: Runway Gen-2 research page (dated Feb 2023: 'Gen-2 is a multimodal AI system that can generate novel videos with text, images or video clips'); clip dated 2023-08-04, i.e. after Gen-2 opened to the public in June 2023 (secondary only: web-search summaries; no primary opened for the public-launch date).",
+   "created": "2023-08-04",
+   "date_basis": "Commons Date field 2023-08-04 = upload timestamp 2023-08-04 (uploader Lwneal).",
+   "creator": "Lwneal",
+   "license": "CC BY-SA 4.0",
+   "license_basis": "{{self|cc-by-sa-4.0}}; the uploader publishes the exact prompt and seed, i.e. he ran the generation. Runway Terms of Use (Wayback 2023-07-20): 'The Company does not claim ownership of any of your Inputs or Outputs.'",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Credit: Lwneal, 'Gen2-Example-Dog-Podium', Wikimedia Commons, CC BY-SA 4.0; indicate changes; ShareAlike applies to adaptations.",
+    "Editorial sign-off needed on political adjacency: prompt names the White House press corps and a US flag appears (Commons category 'Videos of the national flag of the United States', also tagged 'AI slop'). No real person, no election/propaganda content, but the BRIEF bars political clips - decide once; do not show the prompt on screen.",
+    "Label 'Runway Gen-2, 2023 (per uploader)'."
+   ],
+   "risk_flags": [
+    "political"
+   ],
+   "story_roles": [
+    "milestone",
+    "gallery",
+    "split_screen_pair"
+   ],
+   "description": "Page text: video generated by Runway Gen2 from a text prompt about a golden retriever in a suit at a podium giving a speech to the White House press corps. (Commons categories: Anthropomorphic dogs, Videos of the national flag of the United States, AI slop.) Pixel statistics: very low frame-to-frame change (mean abs luma diff about 0.8/255 per frame) - a slow, gentle clip.",
+   "prompt": "A golden retriever in a suit sitting at a podium giving a speech to the white house press corp (seed 839976695)",
+   "listed_media": {
+    "duration_s": 4.0,
+    "width": 896,
+    "height": 512,
+    "fps": 24,
+    "size_mb": 0.27,
+    "has_audio": false,
+    "format": "webm"
+   },
+   "source_file": "H2.json"
+  },
+  "runway_gen3_alpha_cowboy_2024": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/4/42/Gen-3_Alpha_3480943356%2C_A_cowboy_riding_his_%2C_pikaso_texttoimage_C_%281%29.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Gen-3_Alpha_3480943356,_A_cowboy_riding_his_,_pikaso_texttoimage_C_(1).webm",
+   "family": "Runway Gen-3 Alpha",
+   "model_version": "File name: 'Gen-3 Alpha 3480943356, A cowboy riding his , pikaso texttoimage C (1)' (Runway auto-name: model, seed, prompt start, input image name; input image appears to come from a Freepik Pikaso text-to-image). Corroborated: Runway announcement 'Runway Gen-3 Alpha: AI Video Generation with Temporal Control June 17, 2024'; Runway help spec table (Wayback 2025-07-23): Gen-3 Alpha output 1280x768, 24 fps, 5 or 10 s - matches this file exactly (1280x768, 24 fps, 253 frames = 10.54 s).",
+   "created": "2024-09-20",
+   "date_basis": "Commons Date field 2024-09-20 = first-upload timestamp 2024-09-20 (uploader Oronbb); model released 2024-06-17 per Runway.",
+   "creator": "Oronbb",
+   "license": "CC BY 4.0",
+   "license_basis": "Wikitext: {{self|cc-by-4.0}} followed by {{PD-algorithm}}; source {{own}}. The author label is oddly '[[User:Oronbb|Runway ML]]' - treat credit as Oronbb / generated with Runway Gen-3 Alpha and keep attribution (the stricter of the two tags). Runway does not claim ownership of Outputs (ToS, Wayback 2024-09-03).",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Credit: Oronbb (Wikimedia Commons; the page's author label reads 'Runway ML' but links to User:Oronbb), CC BY 4.0, generated with Runway Gen-3 Alpha; indicate changes. The page also carries {{PD-algorithm}}; apply the stricter CC BY 4.0 credit.",
+    "Input still: the file name shows the start image came from 'pikaso texttoimage' (Freepik Pikaso, an AI image tool whose free plan reportedly requires attribution to Freepik - secondary source only, terms not retrieved). Either add 'Input image: Freepik Pikaso (AI-generated)' to the credits or ask the uploader; treat as unresolved.",
+    "Label 'Runway Gen-3 Alpha (announced 2024-06-17), clip uploaded 2024-09-20 (per uploader)'; do not call it Turbo."
+   ],
+   "risk_flags": [],
+   "story_roles": [
+    "milestone",
+    "control_demo",
+    "gallery",
+    "split_screen_pair"
+   ],
+   "description": "Page text: 'Cowboy riding in the desert'. Pixel statistics: continuous single shot, no cuts, steady low motion (mean abs luma diff about 2.6 falling to 1.3/255), one luminance jump of about 1.0/255 near second 10.",
+   "prompt": "Prompt text truncated in the file name: 'A cowboy riding his ...' (input image from a Pikaso text-to-image)",
+   "listed_media": {
+    "duration_s": 10.542,
+    "width": 1280,
+    "height": 768,
+    "fps": 24,
+    "size_mb": 1.6,
+    "has_audio": false,
+    "format": "webm"
+   },
+   "source_file": "H2.json"
+  },
+  "cogvideox_late_afternoon_swans_2024": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/3/34/Late_Afternoon_Swans_%28CogVideoX%29.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Late_Afternoon_Swans_(CogVideoX).webm",
+   "family": "CogVideoX",
+   "model_version": "Page: 'A generative video of swans ... with CogVideoX', credit link huggingface.co/spaces/THUDM/CogVideoX-5B-Space (i.e. CogVideoX-5B). Corroborated: CogVideo GitHub README '2024/8/27: We have open-sourced a larger model in the CogVideoX series, CogVideoX-5B' (2B on 2024/8/6); arXiv 2408.06072 v1 submitted 12 Aug 2024; file specs (720x480, 49 frames at 8 fps = 6.125 s) match the README's 720*480 and 8N+1 frame rule.",
+   "created": "2024-12-24",
+   "date_basis": "Commons Date field and upload timestamp 2024-12-24 (uploader VulcanSphere is the prompter). This is the generation date, not the model's debut (Aug 2024).",
+   "creator": "VulcanSphere",
+   "license": "CC0",
+   "license_basis": "Rendered licence section: CC0 in countries where the video is eligible for copyright (UK, mainland China), PD-algorithm in the US. Uploader is the prompter. CogVideoX-5b model licence: 'The intellectual property rights of the generated content belong to the user to the extent permitted by applicable local laws.' (huggingface.co/THUDM/CogVideoX-5b/raw/main/LICENSE).",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Licence: CC0 1.0 written by the generator/uploader VulcanSphere (same template, created before upload) plus PD-algorithm. No credit legally required; courtesy label: 'CogVideoX-5B (Zhipu AI / THUDM), Dec 2024, VulcanSphere, CC0, Wikimedia Commons'.",
+    "Residual platform notice: the THUDM Space that generated the clip carried, at the exact December-2024 revision (fff6dc8503, unchanged 2024-09-19 to 2025-06-27), the red banner 'This demo is for academic research and experiential use only.' The CogVideoX licence (grant clause) says output IP 'belong[s] to the user to the extent permitted by applicable local laws', so the CC0 is grantable, but the banner is a stated-intent risk if the film is commercial. Escalate to legal if so.",
+    "Label the model as CogVideoX-5B only as far as the page says 'CogVideoX' via the 5B Space; the Space source at that revision loads THUDM/CogVideoX-5b (num_frames=49, 8 fps, which gives the observed 6.125 s).",
+    "720x480 at 8 fps: use a deliberate 'early open-weights' treatment or upscaling; do not present the low frame rate as a fault of the technology in general.",
+    "No watermark code exists in the Space app; none detected, but low-motion content makes detection weak. Still profile visually."
+   ],
+   "risk_flags": [],
+   "story_roles": [
+    "gallery",
+    "milestone"
+   ],
+   "description": "Page text: generative text-to-video of several swans gliding on a still lake reflecting a calm sunset sky; created via the CogVideoX-5B Hugging Face Space. Pixel statistics: steady low motion (mean abs luma diff about 2.4-2.6/255 per frame), no cuts.",
+   "prompt": "On a breeze late afternoon day at the lakeshore, The tranquil surface of the lake reflects the calm sunset sky, while several elegant swans glide gracefully through the still water, leaving behind delicate ripples that disturb the mirror-like quality of the lake. The scene is one of serene beauty, providing a picturesque frame .",
+   "listed_media": {
+    "duration_s": 6.125,
+    "width": 720,
+    "height": 480,
+    "fps": 8,
+    "size_mb": 0.27,
+    "has_audio": false,
+    "format": "webm"
+   },
+   "source_file": "H2.json"
+  },
+  "cogvideox_painting_with_the_breeze_2024": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/5/52/Painting_With_The_Breeze_%28CogVideoX%29.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Painting_With_The_Breeze_(CogVideoX).webm",
+   "family": "CogVideoX",
+   "model_version": "Page: 'A generative video of a middle-aged man painting near the sea breeze with CogVideoX', credit link ...CogVideoX-5B-Space. Corroboration as for the swans clip (README 2024/8/27 CogVideoX-5B; arXiv 2408.06072 v1 12 Aug 2024; 720x480, 49 frames, 8 fps).",
+   "created": "2024-12-24",
+   "date_basis": "Commons Date field and upload timestamp 2024-12-24 (uploader VulcanSphere = prompter); generation date, not model debut.",
+   "creator": "VulcanSphere",
+   "license": "CC0",
+   "license_basis": "Rendered licence section of this page (parse API) shows the same dual block as the swans file: CC0 where the video is eligible for copyright (UK, mainland China) and PD-algorithm in the US. Model licence assigns generated-content rights to the user.",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Licence: CC0 1.0 written by the generator/uploader VulcanSphere plus PD-algorithm. No credit legally required; courtesy label: 'CogVideoX-5B (Zhipu AI / THUDM), Dec 2024, VulcanSphere, CC0, Wikimedia Commons'.",
+    "Same Space-notice residual risk as the swans clip: the generating Space's banner reads 'This demo is for academic research and experiential use only.' Escalate to legal if the film is commercial.",
+    "Do not use the 'early_failure_annotation' role unless human visual QA confirms an actual artefact (hands/brush/canvas): no frame was viewed.",
+    "Synthetic person only (prompt: middle-aged gentleman with green hair); no brand or logo in the prompt. Profile visually for any accidental text/logo.",
+    "720x480 at 8 fps: treat as an early open-weights look; do not present as representative of current output."
+   ],
+   "risk_flags": [],
+   "story_roles": [
+    "gallery",
+    "early_failure_annotation"
+   ],
+   "description": "Page text: text-to-video of a middle-aged man with green hair sitting at the water's edge painting an oil painting on a canvas propped on a small weathered table, sea breeze billowing his brown t-shirt. Pixel statistics: highest motion of the CogVideoX pair (mean abs luma diff about 6-7/255 per frame), no cuts.",
+   "prompt": "A middle-aged gentleman, with a serene expression, sits at the water's edge, He is engrossed in his artwork, brush in hand, as he renders an oil painting on a canvas that's propped up against a small, weathered table. The sea breeze whispers through his green hair, gently billowing his loose-fitting dark brown t-shirt, while the salty air adds an intangible element to his masterpiece in progress. The scene is one of tranquility and inspiration, with the artist's canvas capturing the vibrant hues of the setting sun reflecting off the tranquil sea. .",
+   "listed_media": {
+    "duration_s": 6.125,
+    "width": 720,
+    "height": 480,
+    "fps": 8,
+    "size_mb": 0.24,
+    "has_audio": false,
+    "format": "webm"
+   },
+   "source_file": "H2.json"
+  },
+  "hailuo_video01_cyberpunk_rainy_street_2024": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/a/ae/Cyberpunk_Rainy_Street_%28Hailuo_AI%29.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Cyberpunk_Rainy_Street_(Hailuo_AI).webm",
+   "family": "Hailuo AI (MiniMax Video-01)",
+   "model_version": "Page: 'A generative video ... with Hailuo AI', credit 'Generated in Hailuo AI (https://hailuoai.video/)'; no model version number stated on the page. Corroborated: MiniMax news post dated 2024.08.31 'MiniMax has officially launched its first AI-native video generation model, video-01 ... 720p resolution and 25fps' and 'up to 6 seconds long' - the file is 1280x720, 25 fps, 5.64 s, which matches (inference: Video-01-era Hailuo; not stated by the uploader).",
+   "created": "2024-12-24",
+   "date_basis": "Commons Date field and upload timestamp 2024-12-24 (uploader VulcanSphere = prompter). Generation date, not model debut (2024-08-31).",
+   "creator": "VulcanSphere",
+   "license": "CC0",
+   "license_basis": "Licence block comes from the uploader's own template {{User:VulcanSphere/AI-CC0-videos}}: CC0 where eligible for copyright (UK, mainland China), PD-algorithm in the US; the uploader is the prompter. Hailuo/MiniMax terms of service could not be read (JS-rendered pages), so any platform restriction on outputs is UNCHECKED.",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Courtesy credit recommended: VulcanSphere (Wikimedia Commons), CC0; generated with Hailuo AI (MiniMax).",
+    "Label 'Hailuo AI (MiniMax), generated 2024-12-24; version not stated (MiniMax Video-01 launched 2024-08-31)'. Do not print 'Video-01' as fact.",
+    "Resolve or accept the platform-terms residual risk (see issues) before using in a commercial release."
+   ],
+   "risk_flags": [],
+   "story_roles": [
+    "gallery",
+    "milestone"
+   ],
+   "description": "Page text: text-to-video of a middle-aged hooded man walking forward with an umbrella in a rainy cyberpunk city street. Pixel statistics: single continuous shot, no cuts, steady motion (mean abs luma diff 4.2-6.3/255 per frame, rising toward the end).",
+   "prompt": "A hoodie man walking forward in the rainy cyberpunk street, carrying an umbrella",
+   "listed_media": {
+    "duration_s": 5.64,
+    "width": 1280,
+    "height": 720,
+    "fps": 25,
+    "size_mb": 3.12,
+    "has_audio": false,
+    "format": "webm"
+   },
+   "source_file": "H2.json"
+  },
+  "hailuo_i2v_japanese_nuns_1902": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/7/74/Japanese_Buddhist_Nuns_1902_-_AI_video_generation.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Japanese_Buddhist_Nuns_1902_-_AI_video_generation.webm",
+   "family": "Hailuo AI (image-to-video from a historic still)",
+   "model_version": "Page: 'AI video generation', category Videos by Hailuo AI; exact Hailuo model/version and the i2v/t2v mode are NOT stated on the page. File is 784x720, 25 fps, 5.64 s (same fps/length as the video-01-era Hailuo clip). Hailuo 02 (2025-06-18) postdates this 2025-02-22 upload.",
+   "created": "2025-02-22",
+   "date_basis": "Commons Information Date 2025-02-22 = first upload revision 2025-02-22T12:47:18Z by Nesnad (source photo dated 1902).",
+   "creator": "Nesnad",
+   "license": "PD (Commons: AI output)",
+   "license_basis": "File wikitext puts {{PD-algorithm}} in the Permission field; the source card https://commons.wikimedia.org/wiki/File:Japanese_Buddhist_Nuns.jpg carries {{PD-US-expired}} (1902 stereoview). No explicit uploader dedication, so licence rests on the tag alone; prompt not published.",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Licence rests only on the Commons {{PD-algorithm}} tag on the video (no explicit uploader dedication) plus {{PD-US-expired}} on the 1902 stereoview source. Both are stated-basis public-domain tags, but the video tag is a community assertion with the UK/HK 50-year computer-generated-work caveat; accept as residual risk.",
+    "Label exactly as: 'AI-animated from a 1902 stereoview photograph (Stereo-Travel Company), Hailuo AI (per Commons category), Feb 2025, Nesnad'. Do not state a Hailuo version; the model is named only by the category 'Videos by Hailuo AI' added by the uploader in the first revision, not in the description text.",
+    "Present it as speculative AI animation of a historic photo, never as real historical footage; pair with the PD source still as a before/after (source: https://commons.wikimedia.org/wiki/File:Japanese_Buddhist_Nuns.jpg).",
+    "Subjects are anonymous people from 1902 (no living likeness); still show restraint and label the clip as AI-generated.",
+    "Watermark status is undetermined: the clip is near-static so temporal tests are blind, and the Hailuo watermark template found in the sibling clip does not match anywhere in this frame. A person must inspect the bottom-right corner before use and must not crop away any logo found.",
+    "Same Hailuo platform-terms residual risk as the cyberpunk clip (ToS of 09/16/2024: platform claims no ownership of user-generated content; site material 'personal, non-commercial use only')."
+   ],
+   "risk_flags": [
+    "real_person"
+   ],
+   "story_roles": [
+    "control_demo",
+    "split_screen_pair",
+    "gallery"
+   ],
+   "description": "Page text: 'Buddhist nuns on the Shikoku Pilgrimage in Japan. AI was used to depict what they could have looked like if they were moving around.' Pixel statistics: single shot, very low motion (mean frame difference about 1.2/255), i.e. subtle movement rather than large action.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 5.64,
+    "width": 784,
+    "height": 720,
+    "fps": 25,
+    "size_mb": 1.48,
+    "has_audio": false,
+    "format": "webm"
+   },
+   "source_file": "H3.json"
+  },
+  "grok_imagine_gotz_von_berlichingen": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Grok_AI_Lovis_Corinth_G%C3%B6tz_von_Berlichingen_1917.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Grok_AI_Lovis_Corinth_G%C3%B6tz_von_Berlichingen_1917.webm",
+   "family": "Grok Imagine (xAI)",
+   "model_version": "Page: 'Video generated with Grok 4.1 Imagine mode' (source line 'Grok 4.1'). Partly corroborated: xAI news 2025-11-17 announces Grok 4.1; xAI news 2026-01-28 introduces the Grok Imagine API as 'our most powerful video-audio generative model yet'. I found no primary source dating the Imagine video feature in Nov 2025, and 'Grok 4.1 Imagine mode' is the uploader's wording, not xAI's.",
+   "created": "2025-11",
+   "date_basis": "Commons Information Date '2025-11'; file uploaded 2026-01-13T12:16:58Z by Achim Raschka (category 2025 AI-generated works).",
+   "creator": "Achim Raschka",
+   "license": "CC0",
+   "license_basis": "Rendered {{self|Cc-zero}} block (followed by the CC0 text) and Structured Data 'copyright license: Creative Commons CC0 License'; wikitext also carries {{PD-algorithm}} and {{PD-Art|PD-old-auto-1923|deathyear=1925}} for the painting. xAI terms of service unchecked.",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Licence: CC0 1.0 self-declared by the uploader/generator Achim Raschka ('I, the copyright holder of this work, hereby publish it under the following license' + CC0 text), plus Commons PD-algorithm, plus PD-Art for the source painting (Lovis Corinth, died 1925, PD-old-auto-1923 / PD-old-100-expired; Zeno.org scan). No credit legally required.",
+    "xAI ToS (effective 2025-11-04) lets the user keep ownership of Output but says: 'We ask that when using Output, you attribute the Service as having generated the Output'. Follow it: label 'Grok Imagine (xAI)'.",
+    "Label the model as 'Grok Imagine (xAI), Nov 2025, as stated by the uploader'. Do NOT write 'Grok 4.1': xAI's Grok 4.1 post (2025-11-17) is a chat-model release that does not mention Imagine, and no primary xAI source dates an Imagine version in Nov 2025 (xAI's news index lists its first Imagine post on 2026-01-28).",
+    "Courtesy credit: 'Animation: Achim Raschka (CC0), Wikimedia Commons; painting: Lovis Corinth, Goetz von Berlichingen, 1917 (public domain)'.",
+    "Watermark unknown (static painting frame defeats the overlay test): profile the corners visually and keep any logo found.",
+    "560x560 square with an effectively silent Opus track (about -55 dB): mute/strip audio; use an inset or framed square treatment in 9:16.",
+    "Present as one curated animation of a public-domain painting; not as evidence of general capability."
+   ],
+   "risk_flags": [],
+   "story_roles": [
+    "control_demo",
+    "split_screen_pair",
+    "gallery"
+   ],
+   "description": "Page text: 'Derived AI video from File:Lovis Corinth Goetz von Berlichingen 1917.jpg' (a 1917 painting of the knight Goetz von Berlichingen). Measured: single shot, no cut; frame-difference bursts at 0-0.5 s and 2.4-4.6 s; the file has an Opus stream at about -55 dB (effectively silent).",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 6.045,
+    "width": 560,
+    "height": 560,
+    "fps": 24,
+    "size_mb": 2.13,
+    "has_audio": false,
+    "format": "webm"
+   },
+   "source_file": "H3.json"
+  },
+  "ltxv2b_cybertruck_from_photos": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/2/25/Tesla_Cybertruck_Washington_DC_Metro_Area%2C_USA_%28AI-generated%29.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Tesla_Cybertruck_Washington_DC_Metro_Area,_USA_(AI-generated).webm",
+   "family": "LTX-Video (Lightricks)",
+   "model_version": "Page: 'Generated using LTXV 2B' (image-to-video from two photos), category Lightricks. Checkpoint not stated. Corroborated: Lightricks/LTX-Video README lists the 2B line - v0.9.5 (2025-03-05, 'New license for commercial use (OpenRail-M)') and ltxv-2b-0.9.6-dev-04-25 (2025-04-15) - so a 2B checkpoint existed on the upload date 2025-05-12.",
+   "created": "2025-05-12",
+   "date_basis": "Commons Information Date 2025-05-12 and first upload revision 2025-05-12T07:52:44Z by Premeditated (prompter).",
+   "creator": "Premeditated / OWS Photography",
+   "license": "CC BY 4.0",
+   "license_basis": "Wikitext licence section: {{self|cc-by-4.0|author=[[User:OWS Photography|OWS Photography]]}} and {{PD-algorithm}}. The video is derived from two CC BY 4.0 photos (Tesla_Cybertruck_Washington_DC_Metro_Area,_USA.jpg and ..._(7).jpg, both checked, both CC BY 4.0), so OWS Photography must be credited; the PD-algorithm tag covers only the model-generated part. LTX-Video 2B licence: README says v0.9.5 moved to OpenRAIL-M for commercial use (licence text not read).",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "TREAT THE WHOLE VIDEO AS CC BY 4.0: it is an animation of two CC BY 4.0 photos by OWS Photography (both source pages verified: 'Creative Commons Attribution 4.0', AttributionRequired true), and the file's own structured data lists licence CC BY 4.0 (Q20007257) and status copyrighted (Q50423863). The PD-algorithm tag covers at most the model-generated part and does not remove the BY obligation.",
+    "Attribution required (CC BY 4.0 text on the page): 'You must give appropriate credit, provide a link to the license, and indicate if changes were made.' On-screen/credit line: 'Photos: OWS Photography, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), via Wikimedia Commons; video generated with LTXV 2B by Premeditated; changes: photos animated by AI and reframed.' No ShareAlike.",
+    "LTXV licence conditions on Output: Output belongs to the user ('Licensor claims no rights in the Output') but 'No use of the Output can contravene any provision' of the licence; Attachment A(e) forbids disseminating machine-generated content without expressly disclaiming that it is machine generated. Satisfy by a visible 'AI-generated' label. If the checkpoint is v0.9.6 or later (licence 'LTXV Open Weights License 0.X'), entities with annual revenue of at least $10,000,000 must obtain a paid commercial licence to use the model; this binds the generator, but ask legal if the film's producer is such an entity.",
+    "Do not state a checkpoint version: the page says only 'LTXV 2B'; 2B checkpoints v0.9.0 (2024-11-21) to v0.9.6 (2025-04-15) all pre-date the 2025-05-12 upload.",
+    "Brand: the subject is a Tesla Cybertruck (Tesla trademarks/trade dress). Editorial, non-advertising use only; add no endorsement implication; avoid dwelling on logos.",
+    "Unknown without viewing: licence plates, bystanders, on-image text or a photographer watermark in the two source photos; visual QA required before use. Pixel statistics found no static overlay."
+   ],
+   "risk_flags": [
+    "brand_ip"
+   ],
+   "story_roles": [
+    "control_demo",
+    "split_screen_pair",
+    "gallery"
+   ],
+   "description": "Page text: 'AI-generated video of the Tesla Cybertruck based on two photos by OWS Photography. Generated using LTXV 2B.' Measured: single shot, no cut, continuous high motion (mean frame difference about 12/255, the highest of my clips) and a large change between first and last frame.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 5.042,
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "size_mb": 3.22,
+    "has_audio": false,
+    "format": "webm"
+   },
+   "source_file": "H3.json"
+  },
+  "deepdream_arcimboldo_gif_2015": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/d/d2/Deepdream-arcimboldo.gif",
+   "page": "https://commons.wikimedia.org/wiki/File:Deepdream-arcimboldo.gif",
+   "family": "DeepDream (Google, 'Inceptionism') - pre-diffusion neural hallucination",
+   "model_version": "DeepDream style variants; the specific network/layers are not stated on the file page (Commons category: Images generated by Deep Dream)",
+   "created": "2015-11-10",
+   "date_basis": "Commons Information |date=2015-11-10; Commons upload timestamp 2015-11-10T10:38:09Z; DeepDream technique corroborated by Google Research post 'Inceptionism' dated June 18, 2015",
+   "creator": "Calhoun Press (Wikimedia Commons uploade",
+   "license": "CC BY-SA 4.0",
+   "license_basis": "Wikitext carries {{cc-by-sa-4.0}} with author=Calhoun Press and source http://calhounpress.net/blogs/blog/72629699-call-for-submissions-deep-dreams-of-electric-sheep. The GIF is a derivative of a public-domain Renaissance painting, so only the DeepDream rendering layer is licensed. Date-of-release primary source for the technique: https://research.google/blog/inceptionism-going-deeper-into-neural-networks/ ('June 18, 2015').",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "hook_early",
+    "early_failure_annotation",
+    "gallery"
+   ],
+   "description": "Animated GIF showing different DeepDream styles used to alter the look of Arcimboldo's painting 'La Primavera' (page text). ffprobe: 7 frames, so it is a short style-flip loop rather than smooth motion.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 0.7,
+    "width": 590,
+    "height": 787,
+    "fps": null,
+    "size_mb": 2.67,
+    "has_audio": false,
+    "format": "gif"
+   },
+   "source_file": "H4.json"
+  },
+  "videopoet_dog_popcorn_audio_2023": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/7/76/Dog_popcorn_with_audio_6781BD0C.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Dog_popcorn_with_audio_6781BD0C.webm",
+   "family": "VideoPoet (Google Research, LLM-style video model with video-to-audio)",
+   "model_version": "VideoPoet (Dec 2023 research demo); no version number",
+   "created": "2023-12-20",
+   "date_basis": "Commons |date=2023-12-20 (matches source file date); Google Research blog post dated December 19, 2023; Commons upload 2024-02-21",
+   "creator": "VideoPoet / Google Research",
+   "license": "PD (Commons: AI output)",
+   "license_basis": "File wikitext: {{PD-algorithm}} {{LicenseReview}} with source https://sites.research.google/videopoet/ and the storage.googleapis.com mp4. The Google demo page contains NO reuse licence for its clips (it only credits third-party CC/PD source images), so reliance is solely on the no-human-authorship theory; LicenseReview is pending. Weakest licence tier among the candidates.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [
+    "unverifiable_model_claim"
+   ],
+   "story_roles": [
+    "hook_early",
+    "milestone",
+    "gallery"
+   ],
+   "description": "2.2-second vertical clip with a mono Opus soundtrack from Google's VideoPoet demo, section 'Video-to-audio: VideoPoet can also output audio to match an input video without using any text as guidance'. File name and the site's caption list point to the prompt 'A dog eating popcorn at the cinema' (mapping by file name; probable, not proven). The clip is 8 fps.",
+   "prompt": "A dog eating popcorn at the cinema (from the demo page's video-to-audio caption; mapping to this file inferred from the file name)",
+   "listed_media": {
+    "duration_s": 2.184,
+    "width": 512,
+    "height": 896,
+    "fps": 8,
+    "size_mb": 0.24,
+    "has_audio": true,
+    "format": "webm"
+   },
+   "source_file": "H4.json"
+  },
+  "veo3_chernobyl_room_2025": {
+   "media_url": "https://upload.wikimedia.org/wikipedia/commons/f/ff/Veo-3_animation_example_-_Chernobyl_decaying_room.webm",
+   "page": "https://commons.wikimedia.org/wiki/File:Veo-3_animation_example_-_Chernobyl_decaying_room.webm",
+   "family": "Google Veo 3 (native audio, camera-move prompt)",
+   "model_version": "Veo-3 (as stated: 'Google Veo-3'); Fast vs standard not stated",
+   "created": "2025-08-10",
+   "date_basis": "Commons |date=2025-08-10; upload timestamp 2025-08-10T04:20:05Z; Veo 3 announced 2025-05-20",
+   "creator": "Global Donald (Wikimedia Commons); gener",
+   "license": "CC0",
+   "license_basis": "Wikitext {{self|cc-zero}} {{PD-algorithm}}, source {{own}}; uploader is the prompter. Google's Veo output terms not checked.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "control_demo",
+    "hero",
+    "gallery"
+   ],
+   "description": "Page text: 'A video, with sound, generated with using Google's Veo-3'. Prompt asks for a slow 180-degree view of an abandoned decaying room with radiation-meter sound, dust, darker grade and a creepy soundtrack. Audio present (mean -27.5 dB, peak -4.7 dB). Single shot.",
+   "prompt": "An abandoned, decaying room with peeling green paint, a worn red armchair holding a doll's head, a small white chair beside it, and debris scattered across the dirty floor. Do a 180 degree view, slow, with radiation sound (it's in chernobyl). You can make the video a bit darker, it must sound creepy, you can also add dust if you want.",
+   "listed_media": {
+    "duration_s": 8.0,
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "size_mb": 13.2,
+    "has_audio": true,
+    "format": "webm"
+   },
+   "source_file": "H4.json"
+  },
+  "lvdm_ucf_long_40s": {
+   "media_url": "https://media.githubusercontent.com/media/YingqingHe/LVDM/d251dccfbf6352826f5c5681abd86e87ed7e6371/assets/ucf-long-001.gif",
+   "page": "https://github.com/YingqingHe/LVDM/blob/d251dccfbf6352826f5c5681abd86e87ed7e6371/README.md",
+   "family": "LVDM (Latent Video Diffusion Models)",
+   "model_version": "LVDM unconditional long-video model (README section 'Unconditional Long Video Generation (40 seconds)'); file name 'ucf-long' suggests the UCF-101 human-action domain, which the README does not state",
+   "created": "2022-11-23",
+   "date_basis": "Git commit b7ca138 (2022-11-23T21:16:28+08:00) 'Initial commit' adds the file; arXiv 2211.13221 page shows '23 Nov 2022 (v1)' (https://arxiv.org/abs/2211.13221). Earliest model in this batch.",
+   "creator": "Yingqing He, Tianyu Yang, Yong Zhang, Yi",
+   "license": "MIT",
+   "license_basis": "File is committed in the repository root tree (assets/, an LFS-stored gif) and displayed by the project README as its own result; repo LICENSE is MIT for 'software and associated documentation files'. Argument = media are documentation assets of the licensed repo authored by the licensor. The licence does not name media, hence 'likely' not 'clear'.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "early_failure_annotation",
+    "hook_early"
+   ],
+   "description": "Unconditional 40-second, 1000-frame sample from LVDM, listed under 'Unconditional Long Video Generation (40 seconds)' in the README. README gives no scene description; UCF-101 origin only inferred from the file name. Not viewed.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 40.0,
+    "width": 256,
+    "height": 256,
+    "fps": 25.0,
+    "size_mb": 8.98,
+    "has_audio": false,
+    "format": "gif"
+   },
+   "source_file": "H5.json"
+  },
+  "lvdm_t2v_astronaut_horse": {
+   "media_url": "https://media.githubusercontent.com/media/YingqingHe/LVDM/d251dccfbf6352826f5c5681abd86e87ed7e6371/assets/t2v-002.gif",
+   "page": "https://github.com/YingqingHe/LVDM/blob/d251dccfbf6352826f5c5681abd86e87ed7e6371/README.md",
+   "family": "LVDM (Latent Video Diffusion Models)",
+   "model_version": "LVDM text-to-video (README 'Text-to-Video Generation' results table)",
+   "created": "2023-03-25",
+   "date_basis": "Git commit adds assets/t2v-002.gif on 2023-03-25T17:15:02+08:00; paper arXiv 2211.13221 v1 23 Nov 2022, last revised 20 Mar 2023 (https://arxiv.org/abs/2211.13221). Checkpoint release date is not stated in the README (TODO item only).",
+   "creator": "Yingqing He, Tianyu Yang, Yong Zhang, Yi",
+   "license": "MIT",
+   "license_basis": "In-tree README result gif in a repo whose root LICENSE is MIT (software and associated documentation files). Media not named by the licence; no separate media licence or exclusion found.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "hook_early",
+    "early_failure_annotation"
+   ],
+   "description": "README table caption for this gif: astronaut riding a horse (text-to-video). 16 frames. Seam analysis suggests an ~8 px border on the right/bottom edge. Not viewed.",
+   "prompt": "astronaut riding a horse",
+   "listed_media": {
+    "duration_s": 2.08,
+    "width": 1032,
+    "height": 1032,
+    "fps": 7.67,
+    "size_mb": 5.2,
+    "has_audio": false,
+    "format": "gif"
+   },
+   "source_file": "H5.json"
+  },
+  "t2vzero_horse_galloping": {
+   "media_url": "https://raw.githubusercontent.com/Picsart-AI-Research/Text2Video-Zero/fd76734e06aadb1dee83d2b7a368b14bdaa35565/__assets__/github/results/t2v/horse_galloping.gif",
+   "page": "https://github.com/Picsart-AI-Research/Text2Video-Zero/blob/fd76734e06aadb1dee83d2b7a368b14bdaa35565/README.md",
+   "family": "Text2Video-Zero",
+   "model_version": "Text2Video-Zero (zero-shot text-to-video on Stable Diffusion), README 'Results / Text-To-Video'",
+   "created": "2023-03-24",
+   "date_basis": "Git commit 438c5d5 'Results added to README.md' 2023-03-24T04:01:23+04:00 adds the gif; README news '[03/23/2023] Paper Text2Video-Zero released!' and arXiv 2303.13439 '[Submitted on 23 Mar 2023]' (https://arxiv.org/abs/2303.13439).",
+   "creator": "Levon Khachatryan et al., Picsart AI Res",
+   "license": "CreativeML OpenRAIL-M",
+   "license_basis": "Best licence evidence in this batch for a model output: section 6 disclaims rights in Output; 'Complementary Material' is defined to include 'accompanying documentation, tutorials, examples'; README states 'Our code is published under the CreativeML Open RAIL-M license'. Gap: the licence is model/code-scoped and the Use-based restrictions (Attachment A) still bind use of the Model, so verdict stays 'likely'.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "hook_early",
+    "early_failure_annotation",
+    "frame_stack"
+   ],
+   "description": "README caption: 'A horse galloping on a street'. 8-frame zero-shot text-to-video result generated by the authors. Two further gifs use the same prompt (horse_galloping_2, _3). Not viewed.",
+   "prompt": "A horse galloping on a street",
+   "listed_media": {
+    "duration_s": 2.64,
+    "width": 512,
+    "height": 512,
+    "fps": 3.03,
+    "size_mb": 0.58,
+    "has_audio": false,
+    "format": "gif"
+   },
+   "source_file": "H5.json"
+  },
+  "lavie_teddy_street_base": {
+   "media_url": "https://raw.githubusercontent.com/Vchitect/LaVie/6ce851e98be2ad2ddb7df177ab31f18194b0ceff/assets/a_teddy_bear_walking_on_the_street%2C_2k%2C_high_quality.gif",
+   "page": "https://github.com/Vchitect/LaVie/blob/6ce851e98be2ad2ddb7df177ab31f18194b0ceff/README.md",
+   "family": "LaVie",
+   "model_version": "LaVie base text-to-video (16 frames, 512x320), README gallery gif",
+   "created": "2023-11-20",
+   "date_basis": "Git commit adds the gif 2023-11-20T22:27:32+08:00; arXiv 2309.15103 submitted 26 Sep 2023 (https://arxiv.org/abs/2309.15103); repo README created 2023-09-22.",
+   "creator": "Vchitect / Shanghai AI Laboratory - LaVi",
+   "license": "Apache-2.0",
+   "license_basis": "README says 'The code is licensed under Apache-2.0, model weights are fully open for academic research and also allow free commercial usage.' The gif is an in-tree asset; Apache 'Work' includes 'documentation source'. No sentence names the gallery media, so 'likely'.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "split_screen_pair",
+    "frame_stack",
+    "milestone"
+   ],
+   "description": "Prompt encoded in the file name; 16 frames at ~8 fps. Pair partner: the frame-interpolated 24 fps version of the same prompt (lavie_teddy_street_interp24). Not viewed.",
+   "prompt": "a teddy bear walking on the street, 2k, high quality",
+   "listed_media": {
+    "duration_s": 2.01,
+    "width": 512,
+    "height": 320,
+    "fps": 7.96,
+    "size_mb": 1.83,
+    "has_audio": false,
+    "format": "gif"
+   },
+   "source_file": "H5.json"
+  },
+  "lavie_teddy_street_interp24": {
+   "media_url": "https://raw.githubusercontent.com/Vchitect/LaVie/6ce851e98be2ad2ddb7df177ab31f18194b0ceff/assets/interpolation/a_teddy_bear_walking_on_the_street%2C_2k%2C_high_quality.gif",
+   "page": "https://github.com/Vchitect/LaVie/blob/6ce851e98be2ad2ddb7df177ab31f18194b0ceff/README.md",
+   "family": "LaVie",
+   "model_version": "LaVie + frame-interpolation stage (README 'interpolation' gallery folder), 61 frames at 24 fps",
+   "created": "2023-11-21",
+   "date_basis": "Git commit adds the gif 2023-11-21T21:16:54+08:00; arXiv 2309.15103 submitted 26 Sep 2023 (https://arxiv.org/abs/2309.15103).",
+   "creator": "Vchitect / Shanghai AI Laboratory - LaVi",
+   "license": "Apache-2.0",
+   "license_basis": "Same repo, same in-tree gallery assets, same argument as the base clip; not named explicitly by the licence, hence 'likely'.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "split_screen_pair",
+    "milestone"
+   ],
+   "description": "Same prompt as lavie_teddy_street_base after LaVie's interpolation stage (61 frames at 24 fps). Not viewed.",
+   "prompt": "a teddy bear walking on the street, 2k, high quality",
+   "listed_media": {
+    "duration_s": 2.54,
+    "width": 512,
+    "height": 320,
+    "fps": 24.0,
+    "size_mb": 5.32,
+    "has_audio": false,
+    "format": "gif"
+   },
+   "source_file": "H5.json"
+  },
+  "latte1_t2v_4x4_grid": {
+   "media_url": "https://raw.githubusercontent.com/Vchitect/Latte/ad4b85a69bd26c66eebd65f4323718c80e7cf449/visuals/latteT2V.gif",
+   "page": "https://github.com/Vchitect/Latte/blob/ad4b85a69bd26c66eebd65f4323718c80e7cf449/README.md",
+   "family": "Latte",
+   "model_version": "Latte-1 text-to-video (T2V) per README news; gif file name 'latteT2V.gif'",
+   "created": "2024-06-04",
+   "date_basis": "Git commit adds visuals/latteT2V.gif 2024-06-04T01:21:01+08:00. README news: '**May 23, 2024** Latte-1 is released!'. Discrepancy: Hugging Face maxin-cn/Latte-1 createdAt is 2024-06-03 (https://huggingface.co/api/models/maxin-cn/Latte-1), later than the README date. Paper arXiv 2401.03048 submitted 5 Jan 2024.",
+   "creator": "Xin Ma, Yaohui Wang et al. - Latte (Vchi",
+   "license": "Apache-2.0",
+   "license_basis": "README licence section: 'The code and model weights are licensed under LICENSE.' In-tree asset in the licensed repo. Weaker than other entries because the README references the gif only inside an HTML comment, so it is not displayed as an official demo.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [
+    "unverifiable_model_claim"
+   ],
+   "story_roles": [
+    "gallery",
+    "milestone"
+   ],
+   "description": "Column/row seam analysis shows a 4x4 mosaic of 256x256 tiles (seams at x=256/512/768 and y=256/512/768), i.e. 16 text-to-video samples in one 2-second loop. Prompts not published in the README. Not viewed.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 2.0,
+    "width": 1024,
+    "height": 1024,
+    "fps": 24.0,
+    "size_mb": 23.91,
+    "has_audio": false,
+    "format": "gif"
+   },
+   "source_file": "H5.json"
+  },
+  "mochi1_preview_3x3_grid": {
+   "media_url": "https://raw.githubusercontent.com/genmoai/mochi/0c86aebf386e6622deadfb47ff1996878cefc0ac/assets/grid.mp4",
+   "page": "https://github.com/genmoai/mochi/blob/0c86aebf386e6622deadfb47ff1996878cefc0ac/README.md",
+   "family": "Mochi 1",
+   "model_version": "Mochi 1 preview (README title 'Mochi 1'; text 'Mochi 1 preview is an open state-of-the-art video generation model')",
+   "created": "2024-10-22",
+   "date_basis": "Initial repo commit that adds assets/grid.mp4 is 2024-10-22T10:31:20+00:00; Hugging Face genmo/mochi-1-preview createdAt 2024-10-22T07:36:03Z (https://huggingface.co/api/models/genmo/mochi-1-preview). The README itself carries no release date (news starts 2024-11-05).",
+   "creator": "Genmo - Mochi 1 preview, 2024",
+   "license": "Apache-2.0",
+   "license_basis": "Quote is from the README overview (model licence). File is an in-tree asset added in the initial commit and the repo LICENSE is Apache-2.0. The README shows a user-attachments video, not this file, so the file is an orphaned demo asset; licence coverage of media is argued, not stated.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "gallery",
+    "milestone"
+   ],
+   "description": "Seam analysis shows a 3x3 grid of 848x480 tiles (seams at x=848/1696 and y=480/960): nine Mochi 1 preview samples in one 5.4 s video, no scene cuts detected. Tile content unknown. Not viewed.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 5.43,
+    "width": 2544,
+    "height": 1440,
+    "fps": 30.0,
+    "size_mb": 6.91,
+    "has_audio": false,
+    "format": "mp4"
+   },
+   "source_file": "H5.json"
+  },
+  "allegro_demo_video": {
+   "media_url": "https://raw.githubusercontent.com/rhymes-ai/Allegro/f395a54b015f7e3296c52f59a45b78acf9dd07f6/assets/demo_video.mp4",
+   "page": "https://github.com/rhymes-ai/Allegro/blob/f395a54b015f7e3296c52f59a45b78acf9dd07f6/README.md",
+   "family": "Allegro",
+   "model_version": "Allegro text-to-video (README news: '[2024/10/22] Allegro is open sourced!'); which checkpoint made this clip is not stated",
+   "created": "2024-10-20",
+   "date_basis": "Git commit adds the file (as resources/demo_video.mp4) 2024-10-20T17:37:20+08:00; README news '[2024/10/22] Allegro is open sourced!'; arXiv 2410.15458 submitted 20 Oct 2024; HF rhymes-ai/Allegro createdAt 2024-10-16.",
+   "creator": "Rhymes AI - Allegro, 2024",
+   "license": "Apache-2.0",
+   "license_basis": "Quote is the README 'License' section, which speaks of the whole repo. The mp4 is an in-tree asset from the developer's own repository (added two days before release). The README no longer references this file, so its status as an official demo is inferred from the file name only.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [
+    "unverifiable_model_claim"
+   ],
+   "story_roles": [
+    "gallery",
+    "milestone"
+   ],
+   "description": "Single-shot 720p, 6-second demo; no scene cuts detected at threshold 0.25. Subject unknown (no prompt in the repo). Not viewed.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 6.03,
+    "width": 1280,
+    "height": 720,
+    "fps": 29.0,
+    "size_mb": 1.44,
+    "has_audio": false,
+    "format": "mp4"
+   },
+   "source_file": "H5.json"
+  },
+  "ltxv_v090_cityscape_pan": {
+   "media_url": "https://media.githubusercontent.com/media/Lightricks/LTX-Video/4b2d053057623ddd4d0a1d3e9cd28890e9ef487f/docs/_static/ltx-video_example_00013.gif",
+   "page": "https://github.com/Lightricks/LTX-Video/blob/5a592aa/README.md",
+   "family": "LTX-Video",
+   "model_version": "LTX-Video initial release v0.9.0 (README heading 'November 21th, 2024: Initial release v0.9.0')",
+   "created": "2024-11-22",
+   "date_basis": "Initial repo commit 5a592aa 'LTX-Video: Initial commit' 2024-11-22T15:53:46+02:00 contains the gif and a README caption with the full prompt; README news 'November 21th, 2024: Initial release v0.9.0'; arXiv 2501.00103 (30 Dec 2024). HF Lightricks/LTX-Video createdAt 2024-10-31 predates the release.",
+   "creator": "Lightricks - LTX-Video v0.9.0, 2024",
+   "license": "Apache-2.0",
+   "license_basis": "Repo LICENSE is Apache-2.0 and the gif is an LFS asset committed by Lightricks with a README caption in the very first commit. Caveat: the README later notes the model weights moved to OpenRAIL-M ('New license for commercial use (OpenRail-M)') and HF lists 'other'; the code licence does not state coverage of media.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "milestone",
+    "control_demo"
+   ],
+   "description": "README caption (initial commit): camera pans left to right across tall buildings with a circular building with a green roof in the centre, high angle, bright sun from upper left, 'computer-generated imagery' look.",
+   "prompt": "The camera pans across a cityscape of tall buildings with a circular building in the center. The camera moves from left to right, showing the tops of the buildings and the circular building in the center. The buildings are various shades of gray and white, and the circular building has a green roof. The camera angle is high, looking down at the city. The lighting is bright, with the sun shining from the upper left, casting shadows from the buildings. The scene is computer-generated imagery.",
+   "listed_media": {
+    "duration_s": 4.84,
+    "width": 384,
+    "height": 256,
+    "fps": 25.0,
+    "size_mb": 9.02,
+    "has_audio": false,
+    "format": "gif"
+   },
+   "source_file": "H5.json"
+  },
+  "ltxv_i2v_example_00001": {
+   "media_url": "https://media.githubusercontent.com/media/Lightricks/LTX-Video/4b2d053057623ddd4d0a1d3e9cd28890e9ef487f/docs/_static/ltx-video_i2v_example_00001.gif",
+   "page": "https://github.com/Lightricks/LTX-Video/blob/4b2d053057623ddd4d0a1d3e9cd28890e9ef487f/README.md",
+   "family": "LTX-Video",
+   "model_version": "LTX-Video image-to-video (README section 'Image-to-video examples'); exact version not stated for the gif. Committed the same day as the README news 'May, 14th, 2025: New distilled model 13B v0.9.7'",
+   "created": "2025-05-14",
+   "date_basis": "Git commit adds docs/_static/ltx-video_i2v_example_00001.gif on 2025-05-14T09:30:06+03:00; README news dated 'May, 14th, 2025' (13B v0.9.7 distilled) - association is an inference, not stated.",
+   "creator": "Lightricks - LTX-Video, 2025",
+   "license": "Apache-2.0",
+   "license_basis": "In-tree LFS asset in an Apache-2.0 repo, displayed in the README as an official example. Input image provenance is not stated, which is an additional gap.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [
+    "unverifiable_model_claim"
+   ],
+   "story_roles": [
+    "control_demo",
+    "gallery"
+   ],
+   "description": "README lists it in the 'Image-to-video examples' 3x3 table; no caption, prompt or input image given. Not viewed.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 5.04,
+    "width": 640,
+    "height": 360,
+    "fps": 25.0,
+    "size_mb": 9.29,
+    "has_audio": false,
+    "format": "gif"
+   },
+   "source_file": "H5.json"
+  },
+  "ltxv_iclora_control_00000": {
+   "media_url": "https://media.githubusercontent.com/media/Lightricks/LTX-Video/4b2d053057623ddd4d0a1d3e9cd28890e9ef487f/docs/_static/ltx-video_ic_2v_example_00000.gif",
+   "page": "https://github.com/Lightricks/LTX-Video/blob/4b2d053057623ddd4d0a1d3e9cd28890e9ef487f/README.md",
+   "family": "LTX-Video",
+   "model_version": "LTX-Video IC-LoRA control models (README section 'Controlled video examples'; news 'July, 8th, 2025: New Control Models Released!' depth/pose/canny for 13b-0.9.7)",
+   "created": "2025-07-08",
+   "date_basis": "Git commit adds docs/_static/ltx-video_ic_2v_example_00000.gif on 2025-07-08T12:25:56+00:00; README news 'July, 8th, 2025: New Control Models Released!' (which control type this gif uses is not stated).",
+   "creator": "Lightricks - LTX-Video IC-LoRA, 2025",
+   "license": "Apache-2.0",
+   "license_basis": "In-tree LFS asset in an Apache-2.0 repo, shown as an official example; control (pose/depth/canny) reference footage inside the gif is of unknown provenance, which is the main gap.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [
+    "real_person",
+    "unverifiable_model_claim"
+   ],
+   "story_roles": [
+    "control_demo",
+    "split_screen_pair"
+   ],
+   "description": "1024x2048 (1:2) stacked multi-panel layout (seams near rows 1036 and 1365); presumably control input and result but not stated. 81 frames at ~16 fps. Not viewed.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 5.06,
+    "width": 1024,
+    "height": 2048,
+    "fps": 16.0,
+    "size_mb": 37.15,
+    "has_audio": false,
+    "format": "gif"
+   },
+   "source_file": "H5.json"
+  },
+  "wan21_readme_video_demos": {
+   "media_url": "https://github.com/user-attachments/assets/4aca6063-60bf-4953-bfb7-e265053f49ef",
+   "page": "https://github.com/Wan-Video/Wan2.1/blob/9737cba9c1c3c4d04b33fcad41c111989865d315/README.md",
+   "family": "Wan",
+   "model_version": "Wan2.1 (README 'Video Demos' reel; README feature list covers T2V, I2V, video editing, text-to-image, video-to-audio)",
+   "created": "2025-02-25",
+   "date_basis": "README news: 'Feb 25, 2025: We've released the inference code and weights of **Wan2.1**.'; repo 'init upload' commits 2025-02-25; HF Wan-AI/Wan2.1-T2V-14B createdAt 2025-02-25T07:26:34Z; Wan report arXiv 2503.20314 (26 Mar 2025). Upload date of the reel itself is unknown.",
+   "creator": "Wan Team, Alibaba - Wan2.1, 2025",
+   "license": "Apache-2.0 + output-righ",
+   "license_basis": "README 'License Agreement': 'The models in this repository are licensed under the Apache 2.0 License. We claim no rights over the your generated contents...' The reel is a compilation of model outputs published by the licensor in its README. Gaps: the sentence addresses users' outputs, not this reel specifically; the reel is not in the git tree (github user-attachments asset); its soundtrack is not covered.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [
+    "unverifiable_model_claim"
+   ],
+   "story_roles": [
+    "milestone",
+    "gallery"
+   ],
+   "description": "Official README demo reel of Wan2.1. Scene-cut detector (threshold 0.35) finds cuts at 11.96, 33.04, 47.8 and 59.84 s, so it is made of long segments (or cross-fades/split layouts that the detector misses). Audio track present (mean volume -13.1 dB), presumably music. Content not viewed.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 62.6,
+    "width": 1280,
+    "height": 720,
+    "fps": 25.0,
+    "size_mb": 9.59,
+    "has_audio": true,
+    "format": "mp4"
+   },
+   "source_file": "H5.json"
+  },
+  "wan22_readme_video_demos": {
+   "media_url": "https://github.com/user-attachments/assets/b63bfa58-d5d7-4de6-a1a2-98970b06d9a7",
+   "page": "https://github.com/Wan-Video/Wan2.2/blob/1ea34ff48f87168174e12956e200b1d908b1c5ff/README.md",
+   "family": "Wan",
+   "model_version": "Wan2.2 (README 'Video Demos' reel; MoE architecture, T2V-A14B/I2V-A14B/TI2V-5B)",
+   "created": "2025-07-28",
+   "date_basis": "README news: 'Jul 28, 2025: We've released the inference code and model weights of **Wan2.2**.'; git commit 'upload videos' 2025-07-28T19:54:34+08:00; HF Wan-AI/Wan2.2-T2V-A14B createdAt 2025-07-24. Reel may have been re-uploaded later (asset ids differ from Feb 2025).",
+   "creator": "Wan Team, Alibaba - Wan2.2, 2025",
+   "license": "Apache-2.0 + output-righ",
+   "license_basis": "Identical README 'License Agreement' wording as Wan2.1 (Apache-2.0 for the models, no rights claimed over generated contents). Same gaps: not specific to the reel, reel hosted as a user-attachments asset outside the tree, soundtrack not covered.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [
+    "unverifiable_model_claim"
+   ],
+   "story_roles": [
+    "milestone",
+    "gallery",
+    "hero"
+   ],
+   "description": "Official README demo reel of Wan2.2. Scene-cut detector (threshold 0.35) finds ~37 cuts, e.g. 8.67, 14.47, 15.83, 19.4, 30.1, 32.13, then a burst between 36 and 45 s, later 48.9, 53.3, 57.67, 58.8, 62.77, 65.33, 67.03, 69.7, 70.83, 72.37, 73.57, 76.43 s. Audio present (mean -11.3 dB). Content not viewed.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 80.03,
+    "width": 1280,
+    "height": 720,
+    "fps": 30.0,
+    "size_mb": 9.19,
+    "has_audio": true,
+    "format": "mp4"
+   },
+   "source_file": "H5.json"
+  },
+  "kandinsky5_sft_10s_example3": {
+   "media_url": "https://raw.githubusercontent.com/kandinskylab/kandinsky-5/3a74261b957df0446c1969c5cedf8bbb07969ac2/assets/generation_examples/sft/3.mp4",
+   "page": "https://github.com/kandinskylab/kandinsky-5/blob/3a74261b957df0446c1969c5cedf8bbb07969ac2/README.md",
+   "family": "Kandinsky 5.0",
+   "model_version": "Kandinsky 5.0 video (directory name 'sft'; Lite vs Pro not stated for this file). README news: '2025/09/29 ... open-sourced Kandinsky 5.0 T2V Lite' and '2025/11/20 Kandinsky 5.0 Video Pro is open-sourced'",
+   "created": "2025-09-27",
+   "date_basis": "Git commit 7963fa7 'added more generation examples' 2025-09-27T18:14:43+03:00 adds assets/generation_examples/sft/3.mp4; README news '```2025/09/29```: We have open-sourced `Kandinsky 5.0 T2V Lite` a lite (2B parameters) version'; HF kandinskylab/Kandinsky-5.0-T2V-Lite-sft-5s createdAt 2025-09-26; report arXiv 2511.14993 (19 Nov 2025).",
+   "creator": "Kandinsky Lab - Kandinsky 5.0, 2025",
+   "license": "MIT",
+   "license_basis": "In-tree mp4 (assets/generation_examples/sft/) committed by the licensor in a repo whose root LICENSE is MIT (Copyright (c) 2025 Kandinsky Lab). The README does not reference this file (its own demo videos are user-attachments), no caption or prompt exists, and the licence does not name media: 'likely' rests on the documentation-files argument only.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [
+    "unverifiable_model_claim"
+   ],
+   "story_roles": [
+    "gallery",
+    "hero"
+   ],
+   "description": "10.04 s, 241-frame single shot (no scene cuts detected); subject and prompt are not documented anywhere in the repo. Not viewed.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 10.04,
+    "width": 768,
+    "height": 512,
+    "fps": 24.0,
+    "size_mb": 8.19,
+    "has_audio": false,
+    "format": "mp4"
+   },
+   "source_file": "H5.json"
+  },
+  "ovi_two_women_audio_video": {
+   "media_url": "https://raw.githubusercontent.com/character-ai/Ovi/5b69b25a4b3115216e9ea53a37a04410be6ad39a/assets/high_res_results/Two_women_stand_facing_each_other_in_what_appears__704x1280_103_0.mp4",
+   "page": "https://github.com/character-ai/Ovi/blob/5b69b25a4b3115216e9ea53a37a04410be6ad39a/README.md",
+   "family": "Ovi",
+   "model_version": "Ovi (twin-backbone audio-video model). File is in assets/high_res_results; README also documents an 'Ovi 1.1 Update (10 November 2025)', file predates it, exact version not stated",
+   "created": "2025-10-09",
+   "date_basis": "Git commit adds the file 2025-10-09T16:05:37+00:00; arXiv 2510.01284 submitted 30 Sep 2025; HF chetwinlow1/Ovi createdAt 2025-09-30T02:41:36Z.",
+   "creator": "Character.AI / Yale - Ovi, 2025",
+   "license": "Apache-2.0",
+   "license_basis": "In-tree asset in an Apache-2.0 repo; the README (checked) has no licence statement about media and does not reference this file; HF card lists apache-2.0 for the model. Argument only: 'documentation source' in the Apache 'Work' definition.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [
+    "unverifiable_model_claim"
+   ],
+   "story_roles": [
+    "gallery",
+    "milestone"
+   ],
+   "description": "Prompt (truncated in file name): two women standing facing each other. 5.08 s, 1504x608, stereo 44.1 kHz audio. Whisper (tiny, unverified) transcribes the audio as 'humans fight for freedom tonight.' Visuals not viewed.",
+   "prompt": "Two women stand facing each other in what appears ... (truncated in file name; full prompt not published)",
+   "listed_media": {
+    "duration_s": 5.08,
+    "width": 1504,
+    "height": 608,
+    "fps": 24.0,
+    "size_mb": 0.64,
+    "has_audio": true,
+    "format": "mp4"
+   },
+   "source_file": "H5.json"
+  },
+  "lance_t2v_demo_01": {
+   "media_url": "https://raw.githubusercontent.com/bytedance/Lance/4baeee086648996f6ab12e673cbe461b0b149997/assets/text-to-video/videos/text-to-video-demo-01.mp4",
+   "page": "https://github.com/bytedance/Lance/blob/4baeee086648996f6ab12e673cbe461b0b149997/README.md",
+   "family": "Lance",
+   "model_version": "Lance (unified image/video understanding-generation-editing model; released 2026-05-18). README states training up to 480p, 12 FPS video, while this file is 1664x896 at 24 fps",
+   "created": "2026-05-16",
+   "date_basis": "Git commit adds assets/text-to-video/videos/text-to-video-demo-01.mp4 2026-05-16T15:04:21+08:00; README news '2026/05/18: ... released the initial inference code and model weights on GitHub and Hugging Face'; arXiv 2605.18678 (18 May 2026); HF bytedance-research/Lance createdAt 2026-05-15.",
+   "creator": "ByteDance - Lance, 2026",
+   "license": "Apache-2.0",
+   "license_basis": "README links the mp4 as an official demo (table of eight text-to-video demos) and its 'License' section is 'Copyright 2025 ByteDance Ltd. and/or its affiliates.' with an Apache-2.0 LICENSE file at root. The LICENSE file contains only the template copyright line and the README does not spell out the licence name, and media are not mentioned.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [
+    "unverifiable_model_claim"
+   ],
+   "story_roles": [
+    "gallery",
+    "milestone"
+   ],
+   "description": "One of eight in-tree text-to-video demo mp4s (9.9 s, 1664x896, 24 fps, no scene cuts). No prompt published. README says Lance is 'a research project rather than a polished product model' and quality 'may vary across prompts'. Not viewed.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 9.875,
+    "width": 1664,
+    "height": 896,
+    "fps": 24.0,
+    "size_mb": 7.19,
+    "has_audio": false,
+    "format": "mp4"
+   },
+   "source_file": "H5.json"
+  },
+  "longcat_motorcycle_4k": {
+   "media_url": "https://raw.githubusercontent.com/meituan-longcat/LongCat-Video/6b3f4b8582a8bc3f20f795735f5383716c4ba794/assets/motorcycle.mp4",
+   "page": "https://github.com/meituan-longcat/LongCat-Video/blob/6b3f4b8582a8bc3f20f795735f5383716c4ba794/README.md",
+   "family": "LongCat-Video",
+   "model_version": "LongCat-Video (README news 'Oct 25, 2025: We've released LongCat-Video, a foundational video generation model'); README says it generates 720p 30 fps video while this file is 3840x2160",
+   "created": "2025-10-25",
+   "date_basis": "Git commit adds assets/motorcycle.mp4 2025-10-25T14:50:20+08:00; README news dated 'Oct 25, 2025'; arXiv 2510.22200 (25 Oct 2025); HF meituan-longcat/LongCat-Video createdAt 2025-10-24.",
+   "creator": "Meituan LongCat team - LongCat-Video, 20",
+   "license": "MIT",
+   "license_basis": "Quote is from the README 'License Agreement' section (also states the model weights are MIT). The mp4 is an in-tree asset added on release day; MIT LICENSE covers 'software and associated documentation files'. README never references motorcycle.mp4 and gives no caption.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [
+    "unverifiable_model_claim"
+   ],
+   "story_roles": [
+    "hero",
+    "gallery"
+   ],
+   "description": "File name suggests a motorcycle subject; nothing else documented. 4.0 s, 120 frames, 3840x2160. Not viewed.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 4.0,
+    "width": 3840,
+    "height": 2160,
+    "fps": 30.0,
+    "size_mb": 2.94,
+    "has_audio": false,
+    "format": "mp4"
+   },
+   "source_file": "H5.json"
+  },
+  "matrix_game3_readme_demo": {
+   "media_url": "https://raw.githubusercontent.com/SkyworkAI/Matrix-Game/756776d516233027631008761d4d40ddaea3e23a/Matrix-Game-3/assets/videos/matrix-game3.mp4",
+   "page": "https://github.com/SkyworkAI/Matrix-Game/blob/756776d516233027631008761d4d40ddaea3e23a/README.md",
+   "family": "Matrix-Game",
+   "model_version": "Matrix-Game-3.0 (README: 'March 27, 2026: We released Matrix-Game-3.0. This is a real-time and streaming interactive world model with long-horizon Memory.')",
+   "created": "2026-03-27",
+   "date_basis": "Git commit adds Matrix-Game-3 assets mp4 2026-03-27T13:02:11+08:00; README news dated 'March 27, 2026'; HF Skywork/Matrix-Game-3.0 createdAt 2026-03-27T03:23:47Z; predecessor paper arXiv 2508.13009 (Matrix-Game 2.0, 18 Aug 2025).",
+   "creator": "Skywork AI - Matrix-Game-3.0, 2026",
+   "license": "Apache-2.0",
+   "license_basis": "The Matrix-Game-3 subfolder carries its own Apache-2.0 LICENSE.txt and the repo root LICENSE is MIT ('licensed under the MIT License'); the mp4 sits inside the Matrix-Game-3 subtree. Two different licences in one repo and no statement on media, so only 'likely'.",
+   "verdict": "unverified",
+   "verdict_confidence": null,
+   "conditions": [],
+   "risk_flags": [],
+   "story_roles": [
+    "gallery",
+    "hero"
+   ],
+   "description": "README demo for a real-time interactive world model; 15 s, 1080p, no audio. Content not described in the repo (world-model / game-like footage expected). Not viewed.",
+   "prompt": null,
+   "listed_media": {
+    "duration_s": 15.0,
+    "width": 1920,
+    "height": 1080,
+    "fps": 30.0,
+    "size_mb": 19.2,
+    "has_audio": false,
+    "format": "mp4"
+   },
+   "source_file": "H5.json"
+  }
+ },
+ "excerpts": {
+  "probe_sora_photoreal_train_glenfinnan": {
+   "clip": "sora_photoreal_train_glenfinnan",
+   "in": 0.0,
+   "out": 8.533,
+   "label": {
+    "model": "SORA",
+    "year": "2024",
+    "creator": "OpenAI demo",
+    "license": "PD (Commons: AI output)"
+   },
+   "role": "probe"
+  },
+  "probe_sora_mitten_astronaut_trailer": {
+   "clip": "sora_mitten_astronaut_trailer",
+   "in": 0.0,
+   "out": 17.066,
+   "label": {
+    "model": "SORA",
+    "year": "2024",
+    "creator": "OpenAI demo",
+    "license": "PD (Commons: AI output)"
+   },
+   "role": "probe"
+  },
+  "probe_sora_ships_in_coffee": {
+   "clip": "sora_ships_in_coffee",
+   "in": 0.0,
+   "out": 15.0,
+   "label": {
+    "model": "SORA",
+    "year": "2024",
+    "creator": "OpenAI demo",
+    "license": "PD (Commons: AI output)"
+   },
+   "role": "probe"
+  },
+  "probe_sora_monster_melting_candle": {
+   "clip": "sora_monster_melting_candle",
+   "in": 0.0,
+   "out": 8.533,
+   "label": {
+    "model": "SORA",
+    "year": "2024",
+    "creator": "OpenAI demo",
+    "license": "PD (Commons: AI output)"
+   },
+   "role": "probe"
+  },
+  "probe_sora_big_sur_drone": {
+   "clip": "sora_big_sur_drone",
+   "in": 0.0,
+   "out": 8.533,
+   "label": {
+    "model": "SORA",
+    "year": "2024",
+    "creator": "OpenAI demo",
+    "license": "PD (Commons: AI output)"
+   },
+   "role": "probe"
+  },
+  "probe_sora_victoria_pigeon_vertical": {
+   "clip": "sora_victoria_pigeon_vertical",
+   "in": 0.0,
+   "out": 24.0,
+   "label": {
+    "model": "SORA",
+    "year": "2024",
+    "creator": "OpenAI demo",
+    "license": "PD (Commons: AI output)"
+   },
+   "role": "probe"
+  },
+  "probe_sora_cat_on_bed": {
+   "clip": "sora_cat_on_bed",
+   "in": 0.0,
+   "out": 8.533,
+   "label": {
+    "model": "SORA",
+    "year": "2024",
+    "creator": "OpenAI demo",
+    "license": "PD (Commons: AI output)"
+   },
+   "role": "probe"
+  },
+  "probe_sora_gold_rush_fake_archive": {
+   "clip": "sora_gold_rush_fake_archive",
+   "in": 0.0,
+   "out": 24.0,
+   "label": {
+    "model": "SORA",
+    "year": "2024",
+    "creator": "OpenAI demo",
+    "license": "PD (Commons: AI output)"
+   },
+   "role": "probe"
+  },
+  "probe_sora_wooly_mammoth": {
+   "clip": "sora_wooly_mammoth",
+   "in": 0.0,
+   "out": 10.021,
+   "label": {
+    "model": "SORA",
+    "year": "2024",
+    "creator": "OpenAI demo",
+    "license": "PD (Commons: AI output)"
+   },
+   "role": "probe"
+  },
+  "probe_veo3_owl_badger_deepmind_demo": {
+   "clip": "veo3_owl_badger_deepmind_demo",
+   "in": 0.0,
+   "out": 22.708,
+   "label": {
+    "model": "VEO 3",
+    "year": "2025",
+    "creator": "VulcanSphere",
+    "license": "PD (Commons: AI output)"
+   },
+   "role": "probe"
+  },
+  "probe_veo3_visual_kei_lemonade_gemini": {
+   "clip": "veo3_visual_kei_lemonade_gemini",
+   "in": 0.0,
+   "out": 8.008,
+   "label": {
+    "model": "VEO 3",
+    "year": "2025",
+    "creator": "VulcanSphere",
+    "license": "CC0"
+   },
+   "role": "probe"
+  },
+  "probe_veo31_visual_kei_lemonade_flow": {
+   "clip": "veo31_visual_kei_lemonade_flow",
+   "in": 0.0,
+   "out": 8.0,
+   "label": {
+    "model": "VEO 3.1",
+    "year": "2025",
+    "creator": "VulcanSphere",
+    "license": "CC0"
+   },
+   "role": "probe"
+  },
+  "probe_veo2_clock_gemini_advanced": {
+   "clip": "veo2_clock_gemini_advanced",
+   "in": 0.0,
+   "out": 8.0,
+   "label": {
+    "model": "VEO 2",
+    "year": "2024",
+    "creator": "FallingGravity (Commons), generated with",
+    "license": "CC0"
+   },
+   "role": "probe"
+  },
+  "probe_sd14_flowers_img2img_animation_2022": {
+   "clip": "sd14_flowers_img2img_animation_2022",
+   "in": 0.0,
+   "out": 10.0,
+   "label": {
+    "model": "STABLE DIFFUSION 1.4",
+    "year": "2022",
+    "creator": "Benlisquare",
+    "license": "PD (Commons: AI output)"
+   },
+   "role": "probe"
+  },
+  "probe_deepdream_ouroboros_2021": {
+   "clip": "deepdream_ouroboros_2021",
+   "in": 0.0,
+   "out": 24.0,
+   "label": {
+    "model": "DEEPDREAM",
+    "year": "2015",
+    "creator": "PantheraLeo1359531",
+    "license": "CC0"
+   },
+   "role": "probe"
+  },
+  "probe_sd14_benlisquare_park_2022": {
+   "clip": "sd14_benlisquare_park_2022",
+   "in": 0.0,
+   "out": 10.0,
+   "label": {
+    "model": "STABLE DIFFUSION 1.4",
+    "year": "2022",
+    "creator": "Benlisquare",
+    "license": "CC BY-SA 4.0"
+   },
+   "role": "probe"
+  },
+  "probe_runway_gen1_watercolor_elephants_2023": {
+   "clip": "runway_gen1_watercolor_elephants_2023",
+   "in": 0.0,
+   "out": 5.12,
+   "label": {
+    "model": "RUNWAY GEN-1",
+    "year": "2023",
+    "creator": "Oronbb",
+    "license": "CC BY-SA 4.0"
+   },
+   "role": "probe"
+  },
+  "probe_runway_gen2_dog_podium_2023": {
+   "clip": "runway_gen2_dog_podium_2023",
+   "in": 0.0,
+   "out": 4.0,
+   "label": {
+    "model": "RUNWAY GEN-2",
+    "year": "2023",
+    "creator": "Lwneal",
+    "license": "CC BY-SA 4.0"
+   },
+   "role": "probe"
+  },
+  "probe_runway_gen3_alpha_cowboy_2024": {
+   "clip": "runway_gen3_alpha_cowboy_2024",
+   "in": 0.0,
+   "out": 10.542,
+   "label": {
+    "model": "RUNWAY GEN-3 ALPHA",
+    "year": "2024",
+    "creator": "Oronbb",
+    "license": "CC BY 4.0"
+   },
+   "role": "probe"
+  },
+  "probe_cogvideox_late_afternoon_swans_2024": {
+   "clip": "cogvideox_late_afternoon_swans_2024",
+   "in": 0.0,
+   "out": 6.125,
+   "label": {
+    "model": "COGVIDEOX",
+    "year": "2024",
+    "creator": "VulcanSphere",
+    "license": "CC0"
+   },
+   "role": "probe"
+  },
+  "probe_cogvideox_painting_with_the_breeze_2024": {
+   "clip": "cogvideox_painting_with_the_breeze_2024",
+   "in": 0.0,
+   "out": 6.125,
+   "label": {
+    "model": "COGVIDEOX",
+    "year": "2024",
+    "creator": "VulcanSphere",
+    "license": "CC0"
+   },
+   "role": "probe"
+  },
+  "probe_hailuo_video01_cyberpunk_rainy_street_2024": {
+   "clip": "hailuo_video01_cyberpunk_rainy_street_2024",
+   "in": 0.0,
+   "out": 5.64,
+   "label": {
+    "model": "HAILUO",
+    "year": "2024",
+    "creator": "VulcanSphere",
+    "license": "CC0"
+   },
+   "role": "probe"
+  },
+  "probe_hailuo_i2v_japanese_nuns_1902": {
+   "clip": "hailuo_i2v_japanese_nuns_1902",
+   "in": 0.0,
+   "out": 5.64,
+   "label": {
+    "model": "HAILUO",
+    "year": "2024",
+    "creator": "Nesnad",
+    "license": "PD (Commons: AI output)"
+   },
+   "role": "probe"
+  },
+  "probe_grok_imagine_gotz_von_berlichingen": {
+   "clip": "grok_imagine_gotz_von_berlichingen",
+   "in": 0.0,
+   "out": 6.045,
+   "label": {
+    "model": "GROK IMAGINE",
+    "year": "2025",
+    "creator": "Achim Raschka",
+    "license": "CC0"
+   },
+   "role": "probe"
+  },
+  "probe_ltxv2b_cybertruck_from_photos": {
+   "clip": "ltxv2b_cybertruck_from_photos",
+   "in": 0.0,
+   "out": 5.042,
+   "label": {
+    "model": "LTX-VIDEO",
+    "year": "2025",
+    "creator": "Premeditated / OWS Photography",
+    "license": "CC BY 4.0"
+   },
+   "role": "probe"
+  },
+  "probe_deepdream_arcimboldo_gif_2015": {
+   "clip": "deepdream_arcimboldo_gif_2015",
+   "in": 0.0,
+   "out": 0.7,
+   "label": {
+    "model": "DEEPDREAM",
+    "year": "2015",
+    "creator": "Calhoun Press (Wikimedia Commons uploade",
+    "license": "CC BY-SA 4.0"
+   },
+   "role": "probe"
+  },
+  "probe_videopoet_dog_popcorn_audio_2023": {
+   "clip": "videopoet_dog_popcorn_audio_2023",
+   "in": 0.0,
+   "out": 2.184,
+   "label": {
+    "model": "VIDEOPOET (GOOGLE RESEARCH",
+    "year": "2023",
+    "creator": "VideoPoet / Google Research",
+    "license": "PD (Commons: AI output)"
+   },
+   "role": "probe"
+  },
+  "probe_veo3_chernobyl_room_2025": {
+   "clip": "veo3_chernobyl_room_2025",
+   "in": 0.0,
+   "out": 8.0,
+   "label": {
+    "model": "VEO 3",
+    "year": "2025",
+    "creator": "Global Donald (Wikimedia Commons); gener",
+    "license": "CC0"
+   },
+   "role": "probe"
+  },
+  "probe_lvdm_ucf_long_40s": {
+   "clip": "lvdm_ucf_long_40s",
+   "in": 0.0,
+   "out": 24.0,
+   "label": {
+    "model": "LVDM (LATENT VIDEO DIFFUSI",
+    "year": "2022",
+    "creator": "Yingqing He, Tianyu Yang, Yong Zhang, Yi",
+    "license": "MIT"
+   },
+   "role": "probe"
+  },
+  "probe_lvdm_t2v_astronaut_horse": {
+   "clip": "lvdm_t2v_astronaut_horse",
+   "in": 0.0,
+   "out": 2.08,
+   "label": {
+    "model": "LVDM (LATENT VIDEO DIFFUSI",
+    "year": "2023",
+    "creator": "Yingqing He, Tianyu Yang, Yong Zhang, Yi",
+    "license": "MIT"
+   },
+   "role": "probe"
+  },
+  "probe_t2vzero_horse_galloping": {
+   "clip": "t2vzero_horse_galloping",
+   "in": 0.0,
+   "out": 2.64,
+   "label": {
+    "model": "TEXT2VIDEO-ZERO",
+    "year": "2023",
+    "creator": "Levon Khachatryan et al., Picsart AI Res",
+    "license": "CreativeML OpenRAIL-M"
+   },
+   "role": "probe"
+  },
+  "probe_lavie_teddy_street_base": {
+   "clip": "lavie_teddy_street_base",
+   "in": 0.0,
+   "out": 2.01,
+   "label": {
+    "model": "LAVIE",
+    "year": "2023",
+    "creator": "Vchitect / Shanghai AI Laboratory - LaVi",
+    "license": "Apache-2.0"
+   },
+   "role": "probe"
+  },
+  "probe_lavie_teddy_street_interp24": {
+   "clip": "lavie_teddy_street_interp24",
+   "in": 0.0,
+   "out": 2.54,
+   "label": {
+    "model": "LAVIE",
+    "year": "2023",
+    "creator": "Vchitect / Shanghai AI Laboratory - LaVi",
+    "license": "Apache-2.0"
+   },
+   "role": "probe"
+  },
+  "probe_latte1_t2v_4x4_grid": {
+   "clip": "latte1_t2v_4x4_grid",
+   "in": 0.0,
+   "out": 2.0,
+   "label": {
+    "model": "LATTE",
+    "year": "2024",
+    "creator": "Xin Ma, Yaohui Wang et al. - Latte (Vchi",
+    "license": "Apache-2.0"
+   },
+   "role": "probe"
+  },
+  "probe_mochi1_preview_3x3_grid": {
+   "clip": "mochi1_preview_3x3_grid",
+   "in": 0.0,
+   "out": 5.43,
+   "label": {
+    "model": "MOCHI 1",
+    "year": "2024",
+    "creator": "Genmo - Mochi 1 preview, 2024",
+    "license": "Apache-2.0"
+   },
+   "role": "probe"
+  },
+  "probe_allegro_demo_video": {
+   "clip": "allegro_demo_video",
+   "in": 0.0,
+   "out": 6.03,
+   "label": {
+    "model": "ALLEGRO",
+    "year": "2024",
+    "creator": "Rhymes AI - Allegro, 2024",
+    "license": "Apache-2.0"
+   },
+   "role": "probe"
+  },
+  "probe_ltxv_v090_cityscape_pan": {
+   "clip": "ltxv_v090_cityscape_pan",
+   "in": 0.0,
+   "out": 4.84,
+   "label": {
+    "model": "LTX-VIDEO",
+    "year": "2025",
+    "creator": "Lightricks - LTX-Video v0.9.0, 2024",
+    "license": "Apache-2.0"
+   },
+   "role": "probe"
+  },
+  "probe_ltxv_i2v_example_00001": {
+   "clip": "ltxv_i2v_example_00001",
+   "in": 0.0,
+   "out": 5.04,
+   "label": {
+    "model": "LTX-VIDEO",
+    "year": "2025",
+    "creator": "Lightricks - LTX-Video, 2025",
+    "license": "Apache-2.0"
+   },
+   "role": "probe"
+  },
+  "probe_ltxv_iclora_control_00000": {
+   "clip": "ltxv_iclora_control_00000",
+   "in": 0.0,
+   "out": 5.06,
+   "label": {
+    "model": "LTX-VIDEO",
+    "year": "2025",
+    "creator": "Lightricks - LTX-Video IC-LoRA, 2025",
+    "license": "Apache-2.0"
+   },
+   "role": "probe"
+  },
+  "probe_wan21_readme_video_demos": {
+   "clip": "wan21_readme_video_demos",
+   "in": 0.0,
+   "out": 24.0,
+   "label": {
+    "model": "WAN",
+    "year": "2025",
+    "creator": "Wan Team, Alibaba - Wan2.1, 2025",
+    "license": "Apache-2.0 + output-righ"
+   },
+   "role": "probe"
+  },
+  "probe_wan22_readme_video_demos": {
+   "clip": "wan22_readme_video_demos",
+   "in": 0.0,
+   "out": 24.0,
+   "label": {
+    "model": "WAN",
+    "year": "2025",
+    "creator": "Wan Team, Alibaba - Wan2.2, 2025",
+    "license": "Apache-2.0 + output-righ"
+   },
+   "role": "probe"
+  },
+  "probe_kandinsky5_sft_10s_example3": {
+   "clip": "kandinsky5_sft_10s_example3",
+   "in": 0.0,
+   "out": 10.04,
+   "label": {
+    "model": "KANDINSKY 5.0",
+    "year": "2025",
+    "creator": "Kandinsky Lab - Kandinsky 5.0, 2025",
+    "license": "MIT"
+   },
+   "role": "probe"
+  },
+  "probe_ovi_two_women_audio_video": {
+   "clip": "ovi_two_women_audio_video",
+   "in": 0.0,
+   "out": 5.08,
+   "label": {
+    "model": "OVI",
+    "year": "2025",
+    "creator": "Character.AI / Yale - Ovi, 2025",
+    "license": "Apache-2.0"
+   },
+   "role": "probe"
+  },
+  "probe_lance_t2v_demo_01": {
+   "clip": "lance_t2v_demo_01",
+   "in": 0.0,
+   "out": 9.875,
+   "label": {
+    "model": "LANCE",
+    "year": "2026",
+    "creator": "ByteDance - Lance, 2026",
+    "license": "Apache-2.0"
+   },
+   "role": "probe"
+  },
+  "probe_longcat_motorcycle_4k": {
+   "clip": "longcat_motorcycle_4k",
+   "in": 0.0,
+   "out": 4.0,
+   "label": {
+    "model": "LONGCAT-VIDEO",
+    "year": "2025",
+    "creator": "Meituan LongCat team - LongCat-Video, 20",
+    "license": "MIT"
+   },
+   "role": "probe"
+  },
+  "probe_matrix_game3_readme_demo": {
+   "clip": "matrix_game3_readme_demo",
+   "in": 0.0,
+   "out": 15.0,
+   "label": {
+    "model": "MATRIX-GAME",
+    "year": "2026",
+    "creator": "Skywork AI - Matrix-Game-3.0, 2026",
+    "license": "Apache-2.0"
+   },
+   "role": "probe"
+  }
+ },
+ "cast": {},
+ "cues": {}
+}

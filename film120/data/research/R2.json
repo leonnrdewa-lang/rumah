@@ -1,0 +1,3154 @@
+{
+ "agent": "R2",
+ "topic": "OpenAI (Sora) and Google (Veo, Flow, Genie, Gemini Omni), 2024 through 2026-09-29",
+ "retrieved_on": "2026-09-29",
+ "method_notes": "All pages were fetched from the Higgsfield sandbox (open internet). Every quote was checked programmatically against the fetched page text (whitespace-normalised, HTML entities decoded) and none exceeds 25 words. OpenAI marketing pages (openai.com, help.openai.com) return 403 from the sandbox, so they are cited as Wayback Machine id_ captures with the exact capture timestamp in the URL; OpenAI API docs (developers.openai.com) and all Google pages were fetched live. One claim (Omni Flash launch date) quotes page metadata rather than visible text. The Veo 3 tech report PDF carries no date inside; 2025-05-27 is its HTTP Last-Modified header. Model version names are spelled as each developer writes them.",
+ "milestones": [
+  {
+   "id": "openai_sora_preview_2024_02_15",
+   "developer": "OpenAI",
+   "family": "Sora",
+   "version": "Sora",
+   "event": "preview",
+   "date": "2024-02-15",
+   "date_precision": "day",
+   "headline": "OpenAI shows Sora, a text-to-video diffusion transformer able to generate up to a minute of video; access limited to red teamers and selected creatives.",
+   "specs": {
+    "max_clip_s": 60,
+    "resolution": "Native sizes up to 1920x1080 (widescreen) and 1080x1920 (vertical), per technical report",
+    "fps": null,
+    "audio": null,
+    "notes": "Claimed capability of the research model; not a public product. No audio is mentioned on the retrieved pages."
+   },
+   "claims": [
+    {
+     "claim": "The technical report page is dated 15 February 2024.",
+     "quote": "February 15, 2024 Video generation models as world simulators",
+     "source_url": "https://web.archive.org/web/20240505060353id_/https://openai.com/index/video-generation-models-as-world-simulators",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Sora is described as able to generate a minute of high-fidelity video.",
+     "quote": "Our largest model, Sora, is capable of generating a minute of high fidelity video.",
+     "source_url": "https://web.archive.org/web/20240505060353id_/https://openai.com/index/video-generation-models-as-world-simulators",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Landing page headline claim: videos up to a minute long.",
+     "quote": "Sora can generate videos up to a minute long while maintaining visual quality and adherence to the user’s prompt.",
+     "source_url": "https://web.archive.org/web/20240216001508id_/https://openai.com/sora",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Access was limited to red teamers at this point.",
+     "quote": "Today, Sora is becoming available to red teamers to assess critical areas for harms or risks.",
+     "source_url": "https://web.archive.org/web/20240216001508id_/https://openai.com/sora",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Access was also granted to a number of visual artists, designers and filmmakers.",
+     "quote": "We are also granting access to a number of visual artists, designers, and filmmakers",
+     "source_url": "https://web.archive.org/web/20240216001508id_/https://openai.com/sora",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Architecture: transformer operating on spacetime patches of video/image latents (useful for the frame-consistency explainer).",
+     "quote": "We leverage a transformer architecture that operates on spacetime patches of video and image latent codes.",
+     "source_url": "https://web.archive.org/web/20240505060353id_/https://openai.com/index/video-generation-models-as-world-simulators",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "OpenAI says foresight over many frames at once addresses keeping a subject the same when it leaves view.",
+     "quote": "we’ve solved a challenging problem of making sure a subject stays the same even when it goes out of view temporarily.",
+     "source_url": "https://web.archive.org/web/20240216001508id_/https://openai.com/sora",
+     "source_kind": "archived_official",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Landing page captured by the Wayback Machine 2024-02-16 00:15 UTC. The technical-report copy cited is the Wayback capture of 2024-05-05 (an earlier capture was not retrieved); the page itself carries the 15 Feb 2024 date. Do not describe this as a public release: it was a research preview."
+  },
+  {
+   "id": "google_veo1_2024_05_14",
+   "developer": "Google DeepMind",
+   "family": "Veo",
+   "version": "Veo (later called \"Veo 1\")",
+   "event": "preview",
+   "date": "2024-05-14",
+   "date_precision": "day",
+   "headline": "Google introduces Veo: 1080p video that can go beyond a minute, in private preview for select creators through VideoFX.",
+   "specs": {
+    "max_clip_s": 60,
+    "resolution": "1080p",
+    "fps": null,
+    "audio": null,
+    "notes": "Claimed capability (\"beyond a minute\"); the archived model page says clips can be extended to 60 seconds and beyond. No audio mentioned."
+   },
+   "claims": [
+    {
+     "claim": "Google I/O blog post dated 14 May 2024.",
+     "quote": "New generative media models and tools, built with and for creators May 14, 2024",
+     "source_url": "https://blog.google/innovation-and-ai/products/google-generative-ai-veo-imagen-3/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Veo introduced as Google's most capable video model.",
+     "quote": "We’re introducing Veo, our most capable model for generating high-definition video, and Imagen 3, our highest quality text-to-image model.",
+     "source_url": "https://blog.google/innovation-and-ai/products/google-generative-ai-veo-imagen-3/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Headline spec: 1080p and beyond a minute.",
+     "quote": "Veo generates high-quality 1080p resolution videos in a wide range of cinematic and visual styles that can go beyond a minute.",
+     "source_url": "https://blog.google/innovation-and-ai/products/google-generative-ai-veo-imagen-3/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Access: private preview for select creators via a VideoFX waitlist.",
+     "quote": "Veo is available to select creators in private preview in VideoFX by joining our waitlist",
+     "source_url": "https://blog.google/innovation-and-ai/products/google-generative-ai-veo-imagen-3/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "DeepMind model page repeats the 1080p / beyond-a-minute claim.",
+     "quote": "It generates high-quality, 1080p resolution videos that can go beyond a minute, in a wide range of cinematic and visual styles.",
+     "source_url": "https://web.archive.org/web/20240515001805id_/https://deepmind.google/technologies/veo/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "DeepMind describes the field problem: flicker, jump or morph between frames.",
+     "quote": "Characters, objects, or even entire scenes can flicker, jump, or morph unexpectedly between frames",
+     "source_url": "https://web.archive.org/web/20240515001805id_/https://deepmind.google/technologies/veo/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "DeepMind says latent diffusion transformers reduce these inconsistencies.",
+     "quote": "Veo's cutting-edge latent diffusion transformers reduce the appearance of these inconsistencies",
+     "source_url": "https://web.archive.org/web/20240515001805id_/https://deepmind.google/technologies/veo/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Masked editing supported.",
+     "quote": "it supports masked editing, enabling changes to specific areas of the video when you add a mask area to your video and text prompt.",
+     "source_url": "https://web.archive.org/web/20240515001805id_/https://deepmind.google/technologies/veo/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Extension to 60 seconds and beyond.",
+     "quote": "The model is also able to make video clips and extend them to 60 seconds and beyond.",
+     "source_url": "https://web.archive.org/web/20240515001805id_/https://deepmind.google/technologies/veo/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "By Dec 2024 Google labels the page \"Veo 1\".",
+     "quote": "Veo 1 - Google DeepMind",
+     "source_url": "https://web.archive.org/web/20241216210327id_/https://deepmind.google/technologies/veo/veo-1/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Blog page metadata datePublished 2024-05-14 (fetched live). Model page captured by Wayback 2024-05-15 00:18 UTC. Access was a waitlist, so the headline specs were not generally testable."
+  },
+  {
+   "id": "openai_sora_turbo_public_2024_12_09",
+   "developer": "OpenAI",
+   "family": "Sora",
+   "version": "Sora Turbo",
+   "event": "public_release",
+   "date": "2024-12-09",
+   "date_precision": "day",
+   "headline": "Sora becomes a public product on sora.com via a faster model, Sora Turbo: up to 1080p and 20-second clips for ChatGPT Plus and Pro users.",
+   "specs": {
+    "max_clip_s": 20,
+    "resolution": "Up to 1080p (Plus plan: up to 50 videos at 480p, or fewer at 720p, per month)",
+    "fps": null,
+    "audio": null,
+    "notes": "Widescreen, vertical or square. Storyboard, remix, blend and extend tools. Visible watermark by default plus C2PA metadata. Uploads of people limited at launch. Different model from the Feb 2024 preview."
+   },
+   "claims": [
+    {
+     "claim": "Blog post dated 9 December 2024: Sora moves out of research preview.",
+     "quote": "December 9, 2024 Sora is here We’re moving our video generation model out of research preview.",
+     "source_url": "https://web.archive.org/web/20241209203752id_/https://openai.com/index/sora-is-here/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "The public model is a new, faster version called Sora Turbo, not the model previewed in February.",
+     "quote": "We developed a new version of Sora—Sora Turbo— that is significantly faster than the model we previewed in February.",
+     "source_url": "https://web.archive.org/web/20241209203752id_/https://openai.com/index/sora-is-here/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Public limits: up to 1080p, up to 20 seconds, three aspect ratios.",
+     "quote": "Users can generate videos up to 1080p resolution, up to 20 sec long, and in widescreen, vertical or square aspect ratios.",
+     "source_url": "https://web.archive.org/web/20241209203752id_/https://openai.com/index/sora-is-here/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Plus plan usage limit at launch.",
+     "quote": "You can generate up to 50 videos at 480p resolution or fewer videos at 720p each month.",
+     "source_url": "https://web.archive.org/web/20241209203752id_/https://openai.com/index/sora-is-here/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Bring-your-own-asset tools: extend, remix, blend.",
+     "quote": "You can bring your own assets to extend, remix, and blend, or generate entirely new content from text.",
+     "source_url": "https://web.archive.org/web/20241209203752id_/https://openai.com/index/sora-is-here/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Storyboard tool for per-frame inputs.",
+     "quote": "Our storyboard tool lets users precisely specify inputs for each frame.",
+     "source_url": "https://web.archive.org/web/20241209203752id_/https://openai.com/index/sora-is-here/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "OpenAI admits physics and long complex actions remain weak.",
+     "quote": "It often generates unrealistic physics and struggles with complex actions over long durations.",
+     "source_url": "https://web.archive.org/web/20241209203752id_/https://openai.com/index/sora-is-here/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Visible watermarks by default.",
+     "quote": "we’ve added safeguards like visible watermarks by default",
+     "source_url": "https://web.archive.org/web/20241209203752id_/https://openai.com/index/sora-is-here/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Uploads of people were restricted at launch.",
+     "quote": "Uploads of people will be limited at launch",
+     "source_url": "https://web.archive.org/web/20241209203752id_/https://openai.com/index/sora-is-here/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Archived copy of the official post (Wayback 2024-12-09 20:37 UTC). The public product was capped at 20 s, not the \"minute\" claimed in Feb 2024. Later OpenAI pages call this legacy model \"Sora 1 Turbo\"."
+  },
+  {
+   "id": "google_veo2_2024_12_16",
+   "developer": "Google DeepMind",
+   "family": "Veo",
+   "version": "Veo 2",
+   "event": "version_release",
+   "date": "2024-12-16",
+   "date_precision": "day",
+   "headline": "Veo 2 announced: fewer \"hallucinated\" extra fingers, cinematography-aware prompting, and claimed output up to 4K and minutes long; measured rollout.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": "Claimed up to 4K (see notes)",
+    "fps": null,
+    "audio": null,
+    "notes": "Blog claims \"up to 4K\" and \"minutes\"; the Gemini API spec table in April 2025 lists 5-8 s at 720p, 24 fps. No audio."
+   },
+   "claims": [
+    {
+     "claim": "Blog post dated 16 December 2024.",
+     "quote": "State-of-the-art video and image generation with Veo 2 and Imagen 3 Dec 16, 2024",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/google-labs/video-image-generation-update-december-2024/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Veo 2 introduced in VideoFX, ImageFX and Whisk.",
+     "quote": "Today we're introducing a new video model, Veo 2, and the latest version of Imagen 3",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/google-labs/video-image-generation-update-december-2024/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Claimed resolution and length.",
+     "quote": "Veo 2 will deliver — at resolutions up to 4K, and extended to minutes in length.",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/google-labs/video-image-generation-update-december-2024/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Extra-finger style hallucinations produced less frequently.",
+     "quote": "Veo 2 produces these less frequently, making outputs more realistic.",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/google-labs/video-image-generation-update-december-2024/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Availability deliberately grown slowly.",
+     "quote": "We have been intentionally measured in growing Veo’s availability",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/google-labs/video-image-generation-update-december-2024/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Clip length/resolution claim must not be presented as what users received; see google_veo2_gemini_api_2025_04_15."
+  },
+  {
+   "id": "google_veo2_gemini_api_2025_04_15",
+   "developer": "Google DeepMind",
+   "family": "Veo",
+   "version": "Veo 2 (veo-2.0-generate-001)",
+   "event": "public_release",
+   "date": "2025-04-15",
+   "date_precision": "day",
+   "headline": "Veo 2 becomes available to developers in Google AI Studio and the paid Gemini API: eight-second clips from text or image prompts.",
+   "specs": {
+    "max_clip_s": 8,
+    "resolution": "720p",
+    "fps": 24,
+    "audio": "None (Veo 3 was Google's first Veo model with audio)",
+    "notes": "API spec table: variable length 5-8 seconds, 720p, 24 fps, 16:9 and 9:16."
+   },
+   "claims": [
+    {
+     "claim": "Developers blog post dated 15 April 2025.",
+     "quote": "Bring your ideas to life: Veo 2 video generation available for developers APRIL 15, 2025",
+     "source_url": "https://developers.googleblog.com/en/veo-2-video-generation-now-generally-available/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Eight-second clips.",
+     "quote": "generating eight second video clips that accurately simulate real-world physics",
+     "source_url": "https://developers.googleblog.com/en/veo-2-video-generation-now-generally-available/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Archived API docs spec table (Wayback 2025-04-15).",
+     "quote": "Variable length generation 5-8 seconds Resolution 720p Frame rate 24fps",
+     "source_url": "https://web.archive.org/web/20250415173653id_/https://ai.google.dev/gemini-api/docs/video",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Gemini app page (Wayback 2025-05-30) lists Veo 2 at 8-second videos.",
+     "quote": "Veo 2 Create high-quality, 8-second videos.",
+     "source_url": "https://web.archive.org/web/20250530194309id_/https://gemini.google/overview/video-generation/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Deprecation table gives 9 April 2025 as the release date of veo-2.0-generate-001.",
+     "quote": "veo-2.0-generate-001 April 9, 2025 June 30, 2026",
+     "source_url": "https://ai.google.dev/gemini-api/docs/deprecations",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "medium",
+   "notes": "Date uncertainty: developers-blog date is 2025-04-15, the deprecation table says 2025-04-09 for the model ID (probably the Vertex AI GA). Later the Gemini API retired this ID on 2026-06-30 (see google_veo_legacy_api_retirement_2026_06_30)."
+  },
+  {
+   "id": "google_veo2_creative_controls_2025_05_20",
+   "developer": "Google DeepMind",
+   "family": "Veo",
+   "version": "Veo 2 (reference powered video, camera controls, outpainting, object add/remove)",
+   "event": "version_release",
+   "date": "2025-05-20",
+   "date_precision": "day",
+   "headline": "New Veo 2 tools for filmmakers: reference images for characters and styles, camera controls, outpainting, and object add/remove; first in Flow.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "Reference-powered video and camera controls were available in Flow on the day; Vertex AI API \"in the coming weeks\"."
+   },
+   "claims": [
+    {
+     "claim": "Blog post dated 20 May 2025.",
+     "quote": "Fuel your creativity with new generative media models and tools May 20, 2025",
+     "source_url": "https://blog.google/innovation-and-ai/products/generative-media-models-io-2025/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Reference-powered video: give Veo images of characters, scenes, objects and styles.",
+     "quote": "allows you to give Veo images of characters, scenes, objects, and even styles for better creative control and consistency.",
+     "source_url": "https://blog.google/innovation-and-ai/products/generative-media-models-io-2025/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Camera controls: rotations, dollies, zooms.",
+     "quote": "Camera controls help you define precise camera movements, including rotations, dollies and zooms, to achieve the perfect shot.",
+     "source_url": "https://blog.google/innovation-and-ai/products/generative-media-models-io-2025/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Outpainting: portrait to landscape.",
+     "quote": "Outpainting allows you to broaden your frame, turning your video from portrait to landscape",
+     "source_url": "https://blog.google/innovation-and-ai/products/generative-media-models-io-2025/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Object add and remove.",
+     "quote": "Object add and remove lets you add or erase objects from your videos.",
+     "source_url": "https://blog.google/innovation-and-ai/products/generative-media-models-io-2025/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Reference video and camera controls live in Flow.",
+     "quote": "Reference powered video and camera controls are available now in Flow",
+     "source_url": "https://blog.google/innovation-and-ai/products/generative-media-models-io-2025/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Same I/O 2025 blog post as Veo 3 and Flow (dated 20 May 2025). Good source for the \"more control\" chapter."
+  },
+  {
+   "id": "google_flow_launch_2025_05_20",
+   "developer": "Google Labs / Google DeepMind",
+   "family": "Flow",
+   "version": "Flow",
+   "event": "public_release",
+   "date": "2025-05-20",
+   "date_precision": "day",
+   "headline": "Google launches Flow, an AI filmmaking tool built around Veo, Imagen and Gemini, for Google AI Pro and Ultra subscribers in the U.S.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "Product, not a model. Oct 2025 post reports over 275 million videos generated in Flow (includes Veo 2 and Veo 3)."
+   },
+   "claims": [
+    {
+     "claim": "Blog post dated 20 May 2025.",
+     "quote": "Fuel your creativity with new generative media models and tools May 20, 2025",
+     "source_url": "https://blog.google/innovation-and-ai/products/generative-media-models-io-2025/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Flow described as an AI filmmaking tool for cinematic clips, scenes and stories.",
+     "quote": "Flow is an AI filmmaking tool that lets you seamlessly create cinematic clips, scenes and stories",
+     "source_url": "https://blog.google/innovation-and-ai/products/generative-media-models-io-2025/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Available to AI Pro and Ultra subscribers in the U.S. at launch.",
+     "quote": "Flow is available today for Google AI Pro and Ultra plan subscribers in the U.S., with more countries coming soon.",
+     "source_url": "https://blog.google/innovation-and-ai/products/generative-media-models-io-2025/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Oct 2025: 275 million videos generated in Flow (Veo 2 and Veo 3 generations).",
+     "quote": "over 275 million videos generated in Flow",
+     "source_url": "https://blog.google/innovation-and-ai/products/veo-updates-flow/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Flow reached over 140 countries by I/O 2026 per the I/O 2026 roundup."
+  },
+  {
+   "id": "google_veo3_2025_05_20",
+   "developer": "Google DeepMind",
+   "family": "Veo",
+   "version": "Veo 3",
+   "event": "version_release",
+   "date": "2025-05-20",
+   "date_precision": "day",
+   "headline": "Veo 3 is Google's first Veo model to generate native audio (dialogue, sound effects, ambience); launched to Ultra subscribers in Gemini and Flow.",
+   "specs": {
+    "max_clip_s": 8,
+    "resolution": "Not stated in launch post; Vertex docs for veo-3.0-generate-001 (GA 2025-07-29) list 720p and 1080p; 4K was added in the API on 2026-01-13",
+    "fps": null,
+    "audio": "Native: dialogue, sound effects, ambient noise, generated with the video",
+    "notes": "8-second length is from the Gemini app page captured 2025-05-30 (\"8-second videos\"). Frame rate not stated at launch (later Vertex docs: 24 FPS)."
+   },
+   "claims": [
+    {
+     "claim": "Blog post dated 20 May 2025.",
+     "quote": "Fuel your creativity with new generative media models and tools May 20, 2025",
+     "source_url": "https://blog.google/innovation-and-ai/products/generative-media-models-io-2025/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "For the first time the model generates video with audio.",
+     "quote": "for the first time, can also generate videos with audio — traffic noises in the background of a city street scene",
+     "source_url": "https://blog.google/innovation-and-ai/products/generative-media-models-io-2025/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Available to Ultra subscribers in the U.S. in Gemini app and Flow.",
+     "quote": "Veo 3 is available today for Ultra subscribers in the United States in the Gemini app and in Flow",
+     "source_url": "https://blog.google/innovation-and-ai/products/generative-media-models-io-2025/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Google claims accurate lip syncing and real-world physics.",
+     "quote": "Veo 3 excels from text and image prompting to real-world physics and accurate lip syncing.",
+     "source_url": "https://blog.google/innovation-and-ai/products/generative-media-models-io-2025/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "DeepMind page (Wayback 2025-05-20 23:39 UTC): sound effects, ambient noise, dialogue, generated natively.",
+     "quote": "Veo 3 lets you add sound effects, ambient noise, and even dialogue to your creations – generating all audio natively.",
+     "source_url": "https://web.archive.org/web/20250520233928id_/https://deepmind.google/models/veo/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Gemini app page (Wayback 2025-05-30): 8-second videos.",
+     "quote": "Create high-quality, 8-second videos with Veo 3, our state-of-the-art AI video generator.",
+     "source_url": "https://web.archive.org/web/20250530194309id_/https://gemini.google/overview/video-generation/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "DeepMind launch-week page summary line mentions 4k output (no spec table found; see notes).",
+     "quote": "Greater realism and fidelity, including 4k output and Veo 3’s real world physics and audio",
+     "source_url": "https://web.archive.org/web/20250520233928id_/https://deepmind.google/models/veo/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Tech report: audio and video latents are diffused jointly.",
+     "quote": "Veo 3 uses latent diffusion, in which the diffusion process is applied jointly to the temporal audio latents, and the spatio-temporal video latents.",
+     "source_url": "https://storage.googleapis.com/deepmind-media/veo/Veo-3-Tech-Report.pdf",
+     "source_kind": "paper",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Date, audio and availability are directly quoted. Resolution at launch is a gap: the DeepMind page mentions \"4k output\" in a summary line, but I found no primary spec table from May 2025. Treat launch resolution as unverified."
+  },
+  {
+   "id": "google_veo3_gemini_api_2025_07_17",
+   "developer": "Google DeepMind",
+   "family": "Veo",
+   "version": "Veo 3 (veo-3.0-generate-preview)",
+   "event": "public_release",
+   "date": "2025-07-17",
+   "date_precision": "day",
+   "headline": "Veo 3 reaches developers in paid preview via the Gemini API and Vertex AI, with dialogue, effects and music generated in a single pass.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": "Native audio, single pass",
+    "notes": "Clip length and resolution not stated in the blog post. The GA ID veo-3.0-generate-001 lists a July 29, 2025 release on Vertex AI."
+   },
+   "claims": [
+    {
+     "claim": "Developers blog post dated 17 July 2025.",
+     "quote": "Build with Veo 3, now available in the Gemini API JULY 17, 2025",
+     "source_url": "https://developers.googleblog.com/veo-3-now-available-gemini-api/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Paid preview via Gemini API and Vertex AI.",
+     "quote": "Starting today, we're bringing Veo 3 to developers in paid preview via the Gemini API and Vertex AI",
+     "source_url": "https://developers.googleblog.com/veo-3-now-available-gemini-api/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Audio dialogue, effects and music synchronised in a single pass.",
+     "quote": "Natively generates rich audio—dialogue, effects, and music—and synchronizes it with video in a single pass.",
+     "source_url": "https://developers.googleblog.com/veo-3-now-available-gemini-api/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Vertex AI docs list GA on 29 July 2025.",
+     "quote": "veo-3.0-generate-001 Launch stage: GA Release date: July 29, 2025",
+     "source_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/veo/3-0-generate",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Blog page fetched live. The Gemini deprecation table lists 2025-07-31 as the release date of the preview IDs (blog says 17 July) and 2025-11-12 as their scheduled shutdown; treat the blog date as the announcement date."
+  },
+  {
+   "id": "google_genie3_2025_08_05",
+   "developer": "Google DeepMind",
+   "family": "Genie",
+   "version": "Genie 3",
+   "event": "preview",
+   "date": "2025-08-05",
+   "date_precision": "day",
+   "headline": "Genie 3 generates navigable worlds from text prompts in real time at 24 fps and 720p, staying consistent for a few minutes.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": "720p",
+    "fps": 24,
+    "audio": null,
+    "notes": "World model, not a clip generator: interaction is real time; consistency lasts \"a few minutes\"."
+   },
+   "claims": [
+    {
+     "claim": "DeepMind blog post dated 5 August 2025.",
+     "quote": "August 5, 2025 Models Genie 3: A new frontier for world models",
+     "source_url": "https://deepmind.google/blog/genie-3-a-new-frontier-for-world-models/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Real-time 24 fps, 720p, consistency for a few minutes.",
+     "quote": "navigate in real time at 24 frames per second, retaining consistency for a few minutes at a resolution of 720p",
+     "source_url": "https://deepmind.google/blog/genie-3-a-new-frontier-for-world-models/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Google's January 2026 post confirms Genie 3 was previewed in August 2025.",
+     "quote": "In August, we previewed Genie 3",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/google-deepmind/project-genie/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Included for the \"moving worlds\" arc. It was a preview, not a public product, at this stage."
+  },
+  {
+   "id": "google_veo3_vertical_1080p_2025_09_08",
+   "developer": "Google DeepMind",
+   "family": "Veo",
+   "version": "Veo 3 and Veo 3 Fast (stable)",
+   "event": "version_release",
+   "date": "2025-09-08",
+   "date_precision": "day",
+   "headline": "Veo 3 and Veo 3 Fast become stable in the Gemini API with 9:16 vertical output, 1080p and lower prices.",
+   "specs": {
+    "max_clip_s": 8,
+    "resolution": "720p or 1080p",
+    "fps": 24,
+    "audio": "Native audio",
+    "notes": "Vertex docs for Veo 3: video lengths 4, 6 or 8 s; 24 FPS; 720p and 1080p."
+   },
+   "claims": [
+    {
+     "claim": "Developers blog post dated 8 September 2025.",
+     "quote": "Veo 3 and Veo 3 Fast – new pricing, new configurations and better resolution SEPT. 8, 2025",
+     "source_url": "https://developers.googleblog.com/en/veo-3-and-veo-3-fast-new-pricing-new-configurations-and-better-resolution/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Vertical 9:16, 1080p and lower pricing launched.",
+     "quote": "Today, we’re launching three big Veo updates: support for vertical format outputs (9:16 aspect ratio), 1080p HD output, and new, lower pricing.",
+     "source_url": "https://developers.googleblog.com/en/veo-3-and-veo-3-fast-new-pricing-new-configurations-and-better-resolution/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Vertex docs: video lengths 4, 6 or 8 seconds.",
+     "quote": "Video lengths: 4, 6, or 8 seconds Maximum number of output videos per prompt: 4",
+     "source_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/veo/3-0-generate",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Vertex docs: 720p and 1080p, 24 FPS.",
+     "quote": "Supported output resolutions: 720p, 1080p Supported framerates: 24 FPS",
+     "source_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/veo/3-0-generate",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Gemini deprecation table lists veo-3.0-generate-001 with release date 9 September 2025.",
+     "quote": "veo-3.0-generate-001 September 9, 2025 June 30, 2026",
+     "source_url": "https://ai.google.dev/gemini-api/docs/deprecations",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Relevant to a 9:16 film: a 9:16 aspect-ratio option in the Gemini API dates from this post for Veo 3 and Veo 3 Fast."
+  },
+  {
+   "id": "openai_sora2_release_2025_09_30",
+   "developer": "OpenAI",
+   "family": "Sora",
+   "version": "Sora 2",
+   "event": "version_release",
+   "date": "2025-09-30",
+   "date_precision": "day",
+   "headline": "Sora 2 adds synchronized dialogue and sound effects, better physics and multi-shot control, and launches with a social iOS app.",
+   "specs": {
+    "max_clip_s": 10,
+    "resolution": null,
+    "fps": null,
+    "audio": "Synchronized dialogue and sound effects (generated with the video)",
+    "notes": "The 10-second figure is the default duration named in the 2025-10-15 release notes; the launch post gives no clip length or resolution. Later: 15 s for all users and 25 s for Pro on web (2025-10-15)."
+   },
+   "claims": [
+    {
+     "claim": "Launch post dated 30 September 2025.",
+     "quote": "September 30, 2025 Research Release Product Sora 2 is here",
+     "source_url": "https://web.archive.org/web/20250930222332id_/https://openai.com/index/sora-2/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "OpenAI headline: more physically accurate, realistic and controllable than prior systems.",
+     "quote": "Our latest video generation model is more physically accurate, realistic, and more controllable than prior systems.",
+     "source_url": "https://web.archive.org/web/20250930222332id_/https://openai.com/index/sora-2/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Sora 2 is called OpenAI's flagship video and audio generation model.",
+     "quote": "Today we’re releasing Sora 2, our flagship video and audio generation model.",
+     "source_url": "https://web.archive.org/web/20250930222332id_/https://openai.com/index/sora-2/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Synchronized dialogue and sound effects.",
+     "quote": "It also features synchronized dialogue and sound effects.",
+     "source_url": "https://web.archive.org/web/20250930222332id_/https://openai.com/index/sora-2/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Follows instructions spanning multiple shots while persisting world state.",
+     "quote": "able to follow intricate instructions spanning multiple shots while accurately persisting world state.",
+     "source_url": "https://web.archive.org/web/20250930222332id_/https://openai.com/index/sora-2/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Higher-quality Sora 2 Pro model announced for ChatGPT Pro users on sora.com.",
+     "quote": "ChatGPT Pro users will also be able to use our experimental, higher quality Sora 2 Pro model on sora.com",
+     "source_url": "https://web.archive.org/web/20250930222332id_/https://openai.com/index/sora-2/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Default duration of 10 seconds (release notes, 2025-10-15).",
+     "quote": "in addition to the 10-second default",
+     "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "OpenAI states the model is far from perfect.",
+     "quote": "The model is far from perfect and makes plenty of mistakes",
+     "source_url": "https://web.archive.org/web/20250930222332id_/https://openai.com/index/sora-2/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Archived copy of the official post (Wayback 2025-09-30 22:23 UTC). Veo 3 (2025-05-20) shipped native audio about four months earlier; do not present Sora 2 as first with audio. Sora 2 Pro was described as experimental at launch."
+  },
+  {
+   "id": "openai_sora_app_launch_2025_09_30",
+   "developer": "OpenAI",
+   "family": "Sora app",
+   "version": "Sora (iOS app)",
+   "event": "public_release",
+   "date": "2025-09-30",
+   "date_precision": "day",
+   "headline": "OpenAI launches a social \"Sora\" iOS app built on Sora 2, with remixing, a feed and \"cameos\"; rollout starts in the U.S. and Canada.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "Access opened per account (in-app notification). All videos carried a visible moving watermark at launch plus C2PA metadata."
+   },
+   "claims": [
+    {
+     "claim": "Launch post dated 30 September 2025.",
+     "quote": "September 30, 2025 Research Release Product Sora 2 is here",
+     "source_url": "https://web.archive.org/web/20250930222332id_/https://openai.com/index/sora-2/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "A new social iOS app called Sora, powered by Sora 2.",
+     "quote": "we’re launching a new social iOS app just called “Sora,” powered by Sora 2.",
+     "source_url": "https://web.archive.org/web/20250930222332id_/https://openai.com/index/sora-2/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Cameos let a user place themselves in any Sora scene after a one-time recording.",
+     "quote": "With cameos, you can drop yourself straight into any Sora scene with remarkable fidelity",
+     "source_url": "https://web.archive.org/web/20250930222332id_/https://openai.com/index/sora-2/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Initial rollout in the U.S. and Canada.",
+     "quote": "We’re starting the initial rollout in the U.S. and Canada today with the intent to quickly expand to additional countries.",
+     "source_url": "https://web.archive.org/web/20250930222332id_/https://openai.com/index/sora-2/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Every Sora video carried a visible moving watermark at launch.",
+     "quote": "At launch, all Sora videos include a visible moving watermark.",
+     "source_url": "https://web.archive.org/web/20251001215022id_/https://help.openai.com/en/articles/12456897-getting-started-with-the-sora-app",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "C2PA provenance metadata embedded.",
+     "quote": "They also embed C2PA metadata—an industry-standard, tamper-proof signature.",
+     "source_url": "https://web.archive.org/web/20251001215022id_/https://help.openai.com/en/articles/12456897-getting-started-with-the-sora-app",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Access opened per account; users signed up in-app for a notification.",
+     "quote": "You can sign up in-app for a push notification when access opens for your account.",
+     "source_url": "https://web.archive.org/web/20250930222332id_/https://openai.com/index/sora-2/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Sources: launch post (Wayback 2025-09-30) and help-center page (Wayback 2025-10-01). Any Sora 2 clip used in the film would show the moving watermark; keep it visible."
+  },
+  {
+   "id": "openai_sora2_api_2025_10_06",
+   "developer": "OpenAI",
+   "family": "Sora",
+   "version": "sora-2 and sora-2-pro (Videos API)",
+   "event": "public_release",
+   "date": "2025-10-06",
+   "date_precision": "day",
+   "headline": "Sora 2 and Sora 2 Pro reach developers through the Videos API (v1/videos), announced with other releases at OpenAI DevDay.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": "sora-2 model page lists portrait 720x1280 and landscape 1280x720; 1080p for sora-2-pro only from 2026-03-12",
+    "fps": null,
+    "audio": "Yes (\"synced audio\" per model page)",
+    "notes": "Initial per-request duration limits not verified from a primary source. Later docs: up to 20 s per generation."
+   },
+   "claims": [
+    {
+     "claim": "Changelog entry dated Oct 6 (under October 2025) lists sora-2 and sora-2-pro.",
+     "quote": "Oct 6 Feature gpt-5-pro gpt-realtime-mini gpt-audio-mini gpt-image-1-mini sora-2 sora-2-pro",
+     "source_url": "https://developers.openai.com/api/docs/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "The same entry says these were released at OpenAI DevDay.",
+     "quote": "Released several new features at OpenAI DevDay",
+     "source_url": "https://developers.openai.com/api/docs/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "v1/videos launched with Sora 2 and Sora 2 Pro.",
+     "quote": "Launched v1/videos for rich, detailed, and dynamic video generation and remixing with our latest Sora 2 and Sora 2 Pro models.",
+     "source_url": "https://developers.openai.com/api/docs/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Resolution options on the sora-2 model page.",
+     "quote": "Portrait: 720x1280 Landscape: 1280x720",
+     "source_url": "https://developers.openai.com/api/docs/models/sora-2",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Model page describes flagship video generation with synced audio.",
+     "quote": "Flagship video generation with synced audio",
+     "source_url": "https://developers.openai.com/api/docs/models/sora-2",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "The 30 Sep launch post had announced API plans.",
+     "quote": "We also plan to release Sora 2 in the API.",
+     "source_url": "https://web.archive.org/web/20250930222332id_/https://openai.com/index/sora-2/",
+     "source_kind": "archived_official",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Docs retrieved live on 2026-09-29; the model page now carries a shutdown banner. Model snapshot names seen in the deprecation table: sora-2-2025-10-06, sora-2-2025-12-08, sora-2-pro-2025-10-06."
+  },
+  {
+   "id": "openai_sora2_storyboards_15s_25s_2025_10_15",
+   "developer": "OpenAI",
+   "family": "Sora",
+   "version": "Sora 2 (storyboards; 15 s and 25 s durations)",
+   "event": "version_release",
+   "date": "2025-10-15",
+   "date_precision": "day",
+   "headline": "Sora adds storyboards in beta for Pro users on sora.com and longer clips: 15 seconds for all users, 25 seconds for Pro on web.",
+   "specs": {
+    "max_clip_s": 25,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "25 s only for Pro users on web with storyboard; all users got 15 s in addition to the 10 s default."
+   },
+   "claims": [
+    {
+     "claim": "Release-notes entry dated 15 October 2025: storyboards for Sora 2 launched in beta on sora.com.",
+     "quote": "October 15, 2025 Today, we’re launching storyboards for Sora 2 in sora.com in beta.",
+     "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Pro users can generate 25-second videos on web with storyboard.",
+     "quote": "Pro users can now generate videos of 25 seconds on web with storyboard.",
+     "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "All users can generate 15-second videos.",
+     "quote": "All users can generate 15-second videos on the app",
+     "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "The default duration stays 10 seconds.",
+     "quote": "in addition to the 10-second default",
+     "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Longer clips consume more of the daily allowance.",
+     "quote": "Usage: 15-second videos count as two videos toward daily limits; 25-second videos count as four.",
+     "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+     "source_kind": "archived_official",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Release-notes page (Wayback 2026-03-27)."
+  },
+  {
+   "id": "google_veo31_2025_10_15",
+   "developer": "Google DeepMind",
+   "family": "Veo",
+   "version": "Veo 3.1 and Veo 3.1 Fast",
+   "event": "version_release",
+   "date": "2025-10-15",
+   "date_precision": "day",
+   "headline": "Veo 3.1 adds reference images, first/last-frame transitions and scene extension with audio; Flow gains insert and audio across features.",
+   "specs": {
+    "max_clip_s": 8,
+    "resolution": "720p or 1080p at launch (4K added 2026-01-13)",
+    "fps": 24,
+    "audio": "Native audio",
+    "notes": "Durations 4, 6 or 8 s; extension builds videos up to 148 s in total; up to 3 reference images."
+   },
+   "claims": [
+    {
+     "claim": "Google blog post dated 15 October 2025.",
+     "quote": "Introducing Veo 3.1 and advanced capabilities in Flow Oct 15, 2025",
+     "source_url": "https://blog.google/innovation-and-ai/products/veo-updates-flow/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Veo 3.1 builds on Veo 3 with stronger prompt adherence and better image-to-video quality.",
+     "quote": "Veo 3.1 is state-of-the-art and builds on Veo 3, with stronger prompt adherence and improved audiovisual quality when turning images into videos.",
+     "source_url": "https://blog.google/innovation-and-ai/products/veo-updates-flow/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Audio now works with Ingredients to Video, Frames to Video and Extend.",
+     "quote": "we’re also bringing audio to existing capabilities like “Ingredients to Video,” “Frames to Video” and “Extend.”",
+     "source_url": "https://blog.google/innovation-and-ai/products/veo-updates-flow/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Extend can create videos lasting a minute or more.",
+     "quote": "you can create longer videos, even lasting for a minute or more",
+     "source_url": "https://blog.google/innovation-and-ai/products/veo-updates-flow/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Insert adds elements with shadows and lighting handled.",
+     "quote": "Flow now handles complex details like shadows and scene lighting, making the addition look natural.",
+     "source_url": "https://blog.google/innovation-and-ai/products/veo-updates-flow/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Google calls the features experimental.",
+     "quote": "These features are experimental and actively improving",
+     "source_url": "https://blog.google/innovation-and-ai/products/veo-updates-flow/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Footnote: add/remove object not available yet.",
+     "quote": "are not available at the moment",
+     "source_url": "https://blog.google/innovation-and-ai/products/veo-updates-flow/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Developers blog post dated 15 October 2025.",
+     "quote": "Introducing Veo 3.1 and new creative capabilities in the Gemini API OCT. 15, 2025",
+     "source_url": "https://developers.googleblog.com/en/introducing-veo-3-1-and-new-creative-capabilities-in-the-gemini-api/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Veo 3.1 and 3.1 Fast in paid preview in the Gemini API.",
+     "quote": "Today, we are releasing Veo 3.1 and Veo 3.1 Fast in paid preview in the Gemini API",
+     "source_url": "https://developers.googleblog.com/en/introducing-veo-3-1-and-new-creative-capabilities-in-the-gemini-api/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Up to 3 reference images for consistency across shots.",
+     "quote": "providing up to 3 reference images of a character, object, or scene.",
+     "source_url": "https://developers.googleblog.com/en/introducing-veo-3-1-and-new-creative-capabilities-in-the-gemini-api/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "First-and-last-frame interpolation with audio.",
+     "quote": "By providing a starting and an ending image, you can direct Veo 3.1 to generate the transition between them, complete with accompanying audio.",
+     "source_url": "https://developers.googleblog.com/en/introducing-veo-3-1-and-new-creative-capabilities-in-the-gemini-api/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Current Gemini API docs: 8-second videos at 720p, 1080p or 4k with native audio.",
+     "quote": "Veo 3.1 is a model for generating 8-second videos (720p, 1080p, or 4k) with natively generated audio.",
+     "source_url": "https://ai.google.dev/gemini-api/docs/veo",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Docs: durations 8, 6 or 4 seconds.",
+     "quote": "Video duration: Length of the generated video. 8 seconds, 6 seconds, 4 seconds",
+     "source_url": "https://ai.google.dev/gemini-api/docs/veo",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Docs: 24 fps.",
+     "quote": "Frame rate: The output frame rate of the video. 24fps 24fps 24fps",
+     "source_url": "https://ai.google.dev/gemini-api/docs/veo",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Docs: extension output combines input and extension for up to 148 seconds.",
+     "quote": "combining the user input video and the generated extended video for up to 148 seconds of video",
+     "source_url": "https://ai.google.dev/gemini-api/docs/veo",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Gemini API changelog entry for 15 October 2025.",
+     "quote": "October 15, 2025 Released Veo 3.1 and 3.1 Fast models in public preview",
+     "source_url": "https://ai.google.dev/gemini-api/docs/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Durations 4, 6 and 8 seconds.",
+     "quote": "This launch also added more options for Veo 3 output video durations: 4, 6, and 8 seconds.",
+     "source_url": "https://ai.google.dev/gemini-api/docs/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "This is the \"Veo 3.1 (Oct 2025)\" milestone. As of 2026-09-29 the DeepMind Veo page still shows Veo 3.1 as the current Veo model."
+  },
+  {
+   "id": "openai_sora_characters_2025_10_29",
+   "developer": "OpenAI",
+   "family": "Sora app",
+   "version": "Sora characters (character cameos) and stitching",
+   "event": "version_release",
+   "date": "2025-10-29",
+   "date_precision": "day",
+   "headline": "Sora adds reusable \"character cameos\" (pets, toys, original personas) with separate permissions, and clip stitching for longer sequences.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "Later renamed: the 2026-02-04 notes call the feature \"Sora Characters (formerly known as the cameo feature)\"."
+   },
+   "claims": [
+    {
+     "claim": "Release-notes entry dated 29 October 2025: character cameos introduced.",
+     "quote": "October 29, 2025 Today, we’re introducing character cameos in Sora.",
+     "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Stitching added to build longer videos from clips.",
+     "quote": "We’re also making it easier to create more expansive videos with stitching on the Sora app and sora.com.",
+     "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+     "source_kind": "archived_official",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Release-notes page (Wayback 2026-03-27). Relevant to the \"character references\" beat, but the film should say it was an app feature, not a model-level identity lock."
+  },
+  {
+   "id": "openai_sora_android_2025_11_04",
+   "developer": "OpenAI",
+   "family": "Sora app",
+   "version": "Sora (Android app)",
+   "event": "public_release",
+   "date": "2025-11-04",
+   "date_precision": "day",
+   "headline": "The Sora app arrives on Android in all markets where Sora is available.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "At launch some features were not supported on Android (see claims)."
+   },
+   "claims": [
+    {
+     "claim": "Release-notes entry dated 4 November 2025: Sora app released on Android.",
+     "quote": "November 4, 2025 Today, we’re releasing the Sora app on Android in all markets where Sora is available",
+     "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Markets at launch.",
+     "quote": "(U.S., Canada, Japan, Korea, Thailand, Vietnam, Taiwan)",
+     "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Character creation, stitching and extra-video purchases were not supported at Android launch.",
+     "quote": "features like creating characters, stitching, and the ability to purchase additional videos beyond included usage is not supported",
+     "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+     "source_kind": "archived_official",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Release-notes page (Wayback 2026-03-27)."
+  },
+  {
+   "id": "google_veo31_vertex_ga_2025_11_17",
+   "developer": "Google DeepMind",
+   "family": "Veo",
+   "version": "veo-3.1-generate-001 (Vertex AI / Gemini Enterprise Agent Platform)",
+   "event": "public_release",
+   "date": "2025-11-17",
+   "date_precision": "day",
+   "headline": "Veo 3.1 reaches general availability on Google Cloud's enterprise platform with 720p, 1080p and 4K output at 24 fps.",
+   "specs": {
+    "max_clip_s": 8,
+    "resolution": "720p, 1080p, 4K (output)",
+    "fps": 24,
+    "audio": "Sound generation supported",
+    "notes": "Video lengths 4, 6 or 8 s; reference-image-to-video only 8 s."
+   },
+   "claims": [
+    {
+     "claim": "Docs list launch stage GA, release date 17 November 2025.",
+     "quote": "veo-3.1-generate-001 Launch stage: GA Release date: November 17, 2025",
+     "source_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/veo/3-1-generate",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Video lengths.",
+     "quote": "Video lengths: 4, 6, or 8 seconds; reference image to video only supports 8 seconds.",
+     "source_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/veo/3-1-generate",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Output resolutions and frame rate.",
+     "quote": "Supported output resolutions: 720p, 1080p, 4K Supported framerates: 24 FPS",
+     "source_url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/veo/3-1-generate",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "medium",
+   "notes": "The date is the \"release date\" field of the Google Cloud model docs (a docs field, not a blog announcement); the docs now sit under the renamed \"Gemini Enterprise Agent Platform\"."
+  },
+  {
+   "id": "openai_sora2_stability_update_2025_11_25",
+   "developer": "OpenAI",
+   "family": "Sora",
+   "version": "Sora 2 (stability update)",
+   "event": "version_release",
+   "date": "2025-11-25",
+   "date_precision": "day",
+   "headline": "OpenAI ships Sora 2 improvements that reduce visual flickering and improve overall stability.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "Shows flicker was still an acknowledged problem two months after launch."
+   },
+   "claims": [
+    {
+     "claim": "Release-notes entry dated 25 November 2025: improvements reducing visual flickering and improving stability.",
+     "quote": "November 25, 2025 We’ve shipped improvements to Sora 2 that reduce visual flickering and improve overall stability.",
+     "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+     "source_kind": "archived_official",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Release-notes page (Wayback 2026-03-27)."
+  },
+  {
+   "id": "openai_sora2_api_snapshot_2026_01_13",
+   "developer": "OpenAI",
+   "family": "Sora",
+   "version": "sora-2-2025-12-08 (snapshot behind the sora-2 alias)",
+   "event": "version_release",
+   "date": "2026-01-13",
+   "date_precision": "day",
+   "headline": "The sora-2 API alias is repointed to the sora-2-2025-12-08 snapshot; the previous sora-2-2025-10-06 snapshot stays selectable.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "The 2025-12-08 in the snapshot name is a snapshot label, not a confirmed release date."
+   },
+   "claims": [
+    {
+     "claim": "Changelog entry Jan 13 (under January 2026).",
+     "quote": "Jan 13 Update sora-2 Updated the sora-2 slug to point to sora-2-2025-12-08",
+     "source_url": "https://developers.openai.com/api/docs/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "medium",
+   "notes": "The entry sits under the \"January, 2026\" heading of the changelog (checked by page position). The \"previous snapshot\" sentence is in the same changelog entry."
+  },
+  {
+   "id": "google_veo31_ingredients_vertical_upscale_2026_01_13",
+   "developer": "Google DeepMind",
+   "family": "Veo",
+   "version": "Veo 3.1 (Ingredients to Video update)",
+   "event": "version_release",
+   "date": "2026-01-13",
+   "date_precision": "day",
+   "headline": "Veo 3.1 Ingredients to Video gets native 9:16 vertical output, better identity consistency, and upscaling to 1080p and 4K.",
+   "specs": {
+    "max_clip_s": 8,
+    "resolution": "1080p and 4K via upscaling (Flow, Gemini API, Vertex AI only)",
+    "fps": null,
+    "audio": "Native audio (unchanged)",
+    "notes": "API changelog: 4K output resolutions added for Veo."
+   },
+   "claims": [
+    {
+     "claim": "Google blog post dated 13 January 2026.",
+     "quote": "Veo 3.1 Ingredients to Video: More consistency, creativity and control Jan 13, 2026",
+     "source_url": "https://blog.google/innovation-and-ai/technology/ai/veo-3-1-ingredients-to-video/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Native vertical outputs for Ingredients to Video.",
+     "quote": "Native vertical outputs for Ingredients to Video (portrait mode) to power mobile-first, short-form video creation",
+     "source_url": "https://blog.google/innovation-and-ai/technology/ai/veo-3-1-ingredients-to-video/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Improved identity consistency for characters across settings.",
+     "quote": "Keep your characters looking the same even as the setting changes",
+     "source_url": "https://blog.google/innovation-and-ai/technology/ai/veo-3-1-ingredients-to-video/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Upscaling to 1080p/4K limited to Flow, the Gemini API and Vertex AI.",
+     "quote": "Upscaling to 1080p and 4K is only available in Flow, the Gemini API and Vertex AI",
+     "source_url": "https://blog.google/innovation-and-ai/technology/ai/veo-3-1-ingredients-to-video/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Gemini API changelog: 4K resolutions and wider portrait support.",
+     "quote": "January 13, 2026 Added 4k output resolutions for Veo and more support for portrait videos in all resolutions.",
+     "source_url": "https://ai.google.dev/gemini-api/docs/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "First Google 2026 video-model update."
+  },
+  {
+   "id": "google_project_genie_2026_01_29",
+   "developer": "Google DeepMind",
+   "family": "Genie",
+   "version": "Project Genie (Genie 3)",
+   "event": "public_release",
+   "date": "2026-01-29",
+   "date_precision": "day",
+   "headline": "Project Genie opens Genie 3 world generation to U.S. Google AI Ultra subscribers as an experimental prototype, limited to 60-second worlds.",
+   "specs": {
+    "max_clip_s": 60,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "Experimental research prototype; some Genie 3 features (promptable events) not included."
+   },
+   "claims": [
+    {
+     "claim": "Google blog post dated 29 January 2026.",
+     "quote": "Project Genie: Experimenting with infinite, interactive worlds Jan 29, 2026",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/google-deepmind/project-genie/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Rolling out to Google AI Ultra subscribers in the U.S. (18+).",
+     "quote": "Starting today, we're rolling out access to Project Genie for Google AI Ultra subscribers in the U.S (18+).",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/google-deepmind/project-genie/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Generations limited to 60 seconds.",
+     "quote": "Limitations in generations to 60 seconds",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/google-deepmind/project-genie/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Worlds may not look true-to-life or follow prompts or physics.",
+     "quote": "Generated worlds might not look completely true-to-life or always adhere closely to prompts or images, or real-world physics",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/google-deepmind/project-genie/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Promptable events announced in August are not yet in the prototype.",
+     "quote": "promptable events that change the world as you explore it, are not yet included in this prototype",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/google-deepmind/project-genie/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "World model, not a clip model; included for the \"moving worlds\" arc."
+  },
+  {
+   "id": "openai_sora_i2v_people_2026_02_04",
+   "developer": "OpenAI",
+   "family": "Sora app",
+   "version": "Sora Image 2 Video with people",
+   "event": "version_release",
+   "date": "2026-02-04",
+   "date_precision": "day",
+   "headline": "Sora lets eligible users make videos from photos of people, after attesting they have consent, under stricter guardrails.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "Realistic people detected in the input image are stylized automatically."
+   },
+   "claims": [
+    {
+     "claim": "Release-notes entry dated 4 February 2026: Image 2 Video with people.",
+     "quote": "February 4, 2026 Image 2 Video with people",
+     "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Uploading images with people to make videos was enabled for eligible users.",
+     "quote": "Starting today, eligible users can upload images with people to make videos in Sora",
+     "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Videos where a realistic person is detected in the input image are visually stylized automatically.",
+     "quote": "where a realistic person is detected in the input image will be visually stylized automatically",
+     "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+     "source_kind": "archived_official",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Release-notes page (Wayback 2026-03-27)."
+  },
+  {
+   "id": "openai_sora_extensions_2026_02_09",
+   "developer": "OpenAI",
+   "family": "Sora app",
+   "version": "Sora Extensions",
+   "event": "version_release",
+   "date": "2026-02-09",
+   "date_precision": "day",
+   "headline": "Sora Extensions let users continue any draft video; the scene carries characters, settings and vibe forward as a new, longer draft.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "Rolled out on the iOS app and sora.com to all users."
+   },
+   "claims": [
+    {
+     "claim": "Release-notes entry dated 9 February 2026: Extensions.",
+     "quote": "February 9, 2026 Continue your story with Extensions",
+     "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Extensions preserve characters, settings and overall vibe.",
+     "quote": "Sora will carry your scene forward—preserving your characters, settings, and overall vibe",
+     "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Rolled out to all users on the iOS app and Sora.com.",
+     "quote": "Rolling out today on the Sora iOS app and Sora.com to all users, everywhere Sora is available",
+     "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+     "source_kind": "archived_official",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Release-notes page (Wayback 2026-03-27)."
+  },
+  {
+   "id": "openai_sora_api_expansion_2026_03_12",
+   "developer": "OpenAI",
+   "family": "Sora",
+   "version": "sora-2 / sora-2-pro (API expansion)",
+   "event": "version_release",
+   "date": "2026-03-12",
+   "date_precision": "day",
+   "headline": "Sora API gains reusable characters, generations up to 20 seconds, 1080p for sora-2-pro, extensions, Batch support and an edits endpoint.",
+   "specs": {
+    "max_clip_s": 20,
+    "resolution": "sora-2-pro: 1920x1080 or 1080x1920",
+    "fps": null,
+    "audio": "Yes (guide describes clips with audio)",
+    "notes": "Docs: each extension adds up to 20 s; a video can be extended up to six times; 120 s maximum total length."
+   },
+   "claims": [
+    {
+     "claim": "Changelog entry Mar 12 (under March 2026): reusable character references and more.",
+     "quote": "Mar 12 Feature sora-2 sora-2-pro v1/videos v1/videos/characters v1/videos/extensions v1/batch Expanded the Sora API with reusable character references",
+     "source_url": "https://developers.openai.com/api/docs/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Guide describes the model as creating clips with audio.",
+     "quote": "capable of creating richly detailed, dynamic clips with audio from natural language or images",
+     "source_url": "https://developers.openai.com/api/docs/guides/video-generation",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Longer generations up to 20 seconds and 1080p output for sora-2-pro.",
+     "quote": "longer generations up to 20 seconds, 1080p output for sora-2-pro",
+     "source_url": "https://developers.openai.com/api/docs/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "New endpoint for editing existing videos.",
+     "quote": "Added POST /v1/videos/edits for editing existing videos.",
+     "source_url": "https://developers.openai.com/api/docs/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Guide: use sora-2-pro for 1920x1080 or 1080x1920 exports.",
+     "quote": "Use sora-2-pro when you need 1080p exports in 1920x1080 or 1080x1920",
+     "source_url": "https://developers.openai.com/api/docs/guides/video-generation",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Guide: generate videos up to 20 seconds.",
+     "quote": "Generate videos up to 20 seconds when you need longer beats, fuller scenes, or fuller spots.",
+     "source_url": "https://developers.openai.com/api/docs/guides/video-generation",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Guide: extensions reach a maximum total length of 120 seconds.",
+     "quote": "A single video can be extended up to six times, for a maximum total length of 120 seconds.",
+     "source_url": "https://developers.openai.com/api/docs/guides/video-generation",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Changelog and guide retrieved live 2026-09-29. This was announced twelve days before the shutdown notice; the API stayed available until 2026-09-24."
+  },
+  {
+   "id": "openai_sora1_us_sunset_2026_03_13",
+   "developer": "OpenAI",
+   "family": "Sora",
+   "version": "Sora 1 (legacy, Sora Turbo)",
+   "event": "announcement",
+   "date": "2026-03-13",
+   "date_precision": "day",
+   "headline": "Sora 1, the December 2024 legacy experience, stops being available in the United States; Sora opens in Sora 2 by default.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "Event type is a discontinuation (no such value in the schema; mapped to \"announcement\")."
+   },
+   "claims": [
+    {
+     "claim": "Sora 1 no longer available in the United States from 13 March 2026.",
+     "quote": "As of March 13, 2026, Sora 1 is no longer available in the United States.",
+     "source_url": "https://web.archive.org/web/20260328185054id_/https://help.openai.com/en/articles/20001071-sora-1-sunset-faq",
+     "source_kind": "archived_official",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Help-center FAQ captured 2026-03-28. A community-forum post of 2026-02-27 (secondary) had pre-announced the date."
+  },
+  {
+   "id": "openai_sora_editor_2026_03_19",
+   "developer": "OpenAI",
+   "family": "Sora app",
+   "version": "Sora editor",
+   "event": "version_release",
+   "date": "2026-03-19",
+   "date_precision": "day",
+   "headline": "Sora adds an in-app editor on iOS and web: trim with frame-level precision, stitch, reorder, extend, reprompt and remix clips.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "Android was \"coming soon\"."
+   },
+   "claims": [
+    {
+     "claim": "Release-notes entry dated 19 March 2026: editor introduced on iOS and web.",
+     "quote": "March 19, 2026 Edit videos in Sora Today, we’re introducing an editor in Sora on iOS and web, with Android coming soon.",
+     "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Trim, stitch and reorder features.",
+     "quote": "trim clips with frame-level precision, stitch multiple clips into a single sequence, reorder clips in your timeline",
+     "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+     "source_kind": "archived_official",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Release-notes page (Wayback 2026-03-27). Last feature entry before the shutdown notice five days later."
+  },
+  {
+   "id": "openai_sora_discontinuation_announced_2026_03_24",
+   "developer": "OpenAI",
+   "family": "Sora",
+   "version": "Sora app, web and API (discontinuation notice)",
+   "event": "announcement",
+   "date": "2026-03-24",
+   "date_precision": "day",
+   "headline": "OpenAI announces it is discontinuing Sora: web and app on 26 April 2026, the API on 24 September 2026.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "Event type is a discontinuation (mapped to \"announcement\")."
+   },
+   "claims": [
+    {
+     "claim": "API deprecation notice sent to developers on 24 March 2026.",
+     "quote": "On March 24th, 2026, we notified developers using the Videos API and Sora 2 video generation model aliases",
+     "source_url": "https://developers.openai.com/api/docs/deprecations",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Removal from the API set for 24 September 2026.",
+     "quote": "their deprecation and removal from the API on September 24, 2026",
+     "source_url": "https://developers.openai.com/api/docs/deprecations",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Help center gives both discontinuation dates (captured 2026-03-28).",
+     "quote": "The Sora web and app experiences will be discontinued on April 26, 2026. The Sora API will be discontinued on September 24, 2026.",
+     "source_url": "https://web.archive.org/web/20260328020111id_/https://help.openai.com/en/articles/20001152-what-to-know-about-the-sora-discontinuation",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "OpenAI's Sora team statement as quoted by Variety (secondary; original X post not retrieved).",
+     "quote": "We’re saying goodbye to Sora. To everyone who created with Sora, shared it, and built community around it: thank you.",
+     "source_url": "https://variety.com/2026/digital/news/openai-shutting-down-sora-video-disney-1236698277/",
+     "source_kind": "secondary",
+     "retrieved": true
+    },
+    {
+     "claim": "Variety reports OpenAI gave no reason (secondary).",
+     "quote": "without providing a reason for the decision",
+     "source_url": "https://variety.com/2026/digital/news/openai-shutting-down-sora-video-disney-1236698277/",
+     "source_kind": "secondary",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Date and schedule confirmed by two OpenAI primary pages. The reasons behind the decision are NOT confirmed by any primary source (see unverified_leads)."
+  },
+  {
+   "id": "google_veo31_lite_2026_03_31",
+   "developer": "Google DeepMind",
+   "family": "Veo",
+   "version": "Veo 3.1 Lite",
+   "event": "version_release",
+   "date": "2026-03-31",
+   "date_precision": "day",
+   "headline": "Veo 3.1 Lite, Google's most cost-effective video model, launches in the Gemini API: 4-8 second clips at 720p or 1080p, no 4K or extension.",
+   "specs": {
+    "max_clip_s": 8,
+    "resolution": "720p or 1080p (no 4K)",
+    "fps": 24,
+    "audio": "Native audio (always on)",
+    "notes": "Text-to-video and image-to-video; no extension."
+   },
+   "claims": [
+    {
+     "claim": "Google blog post dated 31 March 2026.",
+     "quote": "Build with Veo 3.1 Lite, our most cost-effective video generation model Mar 31, 2026",
+     "source_url": "https://blog.google/innovation-and-ai/technology/ai/veo-3-1-lite/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Described as Google's most cost-effective video model.",
+     "quote": "Google’s most cost-effective video model",
+     "source_url": "https://blog.google/innovation-and-ai/technology/ai/veo-3-1-lite/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Docs list the output as video with audio.",
+     "quote": "Output Video with audio",
+     "source_url": "https://ai.google.dev/gemini-api/docs/models/veo-3.1-lite-generate-preview",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Duration 4, 6 or 8 seconds.",
+     "quote": "Developers can also customize duration at 4s, 6s or 8s, with cost adjusting accordingly.",
+     "source_url": "https://blog.google/innovation-and-ai/technology/ai/veo-3-1-lite/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Landscape and portrait, 720p and 1080p.",
+     "quote": "It offers flexible framing for landscape (16:9) and portrait (9:16) ratios and 720p and 1080p video resolutions.",
+     "source_url": "https://blog.google/innovation-and-ai/technology/ai/veo-3-1-lite/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Docs: no 4K outputs or Extension.",
+     "quote": "Veo 3.1 Lite Preview does not support 4K outputs or Extension",
+     "source_url": "https://ai.google.dev/gemini-api/docs/models/veo-3.1-lite-generate-preview",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Gemini API changelog entry dated 31 March 2026.",
+     "quote": "March 31, 2026 Launched Veo 3.1 Lite Preview",
+     "source_url": "https://ai.google.dev/gemini-api/docs/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Vertex AI announcement dated 3 April 2026.",
+     "quote": "Veo 3.1 Lite and a new Veo upscaling capability on Vertex AI April 3, 2026",
+     "source_url": "https://cloud.google.com/blog/products/ai-machine-learning/veo-3-1-lite-and-a-new-veo-upscaling-capability-on-vertex-ai",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Model card published 8 April 2026.",
+     "quote": "Published 8 April 2026 Veo 3.1 Lite",
+     "source_url": "https://deepmind.google/models/model-cards/veo-3-1-lite/",
+     "source_kind": "model_card",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Google Cloud's Vertex AI post is dated 3 April 2026; the developer blog and the Gemini API changelog give 31 March 2026."
+  },
+  {
+   "id": "openai_sora_app_discontinued_2026_04_26",
+   "developer": "OpenAI",
+   "family": "Sora",
+   "version": "Sora web and app",
+   "event": "announcement",
+   "date": "2026-04-26",
+   "date_precision": "day",
+   "headline": "OpenAI ends the Sora web and app experiences; users are told to export content via sora.chatgpt.com/sunset.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "Event type is a discontinuation (mapped to \"announcement\")."
+   },
+   "claims": [
+    {
+     "claim": "Help-center page captured 2026-06-30 uses the past tense: web and app were discontinued on 26 April 2026.",
+     "quote": "The Sora web and app experiences were discontinued on April 26, 2026.",
+     "source_url": "https://web.archive.org/web/20260630192218id_/https://help.openai.com/en/articles/20001152-what-to-know-about-the-sora-discontinuation",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Same date announced in advance in the March capture.",
+     "quote": "The Sora web and app experiences will be discontinued on April 26, 2026. The Sora API will be discontinued on September 24, 2026.",
+     "source_url": "https://web.archive.org/web/20260328020111id_/https://help.openai.com/en/articles/20001152-what-to-know-about-the-sora-discontinuation",
+     "source_kind": "archived_official",
+     "retrieved": true
+    },
+    {
+     "claim": "Export route named on the June capture.",
+     "quote": "You can export content you created in Sora by going to sora.chatgpt.com/sunset and clicking on Export",
+     "source_url": "https://web.archive.org/web/20260630192218id_/https://help.openai.com/en/articles/20001152-what-to-know-about-the-sora-discontinuation",
+     "source_kind": "archived_official",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Post-date confirmation comes from the June 2026 archive capture."
+  },
+  {
+   "id": "google_flow_agent_tools_2026_05",
+   "developer": "Google Labs / Google DeepMind",
+   "family": "Flow",
+   "version": "Google Flow Agent and Flow Tools",
+   "event": "version_release",
+   "date": "2026-05",
+   "date_precision": "month",
+   "headline": "Google adds Flow Agent for multi-step creative tasks and Flow Tools, letting users vibe-code their own effects and creative tools inside Flow.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "Product features, not a model."
+   },
+   "claims": [
+    {
+     "claim": "I/O 2026 roundup post dated 20 May 2026.",
+     "quote": "100 things we announced at I/O 2026 May 20, 2026",
+     "source_url": "https://blog.google/innovation-and-ai/technology/ai/google-io-2026-all-our-announcements/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Flow Agent takes on multi-step tasks instead of one prompt at a time.",
+     "quote": "Until today, Flow could only execute one prompt at a time. Now, your agent can take on multi-step tasks.",
+     "source_url": "https://blog.google/innovation-and-ai/technology/ai/google-io-2026-all-our-announcements/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Flow Tools: vibe-code your own creative tools in Flow.",
+     "quote": "Now you can vibe code any creative tool you can think of, right in Google Flow",
+     "source_url": "https://blog.google/innovation-and-ai/technology/ai/google-io-2026-all-our-announcements/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Flow launched in over 140 countries.",
+     "quote": "launched in over 140 countries around the world",
+     "source_url": "https://blog.google/innovation-and-ai/technology/ai/google-io-2026-all-our-announcements/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "medium",
+   "notes": "Only the I/O 2026 roundup post (dated 20 May 2026) was retrieved for these features; the keynote day was 19 May 2026, so month precision is used."
+  },
+  {
+   "id": "google_gemini_omni_flash_2026_05_19",
+   "developer": "Google DeepMind",
+   "family": "Gemini Omni",
+   "version": "Gemini Omni Flash",
+   "event": "public_release",
+   "date": "2026-05-19",
+   "date_precision": "day",
+   "headline": "Gemini Omni Flash makes video from mixed image, audio, video and text inputs and edits it through conversation; rolls out in Gemini, Flow and Shorts.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": "Video with audio output (model card); only voice references accepted as audio input at launch",
+    "notes": "Launch posts give no clip length, resolution or frame rate (left null). Later documents: API preview 3-10 s at 720p (2026-06-30); GA 3-10 s, 24 FPS, 360p to 4K (2026-08-27)."
+   },
+   "claims": [
+    {
+     "claim": "Blog page metadata gives publication date 2026-05-19 (I/O 2026 keynote day).",
+     "quote": "property=\"article:published_time\" content=\"2026-05-19\"",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-omni/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Omni is presented as a model that creates anything from any input, starting with video.",
+     "quote": "Omni is our new model that can create anything from any input — starting with video.",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-omni/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "First model in the Omni family, rolling out to Gemini app, Flow and YouTube Shorts.",
+     "quote": "Today, we’re rolling out the first model in the Omni family: Gemini Omni Flash, to the Gemini app, Google Flow and YouTube Shorts.",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-omni/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Available to AI Plus, Pro and Ultra subscribers globally.",
+     "quote": "Gemini Omni Flash is rolling out today to all Google AI Plus, Pro and Ultra subscribers globally through the Gemini app and Google Flow",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-omni/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Conversational editing of videos.",
+     "quote": "You can also easily edit your videos through conversation.",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-omni/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Multi-turn edits keep characters and physics consistent.",
+     "quote": "Every instruction builds on the last. Your characters stay consistent, the physics hold up and the scene remembers what came before.",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-omni/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Any reference (image, text, video, audio) can be turned into one output.",
+     "quote": "Omni turns any reference — image, text, video or audio — into a single, cohesive output.",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-omni/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Only voice references supported for audio at launch.",
+     "quote": "While only voice references will be supported for audio to start, we’ll roll out other types of audio inputs soon.",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-omni/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Changing what people say in edited videos was withheld pending further testing.",
+     "quote": "we are still working to test this and better understand how we can bring this capability to users responsibly",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-omni/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Every Omni video carries a SynthID watermark (invisible).",
+     "quote": "All videos created with Omni include our imperceptible SynthID digital watermark.",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-omni/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "API access promised \"in the coming weeks\".",
+     "quote": "In the coming weeks, we'll also be rolling it out to developers and enterprise customers via APIs.",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-omni/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "I/O 2026 roundup dated 20 May 2026 lists it as rolling out now.",
+     "quote": "100 things we announced at I/O 2026 May 20, 2026",
+     "source_url": "https://blog.google/innovation-and-ai/technology/ai/google-io-2026-all-our-announcements/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Roundup confirms rollout.",
+     "quote": "Gemini Omni Flash is rolling out now to all Google AI Plus, Pro and Ultra subscribers globally through the Gemini app and Google Flow.",
+     "source_url": "https://blog.google/innovation-and-ai/technology/ai/google-io-2026-all-our-announcements/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Roundup: character consistency for identity and voice.",
+     "quote": "Gemini Omni Flash also improves character consistency, meaning identity and voice are preserved across every scene.",
+     "source_url": "https://blog.google/innovation-and-ai/technology/ai/google-io-2026-all-our-announcements/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Model card: initially published May 2026.",
+     "quote": "Initially Published: May 2026, Last Updated: August 2026",
+     "source_url": "https://deepmind.google/models/model-cards/gemini-omni-flash/",
+     "source_kind": "model_card",
+     "retrieved": true
+    },
+    {
+     "claim": "Model card: outputs are video with audio.",
+     "quote": "Outputs High-quality, high-resolution video with audio.",
+     "source_url": "https://deepmind.google/models/model-cards/gemini-omni-flash/",
+     "source_kind": "model_card",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "VERIFIED, not a rumour. Confirmed by blog.google, Gemini API docs and changelog, DeepMind model card and the Gemini app page. The blog shows no visible date; 2026-05-19 comes from page metadata (article:published_time) and matches the I/O keynote day; the roundup post is dated 2026-05-20. Voice-changing edits were withheld."
+  },
+  {
+   "id": "google_veo_legacy_api_retirement_2026_06_30",
+   "developer": "Google DeepMind",
+   "family": "Veo",
+   "version": "veo-2.0-generate-001, veo-3.0-generate-001, veo-3.0-fast-generate-001 (retirement)",
+   "event": "announcement",
+   "date": "2026-06-30",
+   "date_precision": "day",
+   "headline": "Google schedules the Gemini API retirement of Veo 2 and Veo 3.0 model IDs for 30 June 2026, pointing developers to Veo 3.1.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "Event type is a retirement (mapped to \"announcement\"). Whether the endpoints were actually switched off on that date was not verified."
+   },
+   "claims": [
+    {
+     "claim": "Changelog: video generation models deprecated and to be shut down on 30 June 2026.",
+     "quote": "The following video generation models are being deprecated and will be shut down on June 30, 2026",
+     "source_url": "https://ai.google.dev/gemini-api/docs/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Deprecation table row for Veo 2.",
+     "quote": "veo-2.0-generate-001 April 9, 2025 June 30, 2026",
+     "source_url": "https://ai.google.dev/gemini-api/docs/deprecations",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Deprecation table row for Veo 3.0.",
+     "quote": "veo-3.0-generate-001 September 9, 2025 June 30, 2026",
+     "source_url": "https://ai.google.dev/gemini-api/docs/deprecations",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "medium",
+   "notes": "Scheduled shutdown date is documented; execution not checked. Veo 3.1 IDs remain listed with no shutdown date."
+  },
+  {
+   "id": "google_gemini_omni_flash_api_preview_2026_06_30",
+   "developer": "Google DeepMind",
+   "family": "Gemini Omni",
+   "version": "gemini-omni-flash-preview (Gemini Omni Flash, public preview)",
+   "event": "preview",
+   "date": "2026-06-30",
+   "date_precision": "day",
+   "headline": "Gemini Omni Flash reaches developers in public preview: 3 to 10 second videos at 720p, generated and edited conversationally via the Interactions API.",
+   "specs": {
+    "max_clip_s": 10,
+    "resolution": "720p",
+    "fps": null,
+    "audio": "Video with audio",
+    "notes": "Preview endpoint scheduled for deprecation on 2026-09-30."
+   },
+   "claims": [
+    {
+     "claim": "Gemini API changelog entry dated 30 June 2026.",
+     "quote": "June 30, 2026 Gemini Omni Flash in public preview",
+     "source_url": "https://ai.google.dev/gemini-api/docs/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Preview spec: 3-10 seconds, 720p.",
+     "quote": "you can generate 3–10 second videos at 720p from text descriptions or animate still images",
+     "source_url": "https://ai.google.dev/gemini-api/docs/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Developers blog post dated 30 June 2026.",
+     "quote": "Start building with Nano Banana 2 Lite and Gemini Omni Flash Jun 30, 2026",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-omni-flash-nano-banana-2-lite/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Omni Flash now available to developers in AI Studio, Gemini API and enterprise platform.",
+     "quote": "Bringing Gemini Omni Flash to developers: Our high quality, cost-efficient model for video generation and conversational editing",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-omni-flash-nano-banana-2-lite/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Docs: the model generates a video with audio.",
+     "quote": "The model generates a video with audio based on your text description.",
+     "source_url": "https://ai.google.dev/gemini-api/docs/omni",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "On 16 July 2026 Omni Flash was also added to Google Vids (Workspace blog).",
+     "quote": "Introducing Gemini Omni Flash in Google Vids July 16, 2026",
+     "source_url": "https://workspace.google.com/blog/product-announcements/introducing-gemini-omni-flash-in-google-vids",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Preview endpoint later replaced by the GA ID gemini-omni-1.1-flash (2026-08-27)."
+  },
+  {
+   "id": "google_gemini_omni_11_flash_2026_08_27",
+   "developer": "Google DeepMind",
+   "family": "Gemini Omni",
+   "version": "Gemini Omni 1.1 Flash (gemini-omni-1.1-flash)",
+   "event": "version_release",
+   "date": "2026-08-27",
+   "date_precision": "day",
+   "headline": "Gemini Omni 1.1 Flash reaches general availability: scene extension to 40 s, first/last-frame interpolation, 360p previews and upscaled 1080p/4K.",
+   "specs": {
+    "max_clip_s": 10,
+    "resolution": "360p, 720p (default), 1080p, 4K; 1080p and 4K are upscaled",
+    "fps": 24,
+    "audio": "Generated audio; voice editing not supported",
+    "notes": "3-10 s per generation; extension in 10 s increments up to 40 s cumulative; extension analyses up to 10 s of prior context."
+   },
+   "claims": [
+    {
+     "claim": "Google blog post dated 27 August 2026.",
+     "quote": "Gemini Omni 1.1 Flash lets you build with more control Aug 27, 2026",
+     "source_url": "https://blog.google/innovation-and-ai/technology/developers-tools/build-with-gemini-omni-1-1-flash/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Omni 1.1 Flash introduced as a suite of creative controls for developers.",
+     "quote": "Today, we’re introducing Gemini Omni 1.1 Flash, a new suite of creative controls and generative video capabilities to support developers.",
+     "source_url": "https://blog.google/innovation-and-ai/technology/developers-tools/build-with-gemini-omni-1-1-flash/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Extend in 10-second increments up to 40 seconds total.",
+     "quote": "You can extend videos in 10-second increments up to a total cumulative length of 40 seconds.",
+     "source_url": "https://blog.google/innovation-and-ai/technology/developers-tools/build-with-gemini-omni-1-1-flash/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Extension can analyse up to 10 seconds of prior context.",
+     "quote": "the model can now analyze up to 10 seconds of prior context",
+     "source_url": "https://blog.google/innovation-and-ai/technology/developers-tools/build-with-gemini-omni-1-1-flash/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Start and end frames for transitions.",
+     "quote": "Set start and end frames to create smooth, professional camera movements and transitions.",
+     "source_url": "https://blog.google/innovation-and-ai/technology/developers-tools/build-with-gemini-omni-1-1-flash/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "360p previews for cheaper iteration.",
+     "quote": "Use 360p previews to iterate faster and save money during your creative process.",
+     "source_url": "https://blog.google/innovation-and-ai/technology/developers-tools/build-with-gemini-omni-1-1-flash/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Upscale finals to 4K.",
+     "quote": "Upscale your final projects to 4K resolution for a polished, professional look.",
+     "source_url": "https://blog.google/innovation-and-ai/technology/developers-tools/build-with-gemini-omni-1-1-flash/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Gemini API changelog: Omni Flash generally available.",
+     "quote": "August 27, 2026 Gemini Omni Flash generally available (GA)",
+     "source_url": "https://ai.google.dev/gemini-api/docs/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "GA version is gemini-omni-1.1-flash.",
+     "quote": "the GA version of our fast, conversational video generation and editing model",
+     "source_url": "https://ai.google.dev/gemini-api/docs/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "1080p and 4K are generated using upscaling.",
+     "quote": "1080p and 4K outputs are generated using upscaling.",
+     "source_url": "https://ai.google.dev/gemini-api/docs/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Video extension appends to the end of a clip.",
+     "quote": "Seamlessly extend existing videos by generating continuations at the end of a clip",
+     "source_url": "https://ai.google.dev/gemini-api/docs/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Preview endpoint deprecated 30 September 2026.",
+     "quote": "The existing gemini-omni-flash-preview endpoint will be deprecated on September 30, 2026.",
+     "source_url": "https://ai.google.dev/gemini-api/docs/changelog",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Model page: output 3s-10s, 360p/720p/1080p/4K, 24 FPS.",
+     "quote": "Output video 3s-10s (360p/720p/1080p/4K, 24 FPS)",
+     "source_url": "https://ai.google.dev/gemini-api/docs/models/gemini-omni-flash",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Stable ID gemini-omni-1.1-flash; preview ID gemini-omni-flash-preview.",
+     "quote": "Model versions: Stable: gemini-omni-1.1-flash Preview: gemini-omni-flash-preview",
+     "source_url": "https://ai.google.dev/gemini-api/docs/models/gemini-omni-flash",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "DeepMind model card covers both Gemini Omni Flash and Gemini Omni 1.1 Flash.",
+     "quote": "This model card describes Gemini Omni Flash and Gemini Omni 1.1 Flash.",
+     "source_url": "https://deepmind.google/models/model-cards/gemini-omni-flash/",
+     "source_kind": "model_card",
+     "retrieved": true
+    },
+    {
+     "claim": "Flow blog post dated 27 August 2026.",
+     "quote": "Google Flow brings new creative control features to enhance video editing. Aug 27, 2026",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/google-labs/new-creative-controls-google-flow/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Flow can export 1080p or 4K.",
+     "quote": "Export crisp video in 1080p or 4K, ready for high-end digital, social, or broadcast editing workflows.",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/google-labs/new-creative-controls-google-flow/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Flow: draft at 360p then render.",
+     "quote": "Test out concepts and compositions at a faster, lower-credit 360p resolution before committing to a full-resolution render.",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/google-labs/new-creative-controls-google-flow/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Flow: start and end frames.",
+     "quote": "More creative control with start and end frames.",
+     "source_url": "https://blog.google/innovation-and-ai/models-and-research/google-labs/new-creative-controls-google-flow/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "API docs recommend Omni Flash as the default video model.",
+     "quote": "Use Gemini Omni Flash as your default model for video generation.",
+     "source_url": "https://ai.google.dev/gemini-api/docs/video",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "API docs keep Veo 3.1 for scene extension, last-frame control and legacy pipelines.",
+     "quote": "Use Veo 3.1 for specific capabilities like scene extension, last-frame control, or integration with legacy pipelines are required.",
+     "source_url": "https://ai.google.dev/gemini-api/docs/video",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Rolled into Google Vids on 23 September 2026 with 1080p and duration control (Workspace Updates blog).",
+     "quote": "September 23, 2026 Gemini Omni 1.1 Flash now in Vids with improved extension quality, 1080p, and duration control",
+     "source_url": "https://workspaceupdates.googleblog.com/2026/09/gemini-omni-11-flash-now-in-vids-with-improved-extension-quality-1080p-and-duration-control.html",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Vids: higher-quality extension with better character and audio consistency.",
+     "quote": "Omni 1.1 provides higher quality video extension with significant improvements in character and audio consistency.",
+     "source_url": "https://workspaceupdates.googleblog.com/2026/09/gemini-omni-11-flash-now-in-vids-with-improved-extension-quality-1080p-and-duration-control.html",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Latest Google video model release found as of 2026-09-29. The version string is \"Gemini Omni 1.1 Flash\" (marketing) and gemini-omni-1.1-flash (API ID); Google also writes \"Gemini Omni Flash\" for the family. Sept 23, 2026: rolled into Google Vids with 1080p and duration control (Workspace Updates blog)."
+  },
+  {
+   "id": "openai_sora_api_shutdown_2026_09_24",
+   "developer": "OpenAI",
+   "family": "Sora",
+   "version": "sora-2, sora-2-pro and the Videos API (shutdown)",
+   "event": "announcement",
+   "date": "2026-09-24",
+   "date_precision": "day",
+   "headline": "The Sora 2 models and Videos API are shut down; OpenAI's docs say no one-to-one replacement API is available.",
+   "specs": {
+    "max_clip_s": null,
+    "resolution": null,
+    "fps": null,
+    "audio": null,
+    "notes": "Event type is a discontinuation (mapped to \"announcement\")."
+   },
+   "claims": [
+    {
+     "claim": "Video-generation guide: models and Videos API shut down on 24 September 2026.",
+     "quote": "The Sora 2 models and Videos API were shut down on September 24, 2026 and are no longer available.",
+     "source_url": "https://developers.openai.com/api/docs/guides/video-generation",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Guide: no one-to-one replacement API.",
+     "quote": "No one-to-one replacement API is available.",
+     "source_url": "https://developers.openai.com/api/docs/guides/video-generation",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "Deprecation table lists 2026-09-24 as shutdown date.",
+     "quote": "their deprecation and removal from the API on September 24, 2026",
+     "source_url": "https://developers.openai.com/api/docs/deprecations",
+     "source_kind": "docs",
+     "retrieved": true
+    }
+   ],
+   "confidence": "high",
+   "notes": "Docs retrieved live on 2026-09-29, five days after the shutdown. The film should refer to Sora in the past tense."
+  },
+  {
+   "id": "google_gemini_app_omni_replaces_veo_2026",
+   "developer": "Google DeepMind",
+   "family": "Gemini Omni",
+   "version": "Gemini Omni 1.1 Flash (replacing Veo 3.1 in the Gemini app)",
+   "event": "announcement",
+   "date": "2026",
+   "date_precision": "year",
+   "headline": "Google says Gemini Omni replaces Veo in the Gemini app, and its API docs make Omni the default while keeping Veo 3.1 for specific features.",
+   "specs": {
+    "max_clip_s": 10,
+    "resolution": null,
+    "fps": null,
+    "audio": "Native audio generation",
+    "notes": "Gemini app page lists 10-second videos, scene extensions, video-to-video editing, multi-turn editing and avatars."
+   },
+   "claims": [
+    {
+     "claim": "Google: Omni will replace Veo in the Gemini app.",
+     "quote": "Gemini Omni is our latest video editing and generation model that will replace Veo in the Gemini app.",
+     "source_url": "https://gemini.google/overview/video-generation/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "Omni 1.1 Flash replaces the previous Veo 3.1 model in the app.",
+     "quote": "Gemini Omni 1.1 Flash Multimodal AI video generation and editing model that will now replace the previous Google Gemini Veo 3.1 model.",
+     "source_url": "https://gemini.google/overview/video-generation/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "App spec: 10-second videos with native audio.",
+     "quote": "Create 10 second videos Native audio generation",
+     "source_url": "https://gemini.google/overview/video-generation/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "DeepMind's Veo page still lists Veo 3.1 as the leading Veo model (retrieved 2026-09-29).",
+     "quote": "Veo 3.1 Video, meet audio. Our leading video generation model, designed to empower filmmakers and storytellers.",
+     "source_url": "https://deepmind.google/models/veo/",
+     "source_kind": "official_blog",
+     "retrieved": true
+    }
+   ],
+   "confidence": "medium",
+   "notes": "No date is given for the switch in the Gemini app; the page was read on 2026-09-29 so the date is set to year precision. Veo 3.1 remains available in the Gemini API and Google Cloud."
+  }
+ ],
+ "capabilities": [
+  {
+   "capability": "Text-to-video clips up to a minute long (claimed for the research model)",
+   "product": "Sora (research preview)",
+   "date": "2024-02-15",
+   "quote": "Our largest model, Sora, is capable of generating a minute of high fidelity video.",
+   "source_url": "https://web.archive.org/web/20240505060353id_/https://openai.com/index/video-generation-models-as-world-simulators",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "Sampling at native aspect ratios including vertical 1080x1920 and widescreen 1920x1080",
+   "product": "Sora (research preview)",
+   "date": "2024-02-15",
+   "quote": "Sora can sample widescreen 1920x1080p videos, vertical 1080x1920 videos and everything inbetween.",
+   "source_url": "https://web.archive.org/web/20240505060353id_/https://openai.com/index/video-generation-models-as-world-simulators",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "Diffusion transformer over spacetime patches of video and image latents",
+   "product": "Sora (research preview)",
+   "date": "2024-02-15",
+   "quote": "We leverage a transformer architecture that operates on spacetime patches of video and image latent codes.",
+   "source_url": "https://web.archive.org/web/20240505060353id_/https://openai.com/index/video-generation-models-as-world-simulators",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "Subject stays the same when it leaves view temporarily (frame-consistency mechanism claim)",
+   "product": "Sora (research preview)",
+   "date": "2024-02-15",
+   "quote": "we’ve solved a challenging problem of making sure a subject stays the same even when it goes out of view temporarily.",
+   "source_url": "https://web.archive.org/web/20240216001508id_/https://openai.com/sora",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "Persistence of people, animals and objects over long ranges, \"often, though not always\"",
+   "product": "Sora (research preview)",
+   "date": "2024-02-15",
+   "quote": "Sora is often, though not always, able to effectively model both short- and long-range dependencies.",
+   "source_url": "https://web.archive.org/web/20240505060353id_/https://openai.com/index/video-generation-models-as-world-simulators",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "Camera motion with consistent movement of scene elements through 3D space",
+   "product": "Sora (research preview)",
+   "date": "2024-02-15",
+   "quote": "As the camera shifts and rotates, people and scene elements move consistently through three-dimensional space.",
+   "source_url": "https://web.archive.org/web/20240505060353id_/https://openai.com/index/video-generation-models-as-world-simulators",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "Extending a video forward or backward in time",
+   "product": "Sora (research preview)",
+   "date": "2024-02-15",
+   "quote": "Sora is also capable of extending videos, either forward or backward in time.",
+   "source_url": "https://web.archive.org/web/20240505060353id_/https://openai.com/index/video-generation-models-as-world-simulators",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "Image-to-video from an image plus prompt",
+   "product": "Sora (research preview)",
+   "date": "2024-02-15",
+   "quote": "Sora is capable of generating videos provided an image and prompt as input.",
+   "source_url": "https://web.archive.org/web/20240505060353id_/https://openai.com/index/video-generation-models-as-world-simulators",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "Public product limits: 1080p, 20 seconds, widescreen/vertical/square",
+   "product": "Sora Turbo (sora.com)",
+   "date": "2024-12-09",
+   "quote": "Users can generate videos up to 1080p resolution, up to 20 sec long, and in widescreen, vertical or square aspect ratios.",
+   "source_url": "https://web.archive.org/web/20241209203752id_/https://openai.com/index/sora-is-here/",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "Extend, remix and blend user-supplied assets",
+   "product": "Sora Turbo (sora.com)",
+   "date": "2024-12-09",
+   "quote": "You can bring your own assets to extend, remix, and blend, or generate entirely new content from text.",
+   "source_url": "https://web.archive.org/web/20241209203752id_/https://openai.com/index/sora-is-here/",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "Storyboard tool with per-frame inputs",
+   "product": "Sora Turbo (sora.com)",
+   "date": "2024-12-09",
+   "quote": "Our storyboard tool lets users precisely specify inputs for each frame.",
+   "source_url": "https://web.archive.org/web/20241209203752id_/https://openai.com/index/sora-is-here/",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "Synchronized dialogue and sound effects generated with video",
+   "product": "Sora 2",
+   "date": "2025-09-30",
+   "quote": "It also features synchronized dialogue and sound effects.",
+   "source_url": "https://web.archive.org/web/20250930222332id_/https://openai.com/index/sora-2/",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "Multi-shot instruction following with persistent world state",
+   "product": "Sora 2",
+   "date": "2025-09-30",
+   "quote": "able to follow intricate instructions spanning multiple shots while accurately persisting world state.",
+   "source_url": "https://web.archive.org/web/20250930222332id_/https://openai.com/index/sora-2/",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "Insert yourself into scenes (cameos) after a one-time recording",
+   "product": "Sora app",
+   "date": "2025-09-30",
+   "quote": "With cameos, you can drop yourself straight into any Sora scene with remarkable fidelity",
+   "source_url": "https://web.archive.org/web/20250930222332id_/https://openai.com/index/sora-2/",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "25-second videos for Pro users on web with storyboard",
+   "product": "Sora 2 (web)",
+   "date": "2025-10-15",
+   "quote": "Pro users can now generate videos of 25 seconds on web with storyboard.",
+   "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "Reusable characters (pets, toys, personas) with their own permissions",
+   "product": "Sora app",
+   "date": "2025-10-29",
+   "quote": "Today, we’re introducing character cameos in Sora.",
+   "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "Extensions that carry characters, settings and vibe into a longer draft",
+   "product": "Sora app",
+   "date": "2026-02-09",
+   "quote": "Sora will carry your scene forward—preserving your characters, settings, and overall vibe",
+   "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "Timeline-style editing: frame-level trim, stitch and reorder",
+   "product": "Sora editor",
+   "date": "2026-03-19",
+   "quote": "trim clips with frame-level precision, stitch multiple clips into a single sequence, reorder clips in your timeline",
+   "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "1080p (1920x1080 or 1080x1920) exports for sora-2-pro",
+   "product": "Sora API",
+   "date": "2026-03-12",
+   "quote": "Use sora-2-pro when you need 1080p exports in 1920x1080 or 1080x1920",
+   "source_url": "https://developers.openai.com/api/docs/guides/video-generation",
+   "source_kind": "docs"
+  },
+  {
+   "capability": "API extensions up to 120 seconds total",
+   "product": "Sora API",
+   "date": "2026-03-12",
+   "quote": "A single video can be extended up to six times, for a maximum total length of 120 seconds.",
+   "source_url": "https://developers.openai.com/api/docs/guides/video-generation",
+   "source_kind": "docs"
+  },
+  {
+   "capability": "Masked editing of specific regions of a video",
+   "product": "Veo (private preview)",
+   "date": "2024-05-14",
+   "quote": "it supports masked editing, enabling changes to specific areas of the video when you add a mask area to your video and text prompt.",
+   "source_url": "https://web.archive.org/web/20240515001805id_/https://deepmind.google/technologies/veo/",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "Extending clips to 60 seconds and beyond (claimed)",
+   "product": "Veo (private preview)",
+   "date": "2024-05-14",
+   "quote": "The model is also able to make video clips and extend them to 60 seconds and beyond.",
+   "source_url": "https://web.archive.org/web/20240515001805id_/https://deepmind.google/technologies/veo/",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "Latent diffusion transformers said to reduce flicker and morphing between frames",
+   "product": "Veo (private preview)",
+   "date": "2024-05-14",
+   "quote": "Veo's cutting-edge latent diffusion transformers reduce the appearance of these inconsistencies",
+   "source_url": "https://web.archive.org/web/20240515001805id_/https://deepmind.google/technologies/veo/",
+   "source_kind": "archived_official"
+  },
+  {
+   "capability": "Cinematography-aware prompting; claimed 4K and multi-minute length",
+   "product": "Veo 2",
+   "date": "2024-12-16",
+   "quote": "Veo 2 will deliver — at resolutions up to 4K, and extended to minutes in length.",
+   "source_url": "https://blog.google/innovation-and-ai/models-and-research/google-labs/video-image-generation-update-december-2024/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "Reference-powered video from images of characters, scenes, objects and styles",
+   "product": "Veo 2 in Flow",
+   "date": "2025-05-20",
+   "quote": "allows you to give Veo images of characters, scenes, objects, and even styles for better creative control and consistency.",
+   "source_url": "https://blog.google/innovation-and-ai/products/generative-media-models-io-2025/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "Camera controls: rotations, dollies and zooms",
+   "product": "Veo 2 in Flow",
+   "date": "2025-05-20",
+   "quote": "Camera controls help you define precise camera movements, including rotations, dollies and zooms, to achieve the perfect shot.",
+   "source_url": "https://blog.google/innovation-and-ai/products/generative-media-models-io-2025/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "Outpainting portrait video to landscape",
+   "product": "Veo 2 in Flow",
+   "date": "2025-05-20",
+   "quote": "Outpainting allows you to broaden your frame, turning your video from portrait to landscape",
+   "source_url": "https://blog.google/innovation-and-ai/products/generative-media-models-io-2025/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "Object add and remove",
+   "product": "Veo 2 in Flow",
+   "date": "2025-05-20",
+   "quote": "Object add and remove lets you add or erase objects from your videos.",
+   "source_url": "https://blog.google/innovation-and-ai/products/generative-media-models-io-2025/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "Native audio: ambience and dialogue generated with the video",
+   "product": "Veo 3",
+   "date": "2025-05-20",
+   "quote": "for the first time, can also generate videos with audio — traffic noises in the background of a city street scene",
+   "source_url": "https://blog.google/innovation-and-ai/products/generative-media-models-io-2025/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "Audio and video latents diffused jointly in one model",
+   "product": "Veo 3 (tech report; PDF Last-Modified header 2025-05-27)",
+   "date": "2025-05-27",
+   "quote": "Veo 3 uses latent diffusion, in which the diffusion process is applied jointly to the temporal audio latents, and the spatio-temporal video latents.",
+   "source_url": "https://storage.googleapis.com/deepmind-media/veo/Veo-3-Tech-Report.pdf",
+   "source_kind": "paper"
+  },
+  {
+   "capability": "Vertical 9:16 output and 1080p in the Gemini API",
+   "product": "Veo 3 / Veo 3 Fast",
+   "date": "2025-09-08",
+   "quote": "Today, we’re launching three big Veo updates: support for vertical format outputs (9:16 aspect ratio), 1080p HD output, and new, lower pricing.",
+   "source_url": "https://developers.googleblog.com/en/veo-3-and-veo-3-fast-new-pricing-new-configurations-and-better-resolution/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "Up to 3 reference images to keep characters, objects or style consistent across shots",
+   "product": "Veo 3.1",
+   "date": "2025-10-15",
+   "quote": "providing up to 3 reference images of a character, object, or scene.",
+   "source_url": "https://developers.googleblog.com/en/introducing-veo-3-1-and-new-creative-capabilities-in-the-gemini-api/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "First-and-last-frame transitions with audio",
+   "product": "Veo 3.1",
+   "date": "2025-10-15",
+   "quote": "By providing a starting and an ending image, you can direct Veo 3.1 to generate the transition between them, complete with accompanying audio.",
+   "source_url": "https://developers.googleblog.com/en/introducing-veo-3-1-and-new-creative-capabilities-in-the-gemini-api/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "Scene extension: combined output up to 148 seconds",
+   "product": "Veo 3.1 (Gemini API docs)",
+   "date": "2025-10-15",
+   "quote": "combining the user input video and the generated extended video for up to 148 seconds of video",
+   "source_url": "https://ai.google.dev/gemini-api/docs/veo",
+   "source_kind": "docs"
+  },
+  {
+   "capability": "Insert new elements with shadows and lighting handled",
+   "product": "Veo 3.1 in Flow",
+   "date": "2025-10-15",
+   "quote": "Flow now handles complex details like shadows and scene lighting, making the addition look natural.",
+   "source_url": "https://blog.google/innovation-and-ai/products/veo-updates-flow/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "Native vertical output for Ingredients to Video",
+   "product": "Veo 3.1",
+   "date": "2026-01-13",
+   "quote": "Native vertical outputs for Ingredients to Video (portrait mode) to power mobile-first, short-form video creation",
+   "source_url": "https://blog.google/innovation-and-ai/technology/ai/veo-3-1-ingredients-to-video/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "Better identity consistency for characters across settings",
+   "product": "Veo 3.1",
+   "date": "2026-01-13",
+   "quote": "Keep your characters looking the same even as the setting changes",
+   "source_url": "https://blog.google/innovation-and-ai/technology/ai/veo-3-1-ingredients-to-video/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "4K output resolution option added for Veo in the API",
+   "product": "Veo 3.1",
+   "date": "2026-01-13",
+   "quote": "January 13, 2026 Added 4k output resolutions for Veo and more support for portrait videos in all resolutions.",
+   "source_url": "https://ai.google.dev/gemini-api/docs/changelog",
+   "source_kind": "docs"
+  },
+  {
+   "capability": "Multi-turn conversational edits that keep characters and physics consistent",
+   "product": "Gemini Omni Flash",
+   "date": "2026-05-19",
+   "quote": "Every instruction builds on the last. Your characters stay consistent, the physics hold up and the scene remembers what came before.",
+   "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-omni/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "Use image, text, video or audio references as input to one output",
+   "product": "Gemini Omni Flash",
+   "date": "2026-05-19",
+   "quote": "Omni turns any reference — image, text, video or audio — into a single, cohesive output.",
+   "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-omni/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "Character consistency preserving identity and voice across scenes",
+   "product": "Gemini Omni Flash",
+   "date": "2026-05-19",
+   "quote": "Gemini Omni Flash also improves character consistency, meaning identity and voice are preserved across every scene.",
+   "source_url": "https://blog.google/innovation-and-ai/technology/ai/google-io-2026-all-our-announcements/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "Scene extension in 10-second increments up to 40 seconds",
+   "product": "Gemini Omni 1.1 Flash",
+   "date": "2026-08-27",
+   "quote": "You can extend videos in 10-second increments up to a total cumulative length of 40 seconds.",
+   "source_url": "https://blog.google/innovation-and-ai/technology/developers-tools/build-with-gemini-omni-1-1-flash/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "Start and end frame control for transitions",
+   "product": "Gemini Omni 1.1 Flash",
+   "date": "2026-08-27",
+   "quote": "Set start and end frames to create smooth, professional camera movements and transitions.",
+   "source_url": "https://blog.google/innovation-and-ai/technology/developers-tools/build-with-gemini-omni-1-1-flash/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "360p preview drafts before a full render",
+   "product": "Gemini Omni 1.1 Flash",
+   "date": "2026-08-27",
+   "quote": "Use 360p previews to iterate faster and save money during your creative process.",
+   "source_url": "https://blog.google/innovation-and-ai/technology/developers-tools/build-with-gemini-omni-1-1-flash/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "Personal avatar that looks and sounds like the user",
+   "product": "Gemini Omni Flash in Google Vids",
+   "date": "2026-07-16",
+   "quote": "you can now generate a personal avatar that looks and sounds like you in your videos",
+   "source_url": "https://workspace.google.com/blog/product-announcements/introducing-gemini-omni-flash-in-google-vids",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "Multi-step agent inside Flow",
+   "product": "Google Flow Agent",
+   "date": "2026-05-19",
+   "quote": "Until today, Flow could only execute one prompt at a time. Now, your agent can take on multi-step tasks.",
+   "source_url": "https://blog.google/innovation-and-ai/technology/ai/google-io-2026-all-our-announcements/",
+   "source_kind": "official_blog"
+  },
+  {
+   "capability": "Real-time navigable worlds at 24 fps and 720p, consistent for a few minutes",
+   "product": "Genie 3",
+   "date": "2025-08-05",
+   "quote": "navigate in real time at 24 frames per second, retaining consistency for a few minutes at a resolution of 720p",
+   "source_url": "https://deepmind.google/blog/genie-3-a-new-frontier-for-world-models/",
+   "source_kind": "official_blog"
+  }
+ ],
+ "limitations": [
+  {
+   "developer": "OpenAI",
+   "product": "Sora (research preview)",
+   "date": "2024-02-15",
+   "statement": "Complex-scene physics and cause and effect are weak.",
+   "quote": "The current model has weaknesses. It may struggle with accurately simulating the physics of a complex scene",
+   "source_url": "https://web.archive.org/web/20240216001508id_/https://openai.com/sora",
+   "source_kind": "archived_official"
+  },
+  {
+   "developer": "OpenAI",
+   "product": "Sora (research preview)",
+   "date": "2024-02-15",
+   "statement": "Example of cause-and-effect failure: a bite that leaves no bite mark.",
+   "quote": "a person might take a bite out of a cookie, but afterward, the cookie may not have a bite mark.",
+   "source_url": "https://web.archive.org/web/20240216001508id_/https://openai.com/sora",
+   "source_kind": "archived_official"
+  },
+  {
+   "developer": "OpenAI",
+   "product": "Sora (research preview)",
+   "date": "2024-02-15",
+   "statement": "Spatial details such as left and right can be confused.",
+   "quote": "The model may also confuse spatial details of a prompt, for example, mixing up left and right",
+   "source_url": "https://web.archive.org/web/20240216001508id_/https://openai.com/sora",
+   "source_kind": "archived_official"
+  },
+  {
+   "developer": "OpenAI",
+   "product": "Sora (research preview)",
+   "date": "2024-02-15",
+   "statement": "Basic interactions such as glass shattering are not modelled accurately.",
+   "quote": "it does not accurately model the physics of many basic interactions, like glass shattering.",
+   "source_url": "https://web.archive.org/web/20240505060353id_/https://openai.com/index/video-generation-models-as-world-simulators",
+   "source_kind": "archived_official"
+  },
+  {
+   "developer": "OpenAI",
+   "product": "Sora (research preview)",
+   "date": "2024-02-15",
+   "statement": "Physically implausible motion is listed as a weakness.",
+   "quote": "Weakness: Sora sometimes creates physically implausible motion.",
+   "source_url": "https://web.archive.org/web/20240216001508id_/https://openai.com/sora",
+   "source_kind": "archived_official"
+  },
+  {
+   "developer": "OpenAI",
+   "product": "Sora Turbo",
+   "date": "2024-12-09",
+   "statement": "Unrealistic physics and difficulty with complex actions over long durations.",
+   "quote": "It often generates unrealistic physics and struggles with complex actions over long durations.",
+   "source_url": "https://web.archive.org/web/20241209203752id_/https://openai.com/index/sora-is-here/",
+   "source_kind": "archived_official"
+  },
+  {
+   "developer": "OpenAI",
+   "product": "Sora Turbo",
+   "date": "2024-12-09",
+   "statement": "Public clips carry a visible watermark by default.",
+   "quote": "we’ve added safeguards like visible watermarks by default",
+   "source_url": "https://web.archive.org/web/20241209203752id_/https://openai.com/index/sora-is-here/",
+   "source_kind": "archived_official"
+  },
+  {
+   "developer": "OpenAI",
+   "product": "Sora Turbo",
+   "date": "2024-12-09",
+   "statement": "Uploads of people were restricted at launch.",
+   "quote": "Uploads of people will be limited at launch",
+   "source_url": "https://web.archive.org/web/20241209203752id_/https://openai.com/index/sora-is-here/",
+   "source_kind": "archived_official"
+  },
+  {
+   "developer": "OpenAI",
+   "product": "Sora 2 launch post",
+   "date": "2025-09-30",
+   "statement": "OpenAI says prior video models morph objects and deform reality to satisfy a prompt.",
+   "quote": "Prior video models are overoptimistic—they will morph objects and deform reality to successfully execute upon a text prompt.",
+   "source_url": "https://web.archive.org/web/20250930222332id_/https://openai.com/index/sora-2/",
+   "source_kind": "archived_official"
+  },
+  {
+   "developer": "OpenAI",
+   "product": "Sora 2",
+   "date": "2025-09-30",
+   "statement": "OpenAI states the model still makes plenty of mistakes.",
+   "quote": "The model is far from perfect and makes plenty of mistakes",
+   "source_url": "https://web.archive.org/web/20250930222332id_/https://openai.com/index/sora-2/",
+   "source_kind": "archived_official"
+  },
+  {
+   "developer": "OpenAI",
+   "product": "Sora app",
+   "date": "2025-09-30",
+   "statement": "All app videos carried a visible moving watermark at launch.",
+   "quote": "At launch, all Sora videos include a visible moving watermark.",
+   "source_url": "https://web.archive.org/web/20251001215022id_/https://help.openai.com/en/articles/12456897-getting-started-with-the-sora-app",
+   "source_kind": "archived_official"
+  },
+  {
+   "developer": "OpenAI",
+   "product": "Sora 2",
+   "date": "2025-11-25",
+   "statement": "Visual flickering and stability needed a dedicated fix two months after launch.",
+   "quote": "We’ve shipped improvements to Sora 2 that reduce visual flickering and improve overall stability.",
+   "source_url": "https://web.archive.org/web/20260327070818id_/https://help.openai.com/en/articles/12593142-sora-release-notes",
+   "source_kind": "archived_official"
+  },
+  {
+   "developer": "OpenAI",
+   "product": "Sora API",
+   "date": "2026-03-12",
+   "statement": "Real people, including public figures, cannot be generated.",
+   "quote": "Real people—including public figures—cannot be generated.",
+   "source_url": "https://developers.openai.com/api/docs/guides/video-generation",
+   "source_kind": "docs"
+  },
+  {
+   "developer": "OpenAI",
+   "product": "Sora API",
+   "date": "2026-03-12",
+   "statement": "Input images with human faces were rejected.",
+   "quote": "Input images with faces of humans are currently rejected.",
+   "source_url": "https://developers.openai.com/api/docs/guides/video-generation",
+   "source_kind": "docs"
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Veo (private preview)",
+   "date": "2024-05-14",
+   "statement": "Google describes the field-wide problem: flicker, jumps and unexpected morphing between frames.",
+   "quote": "Characters, objects, or even entire scenes can flicker, jump, or morph unexpectedly between frames",
+   "source_url": "https://web.archive.org/web/20240515001805id_/https://deepmind.google/technologies/veo/",
+   "source_kind": "archived_official"
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Veo 2",
+   "date": "2024-12-16",
+   "statement": "Extra-finger style hallucinations reduced but not eliminated (\"less frequently\").",
+   "quote": "Veo 2 produces these less frequently, making outputs more realistic.",
+   "source_url": "https://blog.google/innovation-and-ai/models-and-research/google-labs/video-image-generation-update-december-2024/",
+   "source_kind": "official_blog"
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Veo 3",
+   "date": "2025-05-20",
+   "statement": "Natural, consistent spoken audio, especially for short lines, is still developing.",
+   "quote": "creating videos with natural and consistent spoken audio, particularly for shorter speech segments, remains an area of active development.",
+   "source_url": "https://web.archive.org/web/20250520233928id_/https://deepmind.google/models/veo/",
+   "source_kind": "archived_official"
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Veo 3 (tech report)",
+   "date": "2025-05-27",
+   "statement": "Text rendering in video is poor.",
+   "quote": "Veo 3 is still poor at generating text",
+   "source_url": "https://storage.googleapis.com/deepmind-media/veo/Veo-3-Tech-Report.pdf",
+   "source_kind": "paper"
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Veo 3 (tech report)",
+   "date": "2025-05-27",
+   "statement": "Small hallucinations still mark videos as clearly fake.",
+   "quote": "prone to small hallucinations that mark videos as clearly fake",
+   "source_url": "https://storage.googleapis.com/deepmind-media/veo/Veo-3-Tech-Report.pdf",
+   "source_kind": "paper"
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Veo 3.1 / Flow",
+   "date": "2025-10-15",
+   "statement": "New audio-enabled features are labelled experimental.",
+   "quote": "These features are experimental and actively improving",
+   "source_url": "https://blog.google/innovation-and-ai/products/veo-updates-flow/",
+   "source_kind": "official_blog"
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Flow",
+   "date": "2025-10-15",
+   "statement": "Add-object and remove-object were not yet available at launch.",
+   "quote": "are not available at the moment",
+   "source_url": "https://blog.google/innovation-and-ai/products/veo-updates-flow/",
+   "source_kind": "official_blog"
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Veo 3.1 (Gemini API)",
+   "date": "2026-09-29",
+   "statement": "Generations can be blocked by audio-related filters or processing issues.",
+   "quote": "Veo 3.1 will sometimes block a video from generating because of safety filters or other processing issues with the audio.",
+   "source_url": "https://ai.google.dev/gemini-api/docs/veo",
+   "source_kind": "docs"
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Veo 3.1",
+   "date": "2026-01-13",
+   "statement": "1080p and 4K come from upscaling and only in Flow, the API and Vertex AI.",
+   "quote": "Upscaling to 1080p and 4K is only available in Flow, the Gemini API and Vertex AI",
+   "source_url": "https://blog.google/innovation-and-ai/technology/ai/veo-3-1-ingredients-to-video/",
+   "source_kind": "official_blog"
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Veo 3.1 Lite",
+   "date": "2026-03-31",
+   "statement": "No 4K and no extension.",
+   "quote": "Veo 3.1 Lite Preview does not support 4K outputs or Extension",
+   "source_url": "https://ai.google.dev/gemini-api/docs/models/veo-3.1-lite-generate-preview",
+   "source_kind": "docs"
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Gemini Omni Flash",
+   "date": "2026-08-27",
+   "statement": "Consistency across edits, complex motion and accurate text remain challenging.",
+   "quote": "maintaining complete consistency throughout edits, generating scenes with complex motion, or rendering perfectly accurate text remains a challenge",
+   "source_url": "https://deepmind.google/models/model-cards/gemini-omni-flash/",
+   "source_kind": "model_card"
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Gemini Omni 1.1 Flash",
+   "date": "2026-08-27",
+   "statement": "1080p and 4K outputs are upscaled, not native.",
+   "quote": "1080p and 4K outputs are generated using upscaling.",
+   "source_url": "https://ai.google.dev/gemini-api/docs/changelog",
+   "source_kind": "docs"
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Gemini Omni Flash (API)",
+   "date": "2026-08-27",
+   "statement": "Extension can only append to the end of a clip.",
+   "quote": "Video extension is limited to appending to the end of a video; prepending or extending the middle of a clip is not supported.",
+   "source_url": "https://ai.google.dev/gemini-api/docs/omni",
+   "source_kind": "docs"
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Gemini Omni Flash (API)",
+   "date": "2026-08-27",
+   "statement": "Uploaded videos for editing or extension must be 10 seconds or shorter.",
+   "quote": "Input videos for editing and extension must be 10 seconds or less when uploading",
+   "source_url": "https://ai.google.dev/gemini-api/docs/omni",
+   "source_kind": "docs"
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Gemini Omni Flash (API)",
+   "date": "2026-08-27",
+   "statement": "Voice editing is not supported.",
+   "quote": "Voice editing is not supported.",
+   "source_url": "https://ai.google.dev/gemini-api/docs/omni",
+   "source_kind": "docs"
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Gemini Omni Flash",
+   "date": "2026-08-27",
+   "statement": "The ability to change people's speech is deliberately restricted.",
+   "quote": "Gemini Omni Flash is capable of changing people's speech. For now, we are restricting this capability",
+   "source_url": "https://deepmind.google/models/model-cards/gemini-omni-flash/",
+   "source_kind": "model_card"
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Gemini Omni Flash",
+   "date": "2026-05-19",
+   "statement": "Only voice references were accepted as audio input at launch.",
+   "quote": "While only voice references will be supported for audio to start, we’ll roll out other types of audio inputs soon.",
+   "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-omni/",
+   "source_kind": "official_blog"
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Gemini Omni Flash (API)",
+   "date": "2026-08-27",
+   "statement": "Video references limited to 3 clips of up to 3 seconds each.",
+   "quote": "Video references support a maximum of 3 clips, up to 3 seconds each.",
+   "source_url": "https://ai.google.dev/gemini-api/docs/omni",
+   "source_kind": "docs"
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Gemini Omni Flash (API)",
+   "date": "2026-08-27",
+   "statement": "By default the model cuts between several shots; single-shot output must be requested.",
+   "quote": "By default Omni Flash will try to create a video with a few different shots.",
+   "source_url": "https://ai.google.dev/gemini-api/docs/omni",
+   "source_kind": "docs"
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Gemini Omni Flash (API)",
+   "date": "2026-08-27",
+   "statement": "Only English is fully supported.",
+   "quote": "English (EN) is fully supported, but other languages have not been evaluated",
+   "source_url": "https://ai.google.dev/gemini-api/docs/omni",
+   "source_kind": "docs"
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Project Genie",
+   "date": "2026-01-29",
+   "statement": "Generated worlds limited to 60 seconds.",
+   "quote": "Limitations in generations to 60 seconds",
+   "source_url": "https://blog.google/innovation-and-ai/models-and-research/google-deepmind/project-genie/",
+   "source_kind": "official_blog"
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Project Genie",
+   "date": "2026-01-29",
+   "statement": "Worlds may not look true-to-life or follow prompts or physics.",
+   "quote": "Generated worlds might not look completely true-to-life or always adhere closely to prompts or images, or real-world physics",
+   "source_url": "https://blog.google/innovation-and-ai/models-and-research/google-deepmind/project-genie/",
+   "source_kind": "official_blog"
+  }
+ ],
+ "unverified_leads": [
+  {
+   "lead": "Reasons OpenAI shut Sora down (reported: about $1 million per day in running cost against roughly $2.1 million total revenue; compute redirected to coding and enterprise products; IPO-driven focus).",
+   "why_unverified": "Only aggregator and news commentary; OpenAI gave no reason in the pages I retrieved (Variety, a secondary source, says OpenAI gave none). No primary source for any figure. Do not use in the film.",
+   "evidence": [
+    {
+     "quote": "without providing a reason for the decision",
+     "source_url": "https://variety.com/2026/digital/news/openai-shutting-down-sora-video-disney-1236698277/",
+     "source_kind": "secondary"
+    }
+   ]
+  },
+  {
+   "lead": "Sora usage numbers (peak around one million users, later under 500,000).",
+   "why_unverified": "Appears only in secondary summaries returned by web search; no primary source retrieved."
+  },
+  {
+   "lead": "OpenAI's own announcement post on X on 2026-03-24 (\"We're saying goodbye to Sora\").",
+   "why_unverified": "The X post could not be fetched from the sandbox. The wording is quoted from Variety (secondary). The dates in it are confirmed independently by OpenAI's help center and API deprecation page.",
+   "evidence": [
+    {
+     "quote": "We’re saying goodbye to Sora. To everyone who created with Sora, shared it, and built community around it: thank you.",
+     "source_url": "https://variety.com/2026/digital/news/openai-shutting-down-sora-video-disney-1236698277/",
+     "source_kind": "secondary"
+    }
+   ]
+  },
+  {
+   "lead": "Disney/OpenAI Sora licensing deal: announced 2025-12-11 (retrieved from Disney's newsroom) and reported ended on 2026-03-24 with the planned $1 billion Disney investment dropped.",
+   "why_unverified": "The announcement is confirmed by a primary Disney page; the termination comes only from Variety (secondary), which quotes a Disney representative. No primary termination notice retrieved.",
+   "evidence": [
+    {
+     "quote": "December 11, 2025 6 min. read As part of this three-year licensing agreement, Sora will be able to generate short, user-prompted social videos",
+     "source_url": "https://thewaltdisneycompany.com/news/disney-openai-sora-agreement/",
+     "source_kind": "official_blog"
+    },
+    {
+     "quote": "Disney has now ended its partnership with OpenAI, which included plans for the media conglomerate to take a $1 billion stake",
+     "source_url": "https://variety.com/2026/digital/news/openai-shutting-down-sora-video-disney-1236698277/",
+     "source_kind": "secondary"
+    }
+   ]
+  },
+  {
+   "lead": "Sora continuing as an internal world-simulation / robotics research effort after the product shutdown.",
+   "why_unverified": "Stated in search-result summaries only; no OpenAI page retrieved says this. Do not claim it."
+  },
+  {
+   "lead": "Whether OpenAI offers any video-generation product or API after 2026-09-24 (or a \"Sora 3\").",
+   "why_unverified": "OpenAI's docs say no one-to-one replacement API exists. Variety (secondary) says ChatGPT will no longer generate video from text prompts. Nothing about future plans was found in primary sources; forum speculation about a Sora 3 is not evidence."
+  },
+  {
+   "lead": "\"Veo 4\".",
+   "why_unverified": "No Google primary source announces it. DeepMind's Veo page (retrieved 2026-09-29) still leads with Veo 3.1, and Google's own Gemini API docs recommend Gemini Omni Flash as the default video model. Every \"Veo 4\" article found is third-party speculation."
+  },
+  {
+   "lead": "A higher tier such as \"Gemini Omni Pro\" or an Omni release after 2026-08-27.",
+   "why_unverified": "None found in blog.google, the Gemini API changelog (latest entry read: 2026-09-22) or the DeepMind model pages. Only Gemini Omni Flash (2026-05-19) and Gemini Omni 1.1 Flash (2026-08-27) exist in primary sources."
+  },
+  {
+   "lead": "Whether the Gemini API endpoints for Veo 2 and Veo 3.0 were actually switched off on 2026-06-30.",
+   "why_unverified": "The retirement date is documented in Google's changelog and deprecation table, but I did not test the endpoints or find a post-date notice."
+  },
+  {
+   "lead": "Google Vids offering Omni 1.1 Flash video generation \"free to everyone\" from 2026-09-23.",
+   "why_unverified": "Google's Workspace Updates post (primary, retrieved) confirms the rollout and lists eligible editions including personal accounts, but the \"free of charge for anyone\" wording and usage caps appear only in secondary coverage."
+  },
+  {
+   "lead": "Veo 3 output resolution at its 2025-05-20 launch.",
+   "why_unverified": "The launch post is silent. A DeepMind page from launch week mentions \"4k output\" in a summary line, and the API only added 4K on 2026-01-13. No primary spec table from May 2025 was retrieved."
+  },
+  {
+   "lead": "Sora 2 resolution and frame rate in the consumer app at launch.",
+   "why_unverified": "Not stated in the launch post or help-center pages retrieved. Only API figures are documented (720x1280 / 1280x720 for sora-2; 1080p for sora-2-pro from 2026-03-12)."
+  },
+  {
+   "lead": "Google's Gemini Omni Flash clip length and resolution on launch day (2026-05-19).",
+   "why_unverified": "Launch blog and I/O roundup give no numbers; 3-10 s and 720p appear in the API preview entry of 2026-06-30 and 10 s on the current Gemini app page."
+  },
+  {
+   "lead": "YouTube Shorts integrations of Veo and Omni (e.g. Shorts Remix), Google Vids Veo updates and Veo 3 Fast rollout dates.",
+   "why_unverified": "Mentioned in Google posts but not researched in depth; no dates from primary pages were collected for these products."
+  }
+ ],
+ "corrections_to_common_beliefs": [
+  "Sora was NOT publicly released in February 2024. The 15 Feb 2024 event was a research preview shown to red teamers and a few artists, designers and filmmakers. The public release came on 9 Dec 2024 as a different, faster model called Sora Turbo, with clips capped at 20 seconds and 1080p, not the 'minute' shown in February.",
+  "Sora is now a past-tense story. OpenAI discontinued the Sora web and app on 26 April 2026 (announced 24 March 2026) and shut down the Sora 2 API on 24 September 2026; its own docs say no one-to-one replacement API exists. Sora 1 left the U.S. on 13 March 2026. Any line calling Sora 2 the current state of the art, or an OpenAI product you can use today, is wrong.",
+  "Sora 2 (30 Sep 2025) did not bring native audio ahead of Google: Veo 3 shipped generated dialogue, sound effects and ambience on 20 May 2025, about four months earlier. (Other developers are outside the scope of this file.)",
+  "Veo 2's December 2024 headline ('up to 4K', 'minutes in length') is a capability claim, not what users got. The Gemini API spec table in April 2025 lists 5-8 second clips at 720p and 24 fps. Similarly Veo 1's 'beyond a minute at 1080p' (May 2024) was shown only to select creators in a private preview.",
+  "Veo 3.1 (15 Oct 2025) is no longer Google's newest video model. Gemini Omni Flash launched on 19 May 2026 and Gemini Omni 1.1 Flash reached general availability on 27 Aug 2026 (API ID gemini-omni-1.1-flash). Google's Gemini app page says Omni replaces Veo in the app, and the API docs make Omni Flash the default. Veo 3.1 remains available for specific features (scene extension, last-frame control) and no 'Veo 4' has been announced.",
+  "'Gemini Omni' is real and verified in Google primary sources (blog.google, Gemini API docs and changelog, DeepMind model card), not a leak or rumour. Use the exact strings 'Gemini Omni Flash' (launch) and 'Gemini Omni 1.1 Flash' (August 2026).",
+  "Omni's 1080p and 4K outputs are generated by upscaling, and a single generation is 3-10 seconds; longer clips come from extension (10-second steps, 40 seconds cumulative per the Aug 2026 developer post). Google's January 2026 post likewise describes Veo 3.1's 1080p and 4K options as upscaling, available only in Flow, the Gemini API and Vertex AI. Do not claim native 4K generation.",
+  "Longer durations come from extension and stitching, not from single long generations: Sora API videos reach their 120-second maximum only by repeated extensions (each adds up to 20 seconds, up to six times), Veo 3.1's 8-second clips reach 148 seconds only by chaining extensions, and Omni 1.1 reaches 40 seconds by 10-second extension steps.",
+  "Vertical 9:16 output dates: Sora's technical report described native 1080x1920 sampling as a capability in Feb 2024 (the public Sora product offered vertical from Dec 2024); Veo 3 and Veo 3 Fast got a 9:16 option in the Gemini API on 8 Sep 2025; Veo 3.1 Ingredients to Video got what Google calls native vertical output on 13 Jan 2026.",
+  "Sora's public clips were watermarked: a visible moving watermark plus C2PA metadata at the Sora app launch. Any Sora 2 excerpt would need that watermark left in place, and per OpenAI's own pages the app, web and API are all discontinued, so no new Sora 2 footage can be generated.",
+  "Google's Genie 3 and Project Genie are interactive world models (real time, 720p, consistent for a few minutes, 60-second worlds in the prototype), not clip generators. Present them as 'moving worlds', not as video-model milestones."
+ ]
+}

@@ -1,0 +1,311 @@
+{
+  "agent": "V-H3",
+  "source_file": "/home/user/rumah/film120/data/candidates/H3.json",
+  "run_date": "2026-09-29",
+  "verifier_notes": {
+    "method": "Independent re-check in the Higgsfield sandbox: Commons API (wikitext, rendered licence box via action=parse, extmetadata, structured data via wbgetentities, revision histories, logevents), curl -sIL and full download of every media_url with ffprobe and sha1, Wayback CDX/id_ fetches, developer primary sources (MiniMax, THUDM GitHub + Hugging Face Space source at the December-2024 revision, Lightricks GitHub + licences, ByteDance Seed, xAI news/ToS via Wayback), and pixel statistics (temporal variance, min-projection, template matching, image registration). No frame was ever viewed by a human or described by a vision tool; the six Higgsfield video analyses queued by H3 were still 'queued' when polled, so nothing below is a visual description.",
+    "global_caveat": "Every candidate except the Grok clip and the Cybertruck clip rests wholly or partly on the Commons {{PD-algorithm}} community tag (US-law basis: no human authorship). The rendered tag itself warns: 'there is a risk that AI-generated media uploaded on Commons may violate the rights of the authors of the original works' and that the UK and Hong Kong give computer-generated works 50 years of protection. Platform terms are a residual risk for the Hailuo, Grok and CogVideoX-Space clips (see per-clip conditions).",
+    "hunter_errors_found": [
+      "hailuo_cyberpunk_rainy_street_2024: H3 reported no watermark. WRONG: a persistent semi-transparent Hailuo logo + 'Hailuo AI' wordmark sits bottom-right (about x 1126-1272, y 664-684 of 1280x720) in every frame.",
+      "seedance2_husband_coming_home: H3 said the seedance2.ai showcase has no Wayback snapshot. WRONG: the CDX index lists /showcase captures from 2026-02-14 and the exact asset cdn.seedance2.ai/examples/seedance2/4.mp4 from 2026-03-02; the same snapshots show the site is a third-party commercial generator (not ByteDance) that was live under the 'Seedance 2' brand since 2025-11-27, before the official 2026-02-12 launch.",
+      "cogvideox_* : H3 called the clips clear without noting that the THUDM Space UI (at the exact December-2024 revision) carries 'This demo is for academic research and experiential use only'.",
+      "grok_imagine_gotz_von_berlichingen: 'Grok 4.1 Imagine mode' is the uploader's wording; xAI's Grok 4.1 post (2025-11-17) is a chat-model announcement that does not mention Imagine.",
+      "ltxv2b_cybertruck_from_photos: H3 treated PD-algorithm as the video licence; the file's own structured data lists licence CC BY 4.0 / copyrighted, and the LTXV licences (now read) attach conditions to use of Output."
+    ]
+  },
+  "verdicts": [
+    {
+      "cand_id": "hailuo_cyberpunk_rainy_street_2024",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Licence: CC0 1.0 dedication written by the generator/uploader VulcanSphere (transcluded template User:VulcanSphere/AI-CC0-videos, created 2024-12-24T08:32:49Z, single revision, i.e. before the upload) plus Commons PD-algorithm. No credit legally required; give a courtesy source label anyway: 'Hailuo AI (MiniMax), Dec 2024, VulcanSphere, CC0, Wikimedia Commons'.",
+        "Keep the visible Hailuo watermark (logo + 'Hailuo AI', bottom-right). A centre crop from 16:9 to 9:16 will remove it because it sits at the right edge (x about 1126-1272 of 1280); use a scale-to-fit/letterboxed frame or a crop window that includes the right edge. Hailuo ToS (v. 2026-08-19) forbids removing or obscuring watermarks applied by the company.",
+        "Do not label a Hailuo version number: the page names only 'Hailuo AI'. Family-level corroboration only (MiniMax video-01, 2024-08-31).",
+        "Residual platform-terms risk: Hailuo ToS in force on the generation date (Last Modified 09/16/2024) says 'We do not claim ownership of User Contributions or User Generated Content' but also permits site material for 'personal, non-commercial use only'. A watermarked output implies a free-tier export. Accept the risk or ask the uploader/legal if the film is commercial.",
+        "Show as an AI-generated curated sample, not as representative of every generation."
+      ],
+      "issues_found": [
+        "Hunter's watermark claim refuted: a persistent overlay reading as a Hailuo logo + 'Hailuo AI' is present bottom-right in all 141 frames (temporal sd 24 in the text band vs 34-38 around it; min-projection luminance 98 vs 31 above the band; glyph shapes readable as 'Hailuo AI'). Detected by pixel statistics only, not visually confirmed by a person.",
+        "Uploader's licence template says 'text-to-image (txt2img)' although these are videos (cosmetic template error, not a licence defect).",
+        "Model version not stated anywhere on the page; only family-level corroboration exists.",
+        "PD-algorithm tag carries the Commons AI-derivative-works legal disclaimer; CC0 covers only the uploader's own rights, not MiniMax's platform terms.",
+        "No deletion/LicenseReview/copyvio banner on the file page; no Commons deletion-request hits."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "clear_with_conditions",
+        "watermark_notes": "VISIBLE WATERMARK bottom-right: semi-transparent Hailuo logo + 'Hailuo AI' wordmark, approx x 1126-1272, y 664-684 (about 145x20 px) of the 1280x720 frame, static in all 141 frames. Found by V-H3 pixel analysis (temporal variance + min-projection); glyph shapes readable as 'Hailuo AI'. Must be kept; vertical centre-crop would cut it off.",
+        "risk_flags": ["visible_watermark_bottom_right", "platform_terms_non_commercial_clause_unresolved"],
+        "model_version": "Hailuo AI (MiniMax); version not stated on the page (family-level corroboration only: video-01, 2024-08-31)",
+        "attribution_required": false,
+        "sharealike": false,
+        "license_verified_text": "Rendered file page: 'This file is made available under the Creative Commons CC0 1.0 Universal Public Domain Dedication.' and 'This file is in the public domain because it is the work of a computer algorithm or artificial intelligence and does not contain sufficient human authorship to support a copyright claim.' Uploader template text: 'This artificial intelligence video was generated by VulcanSphere ... and placed under CC-Zero.' Structured data P275 = Q6938433 (CC0).",
+        "platform_terms": {
+          "url": "https://web.archive.org/web/20241223132325id_/http://hailuoai.video/doc/terms-of-service.html",
+          "retrieved": true,
+          "version": "Last Modified 09/16/2024 (snapshot 2024-12-23, one day before the clip)",
+          "quote": "We do not claim ownership of User Contributions or User Generated Content."
+        },
+        "media_sha1": "be865b09e3826d1494b4f757ca02b0c783fc9946 (matches Commons structured data P4092)",
+        "media_probe": "ffprobe: vp9 1280x720 25 fps, 5.64 s, no audio stream (matches H3)",
+        "date_verified": "2024-12-24 = Commons Date field, structured data P571 and first upload revision 2024-12-24T11:07:48Z by VulcanSphere (the prompter). This is a generation/upload date, not a model debut date."
+      },
+      "http": {"status": 200, "content_length": 3117507, "content_type": "video/webm"},
+      "model_date_corroboration": {
+        "claim": "Hailuo AI (MiniMax video-01 family) was public with text-to-video and image-to-video at 720p/25 fps by 2024-08-31, i.e. before this 2024-12-24 clip; exact version of this clip is not established.",
+        "source_url": "https://www.minimax.io/news/video-01",
+        "quote": "MiniMax has officially launched its first AI-native video generation model, video-01."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "hailuo_i2v_japanese_nuns_1902",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Licence rests only on the Commons {{PD-algorithm}} tag on the video (no explicit uploader dedication) plus {{PD-US-expired}} on the 1902 stereoview source. Both are stated-basis public-domain tags, but the video tag is a community assertion with the UK/HK 50-year computer-generated-work caveat; accept as residual risk.",
+        "Label exactly as: 'AI-animated from a 1902 stereoview photograph (Stereo-Travel Company), Hailuo AI (per Commons category), Feb 2025, Nesnad'. Do not state a Hailuo version; the model is named only by the category 'Videos by Hailuo AI' added by the uploader in the first revision, not in the description text.",
+        "Present it as speculative AI animation of a historic photo, never as real historical footage; pair with the PD source still as a before/after (source: https://commons.wikimedia.org/wiki/File:Japanese_Buddhist_Nuns.jpg).",
+        "Subjects are anonymous people from 1902 (no living likeness); still show restraint and label the clip as AI-generated.",
+        "Watermark status is undetermined: the clip is near-static so temporal tests are blind, and the Hailuo watermark template found in the sibling clip does not match anywhere in this frame. A person must inspect the bottom-right corner before use and must not crop away any logo found.",
+        "Same Hailuo platform-terms residual risk as the cyberpunk clip (ToS of 09/16/2024: platform claims no ownership of user-generated content; site material 'personal, non-commercial use only')."
+      ],
+      "issues_found": [
+        "Model attribution is category-only ('Category:Videos by Hailuo AI'); the description and title never name Hailuo, and no model version or i2v/t2v mode is stated. Technical fit (720 px height, 25 fps, 5.64 s, identical to the confirmed Hailuo cyberpunk clip) is consistent but is inference.",
+        "No prompt is published and no explicit copyright dedication exists; PD-algorithm tag alone.",
+        "Source relationship independently confirmed: V-H3 registered frame 0 of the video against the source card; best match is the LEFT half of Japanese_Buddhist_Nuns.jpg at 0.47 scale, offset (202,163), normalised cross-correlation 0.93. The source page carries {{PD-US-expired}} (Stereo-Travel Company, 1902) and links the video as 'Animated version'.",
+        "Hunter listed risk flag real_person: subjects are historic and anonymous; kept as a labelling condition.",
+        "No deletion/LicenseReview banner on the file page; no structured data was ever added to this file."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "clear_with_conditions",
+        "model_version": "Hailuo AI (MiniMax) per Commons category only; version and mode not stated on the page (family-level corroboration: video-01 offers text-to-video and image-to-video, 2024-08-31)",
+        "watermark_notes": "Undetermined. Near-static clip; the Hailuo watermark template extracted from the cyberpunk clip does not match anywhere in this frame (max NCC 0.08 bottom band vs 0.10 middle), but a differently scaled or cropped watermark cannot be excluded. Visual profile required.",
+        "attribution_required": false,
+        "sharealike": false,
+        "license_verified_text": "File wikitext Permission field: {{PD-algorithm}}; rendered: 'This file is in the public domain because it is the work of a computer algorithm or artificial intelligence and does not contain sufficient human authorship to support a copyright claim.' Source card rendered/wikitext licence: {{PD-US-expired}}.",
+        "media_sha1": "b1126ff1fcb08438ccb9b80c8b353a259fc4f8b6",
+        "media_probe": "ffprobe: vp9 784x720 25 fps, 5.64 s, no audio stream (matches H3)",
+        "date_verified": "2025-02-22 = Commons Date field and first upload revision 2025-02-22T12:47:18Z by Nesnad; source photo dated 1902-01-01 on Commons."
+      },
+      "http": {"status": 200, "content_length": 1477445, "content_type": "video/webm"},
+      "model_date_corroboration": {
+        "claim": "Hailuo AI image-to-video existed by 2024-08-31 (before the 2025-02-22 clip). The specific Hailuo model/version used for this clip is NOT corroborated.",
+        "source_url": "https://www.minimax.io/news/video-01",
+        "quote": "Video-01 offers two modes: text-to-video and image-to-video."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "cogvideox_late_afternoon_swans_2024",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Licence: CC0 1.0 written by the generator/uploader VulcanSphere (same template, created before upload) plus PD-algorithm. No credit legally required; courtesy label: 'CogVideoX-5B (Zhipu AI / THUDM), Dec 2024, VulcanSphere, CC0, Wikimedia Commons'.",
+        "Residual platform notice: the THUDM Space that generated the clip carried, at the exact December-2024 revision (fff6dc8503, unchanged 2024-09-19 to 2025-06-27), the red banner 'This demo is for academic research and experiential use only.' The CogVideoX licence (grant clause) says output IP 'belong[s] to the user to the extent permitted by applicable local laws', so the CC0 is grantable, but the banner is a stated-intent risk if the film is commercial. Escalate to legal if so.",
+        "Label the model as CogVideoX-5B only as far as the page says 'CogVideoX' via the 5B Space; the Space source at that revision loads THUDM/CogVideoX-5b (num_frames=49, 8 fps, which gives the observed 6.125 s).",
+        "720x480 at 8 fps: use a deliberate 'early open-weights' treatment or upscaling; do not present the low frame rate as a fault of the technology in general.",
+        "No watermark code exists in the Space app; none detected, but low-motion content makes detection weak. Still profile visually."
+      ],
+      "issues_found": [
+        "Hunter omitted the Space's academic-research-only banner (now found in the Space source at the December-2024 commit).",
+        "Uploader template wording says 'text-to-image (txt2img)' for a video (cosmetic).",
+        "CogVideoX-5B model licence: free for academic research; commercial use of the MODEL needs registration and is limited to 1M visits/month. This binds the generator, not downstream viewers of the output, but the film's commercial status is unknown.",
+        "Everything else confirmed: CC0 template text, PD-algorithm text, prompt and credit in wikitext, upload 2024-12-24T09:01:38Z, no deletion banners."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "clear_with_conditions",
+        "risk_flags": ["space_demo_academic_use_notice"],
+        "model_version": "CogVideoX-5B (THUDM Space CogVideoX-5B-Space loading THUDM/CogVideoX-5b at generation date; 49 frames at 8 fps = 6.125 s)",
+        "attribution_required": false,
+        "sharealike": false,
+        "license_verified_text": "Rendered: 'This file is made available under the Creative Commons CC0 1.0 Universal Public Domain Dedication.' + PD-algorithm text. Template: 'This artificial intelligence video was generated by VulcanSphere ... and placed under CC-Zero.' Model licence (https://huggingface.co/THUDM/CogVideoX-5b/raw/main/LICENSE): 'The intellectual property rights of the generated content belong to the user to the extent permitted by applicable local laws.'",
+        "space_notice": {
+          "url": "https://huggingface.co/spaces/THUDM/CogVideoX-5B-Space/raw/fff6dc8503/app.py",
+          "retrieved": true,
+          "quote": "This demo is for academic research and experiential use only."
+        },
+        "media_sha1": "1674d92bd2188c5f4c298f710637ed016e94795a (matches Commons structured data P4092)",
+        "media_probe": "ffprobe: vp9 720x480 8 fps, 6.125 s, no audio (matches H3)",
+        "date_verified": "2024-12-24 = Commons Date field, P571 and upload revision 2024-12-24T09:01:38Z by VulcanSphere."
+      },
+      "http": {"status": 200, "content_length": 274586, "content_type": "video/webm"},
+      "model_date_corroboration": {
+        "claim": "CogVideoX-5B was open-sourced 2024-08-27 (2B on 2024-08-06), i.e. before this 2024-12-24 clip; paper arXiv 2408.06072 submitted 2024-08-12.",
+        "source_url": "https://github.com/THUDM/CogVideo",
+        "quote": "2024/8/27: We have open-sourced a larger model in the CogVideoX series, CogVideoX-5B."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "cogvideox_painting_with_the_breeze_2024",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Licence: CC0 1.0 written by the generator/uploader VulcanSphere plus PD-algorithm. No credit legally required; courtesy label: 'CogVideoX-5B (Zhipu AI / THUDM), Dec 2024, VulcanSphere, CC0, Wikimedia Commons'.",
+        "Same Space-notice residual risk as the swans clip: the generating Space's banner reads 'This demo is for academic research and experiential use only.' Escalate to legal if the film is commercial.",
+        "Do not use the 'early_failure_annotation' role unless human visual QA confirms an actual artefact (hands/brush/canvas): no frame was viewed.",
+        "Synthetic person only (prompt: middle-aged gentleman with green hair); no brand or logo in the prompt. Profile visually for any accidental text/logo.",
+        "720x480 at 8 fps: treat as an early open-weights look; do not present as representative of current output."
+      ],
+      "issues_found": [
+        "Hunter omitted the Space banner (found in the Space source at the December-2024 revision).",
+        "Uploader template says 'text-to-image (txt2img)' for a video (cosmetic).",
+        "Pixel check: a large static, smooth, non-text-like region in the lower-left (probably table/ground); no overlay or logo structure detected.",
+        "Everything else confirmed: CC0 template, PD-algorithm text, prompt, credit, upload 2024-12-24T09:04:40Z, no deletion banners."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "clear_with_conditions",
+        "risk_flags": ["space_demo_academic_use_notice"],
+        "model_version": "CogVideoX-5B (THUDM Space CogVideoX-5B-Space loading THUDM/CogVideoX-5b at generation date)",
+        "attribution_required": false,
+        "sharealike": false,
+        "license_verified_text": "Rendered: 'This file is made available under the Creative Commons CC0 1.0 Universal Public Domain Dedication.' + PD-algorithm text; template 'placed under CC-Zero.' Structured data P275 = Q6938433 (CC0).",
+        "space_notice": {
+          "url": "https://huggingface.co/spaces/THUDM/CogVideoX-5B-Space/raw/fff6dc8503/app.py",
+          "retrieved": true,
+          "quote": "This demo is for academic research and experiential use only."
+        },
+        "media_sha1": "ea9e27c24a939561bea25ab6673334fb81a8743e (matches Commons structured data P4092)",
+        "media_probe": "ffprobe: vp9 720x480 8 fps, 6.125 s, no audio (matches H3)",
+        "date_verified": "2024-12-24 = Commons Date field, P571 and upload revision 2024-12-24T09:04:40Z by VulcanSphere."
+      },
+      "http": {"status": 200, "content_length": 238329, "content_type": "video/webm"},
+      "model_date_corroboration": {
+        "claim": "CogVideoX-5B was open-sourced 2024-08-27, before this 2024-12-24 clip; the Space source at the generation-date revision loads THUDM/CogVideoX-5b.",
+        "source_url": "https://github.com/THUDM/CogVideo",
+        "quote": "2024/8/27: We have open-sourced a larger model in the CogVideoX series, CogVideoX-5B."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "seedance2_husband_coming_home",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "Licence cannot be established: the only licence text is {{PD-algorithm}} applied by a third-party uploader (5lensiu, 10 edits, UploadWizard 'PD-algorithm upload' on 2026-02-14). The uploader did not generate the clip, gives no dedication, and the Author field 'Seedance 2.0/Bytedance' is only a claimed attribution.",
+        "Source is not ByteDance: seedance2.ai is an independent commercial generator site. Wayback shows it live from 2025-11-27 (about 11 weeks before the official 2026-02-12 Seedance 2.0 launch) under the 'Seedance 2' brand, with fabricated-looking testimonials, its own Terms of Service/Privacy/Refund pages and the footer 'Copyright (c) 2026 Seedance2.ai All rights reserved.' No ByteDance affiliation is stated. The official product page is seed.bytedance.com/en/seedance2_0.",
+        "Model claim unverifiable: the site's older gallery folder (cdn.seedance2.ai/examples/seedance/, captured 2025-11-27) shows it displayed pre-2.0 clips under the same 'Seedance 2' name, so the brand is not proof of the model. The exact asset examples/seedance2/4.mp4 first appears in Wayback on 2026-03-02.",
+        "Date unverifiable: the Commons date 2026-02-12 equals the official launch date, two days before the upload; it is not a generation date and no capture of the asset exists from before 2026-03-02.",
+        "Seedance 2.0 accepts up to 9 images, 3 video clips and 3 audio clips as references (official launch post), so a showcase clip can embed third-party inputs that a PD-algorithm tag cannot cover; provenance of inputs and prompt is unknown.",
+        "Content risk unknowable without viewing: title 'Husband coming home to his family' implies a family scene, possibly minors and lifelike people; 7 shots with real audio, 60 fps.",
+        "Hunter's claim that the showcase page has no Wayback snapshot is wrong (captures exist from 2026-02-14T19:39Z), but the snapshots reinforce, not weaken, the rejection: the showcase text says only 'Explore a curated collection of stunning AI-generated videos' with no reuse terms and no ByteDance attribution.",
+        "Metadata: ffprobe COMMENT tag 'vid:' (empty) is typical of ByteDance-pipeline transcodes but is not probative of Seedance 2.0 output.",
+        "No watermark/overlay detected by pixel statistics (0 % low-variance corner pixels), so the site logo may have been cropped out, which is itself a provenance red flag."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "reject",
+        "risk_flags": ["unverifiable_model_claim", "third_party_reseller_source", "uploader_not_creator", "possible_minors_unverified", "date_not_generation_date"],
+        "date_verified": "Uploaded to Commons 2026-02-14T15:44:43Z by 5lensiu; Commons Date field 2026-02-12 is the official launch date, not a verified creation date.",
+        "media_sha1": "c2f57ceadb5766c702d950ea0c1c926d20e280c0 (matches Commons structured data P4092)",
+        "media_probe": "ffprobe: vp9 1280x720 60 fps + opus audio, 15.077 s (matches H3)",
+        "evidence": {
+          "wayback_showcase": "https://web.archive.org/web/20260214193913id_/https://seedance2.ai/showcase",
+          "wayback_home_first_capture": "https://web.archive.org/web/20251127152016id_/https://seedance2.ai/",
+          "wayback_asset_first_capture": "https://web.archive.org/web/20260302175214id_/https://cdn.seedance2.ai/examples/seedance2/4.mp4",
+          "footer_quote": "Copyright © 2026 Seedance2.ai All rights reserved.",
+          "seedance2_ai_terms_page": "not retrieved (Wayback timeouts); footer evidence is sufficient for rejection"
+        }
+      },
+      "http": {"status": 200, "content_length": 3106831, "content_type": "video/webm"},
+      "model_date_corroboration": {
+        "claim": "Seedance 2.0 as a model was officially launched by ByteDance Seed on 2026-02-12 (model-level fact only). That THIS clip is Seedance 2.0 output, or existed on 2026-02-12, is NOT corroborated.",
+        "source_url": "https://seed.bytedance.com/en/blog/official-launch-of-seedance-2-0",
+        "quote": "We recently launched Seedance 2.0, our next-generation video creation model."
+      },
+      "confidence": "high"
+    },
+    {
+      "cand_id": "grok_imagine_gotz_von_berlichingen",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Licence: CC0 1.0 self-declared by the uploader/generator Achim Raschka ('I, the copyright holder of this work, hereby publish it under the following license' + CC0 text), plus Commons PD-algorithm, plus PD-Art for the source painting (Lovis Corinth, died 1925, PD-old-auto-1923 / PD-old-100-expired; Zeno.org scan). No credit legally required.",
+        "xAI ToS (effective 2025-11-04) lets the user keep ownership of Output but says: 'We ask that when using Output, you attribute the Service as having generated the Output'. Follow it: label 'Grok Imagine (xAI)'.",
+        "Label the model as 'Grok Imagine (xAI), Nov 2025, as stated by the uploader'. Do NOT write 'Grok 4.1': xAI's Grok 4.1 post (2025-11-17) is a chat-model release that does not mention Imagine, and no primary xAI source dates an Imagine version in Nov 2025 (xAI's news index lists its first Imagine post on 2026-01-28).",
+        "Courtesy credit: 'Animation: Achim Raschka (CC0), Wikimedia Commons; painting: Lovis Corinth, Goetz von Berlichingen, 1917 (public domain)'.",
+        "Watermark unknown (static painting frame defeats the overlay test): profile the corners visually and keep any logo found.",
+        "560x560 square with an effectively silent Opus track (about -55 dB): mute/strip audio; use an inset or framed square treatment in 9:16.",
+        "Present as one curated animation of a public-domain painting; not as evidence of general capability."
+      ],
+      "issues_found": [
+        "Model/date wording is the uploader's, not xAI's: 'Video generated with Grok 4.1 Imagine mode'. Primary xAI sources: Grok 4.1 news dated 2025-11-17 (chat model, no Imagine mention) and Grok Imagine API news dated 2026-01-28; no primary source dates the Imagine video feature in Nov 2025. A secondary lead (TechCrunch, 2025-08-04, secondary) reports Grok Imagine launched in Aug 2025, so the feature plausibly existed in Nov 2025, but that is not primary-verified.",
+        "Creation date '2025-11' is month-precision and uploader-stated; the file was uploaded 2026-01-13T12:16:58Z, about two months after the claimed generation.",
+        "Provenance signal only: the file carries an ffprobe COMMENT tag beginning 'Signature:' (unexplained metadata, plausibly platform-added); weak and unverifiable.",
+        "PD-Art template carries the generic caveat that reproductions of PD art may be restricted in some countries; painting scan from Zeno.org is tagged PD-Art on Commons.",
+        "Three licence tags coexist (PD-Art on the painting, {{self|Cc-zero}} and PD-algorithm on the video); no conflict, but the CC0 covers only the uploader's contribution.",
+        "No deletion/LicenseReview banner; structured data: P275 CC0 (Q6938433), P6216 public domain."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "clear_with_conditions",
+        "model_version": "Grok Imagine (xAI); exact version not established. Page wording 'Video generated with Grok 4.1 Imagine mode' is the uploader's; 'Grok 4.1' is xAI's chat model.",
+        "date_precision": "month",
+        "attribution_required": false,
+        "sharealike": false,
+        "license_verified_text": "Rendered file page: 'I, the copyright holder of this work, hereby publish it under the following license: This file is made available under the Creative Commons CC0 1.0 Universal Public Domain Dedication.' plus the PD-algorithm text and the PD-Art (PD-old-auto-1923, deathyear 1925) notice for the painting.",
+        "platform_terms": {
+          "url": "https://web.archive.org/web/2025121500id_/https://x.ai/legal/terms-of-service",
+          "retrieved": true,
+          "version": "Terms of Service - Consumer, Effective: November 4, 2025",
+          "quote": "as between you and xAI, you retain your ownership rights to the User Content. We ask that when using Output, you attribute the Service as having generated the Output"
+        },
+        "watermark_notes": "Unknown; not decidable by pixel statistics because the painting frame is static. Visual profile required.",
+        "media_sha1": "eec04bad7bc1a665b1a78af6eb222c551d93fd87 (matches Commons structured data P4092)",
+        "media_probe": "ffprobe: vp9 560x560 24 fps, 6.045 s, opus audio (about -55 dB, effectively silent) (matches H3)",
+        "date_verified": "Commons Date field '2025-11'; upload revision 2026-01-13T12:16:58Z by Achim Raschka."
+      },
+      "http": {"status": 200, "content_length": 2125035, "content_type": "video/webm"},
+      "model_date_corroboration": {
+        "claim": "Grok Imagine (xAI) as a product is corroborated by xAI's own news post of 2026-01-28; the claim that this Nov 2025 clip is 'Grok 4.1 Imagine' is NOT primary-corroborated.",
+        "source_url": "https://x.ai/news/grok-imagine-api",
+        "quote": "Grok Imagine is our most powerful video-audio generative model yet."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "ltxv2b_cybertruck_from_photos",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "TREAT THE WHOLE VIDEO AS CC BY 4.0: it is an animation of two CC BY 4.0 photos by OWS Photography (both source pages verified: 'Creative Commons Attribution 4.0', AttributionRequired true), and the file's own structured data lists licence CC BY 4.0 (Q20007257) and status copyrighted (Q50423863). The PD-algorithm tag covers at most the model-generated part and does not remove the BY obligation.",
+        "Attribution required (CC BY 4.0 text on the page): 'You must give appropriate credit, provide a link to the license, and indicate if changes were made.' On-screen/credit line: 'Photos: OWS Photography, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), via Wikimedia Commons; video generated with LTXV 2B by Premeditated; changes: photos animated by AI and reframed.' No ShareAlike.",
+        "LTXV licence conditions on Output: Output belongs to the user ('Licensor claims no rights in the Output') but 'No use of the Output can contravene any provision' of the licence; Attachment A(e) forbids disseminating machine-generated content without expressly disclaiming that it is machine generated. Satisfy by a visible 'AI-generated' label. If the checkpoint is v0.9.6 or later (licence 'LTXV Open Weights License 0.X'), entities with annual revenue of at least $10,000,000 must obtain a paid commercial licence to use the model; this binds the generator, but ask legal if the film's producer is such an entity.",
+        "Do not state a checkpoint version: the page says only 'LTXV 2B'; 2B checkpoints v0.9.0 (2024-11-21) to v0.9.6 (2025-04-15) all pre-date the 2025-05-12 upload.",
+        "Brand: the subject is a Tesla Cybertruck (Tesla trademarks/trade dress). Editorial, non-advertising use only; add no endorsement implication; avoid dwelling on logos.",
+        "Unknown without viewing: licence plates, bystanders, on-image text or a photographer watermark in the two source photos; visual QA required before use. Pixel statistics found no static overlay."
+      ],
+      "issues_found": [
+        "Licence mislabelled in H3's summary: PD-algorithm is not the operative licence; CC BY 4.0 attribution applies to the derivative (Commons wikitext: {{self|cc-by-4.0|author=[[User:OWS Photography|OWS Photography]]}} + {{PD-algorithm}}; structured data P275 = CC BY 4.0).",
+        "Both source photos verified on Commons: OWS Photography, own work, {{self|cc-by-4.0}}, taken 2024-11-29 and 2025-01-11; no other rights holder shown.",
+        "Model version not stated; licence differs by checkpoint (v0.9.5 = OpenRAIL-M dated 2025-03-05, v0.9.6+ = 'LTXV Open Weights License 0.X' dated 2025-04-15). Both say 'Licensor claims no rights in the Output you generate using the Model'.",
+        "Brand/IP flag from the hunter upheld (Tesla product); no advertising context, so not an automatic reject under the brief.",
+        "Upload path: first revision comment 'Imported media from uploads:...' (OAuth import) by Premeditated; no LicenseReview or deletion banner.",
+        "Hunter's frame-difference observation confirmed: very high motion (median temporal sd 50), 121 frames at 24 fps."
+      ],
+      "corrected_fields": {
+        "reuse_verdict": "clear_with_conditions",
+        "license": {
+          "id": "CC BY 4.0 (OWS Photography, source photos; operative for the derivative video) + Commons PD-algorithm (model-generated part only)",
+          "evidence_url": "https://commons.wikimedia.org/wiki/File:Tesla_Cybertruck_Washington_DC_Metro_Area,_USA_(AI-generated).webm",
+          "evidence_quote": "You must give appropriate credit, provide a link to the license, and indicate if changes were made."
+        },
+        "attribution_required": true,
+        "sharealike": false,
+        "creator_credit": "Photos: OWS Photography (CC BY 4.0, https://creativecommons.org/licenses/by/4.0/), via Wikimedia Commons. Video: generated with LTXV 2B (Lightricks), prompted by Premeditated. Changes: photos animated by AI.",
+        "model_version": "LTXV 2B (Lightricks) per page; checkpoint not stated (2B checkpoints v0.9.0 to v0.9.6 existed before 2025-05-12)",
+        "risk_flags": ["brand_ip", "cc_by_attribution_required", "ltxv_output_ai_disclosure_required", "source_photo_content_unverified"],
+        "license_verified_text": "Rendered: 'This file is licensed under the Creative Commons Attribution 4.0 International license. Attribution: OWS Photography' and the PD-algorithm text. Structured data P275 = Q20007257 (CC BY 4.0), P6216 = Q50423863 (copyrighted).",
+        "model_licence": {
+          "url": "https://huggingface.co/Lightricks/LTX-Video/raw/main/ltx-video-2b-v0.9.5.license.txt",
+          "retrieved": true,
+          "quote": "Licensor claims no rights in the Output You generate using the Model."
+        },
+        "media_sha1": "1db5c3e0a44f861546172b98a55c620b5a2650c5",
+        "media_probe": "ffprobe: vp9 1280x720 24 fps, 5.042 s, no audio (matches H3)",
+        "date_verified": "2025-05-12 = Commons Date field and first upload revision 2025-05-12T07:52:44Z by Premeditated; source photos taken 2024-11-29 and 2025-01-11."
+      },
+      "http": {"status": 200, "content_length": 3217747, "content_type": "video/webm"},
+      "model_date_corroboration": {
+        "claim": "LTX-Video 2B checkpoints (v0.9.0 2024-11-21 through v0.9.6 2025-04-15) existed before the 2025-05-12 upload; the exact checkpoint used is not stated or corroborated.",
+        "source_url": "https://github.com/Lightricks/LTX-Video",
+        "quote": "Release a new checkpoint ltxv-2b-0.9.6-dev-04-25 with improved quality"
+      },
+      "confidence": "medium"
+    }
+  ],
+  "summary": {"checked": 7, "clear": 0, "clear_with_conditions": 6, "rejected": 1}
+}
