@@ -299,7 +299,7 @@ def now(ctx, t):
 def styles(ctx, t):
     SB = ctx.SB; st = SB['cues']['styles']; s = SB['scenes'][6]; lo = ['n_veo3_owl', 'm_sora_mammoth', 'm_sora_gold', 'm_hailuo']
     order = [(0, 'm_sora_mammoth'), (1, 'n_veo3_owl'), (2, 'm_sora_gold'), (3, 'm_hailuo')]
-    i = max(j for j in range(4) if t >= st[j][0] - 1e-6); cid = order[i][1]; u = t - st[i][0]
+    i = max([j for j in range(4) if t >= st[j][0] - 1e-6] or [0]); cid = order[i][1]; u = t - st[i][0]
     tin = ctx.F.pick(cid, 1 if cid == 'n_veo3_owl' else 0, 3.0); c = shot_full(ctx, cid, tin, tin + u, u, 2.0, zoom=(1.0, 1.10), drift=.06 * (1 if i % 2 else -1))
     R.gradient_v(c, 0, 520, .6, 0); R.gradient_v(c, 1000, H, 0, .6)
     R.chip(c, ctx.F.meta(cid)['label'], 64, 236, 24, bga=.55, dot=CY)

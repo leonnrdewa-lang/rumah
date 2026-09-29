@@ -61,10 +61,19 @@ def worker(job):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('--footage', required=True); ap.add_argument('--vo', required=True); ap.add_argument('--out', required=True)
-    ap.add_argument('--fonts', default=''); ap.add_argument('--preview', default=''); ap.add_argument('--range', default=''); ap.add_argument('--workers', type=int, default=6); ap.add_argument('--chunk', type=int, default=60)
+    ap.add_argument('--fonts', default=''); ap.add_argument('--preview', default=''); ap.add_argument('--range', default=''); ap.add_argument('--workers', type=int, default=6); ap.add_argument('--chunk', type=int, default=60); ap.add_argument('--smoke', action='store_true')
     args = ap.parse_args(); os.makedirs(args.out, exist_ok=True)
     D.FONT_DIRS[:0] = [d for d in args.fonts.split(':') if d]; R.FFMPEG = os.environ.get('FFMPEG', 'ffmpeg')
     SB = load(args); total_frames = int(round(SB['total'] * FPS))
+    if args.smoke:   # compose frames around every scene boundary / transition window and a sparse sweep, to catch exceptions cheaply
+        F = R.Footage(args.footage); ctx = S.Ctx(F, SB); chunks = R.caption_chunks(SB); ts = set()
+        for tb, kind, dur in SB['trans']:
+            for k in range(-8, 9): ts.add(round(tb + k * dur / 8, 3))
+        for sc in SB['scenes']: ts.update([sc['t0'], sc['t0'] + .5, sc['t1'] - .05])
+        ts.update([SB['total'] - .2, SB['total'] - .05]); n = 0
+        for t in sorted(x for x in ts if 0 <= x < SB['total']):
+            compose(ctx, chunks, t, int(t * FPS)); n += 1
+        print('smoke ok', n, 'frames'); F.close(); return
     if args.preview:
         F = R.Footage(args.footage); ctx = S.Ctx(F, SB); chunks = R.caption_chunks(SB)
         for ts in args.preview.split(','):
