@@ -13,6 +13,9 @@ def walk(o, found):
 
 def main():
     plan = json.load(open(sys.argv[1])); md, cs = sys.argv[2], sys.argv[3]; strict = '--strict' in sys.argv
+    if '--native' in sys.argv:                                            # native (source-file) geometry recorded when the proxies were cut: id -> [w, h, fps, duration, proxy_offset]
+        for cid, (nw, nh, nf, nd, po) in json.load(open(sys.argv[sys.argv.index('--native') + 1])).items():
+            if cid in plan['clips']: plan['clips'][cid].update(native_width=nw, native_height=nh, native_fps=nf, native_duration=nd, proxy_offset=0)
     ex = plan['excerpts']; rows = {}; win = {s['id']: (s['t0'], s['t1']) for s in plan['sequences']}
     for sid, cast in plan.get('cast', {}).items():
         found = set(); walk(cast, found)

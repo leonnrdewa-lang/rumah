@@ -42,7 +42,7 @@ class Stream:
             if f is None: break
             self.buf.append(f)
             if len(self.buf) > 4: self.buf.pop(0); self.base += 1
-        if not self.buf: return np.zeros((self.h, self.w, 3), np.uint8)
+        if not self.buf: raise RuntimeError(f'no frame decoded from {self.path} at {self.t_in + idx / FPS:.2f}s (unreadable file or seek past the end)')
         return self.buf[min(idx - self.base, len(self.buf) - 1)] if idx >= self.base else self.buf[0]
 
 
@@ -66,12 +66,17 @@ class Excerpt:
 
 class Footage:
     def __init__(self, plan_path, media_dir=None, max_streams=8):
-        self.plan = json.load(open(plan_path)); self.clips = self.plan['clips']; self.exs = self.plan['excerpts']
+        self.plan_dir = os.path.dirname(os.path.abspath(plan_path)); self.plan = json.load(open(plan_path)); self.clips = self.plan['clips']; self.exs = self.plan['excerpts']
         self.media_dir = media_dir; self.streams = {}; self.max_streams = max_streams; self._still = {}; self._ex = {}; self._env = {}
 
     def path(self, cid):
         c = self.clips[cid]; p = c.get('local', '')
         if self.media_dir: p = os.path.join(self.media_dir, os.path.basename(p))
+        if not os.path.exists(p):                                       # plan paths are relative to the work dir that holds media/ (parent of data/)
+            for base in (self.plan_dir, os.path.dirname(self.plan_dir)):
+                q = os.path.join(base, p)
+                if os.path.exists(q): p = q; break
+            else: raise FileNotFoundError(f'footage for clip {cid} not found: {p} (plan dir {self.plan_dir})')     # never render black silently
         return p
 
     def ex(self, eid):
@@ -97,7 +102,8 @@ class Footage:
         if k not in self._still:
             m = self.clips[cid]; dh = max(2, min(m['height'], max_h) // 2 * 2); dw = int(round(dh * m['width'] / m['height'] / 2)) * 2
             b = subprocess.run([FFMPEG, '-v', 'error', '-ss', f'{t:.2f}', '-i', self.path(cid), '-frames:v', '1', '-vf', f'scale={dw}:{dh}', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], capture_output=True).stdout
-            self._still[k] = np.frombuffer(b, np.uint8).reshape(dh, dw, 3).copy() if len(b) == dw * dh * 3 else np.zeros((dh, dw, 3), np.uint8)
+            if len(b) != dw * dh * 3: raise RuntimeError(f'still of clip {cid} at {t:.2f}s failed ({len(b)} bytes)')
+            self._still[k] = np.frombuffer(b, np.uint8).reshape(dh, dw, 3).copy()
         return self._still[k]
 
     def audio_env(self, cid, t_in, n_frames):
