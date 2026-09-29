@@ -5,6 +5,7 @@ HOOK_END = 3.55; VO_START = 3.75; TAIL = 2.3
 
 def build(vo):
     vo = {int(k): v for k, v in vo.items()}
+    for v in vo.values(): v['words'] = [dict(w=x[0], s=x[1], e=x[2]) if isinstance(x, list) else x for x in v['words']]
     T, E, t = {}, {}, VO_START
     for n in sorted(vo):
         T[n] = t; E[n] = t + vo[n]['dur']; t = E[n] + GAPS.get(n, 0)

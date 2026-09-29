@@ -106,21 +106,26 @@ def gradient_v(c, y0, y1, a0, a1, color=(0, 0, 0)):
 
 # ---------- captions ----------
 def caption_chunks(SB):
-    """Split each line into 2-4 word caption chunks at punctuation; returns [(t0, t1, [(word, ws, we)...])]."""
+    """Phrase-level caption chunks: break at punctuation, never more than 4 words, split long clauses evenly (no orphan words)."""
     out = []
     for n, ws in SB['W'].items():
-        cur = []
-        for i, w in enumerate(ws):
+        clauses, cur = [], []
+        for w in ws:
             cur.append(w)
-            end = w[0][-1] in '.?!,' or len(cur) >= 4 or (len(cur) >= 3 and i + 1 < len(ws) and len(ws[i + 1][0]) > 8)
-            if end or i == len(ws) - 1:
-                if len(cur) == 1 and out and out[-1][2][0][0] and len(out[-1][2]) < 3 and n == out[-1][3] and out[-1][2][-1][0][-1] not in '.?!': out[-1][2].extend(cur)
-                else: out.append([cur[0][1], cur[-1][2], cur, n])
-                cur = []
-    # hold each chunk until next starts (max 0.35s past its last word)
-    for i, ch in enumerate(out):
-        nxt = out[i + 1][0] if i + 1 < len(out) else ch[1] + .4
-        ch[1] = min(max(ch[1] + .12, ch[1]), nxt if nxt - ch[1] < .5 else ch[1] + .35)
+            if w[0][-1] in '.?!,;:': clauses.append(cur); cur = []
+        if cur: clauses.append(cur)
+        merged = []
+        for cl in clauses:                                   # a lone 'Now,' / 'Today,' rides with the next clause
+            if merged and len(merged[-1]) == 1 and merged[-1][0][0][-1] == ',': merged[-1] = merged[-1] + cl
+            else: merged.append(list(cl))
+        for cl in merged:
+            k = len(cl); short = k <= 5 and sum(len(w[0]) for w in cl) + k <= 24
+            m = 1 if short else -(-k // 4); base, extra = divmod(k, m); i = 0
+            for j in range(m):
+                ln = base + (1 if j < extra else 0); part = cl[i:i + ln]; i += ln; out.append([part[0][1], part[-1][2], part, n])
+    for i, ch in enumerate(out):                             # hold a chunk briefly after its last word, never into the next chunk
+        nxt = out[i + 1][0] if i + 1 < len(out) else ch[1] + .5
+        ch[1] = min(ch[1] + .35, max(ch[1], nxt - .02))
     return out
 
 def draw_caption(c, t, chunks, accent, off=0):
