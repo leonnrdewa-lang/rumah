@@ -1,6 +1,38 @@
 {
   "agent": "H2",
   "channel": "Wikimedia Commons - early public-tool era 2022-2024 (Stable Diffusion frame-by-frame / Deforum-style animation, ModelScope, AnimateDiff, Runway Gen-1/2/3/4, Pika, Luma Dream Machine/Ray, Midjourney video, Haiper, Kaiber, Genmo, Pixverse, Stable Video Diffusion, CogVideoX). Method: Commons API category enumeration (all AI-video categories and by-year/by-model categories), ~60 file-namespace full-text searches, per-file wikitext + extmetadata + Structured Data read, uploader contribution lists; developer primary sources (Runway, Stability AI, Luma via Wayback, CogVideo GitHub/arXiv, Hugging Face) for model/date corroboration; Wayback captures of the YouTube watch pages behind the video2commons uploads to check the YouTube licence flag independently; ffprobe/scene-cut/frame-difference/corner-static heuristics in the Higgsfield sandbox. No frame was ever viewed by me; all content statements come from Commons page text, ffprobe and pixel statistics. Commons holds very few genuine 2022-2024 AI-video files: there is NO file for Pika, Luma Ray, Runway Gen-4, Kaiber, Deforum, AnimateDiff, ModelScope (other than the Will Smith spaghetti clip), Zeroscope, Haiper, Genmo, Pixverse or Midjourney video.",
+  "integrity_checks": {
+    "note": "commons_sha1 = SHA-1 registered on Commons (imageinfo). downloaded_matches_sha1=true means I downloaded the exact media_url in the sandbox and the SHA-1 matched; false/absent = not downloaded in full (large files were only HEAD-checked and probed; 480p transcodes were used for scene analysis).",
+    "sd14_benlisquare_park_2022": {"commons_sha1": "11431067a650f94423020fc475f336b8490ce235", "bytes": 104379671, "downloaded_matches_sha1": false},
+    "sd14_benlisquare_flowers_2022": {"commons_sha1": "82e981f555fa0177335ded9487be5d0277974e3c", "bytes": 102304755, "downloaded_matches_sha1": false},
+    "runway_gen1_watercolor_elephants_2023": {"commons_sha1": "b864503f3852ed4fdc0798a204be6b80696a9069", "bytes": 5148736, "downloaded_matches_sha1": true},
+    "runway_gen2_dog_podium_2023": {"commons_sha1": "e3906b84657097076f72333c85b435ea8106c382", "bytes": 267637, "downloaded_matches_sha1": true},
+    "runway_gen2_wave_still_to_video_2023": {"commons_sha1": "6ba44b65e3d7aacdaba716cb55f8b1d4d50bd8f7", "bytes": 479429, "downloaded_matches_sha1": true},
+    "runway_gen3_alpha_cowboy_2024": {"commons_sha1": "d659df321152adf3029ec1295ffc99e1c47f0e5e", "bytes": 1596755, "downloaded_matches_sha1": true},
+    "runway_gen2_execute_short_film_2024": {"commons_sha1": "e84ff3dee8453ae7ef8bed72f79b37a1478e74ed", "bytes": 481690068, "downloaded_matches_sha1": false},
+    "svd_robo_knightwolf_music_video_2023": {"commons_sha1": "5a9ba3eb3338eaac27c8bdd9aa40d68311c665ba", "bytes": 212611274, "downloaded_matches_sha1": false},
+    "sd_deliberate_morph_animation_2023": {"commons_sha1": "b5c6d889c0139376b18071e69a901648e68e888f", "bytes": 151430319, "downloaded_matches_sha1": false},
+    "vortex_witches_wood_multitool_2024": {"commons_sha1": "f6c02fbad121d0a30f485d16e3628208de6bb2fa", "bytes": 171120459, "downloaded_matches_sha1": false},
+    "cogvideox_late_afternoon_swans_2024": {"commons_sha1": "1674d92bd2188c5f4c298f710637ed016e94795a", "bytes": 274586, "downloaded_matches_sha1": true},
+    "cogvideox_painting_with_the_breeze_2024": {"commons_sha1": "ea9e27c24a939561bea25ab6673334fb81a8743e", "bytes": 238329, "downloaded_matches_sha1": true},
+    "hailuo_video01_cyberpunk_rainy_street_2024": {"commons_sha1": "be865b09e3826d1494b4f757ca02b0c783fc9946", "bytes": 3117507, "downloaded_matches_sha1": true},
+    "unknown_model_oct2022_textprompt_clip": {"commons_sha1": "552e805f2df4f4e90004a004fdf91c4f8a64a107", "bytes": 2289446, "downloaded_matches_sha1": true}
+  },
+  "pending_video_analyses": {
+    "note": "Higgsfield video_analysis jobs I started on Commons files imported with media_import_url; they were still 'queued' (shared workspace queue) when this file was written. Fetch results later with video_analysis_status(video_analyze_id). Treat output as a tool description of the (transcoded) clip, not as verification.",
+    "runway_gen2_dog_podium_2023": "9738e6d3-9f19-4cfb-ab4f-9027d4bca30d",
+    "runway_gen1_watercolor_elephants_2023": "32ab0e83-aed1-4849-bef6-acb65b0000bd",
+    "unknown_model_oct2022_textprompt_clip": "a7dbeb1e-5939-40dc-8251-e3cf5692ae4b",
+    "runway_gen3_alpha_cowboy_2024": "16625fab-e831-4fdf-a8fc-6dd725e1978c",
+    "cogvideox_painting_with_the_breeze_2024": "8bb1dc60-9e85-480d-9ebc-5ff3f3dc33d4",
+    "runway_gen2_wave_still_to_video_2023": "fe8629a9-de2f-4f48-b9d0-e0d8b5af832b",
+    "sd14_benlisquare_park_2022 (480p transcode)": "f29f3c15-53db-4cdb-8854-f9c5b2353ec7",
+    "sd14_benlisquare_flowers_2022 (480p transcode)": "03247366-94f6-42eb-a2e4-7b0c4239b8b0",
+    "oronbb_vertical_dec2022_clip (rejected)": "ae280502-8c2d-4c8f-95b7-a368bd9c1f26",
+    "nesnad_electronic_head_dec2023 (rejected)": "7df787b6-5c1a-4f3f-9ce8-2fd13ec6c84b",
+    "vortex_witches_wood_multitool_2024 (480p transcode)": "c18b33e6-c7f7-4518-af58-2588ab61aef4",
+    "svd_robo_knightwolf_music_video_2023 (480p transcode)": "0e61a15a-1f14-492c-833c-368d8f9fe335"
+  },
   "pages_examined": [
     {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_videos", "kind": "commons_category", "note": "Root AI-video category: 21 subcats, 33 files; enumerated all", "retrieved": true},
     {"url": "https://commons.wikimedia.org/wiki/Category:Videos_by_Stable_Diffusion", "kind": "commons_category", "note": "5 files: Benlisquare x2, Vlad Pluzhnikov, Sorelius Beats, Extra Terra", "retrieved": true},
@@ -121,6 +153,11 @@
     {"url": "https://commons.wikimedia.org/wiki/File:Sorelius_Beats_%E2%80%93_Robo_Knightwolf_(Synthwave_Music_Video_with_Stable_Diffusion).webm", "kind": "commons_file", "note": "Stable Video Diffusion music video, YouTube CC BY 3.0, LicenseReview open", "retrieved": true},
     {"url": "https://commons.wikimedia.org/wiki/File:Animation_of_Stable_Diffusion_generation_(gradual_generative_conceptual_manifestation_into_fantasy_art_works).webm", "kind": "commons_file", "note": "435 s SD morph video by Vlad Pluzhnikov, YouTube CC BY 3.0", "retrieved": true},
     {"url": "https://commons.wikimedia.org/wiki/File:Witches_Wood_(Vocal_AI_music_with_AI_animation_music_video).webm", "kind": "commons_file", "note": "Multi-tool AI music video, YouTube CC BY 3.0, 4K 60 fps", "retrieved": true},
+    {"url": "https://commons.wikimedia.org/wiki/Category:Unconfirmed_likely_AI-generated_images_to_check", "kind": "commons_category", "note": "11 files; 2 videos by 00Regedit00 (Aug 2024), tool unknown", "retrieved": true},
+    {"url": "https://commons.wikimedia.org/wiki/Category:Third-party_content_assumed_to_be_AI", "kind": "commons_category", "note": "44 files, 5 videos (2026 TV ident, Iran LEGO propaganda); out of era", "retrieved": true},
+    {"url": "https://commons.wikimedia.org/wiki/File:Luciaverse1.webm", "kind": "commons_file", "note": "Unconfirmed AI clip, CC0, Aug 2024, no tool named", "retrieved": true},
+    {"url": "https://commons.wikimedia.org/wiki/File:Output.webm", "kind": "commons_file", "note": "Unconfirmed AI clip, CC0, Aug 2024, no tool named", "retrieved": true},
+    {"url": "https://commons.wikimedia.org/wiki/File:Sci-Fi_France_ident.webm", "kind": "commons_file", "note": "2026 TV ident; out of era, brand", "retrieved": true},
     {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_videos_by_VulcanSphere", "kind": "commons_category", "note": "7 VulcanSphere CC0 clips: CogVideoX x2, Hailuo, Meta AI, Veo 3/3.1", "retrieved": true},
     {"url": "https://commons.wikimedia.org/wiki/File:Cyberpunk_Rainy_Street_(Hailuo_AI).webm", "kind": "commons_file", "note": "VulcanSphere Hailuo AI clip 2024-12-24, CC0 + PD-algorithm, prompt published", "retrieved": true},
     {"url": "https://www.minimax.io/news/video-01", "kind": "official_page", "note": "MiniMax Video-01 launch post dated 2024.08.31: 720p, 25 fps, up to 6 s", "retrieved": true},
@@ -697,6 +734,7 @@
     {"url": "https://commons.wikimedia.org/wiki/File:Coca-Cola%27s_2024_AI_Christmas_commercial.webm", "reason": "Brand/IP-heavy advert (excluded by hard rule 3); seen only as a search hit, file page not opened."},
     {"url": "https://commons.wikimedia.org/wiki/File:AI-generated_heavy_metal_music.webm", "reason": "Irrelevant: 72-minute AI music compilation with static artwork (YouTube rip)."},
     {"url": "https://commons.wikimedia.org/wiki/File:AI-generated_video_of_a_domestic_dragon.gif", "reason": "2025 YouTube-sourced GIF, tool unidentified ('prompted by Lumi's AI Dreams'); out of era."},
+    {"url": "https://commons.wikimedia.org/wiki/File:Luciaverse1.webm", "reason": "UNCLEAR: 2024-08-09, 1024x576, 8.6 s, CC0 own work by 00Regedit00, but only a tag 'Unconfirmed likely AI-generated images to check' - no tool, no prompt, no description ('luciaverse1'), possibly a named person. Missing evidence: that it is AI-generated at all, which model, and its subject. Same for File:Output.webm (2024-08-10, 576x576, 26.7 s, description 'yes yes')."},
     {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_videos_of_real_people", "reason": "Political/celebrity deepfake-style clips (Trump, Vance, Putin, Kim Jong-Un, etc.) excluded by hard rule 3; seen as titles only."},
     {"url": "https://commons.wikimedia.org/wiki/Category:Text-to-video_generation", "reason": "Search result summary: no Commons files exist for Pika, Luma Ray, Runway Gen-4, Kaiber, Deforum, AnimateDiff, Zeroscope, Haiper, Genmo, Pixverse, Midjourney video, or an official Stable Video Diffusion sample - checked by category and full-text search."}
   ]

@@ -19,14 +19,16 @@ for cid, c in sl['clips'].items():
         head = sh(['curl', '-sSIL', '-m', '30', '-A', UA, c['media_url']]).stdout; mb = 0
         for l in head.splitlines():
             if l.lower().startswith('content-length:'): mb = int(l.split(':')[1]) / 1e6
-        if mb > a.max_mb: print('SKIP too large', cid, mb, 'MB'); c['skipped'] = f'{mb:.0f} MB'; continue
-        r = sh(['curl', '-sS', '-L', '-m', '600', '-A', UA, '-o', src, '-w', '%{http_code}', c['media_url']]); print('fetch', cid, r.stdout.strip(), os.path.getsize(src) if os.path.exists(src) else 0, flush=True)
-        if r.stdout.strip() != '200': c['skipped'] = 'http ' + r.stdout.strip(); continue
-    pj = json.loads(sh(['ffprobe', '-v', 'error', '-show_entries', 'stream=codec_type,width,height,avg_frame_rate:format=duration', '-of', 'json', src]).stdout); v = next(s for s in pj['streams'] if s['codec_type'] == 'video')
+        if mb > a.max_mb: src = c['media_url']; print('remote-seek (too large to download)', cid, round(mb), 'MB', flush=True)      # ffmpeg reads only the needed byte ranges
+        else:
+            r = sh(['curl', '-sS', '-L', '-m', '600', '-A', UA, '-o', src, '-w', '%{http_code}', c['media_url']]); print('fetch', cid, r.stdout.strip(), os.path.getsize(src) if os.path.exists(src) else 0, flush=True)
+            if r.stdout.strip() != '200': c['skipped'] = 'http ' + r.stdout.strip(); continue
+    UAO = ['-user_agent', UA] if src.startswith('http') else []
+    pj = json.loads(sh(['ffprobe', '-v', 'error'] + UAO + [ '-show_entries', 'stream=codec_type,width,height,avg_frame_rate:format=duration', '-of', 'json', src]).stdout); v = next(s for s in pj['streams'] if s['codec_type'] == 'video')
     n, d = (v['avg_frame_rate'].split('/') + ['1'])[:2]; fps = float(n) / float(d) if float(d) else 30; dur = float(pj['format']['duration'])
     t0 = max(0.0, min(e['in'] for e in ex.values()) - a.pad); t1 = min(dur, max(e['out'] for e in ex.values()) + a.pad)
     vf = 'scale=-2:1080:flags=lanczos' if int(v['height']) > 1080 else 'null'
-    r = sh(['ffmpeg', '-y', '-v', 'error', '-ss', f'{t0:.3f}', '-i', src, '-t', f'{t1 - t0:.3f}', '-an', '-vf', vf, '-c:v', 'libx264', '-preset', 'fast', '-crf', '14', '-g', '12', '-pix_fmt', 'yuv420p', '-r', f'{fps:.3f}', '-movflags', '+faststart', out])
+    r = sh(['ffmpeg', '-y', '-v', 'error'] + UAO + ['-ss', f'{t0:.3f}', '-i', src, '-t', f'{t1 - t0:.3f}', '-an', '-vf', vf, '-c:v', 'libx264', '-preset', 'fast', '-crf', '14', '-g', '12', '-pix_fmt', 'yuv420p', '-r', f'{fps:.3f}', '-movflags', '+faststart', out])
     if r.returncode: print('FFMPEG FAIL', cid, r.stderr[-300:]); c['skipped'] = 'ffmpeg'; continue
     c.update(local=out, native_width=int(v['width']), native_height=int(v['height']), native_fps=round(fps, 3), native_duration=round(dur, 3), proxy_offset=round(t0, 3))
     for e in ex.values(): e['in'] = round(e['in'] - t0, 3); e['out'] = round(min(e['out'], t1) - t0, 3); e['proxied'] = True
