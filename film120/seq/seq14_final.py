@@ -36,7 +36,8 @@ def _shot(ctx, t):
     size = min(kit.fit_size(tx, 'display', 176, W - 2 * MARGIN, -.005) for tx, _ in lines)
     if ta > 0: ui.hero_lines(c, [tx for tx, _ in lines], MARGIN, 820, size, [VOLT if col == 'volt' else WHITE for _, col in lines], T_TYPE, t, lh=1.02, stagger=.5, dur=.65, alpha=ta)
     cr = ctx.cast('seq14', 'credit')
-    if cr and ta > 0: G.draw_text(c, cr, 'monor', 17, MARGIN, 1472, (200, 196, 186), alpha=ta * ease_out(prog(t, T_TYPE + 1.2, T_TYPE + 1.7)), track=.03)
+    for k, ln in enumerate([cr] if isinstance(cr, str) else (cr or [])):
+        if ta > 0: G.draw_text(c, ln, 'monor', kit.fit_size(ln, 'monor', 17, W - 2 * MARGIN, .03, 12), MARGIN, 1472 + 26 * k, (200, 196, 186), alpha=ta * ease_out(prog(t, T_TYPE + 1.2 + .2 * k, T_TYPE + 1.7 + .2 * k)), track=.03)
     if ta > 0: ui.source_label(c, ex.label, MARGIN, 1440, alpha=ta * ease_out(prog(t, T0 + .3, T0 + .7)))
     return c
 

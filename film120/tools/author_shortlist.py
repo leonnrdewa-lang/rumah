@@ -87,7 +87,7 @@ CAST = {
  'seq12': dict(panels=['sd_park_b', 'tgan_golf', 'deepdream', 'gen2_dog', 'sora_mammoth', 'sora_ships', 'veo2_clock', 'veo3_lemon', 'hailuo_nuns', 'lance'],
                swaps=['sora_bigsur', 'sora_gold', 'rap_runway', 'veo31_lemon', 'ovi', 'cogv_paint', 'rap_wan21', 'sora_train']),
  'seq13': dict(early='sd_park_a', recent='sora_pigeon', peak_lines=[['ONE FRAME.', 'white'], ['A WORLD.', 'volt']]),
- 'seq14': dict(shot='sora_bigsur', lines=[['FROM MELTING PIXELS', 'white'], ['TO MOVING WORLDS.', 'volt']], credit='VOICE ELEVENLABS V4 · SCORE ORIGINAL + LICENSED · FULL CREDITS IN SOURCE LIST'),
+ 'seq14': dict(shot='sora_bigsur', lines=[['FROM MELTING PIXELS', 'white'], ['TO MOVING WORLDS.', 'volt']], credit=['VOICE ELEVENLABS V4 · SCORE + SFX ORIGINAL AND LICENSED · FULL CREDITS IN SOURCE LIST', 'MUSIC BED "DRONE IN D" KEVIN MACLEOD (INCOMPETECH.COM) CC BY 4.0']),
 }
 
 
