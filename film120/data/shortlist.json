@@ -486,6 +486,157 @@
    },
    "source_file": "H5.json"
   },
+  "rapidata_veo2_violinist_same_prompt": {
+   "media_url": "https://huggingface.co/datasets/Rapidata/text-2-video-human-preferences-veo2/resolve/main/videos/0094_veo2_0.mp4",
+   "page": "https://huggingface.co/datasets/Rapidata/text-2-video-human-preferences-veo2/blob/main/videos/0094_veo2_0.mp4",
+   "family": "Veo",
+   "model_version": "Veo 2 (dataset README: 'Google DeepMind Veo2'; file name 'veo2')",
+   "created": "2025-03-11",
+   "date_basis": "HF paths-info lastCommit 'Uploading updated video files' 2025-03-11T10:27:02Z; Google blog dated Dec 16, 2024 'State-of-the-art video and image generation with Veo 2 and Imagen 3' (primary)",
+   "creator": "Google DeepMind demo",
+   "license": "Apache-2.0 (Hugging Face",
+   "license_basis": "Video is stored in the licensed repo. Upstream Gemini API terms: 'Google won't claim ownership over that content.'",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences-veo2), Apache-2.0; model: Google DeepMind Veo 2'. Carry the Apache-2.0 notice. No share-alike.",
+    "Label 'Veo 2 (announced 2024-12-16), clip published 2025-03'; do not present the upload date as the generation date.",
+    "Caption as a same-prompt comparison clip (Elo 874, low glitch), not typical output.",
+    "Visual review for identifiable-person resemblance (AI-generated violinist and pedestrians) and any Veo/SynthID visible mark.",
+    "Rapidata written rights confirmation recommended (card silent on authorship)."
+   ],
+   "risk_flags": [],
+   "story_roles": [
+    "split_screen_pair",
+    "milestone",
+    "gallery"
+   ],
+   "description": "Text-to-video sample for the street violinist prompt. Visual content not viewed by me.",
+   "prompt": "A violinist plays passionately on a dimly lit street corner, the melodies echoing through the night as pedestrians pause to listen, city lights shimmering in the background.",
+   "listed_media": {
+    "duration_s": 5.0,
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "size_mb": 1.7,
+    "has_audio": false,
+    "format": "mp4"
+   },
+   "source_file": "H6.json"
+  },
+  "rapidata_veo31_violinist_same_prompt": {
+   "media_url": "https://huggingface.co/datasets/Rapidata/text-2-video-human-preferences-veo3.1/resolve/main/videos/veo31_13_0.mp4",
+   "page": "https://huggingface.co/datasets/Rapidata/text-2-video-human-preferences-veo3.1/blob/main/videos/veo31_13_0.mp4",
+   "family": "Veo",
+   "model_version": "Veo 3.1 (dataset README: 'Veo 3.1'; file name 'veo31'); Fast vs standard not stated; no audio track in file",
+   "created": "2025-11-06",
+   "date_basis": "HF paths-info lastCommit 'Upload 79 files' 2025-11-06T14:35:27Z; Google blog dated Oct 15, 2025 'Introducing Veo 3.1 and advanced capabilities in Flow' (primary)",
+   "creator": "Google DeepMind demo",
+   "license": "Apache-2.0 (Hugging Face",
+   "license_basis": "Video is stored in the licensed repo. Upstream Gemini API terms: 'Google won't claim ownership over that content.'",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences-veo3.1), Apache-2.0; model: Google DeepMind Veo 3.1'. Carry the Apache-2.0 notice. No share-alike.",
+    "Label 'Veo 3.1 (announced 2025-10-15), clip published 2025-11-06'; standard vs Fast unknown; not a native-audio demo (no audio stream).",
+    "Caption as one same-prompt comparison clip; do not present as typical Veo 3.1 output. It is a 720p, 6 s file, so unsuitable as a hero shot without upscale.",
+    "Rapidata written rights confirmation recommended; visual review for identifiable-person resemblance and marks."
+   ],
+   "risk_flags": [],
+   "story_roles": [
+    "split_screen_pair",
+    "hero",
+    "milestone"
+   ],
+   "description": "Text-to-video sample for the street violinist prompt, 6 s. Visual content not viewed by me. Prompt-to-file mapping: parquet row prompt equals benchmark prompt 0094 exactly.",
+   "prompt": "A violinist plays passionately on a dimly lit street corner, the melodies echoing through the night as pedestrians pause to listen, city lights shimmering in the background.",
+   "listed_media": {
+    "duration_s": 6.0,
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "size_mb": 1.9,
+    "has_audio": false,
+    "format": "mp4"
+   },
+   "source_file": "H6.json"
+  },
+  "rapidata_wan21_wolf_phoenix_crowd_glitch": {
+   "media_url": "https://huggingface.co/datasets/Rapidata/text-2-video-human-preferences-wan2.1/resolve/main/videos/0066_wan2.1_0.mp4",
+   "page": "https://huggingface.co/datasets/Rapidata/text-2-video-human-preferences-wan2.1/blob/main/videos/0066_wan2.1_0.mp4",
+   "family": "Wan",
+   "model_version": "Wan 2.1 (dataset README: 'Alibaba Wan 2.1'; file name 'wan2.1'; T2V size not stated)",
+   "created": "2025-03-11",
+   "date_basis": "HF paths-info lastCommit 'Uploading updated video files' 2025-03-11T10:27:46Z; dataset created 2025-03-07; release from Wan2.1 README 'Feb 25, 2025: We've released the inference code and weights of Wan2.1' (primary)",
+   "creator": "Rapidata (dataset publisher, Apache-2.0)",
+   "license": "Apache-2.0 (Hugging Face",
+   "license_basis": "Video is stored in the licensed repo. Upstream Wan 2.1 README also says: 'We claim no rights over the your generated contents' (Apache-2.0 model licence), which supports Rapidata's grant.",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences-wan2.1), Apache-2.0; model: Alibaba Wan 2.1' and carry the Apache-2.0 notice in the credits/description. No share-alike.",
+    "Caption honestly as one of the most glitch-flagged clips in Rapidata's 1,026-clip ranking (Elo 1639, 2nd highest), not as typical Wan 2.1 output.",
+    "Date label: say 'clip published 2025-03 (Wan 2.1 released 2025-02-25)', not a generation date.",
+    "Before publication obtain Rapidata's written confirmation of authorship/rights (card is silent), or accept the residual chain-of-title risk.",
+    "Visually review the excerpt for watermark/logo and for the actual glitch moment before locking the cut (unviewed by any verifier)."
+   ],
+   "risk_flags": [],
+   "story_roles": [
+    "early_failure_annotation",
+    "split_screen_pair"
+   ],
+   "description": "Text-to-video sample for the prompt about a wolf, a pack emerging from shadows and a phoenix rising from flames. Visual content not viewed by me.",
+   "prompt": "A lone wolf prowls a moonlit forest, eyes gleaming. Suddenly, shadows shift as a pack emerges. Just as tension peaks, a massive phoenix rises from flames, scattering the pack with vibrant wings, illuminating the dark trees.",
+   "listed_media": {
+    "duration_s": 5.063,
+    "width": 832,
+    "height": 480,
+    "fps": 16,
+    "size_mb": 4.2,
+    "has_audio": false,
+    "format": "mp4"
+   },
+   "source_file": "H6.json"
+  },
+  "rapidata_runway_alpha_wolf_phoenix_crowd_glitch": {
+   "media_url": "https://huggingface.co/datasets/Rapidata/text-2-video-human-preferences/resolve/main/Videos/0066_alpha_690998814.mp4",
+   "page": "https://huggingface.co/datasets/Rapidata/text-2-video-human-preferences/blob/main/Videos/0066_alpha_690998814.mp4",
+   "family": "Runway Gen-3 Alpha",
+   "model_version": "'Runway ML Alpha' per dataset README (file name 'alpha'); presumed Gen-3 Alpha family, Alpha vs Alpha Turbo not stated",
+   "created": "2025-02-03",
+   "date_basis": "HF paths-info lastCommit 'Upload 79 files' 2025-02-03T10:28:18Z; release from Runway page dated 'June 17, 2024' (primary)",
+   "creator": "Rapidata (dataset publisher, Apache-2.0)",
+   "license": "Apache-2.0 (Hugging Face",
+   "license_basis": "Video is stored in the licensed repo. Upstream Runway Terms 4.4: 'The Company does not claim ownership of any of your Inputs or Outputs.' Whether Rapidata used a plan allowing commercial use is not stated.",
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences), Apache-2.0; model: Runway Gen-3 Alpha family'. Carry the Apache-2.0 notice. No share-alike.",
+    "Label the model 'Runway Gen-3 Alpha (family)': the dataset says only 'Runway ML Alpha' and the C2PA action agent is the generic string 'Video Generation'; Alpha vs Alpha Turbo cannot be determined.",
+    "Use the C2PA signing date (2025-01-23) as the creation date, not the 2025-02-03 upload date.",
+    "Caption as a glitch-ranked clip (Elo 1584), not typical output; get Rapidata's written rights/plan confirmation if the producer requires a closed chain (Runway's current terms say it 'does not restrict your commercial use of your Outputs', but the Jan-2025 terms were not read).",
+    "Visual review for watermark/logo before locking the cut."
+   ],
+   "risk_flags": [
+    "unverifiable_model_claim"
+   ],
+   "story_roles": [
+    "early_failure_annotation",
+    "split_screen_pair"
+   ],
+   "description": "Text-to-video sample for the wolf, pack and phoenix prompt. Visual content not viewed by me.",
+   "prompt": "A lone wolf prowls a moonlit forest, eyes gleaming. Suddenly, shadows shift as a pack emerges. Just as tension peaks, a massive phoenix rises from flames, scattering the pack with vibrant wings, illuminating the dark trees.",
+   "listed_media": {
+    "duration_s": 5.334,
+    "width": 1280,
+    "height": 768,
+    "fps": 24,
+    "size_mb": 3.8,
+    "has_audio": false,
+    "format": "mp4"
+   },
+   "source_file": "H6.json"
+  },
   "sora_wooly_mammoth": {
    "media_url": "https://upload.wikimedia.org/wikipedia/commons/4/4c/Wooly_Mammoth_by_OpenAI_Sora.webm",
    "page": "https://commons.wikimedia.org/wiki/File:Wooly_Mammoth_by_OpenAI_Sora.webm",
@@ -1183,6 +1334,54 @@
    },
    "role": "matched subject: horse (2023, 3 fps)"
   },
+  "rap_veo2_violin": {
+   "clip": "rapidata_veo2_violinist_same_prompt",
+   "in": 0,
+   "out": 5.0,
+   "label": {
+    "model": "VEO 2",
+    "year": "2024",
+    "creator": "Rapidata dataset",
+    "license": "Apache-2.0 (dataset)"
+   },
+   "role": "same prompt as Veo 3.1 clip"
+  },
+  "rap_veo31_violin": {
+   "clip": "rapidata_veo31_violinist_same_prompt",
+   "in": 0,
+   "out": 6.0,
+   "label": {
+    "model": "VEO 3.1",
+    "year": "2025",
+    "creator": "Rapidata dataset",
+    "license": "Apache-2.0 (dataset)"
+   },
+   "role": "same prompt as Veo 2 clip"
+  },
+  "rap_wan21": {
+   "clip": "rapidata_wan21_wolf_phoenix_crowd_glitch",
+   "in": 0,
+   "out": 5.0,
+   "label": {
+    "model": "WAN 2.1",
+    "year": "2025",
+    "creator": "Rapidata dataset",
+    "license": "Apache-2.0 (dataset)"
+   },
+   "role": "open model, crowd-ranked glitch example (same prompt as Runway clip)"
+  },
+  "rap_runway": {
+   "clip": "rapidata_runway_alpha_wolf_phoenix_crowd_glitch",
+   "in": 0,
+   "out": 5.3,
+   "label": {
+    "model": "RUNWAY GEN-3 ALPHA",
+    "year": "2024",
+    "creator": "Rapidata dataset",
+    "license": "Apache-2.0 (dataset)"
+   },
+   "role": "Runway Gen-3 Alpha family, same prompt as Wan clip"
+  },
   "sora_mammoth": {
    "clip": "sora_wooly_mammoth",
    "in": 0,
@@ -1473,6 +1672,30 @@
     }
    ]
   },
+  "seq07": {
+   "pairs": [
+    {
+     "a": "rap_veo2_violin",
+     "b": "rap_veo31_violin",
+     "subject": "STREET VIOLINIST",
+     "ya": "2024",
+     "yb": "2025",
+     "ma": "VEO 2",
+     "mb": "VEO 3.1",
+     "same_prompt": true
+    },
+    {
+     "a": "sd_park_b",
+     "b": "veo31_lemon",
+     "subject": "PORTRAITS",
+     "ya": "2022",
+     "yb": "2025",
+     "ma": "STABLE DIFFUSION 1.4",
+     "mb": "VEO 3.1",
+     "same_prompt": false
+    }
+   ]
+  },
   "seq08": {
    "items": [
     {
@@ -1511,18 +1734,18 @@
   },
   "seq10": {
    "tiles": [
-    "sd_park_b",
+    "tgan_mnist",
+    "tats_ucf",
     "gen1_eleph",
     "cogv_swans",
-    "gen2_dog",
+    "t2vz_horse",
     "veo2_clock",
-    "hailuo_nuns",
     "sora_ships",
+    "hailuo_nuns",
     "veo3_lemon",
     "ltx_cyber",
     "kand5",
-    "lance",
-    "veo31_lemon"
+    "lance"
    ],
    "hero_tile": 6
   },
@@ -1567,11 +1790,11 @@
    "swaps": [
     "sora_bigsur",
     "sora_gold",
-    "sora_pigeon",
+    "rap_runway",
     "veo31_lemon",
-    "kand5",
+    "ovi",
     "cogv_paint",
-    "ltx_cyber",
+    "rap_wan21",
     "sora_train"
    ]
   },

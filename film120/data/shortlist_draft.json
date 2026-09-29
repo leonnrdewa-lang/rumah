@@ -1216,37 +1216,6 @@
    },
    "source_file": "H5.json"
   },
-  "rapidata_hunyuan_hovercar_crowd_worst_glitch": {
-   "media_url": "https://huggingface.co/datasets/Rapidata/text-2-video-human-preferences/resolve/main/Videos/0082_hunyuan_421.mp4",
-   "page": "https://huggingface.co/datasets/Rapidata/text-2-video-human-preferences/blob/main/Videos/0082_hunyuan_421.mp4",
-   "family": "HunyuanVideo",
-   "model_version": "HunyuanVideo (dataset file name 'hunyuan', README spells 'Hunyouan'; sub-version not stated); seed 421",
-   "created": "2025-01-10",
-   "date_basis": "HF paths-info lastCommit 'Upload 158 files' 2025-01-10T13:48:42Z for Videos/0082_hunyuan_421.mp4; model release from arXiv 2412.03603 'Submitted on 3 Dec 2024' (primary)",
-   "creator": "Rapidata (dataset publisher, Apache-2.0)",
-   "license": "Apache-2.0 (Hugging Face",
-   "license_basis": "The mp4 sits inside the licensed dataset repo; the card has no separate media clause. Rapidata generated the video itself, so it is the party granting the licence. Upstream: Tencent Hunyuan Community Licence does not apply in EU/UK/South Korea and does not treat Output as a licensed Work (hy LICENSE.txt); not independently cleared.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
-   "risk_flags": [],
-   "story_roles": [
-    "early_failure_annotation",
-    "gallery"
-   ],
-   "description": "Text-to-video sample for the prompt: A sleek, futuristic hovercar races through a neon-lit metropolis at midnight. The vehicle glides smoothly over elevated tracks, illuminating the skyline with vibrant colors as it weaves between towering skyscrapers, creating a sense of speed and advanced technology. Visual content not viewed by me.",
-   "prompt": "A sleek, futuristic hovercar races through a neon-lit metropolis at midnight. The vehicle glides smoothly over elevated tracks, illuminating the skyline with vibrant colors as it weaves between towering skyscrapers, creating a sense of speed and advanced technology.",
-   "listed_media": {
-    "duration_s": 5.375,
-    "width": 864,
-    "height": 480,
-    "fps": 24,
-    "size_mb": 2.7,
-    "has_audio": false,
-    "format": "mp4"
-   },
-   "source_file": "H6.json"
-  },
   "rapidata_wan21_wolf_phoenix_crowd_glitch": {
    "media_url": "https://huggingface.co/datasets/Rapidata/text-2-video-human-preferences-wan2.1/resolve/main/videos/0066_wan2.1_0.mp4",
    "page": "https://huggingface.co/datasets/Rapidata/text-2-video-human-preferences-wan2.1/blob/main/videos/0066_wan2.1_0.mp4",
@@ -1257,9 +1226,15 @@
    "creator": "Rapidata (dataset publisher, Apache-2.0)",
    "license": "Apache-2.0 (Hugging Face",
    "license_basis": "Video is stored in the licensed repo. Upstream Wan 2.1 README also says: 'We claim no rights over the your generated contents' (Apache-2.0 model licence), which supports Rapidata's grant.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences-wan2.1), Apache-2.0; model: Alibaba Wan 2.1' and carry the Apache-2.0 notice in the credits/description. No share-alike.",
+    "Caption honestly as one of the most glitch-flagged clips in Rapidata's 1,026-clip ranking (Elo 1639, 2nd highest), not as typical Wan 2.1 output.",
+    "Date label: say 'clip published 2025-03 (Wan 2.1 released 2025-02-25)', not a generation date.",
+    "Before publication obtain Rapidata's written confirmation of authorship/rights (card is silent), or accept the residual chain-of-title risk.",
+    "Visually review the excerpt for watermark/logo and for the actual glitch moment before locking the cut (unviewed by any verifier)."
+   ],
    "risk_flags": [],
    "story_roles": [
     "early_failure_annotation",
@@ -1288,9 +1263,15 @@
    "creator": "Rapidata (dataset publisher, Apache-2.0)",
    "license": "Apache-2.0 (Hugging Face",
    "license_basis": "Video is stored in the licensed repo. Upstream Runway Terms 4.4: 'The Company does not claim ownership of any of your Inputs or Outputs.' Whether Rapidata used a plan allowing commercial use is not stated.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences), Apache-2.0; model: Runway Gen-3 Alpha family'. Carry the Apache-2.0 notice. No share-alike.",
+    "Label the model 'Runway Gen-3 Alpha (family)': the dataset says only 'Runway ML Alpha' and the C2PA action agent is the generic string 'Video Generation'; Alpha vs Alpha Turbo cannot be determined.",
+    "Use the C2PA signing date (2025-01-23) as the creation date, not the 2025-02-03 upload date.",
+    "Caption as a glitch-ranked clip (Elo 1584), not typical output; get Rapidata's written rights/plan confirmation if the producer requires a closed chain (Runway's current terms say it 'does not restrict your commercial use of your Outputs', but the Jan-2025 terms were not read).",
+    "Visual review for watermark/logo before locking the cut."
+   ],
    "risk_flags": [
     "unverifiable_model_claim"
    ],
@@ -1321,9 +1302,15 @@
    "creator": "Rapidata (dataset publisher, Apache-2.0)",
    "license": "Apache-2.0 (Hugging Face",
    "license_basis": "Video is stored in the licensed repo. Upstream OpenAI terms (Wayback 2024-12-09): 'you (a) retain your ownership rights in Input and (b) own the Output. We hereby assign to you all our right, title, and interest'.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences), Apache-2.0; model: OpenAI Sora'. Carry the Apache-2.0 notice. No share-alike.",
+    "Label 'OpenAI Sora (Sora Turbo product, Dec 2024)'; creation date 2024-12-16 per C2PA signature.",
+    "Visual check for the Sora visible watermark before any 9:16 crop: OpenAI states Sora Turbo adds visible watermarks by default; none was detected by static-overlay analysis or OCR in 15 sampled frames, but a small moving/animated mark could be missed. If present, it must not be cropped out.",
+    "Caption as a glitch-ranked clip (Elo 1608), not typical Sora output; may be paired with OpenAI's own limitation statement.",
+    "Get Rapidata's written rights confirmation if a closed chain is required."
+   ],
    "risk_flags": [
     "unverifiable_model_claim"
    ],
@@ -1354,9 +1341,14 @@
    "creator": "Rapidata (dataset publisher, Apache-2.0)",
    "license": "Apache-2.0 (Hugging Face",
    "license_basis": "Video is stored in the licensed repo. Upstream Pika terms (current): 'Pika does not claim ownership of any Inputs you submit or Outputs generated'; plan-dependent commercial rights.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "low",
+   "conditions": [
+    "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences), Apache-2.0; model: Pika 2.0'. Carry the Apache-2.0 notice. No share-alike.",
+    "MUST obtain Rapidata's written confirmation that the clip was generated under a Pika plan permitting commercial use: Pika's terms state the Service is 'for your personal, noncommercial use only' unless the Plan expressly permits commercial use (current terms; Jan-2025 terms not read). Without that confirmation treat as unresolved.",
+    "Label 'Pika 2.0, clip published early 2025' (dataset label only; no vendor artifact names the sub-version).",
+    "Caption as a glitch-ranked clip (Elo 1621, 3rd highest of 1,026), not typical output. Visually review the abrupt change near t=3.0 s and check for a Pika watermark."
+   ],
    "risk_flags": [
     "unverifiable_model_claim"
    ],
@@ -1387,9 +1379,15 @@
    "creator": "Rapidata (dataset publisher, Apache-2.0)",
    "license": "Apache-2.0 (Hugging Face",
    "license_basis": "Video is stored in the licensed repo. Upstream Luma TOS: Customer owns Output but 'can only use the Outputs for commercial purposes if the Outputs were produced during an active Subscription Term under Customer's paid subscription'; Rapidata's plan is unknown, treat as a caution.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "low",
+   "conditions": [
+    "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences), Apache-2.0; model: Luma Ray2'. Carry the Apache-2.0 notice. No share-alike.",
+    "MUST obtain Rapidata's written confirmation that the clip was generated during a paid Luma subscription/API plan allowing commercial use: Luma's terms say Customer 'can only use the Outputs for commercial purposes if the Outputs were produced during an active Subscription Term under Customer's paid subscription allowing for the commercial use of those Outputs' (current terms).",
+    "Caption as the best-ranked (fewest glitches, Elo 757) of 1,026 sampled clips - a curated best case, not typical output.",
+    "Label 'Luma Ray2, clip published early 2025'; credit date is the upload (2025-02-03), generation date unknown.",
+    "Visual review: real-looking violinist and pedestrians are AI-generated; confirm no resemblance to an identifiable person, check bow/hand artefacts, watermark."
+   ],
    "risk_flags": [],
    "story_roles": [
     "control_demo",
@@ -1419,9 +1417,15 @@
    "creator": "Google DeepMind demo",
    "license": "Apache-2.0 (Hugging Face",
    "license_basis": "Video is stored in the licensed repo. Upstream Gemini API terms: 'Google won't claim ownership over that content.'",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences-veo2), Apache-2.0; model: Google DeepMind Veo 2'. Carry the Apache-2.0 notice. No share-alike.",
+    "Label 'Veo 2 (announced 2024-12-16), clip published 2025-03'; do not present the upload date as the generation date.",
+    "Caption as a same-prompt comparison clip (Elo 874, low glitch), not typical output.",
+    "Visual review for identifiable-person resemblance (AI-generated violinist and pedestrians) and any Veo/SynthID visible mark.",
+    "Rapidata written rights confirmation recommended (card silent on authorship)."
+   ],
    "risk_flags": [],
    "story_roles": [
     "split_screen_pair",
@@ -1451,9 +1455,15 @@
    "creator": "Google DeepMind demo",
    "license": "Apache-2.0 (Hugging Face",
    "license_basis": "Video is stored in the licensed repo. Upstream Gemini API terms: 'Google won't claim ownership over that content.'",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences-veo3), Apache-2.0; model: Google DeepMind Veo 3'. Carry the Apache-2.0 notice. No share-alike.",
+    "QUALITY/CROP WARNING: the frame is letterboxed - 93 px of pure black at the top and 94 px at the bottom of the 1280x720 frame (active picture about 1280x533, roughly 2.4:1). A 9:16 crop of the active area is about 300x533 px and needs a roughly 3.6x upscale to fill 1080x1920. Do not crop into the bars and do not use as a hero shot.",
+    "Do NOT use this file to demonstrate Veo 3 native audio: the delivered mp4 has no audio stream.",
+    "Label 'Veo 3 (announced 2025-05-20), clip published 2025-05'; do not present the upload date as generation date.",
+    "Rapidata written rights confirmation recommended; visual review for identifiable-person resemblance."
+   ],
    "risk_flags": [],
    "story_roles": [
     "split_screen_pair",
@@ -1483,9 +1493,14 @@
    "creator": "Google DeepMind demo",
    "license": "Apache-2.0 (Hugging Face",
    "license_basis": "Video is stored in the licensed repo. Upstream Gemini API terms: 'Google won't claim ownership over that content.'",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "medium",
+   "conditions": [
+    "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences-veo3.1), Apache-2.0; model: Google DeepMind Veo 3.1'. Carry the Apache-2.0 notice. No share-alike.",
+    "Label 'Veo 3.1 (announced 2025-10-15), clip published 2025-11-06'; standard vs Fast unknown; not a native-audio demo (no audio stream).",
+    "Caption as one same-prompt comparison clip; do not present as typical Veo 3.1 output. It is a 720p, 6 s file, so unsuitable as a hero shot without upscale.",
+    "Rapidata written rights confirmation recommended; visual review for identifiable-person resemblance and marks."
+   ],
    "risk_flags": [],
    "story_roles": [
     "split_screen_pair",
@@ -1515,9 +1530,15 @@
    "creator": "Rapidata (dataset publisher, Apache-2.0)",
    "license": "Apache-2.0 (Hugging Face",
    "license_basis": "Video is stored in the licensed repo. Seedance/BytePlus output terms could not be read (JavaScript pages), so the upstream chain is unverified.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "low",
+   "conditions": [
+    "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences-seedance-1-pro), Apache-2.0; model: ByteDance Seedance 1.0 Pro'. Carry the Apache-2.0 notice. No share-alike.",
+    "Upstream ByteDance/BytePlus output terms were NOT readable (JavaScript shells): obtain Rapidata's written confirmation of rights and of the plan/API under which the clip was generated, or accept an unverified chain.",
+    "Label 'Seedance 1.0 Pro, clip generated 2025-07-24 per file name'; caption as a same-prompt comparison clip.",
+    "Frame is 1920x1088 (8 px padding): crop to 1080p before compositing.",
+    "Visual review: OCR repeatedly read a text-like blob ('KIN/KAN/KIV', about 55x22 px) at roughly x=1230, y=350 that drifts about 14 px across frames - probably scene text/sign, but confirm it is not a logo or watermark."
+   ],
    "risk_flags": [
     "unverifiable_model_claim"
    ],
@@ -1549,9 +1570,15 @@
    "creator": "Rapidata (dataset publisher, Apache-2.0)",
    "license": "Apache-2.0 (Hugging Face",
    "license_basis": "Video is stored in the licensed repo (Marey benchmark repo also hosts Kling files). Kling output terms could not be read, so the upstream chain is unverified.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
+   "verdict": "clear_with_conditions",
+   "verdict_confidence": "low",
+   "conditions": [
+    "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences-moonvalley-marey), Apache-2.0; model: Kuaishou Kling 2.1 Master'. Carry the Apache-2.0 notice. No share-alike.",
+    "Upstream Kling output terms were NOT readable (JavaScript shell): obtain Rapidata's written confirmation of rights and of the plan/API under which the clip was generated, or accept an unverified chain.",
+    "Label 'Kling 2.1 Master, clip generated 2025-07-25 per file name'; sub-version is from the file name only.",
+    "Note the licence card belongs to the Moonvalley Marey benchmark repo (card title 'Marey Pro Human Preference'), which merely hosts Kling files; cite the exact repo and file path.",
+    "Caption as one same-prompt comparison clip; visual review for watermark/logo and identifiable-person resemblance."
+   ],
    "risk_flags": [
     "unverifiable_model_claim"
    ],
@@ -1568,70 +1595,6 @@
     "height": 1080,
     "fps": 24,
     "size_mb": 9.2,
-    "has_audio": false,
-    "format": "mp4"
-   },
-   "source_file": "H6.json"
-  },
-  "fetv_cogvideo_people_are_dancing_2022": {
-   "media_url": "https://huggingface.co/datasets/lyx97/FETV_gen_videos/resolve/main/cogvideo.zip",
-   "page": "https://huggingface.co/datasets/lyx97/FETV_gen_videos",
-   "family": "CogVideo",
-   "model_version": "CogVideo (ICLR 2023 paper, open-sourced 2022-05-19); dataset card says only 'CogVideo'",
-   "created": "2023-05-26",
-   "date_basis": "Zip member cogvideo/videos/2.gif timestamp 2023-05-26; HF dataset createdAt 2023-12-21; CogVideo release from THUDM README '2022/5/19: We have open-sourced the CogVideo video generation model' and arXiv 2205.15868 (submitted 29 May 2022)",
-   "creator": "Yuanxin Liu et al., Peking University (F",
-   "license": "CC BY 4.0",
-   "license_basis": "Card front matter is the only licence statement; the gif is a member of a zip in the licensed repo. The card says the repo 'contains videos generated by CogVideo, Text2Video-Zero, ModelScopeT2V and ZeroScope' from FETV prompts. CogVideo v1 weight licence is not stated (code is Apache-2.0).",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
-   "risk_flags": [],
-   "story_roles": [
-    "early_failure_annotation",
-    "hook_early",
-    "split_screen_pair"
-   ],
-   "description": "Generated from the short prompt 'people are dancing' (FETV index 2, source MSRVTT, categories: people / actions). Zip contains 619 such gifs; index-to-prompt mapping assumed from fetv_data.json line order and the FETV-EVAL README ('619 videos generated from the prompts in datas/fetv_data.json'). Not viewed by me.",
-   "prompt": "people are dancing",
-   "listed_media": {
-    "duration_s": 4.29,
-    "width": 480,
-    "height": 480,
-    "fps": 7.7,
-    "size_mb": 3.2,
-    "has_audio": false,
-    "format": "gif"
-   },
-   "source_file": "H6.json"
-  },
-  "fetv_text2video_zero_people_are_dancing_2023": {
-   "media_url": "https://huggingface.co/datasets/lyx97/FETV_gen_videos/resolve/main/text2video-zero.zip",
-   "page": "https://huggingface.co/datasets/lyx97/FETV_gen_videos",
-   "family": "Text2Video-Zero",
-   "model_version": "Text2Video-Zero (arXiv 2303.13439, 23 Mar 2023); backbone Stable Diffusion; sub-version not stated on the card",
-   "created": "2023-12-21",
-   "date_basis": "Zip member text2video-zero/videos/2.mp4 timestamp 2023-12-21; HF dataset createdAt 2023-12-21; model date from arXiv 2303.13439 'Submitted on 23 Mar 2023' (primary)",
-   "creator": "Yuanxin Liu et al., Peking University (F",
-   "license": "CC BY 4.0",
-   "license_basis": "Card front matter is the only licence statement; the mp4 is a zip member in the licensed repo. Model licence: CreativeML OpenRAIL-M (H5 read its section 6: licensor claims no rights in Output), which does not restrict the clip.",
-   "verdict": "unverified",
-   "verdict_confidence": null,
-   "conditions": [],
-   "risk_flags": [],
-   "story_roles": [
-    "early_failure_annotation",
-    "split_screen_pair",
-    "frame_stack"
-   ],
-   "description": "Generated from the short prompt 'people are dancing' (FETV index 2). 16 frames at 8 fps, 512x512. Not viewed by me.",
-   "prompt": "people are dancing",
-   "listed_media": {
-    "duration_s": 2.0,
-    "width": 512,
-    "height": 512,
-    "fps": 8,
-    "size_mb": 0.25,
     "has_audio": false,
     "format": "mp4"
    },
@@ -2295,18 +2258,6 @@
    },
    "role": "probe"
   },
-  "probe_rapidata_hunyuan_hovercar_crowd_worst_glitch": {
-   "clip": "rapidata_hunyuan_hovercar_crowd_worst_glitch",
-   "in": 0.0,
-   "out": 5.375,
-   "label": {
-    "model": "HUNYUANVIDEO",
-    "year": "2025",
-    "creator": "Rapidata (dataset publisher, Apache-2.0)",
-    "license": "Apache-2.0 (Hugging Face"
-   },
-   "role": "probe"
-  },
   "probe_rapidata_wan21_wolf_phoenix_crowd_glitch": {
    "clip": "rapidata_wan21_wolf_phoenix_crowd_glitch",
    "in": 0.0,
@@ -2424,30 +2375,6 @@
     "year": "2025",
     "creator": "Rapidata (dataset publisher, Apache-2.0)",
     "license": "Apache-2.0 (Hugging Face"
-   },
-   "role": "probe"
-  },
-  "probe_fetv_cogvideo_people_are_dancing_2022": {
-   "clip": "fetv_cogvideo_people_are_dancing_2022",
-   "in": 0.0,
-   "out": 4.29,
-   "label": {
-    "model": "COGVIDEO",
-    "year": "2023",
-    "creator": "Yuanxin Liu et al., Peking University (F",
-    "license": "CC BY 4.0"
-   },
-   "role": "probe"
-  },
-  "probe_fetv_text2video_zero_people_are_dancing_2023": {
-   "clip": "fetv_text2video_zero_people_are_dancing_2023",
-   "in": 0.0,
-   "out": 2.0,
-   "label": {
-    "model": "TEXT2VIDEO-ZERO",
-    "year": "2023",
-    "creator": "Yuanxin Liu et al., Peking University (F",
-    "license": "CC BY 4.0"
    },
    "role": "probe"
   },

@@ -28,8 +28,11 @@ for cid, c in sl['clips'].items():
     n, d = (v['avg_frame_rate'].split('/') + ['1'])[:2]; fps = float(n) / float(d) if float(d) else 30; dur = float(pj['format']['duration'])
     t0 = max(0.0, min(e['in'] for e in ex.values()) - a.pad); t1 = min(dur, max(e['out'] for e in ex.values()) + a.pad)
     vf = 'scale=-2:1080:flags=lanczos' if int(v['height']) > 1080 else 'crop=trunc(iw/2)*2:trunc(ih/2)*2'      # x264 needs even sizes; a 1 px crop, never a resample
-    r = sh(['ffmpeg', '-y', '-v', 'error'] + UAO + ['-ss', f'{t0:.3f}', '-i', src, '-t', f'{t1 - t0:.3f}', '-an', '-vf', vf, '-c:v', 'libx264', '-preset', 'fast', '-crf', '14', '-g', '12', '-pix_fmt', 'yuv420p', '-r', f'{fps:.3f}', '-movflags', '+faststart', out])
+    meta = out + '.meta'; want = f'{t0:.3f},{t1:.3f}'
+    if os.path.exists(out) and os.path.getsize(out) > 1000 and os.path.exists(meta) and open(meta).read() == want: r = subprocess.CompletedProcess([], 0, '', '')        # cached proxy for exactly this span
+    else: r = sh(['ffmpeg', '-y', '-v', 'error'] + UAO + ['-ss', f'{t0:.3f}', '-i', src, '-t', f'{t1 - t0:.3f}', '-an', '-vf', vf, '-c:v', 'libx264', '-preset', 'fast', '-crf', '14', '-g', '12', '-pix_fmt', 'yuv420p', '-r', f'{fps:.3f}', '-movflags', '+faststart', out])
     if r.returncode: print('FFMPEG FAIL', cid, r.stderr[-300:]); c['skipped'] = 'ffmpeg'; continue
+    open(meta, 'w').write(want)
     c.update(local=out, native_width=int(v['width']), native_height=int(v['height']), native_fps=round(fps, 3), native_duration=round(dur, 3), proxy_offset=round(t0, 3))
     for e in ex.values(): e['in'] = round(e['in'] - t0, 3); e['out'] = round(min(e['out'], t1) - t0, 3); e['proxied'] = True
     print('proxy', cid, f"{v['width']}x{v['height']}@{fps:.2f}", f'{t0:.1f}-{t1:.1f}s of {dur:.1f}s', round(os.path.getsize(out) / 1e6, 1), 'MB', flush=True)

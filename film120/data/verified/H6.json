@@ -1,0 +1,527 @@
+{
+  "agent": "V-H6",
+  "source_file": "/home/user/rumah/film120/data/candidates/H6.json",
+  "verified_on": "2026-09-29",
+  "method_notes": "All checks run from the Higgsfield sandbox (open internet) plus WebSearch. Licence tags re-read from raw README front matter AND the Hugging Face API (cardData.license) or Internet Archive /metadata API. Every media_url re-requested with curl -sIL (final status after redirects recorded). Every Rapidata mp4 and both FETV members were downloaded and re-probed (ffprobe), scanned for C2PA manifests (c2pa-python), scanned for scene cuts (ffmpeg scene>0.15), letterbox bars, static-overlay watermarks (temporal-std + edge analysis) and burnt-in text (RapidOCR on every 10th frame). Archive.org Karpathy/Izdepski/Cole items sampled with ffmpeg over HTTP and OCR'd. NO frame was viewed by a human or a vision model: 'no watermark found' means no static overlay and no OCR text in sampled frames, not a visual all-clear. Higgsfield video_analysis jobs queued by H6 were still 'queued' (not started) when checked, so they were not used.",
+  "cross_cutting_findings": [
+    "RAPIDATA LICENCE EVIDENCE (applies to 11 candidates): the only licence text is the dataset-card front matter 'license: apache-2.0' (confirmed in raw README and API cardData for Rapidata/text-2-video-human-preferences, -veo2, -veo3, -veo3.1, -wan2.1, -seedance-1-pro, -moonvalley-marey). The cards never say who generated the videos, never say the licence covers the mp4 files, and never mention upstream model terms. Apache-2.0 is a software licence (licence-copy/notice duties). The hunter's statement that 'Rapidata generated the video itself' is an inference, not written on any card; the benchmark methodology page (benchmark.ai/methodology) only says 'a pairing of generated outputs from two models'. Card metadata is also sloppy (the -veo3 repo's pretty_name is 'Pika 2.2 Human Preferences'; the -veo2 and -wan2.1 dataset_info blocks are byte-identical). Recommended for every Rapidata clip: obtain a one-line written confirmation from Rapidata that they generated the clip, hold the rights to license it, and that the generating account/plan permitted commercial use.",
+    "UPSTREAM TERMS: read and OK for Google (Gemini API terms: 'Google won't claim ownership over that content.'), OpenAI (Wayback 2024-12-09 terms: 'you (a) retain your ownership rights in Input and (b) own the Output. We hereby assign to you all our right, title, and interest'), Runway (current terms: 'does not claim ownership of any of your Inputs or Outputs... does not restrict your commercial use of your Outputs' - 2026 text, not the Jan-2025 text), Alibaba Wan2.1 (Apache-2.0; 'We claim no rights over the your generated contents'). CONDITIONAL: Luma ('can only use the Outputs for commercial purposes if the Outputs were produced during an active Subscription Term under Customer's paid subscription') and Pika ('personal, noncommercial use only' unless the Plan expressly permits commercial use) - Rapidata's plan unknown. NOT READ (JS shells): Kling, ByteDance Seedance/BytePlus. BLOCKING: Tencent Hunyuan (see reject).",
+    "MODEL PROVENANCE: only the Sora and Runway files carry C2PA manifests (independent of the dataset labels). Veo 2 and Veo 3.1 files carry container tag encoder=Google. Wan 2.1 (832x480, 81 frames, 16 fps) and Hunyuan (129 frames, 24 fps) match their published default settings. All other model labels rest solely on Rapidata's file names / parquet 'model' column / README (verified internally consistent: parquet file_name -> model -> prompt matches the candidate for all 11).",
+    "CROWD-RANK CLAIMS VERIFIED: Rapidata/1k-ranked-videos-coherence parquet (1,026 rows) - top Elo: hunyuan_0082_421 1645, wan2.1_0066_0 1639, pika_0006_1718154969 1621, sora_0048_1 1608 (tie with pika2.2_0005_1); lowest Elo: ray2_0094_1 757; alpha_0066_690998814 1584; veo2_0094_0 874. README: question was 'Which video has more glitches and is more likely to be AI-generated?' and 'a higher Elo score indicates worse performance'. Any caption must say 'ranked among the most glitch-flagged of 1,026 sampled clips in Rapidata's benchmark' and must not imply the clip represents the model's typical output.",
+    "SAMPLING BIAS: every 'failure' clip is the worst of its model, every 'best' clip is the best; brief rule 'nothing may imply curated demos represent every generation' applies to both ends."
+  ],
+  "verdicts": [
+    {
+      "cand_id": "rapidata_hunyuan_hovercar_crowd_worst_glitch",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "BLOCKING upstream encumbrance missed by the hunter: Tencent Hunyuan Community Licence (raw LICENSE.txt, 'Release Date: December 3, 2024') opens 'THIS LICENSE AGREEMENT DOES NOT APPLY IN THE EUROPEAN UNION, UNITED KINGDOM AND SOUTH KOREA' and section 5(c) says 'You must not use, reproduce, modify, distribute, or display the Tencent Hunyuan Works, Output or results of the Tencent Hunyuan Works outside the Territory. Any such use outside the Territory is unlicensed and unauthorized under this Agreement.' The hunter summarised this as 'does not treat Output as a licensed Work' - that understates it: the licence expressly restricts DISPLAY/DISTRIBUTION OF OUTPUT outside the Territory. A public 120 s film cannot be geo-fenced away from the EU/UK. (Section 6(d) also says 'Tencent claims no rights in Outputs You generate', so the practical risk may be low, but it is an unresolved contractual restriction and Rapidata's Apache-2.0 tag cannot remove it.)",
+        "Rapidata's Apache-2.0 card does not state that Rapidata generated the clip or that it may sublicense Tencent-model Output (see cross_cutting_findings).",
+        "Model sub-version unstated (README spells 'Hunyouan'; file name 'hunyuan'). Creation date is the HF upload date (2025-01-10), not the generation date.",
+        "File verified: HTTP 200, video/mp4, 2,675,151 bytes; 864x480, 129 frames, 24 fps, no audio, no C2PA, no scene cut at ffmpeg 0.15, no letterbox, no static overlay and no OCR text found. Elo 1645 (highest of 1,026) verified. High inter-frame motion (mean abs diff 15.2/255) is consistent with a busy or unstable clip but the visual glitch itself is unseen."
+      ],
+      "corrected_fields": {
+        "model_version": "HunyuanVideo (sub-version not stated); default 129 frames @24 fps",
+        "upstream_licence_flag": "Tencent Hunyuan Community Licence sec. 5(c): Output may not be used/displayed/distributed outside the Territory (EU, UK, South Korea excluded)",
+        "created": "2025-01-10 (upload date only; generation date unknown; model released 2024-12-03)"
+      },
+      "http": {"status": 200, "content_length": 2675151, "content_type": "video/mp4", "note": "302 to us.gcp.cdn.hf.co xet-bridge, then 200"},
+      "model_date_corroboration": {
+        "claim": "HunyuanVideo released 2024-12-03",
+        "source_url": "https://raw.githubusercontent.com/Tencent-Hunyuan/HunyuanVideo/main/LICENSE.txt",
+        "quote": "Tencent HunyuanVideo Release Date: December 3, 2024 (arXiv 2412.03603: Submitted on 3 Dec 2024)"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "rapidata_wan21_wolf_phoenix_crowd_glitch",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences-wan2.1), Apache-2.0; model: Alibaba Wan 2.1' and carry the Apache-2.0 notice in the credits/description. No share-alike.",
+        "Caption honestly as one of the most glitch-flagged clips in Rapidata's 1,026-clip ranking (Elo 1639, 2nd highest), not as typical Wan 2.1 output.",
+        "Date label: say 'clip published 2025-03 (Wan 2.1 released 2025-02-25)', not a generation date.",
+        "Before publication obtain Rapidata's written confirmation of authorship/rights (card is silent), or accept the residual chain-of-title risk.",
+        "Visually review the excerpt for watermark/logo and for the actual glitch moment before locking the cut (unviewed by any verifier)."
+      ],
+      "issues_found": [
+        "Licence tag verified (raw README and API cardData: apache-2.0). Card does not say Rapidata made the clip; inference only.",
+        "Upstream Wan 2.1 is Apache-2.0 with 'We claim no rights over the your generated contents' (verified in raw README): supports the chain. T2V size (1.3B vs 14B) not stated anywhere.",
+        "Parquet confirms file 0066_wan2.1_0.mp4 -> model 'wan2.1' -> the wolf/phoenix prompt (exact string match).",
+        "File verified: HTTP 200, video/mp4, 4,196,518 bytes; 832x480, 81 frames, 16 fps (Wan2.1 480p defaults), no audio, no C2PA, no scene cut at 0.15, no static overlay, OCR only false-positive glyph. Bottom rows darken gradually (content, not a bar).",
+        "Elo 1639 (2nd highest of 1,026) verified in Rapidata/1k-ranked-videos-coherence."
+      ],
+      "corrected_fields": {
+        "model_version": "Alibaba Wan 2.1 text-to-video (parameter size unstated)",
+        "created": "2025-03-11 (HF upload; generation date unknown, on or after 2025-02-25)",
+        "watermark_notes": "No static overlay and no OCR text in 9 sampled frames; not visually confirmed"
+      },
+      "http": {"status": 200, "content_length": 4196518, "content_type": "video/mp4", "note": "302 to us.gcp.cdn.hf.co xet-bridge, then 200"},
+      "model_date_corroboration": {
+        "claim": "Wan 2.1 inference code and weights released 2025-02-25",
+        "source_url": "https://raw.githubusercontent.com/Wan-Video/Wan2.1/main/README.md",
+        "quote": "Feb 25, 2025: We've released the inference code and weights of Wan2.1."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "rapidata_runway_alpha_wolf_phoenix_crowd_glitch",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences), Apache-2.0; model: Runway Gen-3 Alpha family'. Carry the Apache-2.0 notice. No share-alike.",
+        "Label the model 'Runway Gen-3 Alpha (family)': the dataset says only 'Runway ML Alpha' and the C2PA action agent is the generic string 'Video Generation'; Alpha vs Alpha Turbo cannot be determined.",
+        "Use the C2PA signing date (2025-01-23) as the creation date, not the 2025-02-03 upload date.",
+        "Caption as a glitch-ranked clip (Elo 1584), not typical output; get Rapidata's written rights/plan confirmation if the producer requires a closed chain (Runway's current terms say it 'does not restrict your commercial use of your Outputs', but the Jan-2025 terms were not read).",
+        "Visual review for watermark/logo before locking the cut."
+      ],
+      "issues_found": [
+        "Independent provenance found: embedded C2PA manifest, claim_generator 'Runway AI, Inc./1.0 c2pa-rs/0.28.4', signature issuer 'RUNWAY AI, INC.' (common name eng-leadership@runwayml.com), signing time 2025-01-23T03:09:09Z, action c2pa.created softwareAgent 'Video Generation', digitalSourceType trainedAlgorithmicMedia. Manifest validates (hash) but the signing cert is not on a trust list in my tooling. This corroborates the 'Runway' origin and dates the clip to 2025-01-23; it does NOT name the model version.",
+        "Licence tag verified (apache-2.0); card silent on who generated the clip.",
+        "Parquet confirms 0066_alpha_690998814.mp4 -> model 'alpha' -> wolf/phoenix prompt (exact). 690998814 is plausibly a generation seed.",
+        "File verified: HTTP 200, video/mp4, 3,760,927 bytes; 1280x768, 128 frames, 24 fps, no audio, no scene cut at 0.15, no static overlay, OCR only false-positive glyphs (one CJK false positive).",
+        "Elo 1584 verified (alpha_0066_690998814.mp4)."
+      ],
+      "corrected_fields": {
+        "created": "2025-01-23",
+        "date_precision": "day (C2PA signing time 2025-01-23T03:09:09Z); HF upload was 2025-02-03",
+        "date_basis": "C2PA signature_info.time issued by RUNWAY AI, INC.; model release from runwayml.com/research/introducing-gen-3-alpha dated June 17, 2024",
+        "model_version": "Runway Gen-3 Alpha family (Alpha vs Alpha Turbo undetermined)",
+        "risk_flags_remove": ["unverifiable_model_claim (partly resolved: vendor C2PA confirms Runway origin, not sub-version)"]
+      },
+      "http": {"status": 200, "content_length": 3760927, "content_type": "video/mp4", "note": "302 to us.gcp.cdn.hf.co xet-bridge, then 200"},
+      "model_date_corroboration": {
+        "claim": "Runway Gen-3 Alpha announced 2024-06-17",
+        "source_url": "https://runwayml.com/research/introducing-gen-3-alpha",
+        "quote": "Runway Gen-3 Alpha: AI Video Generation with Temporal Control June 17, 2024 ... Runway Gen-3 Alpha is the first of the next generation of AI foundation models"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "rapidata_sora_dragon_phoenix_crowd_glitch",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences), Apache-2.0; model: OpenAI Sora'. Carry the Apache-2.0 notice. No share-alike.",
+        "Label 'OpenAI Sora (Sora Turbo product, Dec 2024)'; creation date 2024-12-16 per C2PA signature.",
+        "Visual check for the Sora visible watermark before any 9:16 crop: OpenAI states Sora Turbo adds visible watermarks by default; none was detected by static-overlay analysis or OCR in 15 sampled frames, but a small moving/animated mark could be missed. If present, it must not be cropped out.",
+        "Caption as a glitch-ranked clip (Elo 1608), not typical Sora output; may be paired with OpenAI's own limitation statement.",
+        "Get Rapidata's written rights confirmation if a closed chain is required."
+      ],
+      "issues_found": [
+        "Independent provenance found: embedded C2PA manifest, claim_generator 'Sora c2pa-rs/0.31.3', signature issuer 'OpenAI' (common name 'Truepic Lens CLI in Sora'), signing time 2024-12-16T14:14:37Z, action c2pa.created softwareAgent 'Sora', digitalSourceType trainedAlgorithmicMedia, manifest title '64f0eefa41d343c786a484cc4a2073ed_generation.mp4'. Hash validates; signing cert untrusted only because no trust list was loaded. This confirms the clip is a genuine Sora export and DATES IT TO 2024-12-16, not 2025-01-10 (the candidate's 'created' is only the HF upload date).",
+        "Licence tag verified (apache-2.0); card silent on who generated the clip. OpenAI terms (Wayback 2024-12-09) assign Output to the user: 'you (a) retain your ownership rights in Input and (b) own the Output. We hereby assign to you all our right, title, and interest'. Sora-specific product terms/watermark rules were not separately read.",
+        "Parquet confirms 0048_sora_1.mp4 -> model 'sora' -> dragon/phoenix prompt (exact). Elo 1608 verified (sora_0048_1.mp4; ties pika2.2_0005_1).",
+        "File verified: HTTP 200, video/mp4, 8,401,004 bytes; 854x480, 150 frames, 30 fps, no audio, no scene cut at 0.15, no static overlay; OCR produced only single-glyph false positives.",
+        "Content: fantasy prompt (dragon, phoenixes), no real person, no brand."
+      ],
+      "corrected_fields": {
+        "created": "2024-12-16",
+        "date_precision": "day (C2PA signing time 2024-12-16T14:14:37Z); HF upload 2025-01-10",
+        "date_basis": "C2PA signature_info.time, issuer OpenAI; product release from OpenAI 'Sora is here' dated December 9, 2024 (Wayback)",
+        "model_version": "Sora (Sora Turbo, released 2024-12-09; C2PA softwareAgent 'Sora')",
+        "risk_flags_remove": ["unverifiable_model_claim (resolved by vendor-signed C2PA)"]
+      },
+      "http": {"status": 200, "content_length": 8401004, "content_type": "video/mp4", "note": "302 to us.gcp.cdn.hf.co xet-bridge, then 200"},
+      "model_date_corroboration": {
+        "claim": "Sora Turbo publicly released 2024-12-09",
+        "source_url": "https://web.archive.org/web/20241209id_/https://openai.com/index/sora-is-here/",
+        "quote": "December 9, 2024 Sora is here ... We developed a new version of Sora—Sora Turbo— that is significantly faster than the model we previewed in February."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "rapidata_pika20_fire_dancer_2d_crowd_glitch",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences), Apache-2.0; model: Pika 2.0'. Carry the Apache-2.0 notice. No share-alike.",
+        "MUST obtain Rapidata's written confirmation that the clip was generated under a Pika plan permitting commercial use: Pika's terms state the Service is 'for your personal, noncommercial use only' unless the Plan expressly permits commercial use (current terms; Jan-2025 terms not read). Without that confirmation treat as unresolved.",
+        "Label 'Pika 2.0, clip published early 2025' (dataset label only; no vendor artifact names the sub-version).",
+        "Caption as a glitch-ranked clip (Elo 1621, 3rd highest of 1,026), not typical output. Visually review the abrupt change near t=3.0 s and check for a Pika watermark."
+      ],
+      "issues_found": [
+        "Primary corroboration for Pika 2.0 now found (hunter found none): Wayback snapshot of pika.art dated 2025-01-01 shows 'New model alert! Check out Pika 2.0, and rule reality with Scene Ingredients' and 'Pika 2.0 now available!'. Earliest primary date is therefore 'by 2025-01-01' (the 2024-12-16/21 snapshots were login walls without the banner).",
+        "Licence tag verified (apache-2.0); card silent on who generated the clip; upstream plan-dependent commercial terms unresolved (main residual risk).",
+        "File-name suffix 1718154969 decodes as Unix time 2024-06-12 (before Pika 2.0), but the sibling file for the same prompt is pika_0006_2963699815 (not a plausible timestamp), so the suffix is most likely a random seed; unresolved inference, flagged.",
+        "ffmpeg scene score exceeds 0.15 at t=3.0 s (hunter reported no cut at 0.35): a fast change/flash rather than a hard cut is possible; largest frame-difference spike 41.5/255 at frame 70. Not viewed.",
+        "File verified: HTTP 200, video/mp4, 2,565,281 bytes; 1280x720, 121 frames, 24 fps, no audio, no C2PA, no letterbox, no static overlay (faint 2.5% static-edge cell right edge, row 2, unresolved), OCR only false-positive 'M' glyphs."
+      ],
+      "corrected_fields": {
+        "created": "2025-01-22 (HF upload; generation date unknown, on or after Pika 2.0 availability)",
+        "model_version": "Pika 2.0 (dataset label; sub-version not vendor-confirmed)",
+        "model_date_primary": "Pika 2.0 available by 2025-01-01 per archived pika.art banner",
+        "scene_cuts": "ffmpeg scene>0.15 at t=3.0 s"
+      },
+      "http": {"status": 200, "content_length": 2565281, "content_type": "video/mp4", "note": "302 to us.gcp.cdn.hf.co xet-bridge, then 200"},
+      "model_date_corroboration": {
+        "claim": "Pika 2.0 available by 2025-01-01",
+        "source_url": "https://web.archive.org/web/20250101084839id_/https://pika.art/",
+        "quote": "New model alert! Check out Pika 2.0, and rule reality with Scene Ingredients."
+      },
+      "confidence": "low"
+    },
+    {
+      "cand_id": "rapidata_ray2_violinist_crowd_best",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences), Apache-2.0; model: Luma Ray2'. Carry the Apache-2.0 notice. No share-alike.",
+        "MUST obtain Rapidata's written confirmation that the clip was generated during a paid Luma subscription/API plan allowing commercial use: Luma's terms say Customer 'can only use the Outputs for commercial purposes if the Outputs were produced during an active Subscription Term under Customer's paid subscription allowing for the commercial use of those Outputs' (current terms).",
+        "Caption as the best-ranked (fewest glitches, Elo 757) of 1,026 sampled clips - a curated best case, not typical output.",
+        "Label 'Luma Ray2, clip published early 2025'; credit date is the upload (2025-02-03), generation date unknown.",
+        "Visual review: real-looking violinist and pedestrians are AI-generated; confirm no resemblance to an identifiable person, check bow/hand artefacts, watermark."
+      ],
+      "issues_found": [
+        "Model corroboration: archived official page web.archive.org/web/20250116id_/https://lumalabs.ai/ray (fetched with --compressed) reads 'Luma Ray2 ... Ray2 is a large-scale video generative model'; so Ray2 existed by 2025-01-16. Exact launch day not in a primary source I could read (Luma news page is 404).",
+        "Licence tag verified (apache-2.0); card silent on who generated the clip; Luma paid-plan condition unresolved (main residual risk).",
+        "Parquet confirms 0094_ray2_1.mp4 -> model 'ray2' -> violinist prompt (exact). Elo 757 = lowest of 1,026 verified; sibling 0094_ray2_2 is 1016.",
+        "File verified: HTTP 200, video/mp4, 961,462 bytes; 960x544, 124 frames, 24 fps, no audio, no C2PA, no scene cut, no letterbox, no static overlay, no OCR text."
+      ],
+      "corrected_fields": {
+        "created": "2025-02-03 (HF upload; generation between Ray2 launch and upload)",
+        "media": "960x544 (16-px padded 540p), 24 fps, 5.167 s"
+      },
+      "http": {"status": 200, "content_length": 961462, "content_type": "video/mp4", "note": "302 to us.gcp.cdn.hf.co xet-bridge, then 200"},
+      "model_date_corroboration": {
+        "claim": "Luma Ray2 existed by 2025-01-16",
+        "source_url": "https://web.archive.org/web/20250116id_/https://lumalabs.ai/ray",
+        "quote": "Ray2 is a large–scale video generative model capable of creating realistic visuals with natural, coherent motion."
+      },
+      "confidence": "low"
+    },
+    {
+      "cand_id": "rapidata_veo2_violinist_same_prompt",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences-veo2), Apache-2.0; model: Google DeepMind Veo 2'. Carry the Apache-2.0 notice. No share-alike.",
+        "Label 'Veo 2 (announced 2024-12-16), clip published 2025-03'; do not present the upload date as the generation date.",
+        "Caption as a same-prompt comparison clip (Elo 874, low glitch), not typical output.",
+        "Visual review for identifiable-person resemblance (AI-generated violinist and pedestrians) and any Veo/SynthID visible mark.",
+        "Rapidata written rights confirmation recommended (card silent on authorship)."
+      ],
+      "issues_found": [
+        "Licence tag verified (apache-2.0); card silent on who generated the clip; the -veo2 card's dataset_info block is identical to the -wan2.1 card (copy-paste sloppiness).",
+        "Upstream chain verified: Gemini API terms 'Some of our Services allow you to generate original content. Google won't claim ownership over that content.'",
+        "Weak vendor signal: container tag encoder=Google in the mp4 (no C2PA).",
+        "Parquet confirms 0094_veo2_0.mp4 -> model 'veo2' -> violinist prompt (exact). Elo 874 verified.",
+        "File verified: HTTP 200, video/mp4, 1,742,946 bytes; 1280x720, 120 frames, 24 fps, 5.0 s, no audio, no scene cut, no letterbox, no static overlay, no OCR text."
+      ],
+      "corrected_fields": {
+        "created": "2025-03-11 (HF upload; generation date unknown)",
+        "provenance_hint": "mp4 encoder tag 'Google'"
+      },
+      "http": {"status": 200, "content_length": 1742946, "content_type": "video/mp4", "note": "302 to us.gcp.cdn.hf.co xet-bridge, then 200"},
+      "model_date_corroboration": {
+        "claim": "Veo 2 announced 2024-12-16",
+        "source_url": "https://blog.google/technology/google-labs/video-image-generation-update-december-2024/",
+        "quote": "State-of-the-art video and image generation with Veo 2 and Imagen 3 - Dec 16, 2024 - We’re announcing new versions of Veo and Imagen"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "rapidata_veo3_violinist_same_prompt",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences-veo3), Apache-2.0; model: Google DeepMind Veo 3'. Carry the Apache-2.0 notice. No share-alike.",
+        "QUALITY/CROP WARNING: the frame is letterboxed - 93 px of pure black at the top and 94 px at the bottom of the 1280x720 frame (active picture about 1280x533, roughly 2.4:1). A 9:16 crop of the active area is about 300x533 px and needs a roughly 3.6x upscale to fill 1080x1920. Do not crop into the bars and do not use as a hero shot.",
+        "Do NOT use this file to demonstrate Veo 3 native audio: the delivered mp4 has no audio stream.",
+        "Label 'Veo 3 (announced 2025-05-20), clip published 2025-05'; do not present the upload date as generation date.",
+        "Rapidata written rights confirmation recommended; visual review for identifiable-person resemblance."
+      ],
+      "issues_found": [
+        "Newly found defect: burnt-in black letterbox bars 93/94 px (rows are exactly 0 on every sampled frame); the hunter did not report it and listed the clip as a 'milestone/gallery' candidate.",
+        "Licence tag verified (apache-2.0); the -veo3 card's pretty_name reads 'Pika 2.2 Human Preferences' (metadata error) and card is silent on who generated the clip.",
+        "Upstream chain verified (Google won't claim ownership). No C2PA; encoder tag is Lavf60.16.100 (no Google tag on this file).",
+        "Parquet confirms 0094_veo3_0.mp4 -> model 'veo3' -> violinist prompt (exact).",
+        "File verified: HTTP 200, video/mp4, 1,516,322 bytes; 1280x720, 192 frames, 24 fps, 8.0 s, no audio; static horizontal edges at the bar boundaries only (no logo/watermark); OCR only false-positive glyphs near the lower active-picture edge."
+      ],
+      "corrected_fields": {
+        "created": "2025-05-26 (HF upload; generation between 2025-05-20 and upload)",
+        "media_active_picture": "1280x533 (black bars 93 px top, 94 px bottom in a 1280x720 frame)",
+        "story_roles_remove": ["milestone", "gallery (as hero-quality material)"]
+      },
+      "http": {"status": 200, "content_length": 1516322, "content_type": "video/mp4", "note": "302 to us.gcp.cdn.hf.co xet-bridge, then 200"},
+      "model_date_corroboration": {
+        "claim": "Veo 3 announced 2025-05-20",
+        "source_url": "https://blog.google/technology/ai/generative-media-models-io-2025/",
+        "quote": "May 20, 2025 | Introducing Veo 3 and Imagen 4, and a new tool for filmmaking called Flow."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "rapidata_veo31_violinist_same_prompt",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences-veo3.1), Apache-2.0; model: Google DeepMind Veo 3.1'. Carry the Apache-2.0 notice. No share-alike.",
+        "Label 'Veo 3.1 (announced 2025-10-15), clip published 2025-11-06'; standard vs Fast unknown; not a native-audio demo (no audio stream).",
+        "Caption as one same-prompt comparison clip; do not present as typical Veo 3.1 output. It is a 720p, 6 s file, so unsuitable as a hero shot without upscale.",
+        "Rapidata written rights confirmation recommended; visual review for identifiable-person resemblance and marks."
+      ],
+      "issues_found": [
+        "Licence tag verified (apache-2.0); card silent on generator; the card links the benchmark with an empty href 'huggingface []'.",
+        "Upstream chain verified (Google won't claim ownership). Weak vendor signal: mp4 encoder tag 'Google'.",
+        "Parquet confirms veo31_13_0.mp4 -> model 'veo31' -> violinist prompt (exact).",
+        "File verified: HTTP 200, video/mp4, 1,944,130 bytes; 1280x720, 144 frames, 24 fps, 6.0 s, no audio, no C2PA, no scene cut, no letterbox; a 4.2% static-edge cell at the left edge (row 2) and two edge columns with static pixels were detected but no OCR text - possible static background structure, unresolved without viewing.",
+        "The hunter's 'hero' role is a stretch given 720p; Veo 3.1 is still the current Veo on Google's pages per the hunter's fetch and a 2026-08 web search (no official Veo 4 announcement found)."
+      ],
+      "corrected_fields": {
+        "created": "2025-11-06 (HF upload; repo created 2025-11-06T13:54:15Z)",
+        "story_roles_remove": ["hero"]
+      },
+      "http": {"status": 200, "content_length": 1944130, "content_type": "video/mp4", "note": "302 to us.gcp.cdn.hf.co xet-bridge, then 200"},
+      "model_date_corroboration": {
+        "claim": "Veo 3.1 announced 2025-10-15",
+        "source_url": "https://blog.google/technology/ai/veo-updates-flow/",
+        "quote": "Oct 15, 2025 | We’re also introducing Veo 3.1, which brings richer audio, more narrative control, and enhanced realism"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "rapidata_seedance1pro_violinist_same_prompt",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences-seedance-1-pro), Apache-2.0; model: ByteDance Seedance 1.0 Pro'. Carry the Apache-2.0 notice. No share-alike.",
+        "Upstream ByteDance/BytePlus output terms were NOT readable (JavaScript shells): obtain Rapidata's written confirmation of rights and of the plan/API under which the clip was generated, or accept an unverified chain.",
+        "Label 'Seedance 1.0 Pro, clip generated 2025-07-24 per file name'; caption as a same-prompt comparison clip.",
+        "Frame is 1920x1088 (8 px padding): crop to 1080p before compositing.",
+        "Visual review: OCR repeatedly read a text-like blob ('KIN/KAN/KIV', about 55x22 px) at roughly x=1230, y=350 that drifts about 14 px across frames - probably scene text/sign, but confirm it is not a logo or watermark."
+      ],
+      "issues_found": [
+        "Model version corroborated better than the hunter reported: the Seedance 1.0 report (arXiv 2506.09113, submitted 10 Jun 2025) states 'Model ID: Doubao-Seedance-1.0-pro' and that Seedance 1.0 'is now accessible on Volcano Engine'. ByteDance's own Seedance page says only 'Seedance 1.0'.",
+        "Licence tag verified (apache-2.0); card silent on generator; upstream terms unread (main residual risk).",
+        "Date basis (file name stamp '24-7-25' = 2025-07-24) is the dataset's own, uncorroborated; HF upload 2025-07-30.",
+        "Parquet confirms file seedance-1-pro-24-7-25_94_0.mp4 -> model label 'seedance-1-pro-24-7-25' -> violinist prompt (exact).",
+        "File verified: HTTP 200, video/mp4, 9,032,244 bytes; 1920x1088, 121 frames, 24 fps, 5.04 s, no audio, no C2PA, no scene cut, no letterbox, no static overlay in corners."
+      ],
+      "corrected_fields": {
+        "model_version": "Seedance 1.0 Pro (Model ID Doubao-Seedance-1.0-pro per arXiv 2506.09113)",
+        "created": "2025-07-24 (file-name stamp; HF upload 2025-07-30)",
+        "risk_flags_remove": ["unverifiable_model_claim (Pro tier now corroborated by the technical report's Model ID)"]
+      },
+      "http": {"status": 200, "content_length": 9032244, "content_type": "video/mp4", "note": "302 to us.gcp.cdn.hf.co xet-bridge, then 200"},
+      "model_date_corroboration": {
+        "claim": "Seedance 1.0 (Pro model ID Doubao-Seedance-1.0-pro) reported 2025-06-10",
+        "source_url": "https://arxiv.org/abs/2506.09113",
+        "quote": "Seedance 1.0 is now accessible on Volcano Engine ... Model ID: Doubao-Seedance-1.0-pro (arXiv: Submitted on 10 Jun 2025)"
+      },
+      "confidence": "low"
+    },
+    {
+      "cand_id": "rapidata_kling21master_violinist_same_prompt",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: 'Rapidata (Hugging Face dataset Rapidata/text-2-video-human-preferences-moonvalley-marey), Apache-2.0; model: Kuaishou Kling 2.1 Master'. Carry the Apache-2.0 notice. No share-alike.",
+        "Upstream Kling output terms were NOT readable (JavaScript shell): obtain Rapidata's written confirmation of rights and of the plan/API under which the clip was generated, or accept an unverified chain.",
+        "Label 'Kling 2.1 Master, clip generated 2025-07-25 per file name'; sub-version is from the file name only.",
+        "Note the licence card belongs to the Moonvalley Marey benchmark repo (card title 'Marey Pro Human Preference'), which merely hosts Kling files; cite the exact repo and file path.",
+        "Caption as one same-prompt comparison clip; visual review for watermark/logo and identifiable-person resemblance."
+      ],
+      "issues_found": [
+        "Model DATE now has an issuer-primary source (the hunter found none): Kuaishou's own press release (PR Newswire, 'Kling AI Celebrates First Anniversary') says 'At the end of May 2025, Kuaishou debuted the Kling AI 2.1 model series' and names the 'premium Kling AI 2.1 Master Edition'. It does not confirm the API model string 'kling-v2.1-master'.",
+        "Licence tag verified in the Marey repo README (apache-2.0); card silent on who generated the clip; Kling upstream terms unread (main residual risk).",
+        "Parquet (moonvalley-marey) confirms kling-v2.1-master-25-7-25_94_0.mp4 -> model label 'kling-v2.1-master-25-7-25' -> violinist prompt (exact).",
+        "File verified: HTTP 200, video/mp4, 9,186,992 bytes; 1920x1080, 121 frames, 24 fps, 5.04 s, no audio, no C2PA, no scene cut, no letterbox, no static overlay; OCR only false-positive '1' glyphs at top right (x~1200, y~35-190) on two frames - probably scene content, unresolved. A 'kling-ai' byte string in the file is random compressed data, not metadata."
+      ],
+      "corrected_fields": {
+        "model_version": "Kling 2.1 Master (per file name 'kling-v2.1-master-25-7-25')",
+        "model_date_primary": "Kling AI 2.1 series debuted end of May 2025 per Kuaishou press release",
+        "created": "2025-07-25 (file-name stamp; HF upload 2025-08-12)"
+      },
+      "http": {"status": 200, "content_length": 9186992, "content_type": "video/mp4", "note": "302 to us.gcp.cdn.hf.co xet-bridge, then 200"},
+      "model_date_corroboration": {
+        "claim": "Kling AI 2.1 series (incl. 2.1 Master) debuted end of May 2025",
+        "source_url": "https://www.prnewswire.com/apac/news-releases/kling-ai-celebrates-first-anniversary-achieves-annualized-revenue-run-rate-surpassing-usd100-million-in-10th-month-since-launch-302474834.html",
+        "quote": "At the end of May 2025, Kuaishou debuted the Kling AI 2.1 model series."
+      },
+      "confidence": "low"
+    },
+    {
+      "cand_id": "karpathy_sd_blueberry_spaghetti_2022",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit exactly: 'Andrej Karpathy, \"Stable diffusion dreams of \\\"blueberry spaghetti\\\" for one night\" (2022), CC BY 3.0, https://www.youtube.com/watch?v=vEnetcj_728' and state any modification (crop, speed change, colour). No share-alike.",
+        "STRIP THE AUDIO: the webm has a loud, unattributed audio track (volumedetect on the first 60 s: mean -10.2 dB, peak 0.0 dB) that the description does not explain; if it is third-party music the uploader could not license it under CC BY. Use picture only.",
+        "PRODUCER SIGN-OFF REQUIRED on rule 3 ('never use YouTube downloads'): the Internet Archive file is a third-party TubeUp mirror (uploader future.forward.era@gmail.com, collections mirrortube/social-media-video). The licence itself is the creator's own YouTube setting and I confirmed it on the original YouTube page via Wayback (see issues), so it is a legitimate CC BY reuse, but the mirror status is a judgement call for the producer.",
+        "Label the model as 'Stable Diffusion (v1.3, inferred from the linked script)': the page says only 'Stable diffusion'. Do not describe it as a public Stable Diffusion release: Stability AI's 2022-08-10 post says only the first stage of release 'to researchers'.",
+        "Excerpt must be chosen by viewing (whole video is a continuous latent-space morph; no cuts); no logos/text found in 6 sampled frames."
+      ],
+      "issues_found": [
+        "Licence confirmed at source: Wayback snapshots of the original YouTube page (2022-08-30 and 2023-03-22) show 'License: Creative Commons Attribution license (reuse allowed)', uploadDate 2022-08-16, channel 'Andrej Karpathy'. The IA item (metadata API) has creator 'Andrej Karpathy', licenseurl https://creativecommons.org/licenses/by/3.0/, originalurl the same YouTube URL, addeddate 2022-08-19; info.json 'license' field identical. The IA uploader is NOT the creator.",
+        "Licence was verified as of 2023-03-22 only; YouTube itself could not be fetched (HTTP 429 challenge), so a later licence change cannot be excluded.",
+        "Model version is an inference: the description links the gist https://gist.github.com/karpathy/00103b0037c5aaea32fe1da1af553355 (created 2022-08-16T00:44:01Z, 8 revisions through 2022-08-16 and later) whose revisions I read all load '/home/ubuntu/stable-diffusion-v1-3-diffusers'. The 'blueberry spaghetti' prompt is in a later revision than the first (steampunk) one, but every revision uses the v1.3 path.",
+        "Model date: Stability AI announcement dated Aug 10 (2022) says 'the first stage of the release of Stable Diffusion to researchers ... working together towards a public release soon'.",
+        "File verified: HTTP 200, video/webm, 56,376,583 bytes (webm original, vp9 1280x720 29.97 fps + opus stereo, 302.161 s); derivative mp4 854x480 31,338,142 bytes. OCR on 6 frames at 5-290 s found no text; ffmpeg scene check not run on the full file, hunter reports no cuts."
+      ],
+      "corrected_fields": {
+        "model_version": "Stable Diffusion v1.3 (inferred from the linked gist; page says only 'Stable diffusion')",
+        "created": "2022-08-16 (YouTube uploadDate 2022-08-16)",
+        "license.id": "CC BY 3.0 (YouTube 'Creative Commons Attribution license (reuse allowed)'), licenseurl https://creativecommons.org/licenses/by/3.0/",
+        "audio": "strip; loud unattributed track"
+      },
+      "http": {"status": 200, "content_length": 56376583, "content_type": "video/webm", "note": "archive.org/download 302 to a data node, then 200"},
+      "model_date_corroboration": {
+        "claim": "Stable Diffusion weights first released to researchers 2022-08-10 (v1.3 per gist)",
+        "source_url": "https://stability.ai/news/stable-diffusion-announcement",
+        "quote": "Aug 10 ... announce the first stage of the release of Stable Diffusion to researchers."
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "karpathy_sd_steampunk_brain_v1_480px_2022",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit exactly: 'Andrej Karpathy, \"Stable diffusion dreams of steam punk neural networks\" (2022), CC BY 3.0, https://www.youtube.com/watch?v=Jv1ayv-04H4' and state any modification. No share-alike.",
+        "PRODUCER SIGN-OFF REQUIRED on rule 3 ('never use YouTube downloads'): the archive.org copy is a third-party TubeUp mirror (uploader future.forward.era@gmail.com); the licence is the creator's own YouTube CC BY setting, verified on the original YouTube page via Wayback (see issues).",
+        "Label the model 'Stable Diffusion v1.3' with the note 'version from the linked script': the page says only 'stable diffusion'.",
+        "Date label: uploaded 2022-08-15 (US Pacific, YouTube page) = 2022-08-16 UTC (yt-dlp/IA); use 'August 2022'.",
+        "If the prompt text is shown on screen, note it contains the hashtag '#unrealengine' (a trademark in the prompt only) - consider truncating the displayed prompt.",
+        "Low-fps (10 fps) 480x480 source: crop/scale for 9:16 will be soft; excerpt to be chosen by viewing."
+      ],
+      "issues_found": [
+        "Licence confirmed at source: Wayback snapshot of the original YouTube page (2022-10-13) shows 'Creative Commons Attribution license (reuse allowed)', channel 'Andrej Karpathy'; IA metadata has creator 'Andrej Karpathy', licenseurl https://creativecommons.org/licenses/by/3.0/, info.json license field identical. Verified only up to 2022-10-13 (YouTube itself returns a 429 challenge).",
+        "DATE CORRECTION: the archived YouTube page says uploadDate 2022-08-15 (Pacific) while yt-dlp/IA record 20220816 (UTC); the first Wayback capture is 2022-08-16T01:30:50Z. The candidate's '2022-08-16' is right only in UTC.",
+        "Model version corroborated more strongly than for the blueberry video: the FIRST revision of the linked gist (2022-08-16T00:44:01Z, i.e. before the video's first archive capture) already contains the exact steampunk prompt and weights_path '/home/ubuntu/stable-diffusion-v1-3-diffusers'.",
+        "Audio verified silent (volumedetect mean/max -91 dB over the whole 154 s) despite an opus stream, so the hunter's 'strip audio' caution is moot.",
+        "File verified: HTTP 200, video/webm, 7,423,830 bytes (vp9 480x480 10 fps + opus, 154.421 s); derivative mp4 13,491,436 bytes. OCR on 5 frames found no text. Content: gears/brain machine, no person, no brand except the '#unrealengine' hashtag in the prompt."
+      ],
+      "corrected_fields": {
+        "created": "2022-08-15 (YouTube page, US Pacific) / 2022-08-16 (UTC)",
+        "model_version": "Stable Diffusion v1.3 (from the first revision of the linked gist)",
+        "audio": "silent (-91 dB)"
+      },
+      "http": {"status": 200, "content_length": 7423830, "content_type": "video/webm", "note": "archive.org/download 302 to a data node, then 200"},
+      "model_date_corroboration": {
+        "claim": "Stable Diffusion weights first released to researchers 2022-08-10 (v1.3 per gist first revision)",
+        "source_url": "https://stability.ai/news/stable-diffusion-announcement",
+        "quote": "Aug 10 ... announce the first stage of the release of Stable Diffusion to researchers."
+      },
+      "confidence": "high"
+    },
+    {
+      "cand_id": "izdepski_slomogalactic_sd_vqgan_2023",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "Model and version cannot be corroborated anywhere: the item text is only 'AI generated abstract video. 1080p.' plus subject tags 'stable diffusion', 'vqgan', 'srcnn', 'space' (SRCNN is a super-resolution network, so the pipeline is unknown). The film requires a truthful model/year label; 'Stable Diffusion (version unstated)' is a tag guess, and the story value (early flicker/warp) is unverifiable without viewing.",
+        "Creation date 2023-09-01 is an uploader-set metadata field with no corroboration; archived 2023-09-13.",
+        "CC BY-SA 4.0 share-alike: any adapted excerpt must be offered under BY-SA 4.0 or a compatible licence, which conflicts with the film's licensed music/narration unless legal review isolates it; no offsetting benefit here.",
+        "Licence itself verified: IA metadata licenseurl https://creativecommons.org/licenses/by-sa/4.0/, creator 'Erich Izdepski', uploader mogrifier@gmail.com (identity match with the creator not independently verifiable), collection generative-art-archive.",
+        "File verified: HTTP 200, video/mp4 29,345,637 bytes (derivative .ia.mp4, 960x480, 30 fps, 333.334 s, no audio in the derivative); original mp4 2048x1024 is 2,141,589,632 bytes. No scene cuts in the first 60 s (ffmpeg 0.15); OCR on 5 frames found no text."
+      ],
+      "corrected_fields": {
+        "model_version": "unknown (subject tags only: stable diffusion, vqgan, srcnn)",
+        "created": "2023-09-01 (uploader-set; uncorroborated)"
+      },
+      "http": {"status": 200, "content_length": 29345637, "content_type": "video/mp4", "note": "derivative slomogalactic-30fps.ia.mp4; 302 to a data node, then 200"},
+      "model_date_corroboration": {
+        "claim": "Stable Diffusion / VQGAN pipeline in 2023 (uploader tags)",
+        "source_url": "https://archive.org/details/slomogalactic-30fps",
+        "quote": "AI generated abstract video. 1080p. (subjects: stable diffusion, vqgan, srcnn, space) - no primary source; model claim not corroborated"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "lynncole_gonna_do_a_dance_grok_kling_2026",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "The creator's own workflow text (IA description) shows a heavily post-processed multi-tool montage: GPT image generation plus 'a custom image model' for keyframes/references; 'Rendered most of the video clips with Grok Imagine 1.5'; 'Used Kling for several shots that needed driver video'; 'RunDiffusion / Flatpack and ComfyUI for odds and ends, fixes, cleanup, and extra shots'; Mitte AI/Nano Banana; a 'procedural lip-sync correction algorithm'; and a custom 'video upscaling and detail-recovery pipeline'. No shot can be attributed to one model, so the required source label (model, year) cannot be written truthfully and the file cannot serve as evidence of any model's capability.",
+        "Kling version unstated; Grok Imagine 1.5 itself is real and dated (x.ai: 'Grok Imagine 1.5 Preview' Jun 3, 2026; 'Grok Imagine Video 1.5' Jun 16, 2026), but that is release data, not per-shot evidence.",
+        "Unclearable IP/likeness risk: OCR of only 5 sampled frames already reads in-picture text/logo-like content ('MINNEAPOLIS', 'Here are some logos that mean nothing', 'HOLOGRAPHIC WAREHOUSE', 'BASSDROP', 'Girlfriends'); the description names 'muppets'; driver footage is the creator's own webcam performance (real person). Cannot be cleared without viewing.",
+        "Audio is Suno-generated with a separate SoundCloud remix; picture-only use would require stripping it.",
+        "CC BY-SA 4.0 share-alike (self-upload by creator, verified via IA metadata: creator Lynn Cole, uploader lynncoleart@gmail.com, licenseurl by-sa/4.0). 7 min 6 s; 47 cuts per hunter.",
+        "File verified: HTTP 200, video/mp4, 628,479,643 bytes (1280x720 original); derivative final_video.ia.mp4 854x480, 41,556,757 bytes, aac audio, 426.283 s."
+      ],
+      "corrected_fields": {
+        "model_version": "multi-tool, per-shot attribution impossible (Grok Imagine 1.5 for most clips per creator; Kling, GPT image, custom model, ComfyUI, custom upscaler also used)",
+        "created": "2026-06-20 (uploader-set date; addeddate 2026-06-24)"
+      },
+      "http": {"status": 200, "content_length": 628479643, "content_type": "video/mp4", "note": "original final_video.mp4; 302 then 200"},
+      "model_date_corroboration": {
+        "claim": "Grok Imagine 1.5 (main renderer per creator)",
+        "source_url": "https://x.ai/news/grok-imagine-video-1-5",
+        "quote": "Grok Imagine Video 1.5 is now generally available on the Imagine API."
+      },
+      "confidence": "high"
+    },
+    {
+      "cand_id": "lynncole_begin_again_grok_kling_2026",
+      "final_verdict": "reject",
+      "conditions": [],
+      "issues_found": [
+        "Same mixed pipeline as the sibling item: the creator's text names 'GPT-Image' storyboards, 'Grok Imagine and Kling for animatics and final clips' and an 'OpenShot fork' with no versions and no per-shot attribution, so a truthful model/year source label is impossible and the file cannot evidence a model.",
+        "OCR of 4 sampled frames reads dense in-picture text (e.g. 'OPERATION:FIREWALL', 'ROBOT INVASION RESPONSE PLAN', 'COFFEE', 'CTO'); AI-generated characters and props were not viewed, so logo/likeness/IP cannot be cleared; the hunter flagged mild cartoon violence.",
+        "Suno-generated song; picture-only use would need audio stripped. The concept draws on a real band's style ('Uncle John's Band' feel) in the description only.",
+        "CC BY-SA 4.0 share-alike (self-upload by creator, verified: creator Lynn Cole, uploader lynncoleart@gmail.com, licenseurl by-sa/4.0).",
+        "File verified: HTTP 200, video/mp4, 86,275,175 bytes (720p, 25 fps, aac audio, 308.928 s); other renditions 1080p 576,154,328 bytes and 480p 41,790,653 bytes."
+      ],
+      "corrected_fields": {
+        "model_version": "unknown versions of Grok Imagine and Kling; per-shot attribution impossible",
+        "created": "2026-06-23 (uploader-set date; addeddate 2026-06-24)"
+      },
+      "http": {"status": 200, "content_length": 86275175, "content_type": "video/mp4", "note": "302 then 200"},
+      "model_date_corroboration": {
+        "claim": "Grok Imagine and Kling used for animatics and final clips (versions unstated)",
+        "source_url": "https://archive.org/details/begin-again_202606",
+        "quote": "then used Grok Imagine and Kling for animatics and final clips - no versions; not corroborated per shot"
+      },
+      "confidence": "high"
+    },
+    {
+      "cand_id": "fetv_cogvideo_people_are_dancing_2022",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: 'Yuanxin Liu et al. (Peking University), FETV generated videos (Hugging Face lyx97/FETV_gen_videos), CC BY 4.0; model: CogVideo (THUDM/Tsinghua, 2022)'. Indicate modifications. No share-alike.",
+        "Label the model 'CogVideo (original 2022 model)', clip 'generated 2023' - the ID's '2022' refers to the model year, not the clip. The repo (created 2023-12-21) predates CogVideoX (2024-08-06), so 'CogVideo' cannot be CogVideoX.",
+        "The v1 CogVideo weights' own licence is not stated anywhere (code repo is Apache-2.0); no NC term was found, but the residual risk should be noted.",
+        "Extraction requires the 1.68 GB zip (HTTP range requests for member cogvideo/videos/2.gif); prompt-to-file mapping is confirmed but visually unverified - check the excerpt actually shows dancing people before captioning.",
+        "480x480, 7.7 fps GIF: use as an inset/stepped 'early era' example; a full-frame 9:16 fill will be very soft."
+      ],
+      "issues_found": [
+        "Licence verified: HF API cardData license cc-by-4.0 and raw README front matter 'license: cc-by-4.0'; prose: 'This repo contains videos generated by CogVideo, Text2Video-Zero, ModelScopeT2V and ZeroScope, based on the FETV prompts.' Separately the FETV GitHub README says 'This dataset is under CC-BY 4.0 license' (covers the prompt set).",
+        "Index-to-prompt mapping, which the hunter only assumed, is CONFIRMED: FETV GitHub generated_video_examples/README.md lists 'people are dancing' with cogvideo/2.gif and text2video-zero/2.gif, and fetv_data.json line index 2 (0-based) is 'people are dancing' (source MSRVTT); the same zero-based scheme holds for other examples (62 -> 'a first person view of a man driving a red formula one car').",
+        "Member verified by HTTP range read: cogvideo/videos/2.gif, 3,185,822 bytes, zip mtime 2023-05-26; ffprobe gif 480x480, 33 frames, 4.29 s, 100/13 fps. Zip: HTTP 200 application/zip 1,683,314,961 bytes.",
+        "Model date: CogVideo open-sourced 2022/5/19 (THUDM README) and arXiv 2205.15868 submitted 29 May 2022. CogVideo branch README also says 'Currently only Chinese input is supported' (the English prompt shown may be a translation of what was actually entered - an unresolved caption nuance).",
+        "Static-overlay and OCR checks: nothing except false-positive digits; no letterbox; mean frame difference high (14.9/255) at 7.7 fps as expected."
+      ],
+      "corrected_fields": {
+        "created": "2023-05-26 (zip member mtime; dataset repo created 2023-12-21)",
+        "prompt_mapping_verified": true
+      },
+      "http": {"status": 200, "content_length": 1683314961, "content_type": "application/zip", "note": "whole zip; member cogvideo/videos/2.gif is 3,185,822 bytes; 302 to CDN then 200"},
+      "model_date_corroboration": {
+        "claim": "CogVideo open-sourced 2022-05-19",
+        "source_url": "https://raw.githubusercontent.com/THUDM/CogVideo/main/README.md",
+        "quote": "2022/5/19: We have open-sourced the CogVideo video generation model"
+      },
+      "confidence": "medium"
+    },
+    {
+      "cand_id": "fetv_text2video_zero_people_are_dancing_2023",
+      "final_verdict": "clear_with_conditions",
+      "conditions": [
+        "Credit: 'Yuanxin Liu et al. (Peking University), FETV generated videos (Hugging Face lyx97/FETV_gen_videos), CC BY 4.0; model: Text2Video-Zero (Picsart AI Research, 2023)'. Indicate modifications. No share-alike.",
+        "Model licence is CreativeML Open RAIL-M (verified in the repo LICENSE, 'dated March 28, 2023'); its use-based restrictions apply to the model, not to this benign clip, but keep the label honest ('built on Stable Diffusion; sub-version not stated').",
+        "Date label: 'Text2Video-Zero paper March 2023; clip packaged 2023-12'. The mtime 2023-12-21 equals the dataset creation date, so it is a packaging date, not a generation date.",
+        "Only 2.0 s, 16 frames at 8 fps (very high frame-to-frame change, mean abs diff 39.7/255): use as a flicker sting or frame-stack source, not as a shot.",
+        "Extraction requires the 532 MB zip via HTTP range; prompt mapping is confirmed but the picture is unviewed."
+      ],
+      "issues_found": [
+        "Licence verified (API cardData cc-by-4.0; raw README front matter 'license: cc-by-4.0').",
+        "Index-to-prompt mapping CONFIRMED: FETV GitHub example table pairs 'people are dancing' with text2video-zero/2.gif; fetv_data.json index 2 = 'people are dancing' (MSRVTT).",
+        "Member verified: text2video-zero/videos/2.mp4, 245,413 bytes, zip mtime 2023-12-21; ffprobe h264 512x512, 16 frames, 2.0 s, 8 fps. Zip: HTTP 200 application/zip 531,804,521 bytes.",
+        "Model date: arXiv 2303.13439 'Submitted on 23 Mar 2023'; GitHub README news '[03/23/2023] Paper Text2Video-Zero released!' and '[03/28/2023] Code for all our generation methods released!'.",
+        "Static overlay/OCR: none; no letterbox."
+      ],
+      "corrected_fields": {
+        "created": "2023-12-21 (zip member mtime = packaging date; generation date unknown, after 2023-03-28)",
+        "prompt_mapping_verified": true
+      },
+      "http": {"status": 200, "content_length": 531804521, "content_type": "application/zip", "note": "whole zip; member text2video-zero/videos/2.mp4 is 245,413 bytes; 302 to CDN then 200"},
+      "model_date_corroboration": {
+        "claim": "Text2Video-Zero paper 2023-03-23, code 2023-03-28",
+        "source_url": "https://raw.githubusercontent.com/Picsart-AI-Research/Text2Video-Zero/main/README.md",
+        "quote": "[03/23/2023] Paper Text2Video-Zero released! ... [03/28/2023] Code for all our generation methods released!"
+      },
+      "confidence": "medium"
+    }
+  ],
+  "summary": {"checked": 18, "clear": 0, "clear_with_conditions": 14, "rejected": 4}
+}
