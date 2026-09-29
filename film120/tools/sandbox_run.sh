@@ -52,10 +52,12 @@ audio)   # cue sheet -> licensed layers -> mix (narration + score + procedural/l
   echo "$M" > loudnorm1.json; IL=$(echo "$M" | python3 -c "import json,sys;print(json.load(sys.stdin)['input_i'])"); TP=$(echo "$M" | python3 -c "import json,sys;print(json.load(sys.stdin)['input_tp'])"); LR=$(echo "$M" | python3 -c "import json,sys;print(json.load(sys.stdin)['input_lra'])"); TH=$(echo "$M" | python3 -c "import json,sys;print(json.load(sys.stdin)['input_thresh'])"); OF=$(echo "$M" | python3 -c "import json,sys;print(json.load(sys.stdin)['target_offset'])")
   ffmpeg -y -v error -i mix_raw.wav -af "loudnorm=I=-14:TP=-1.8:LRA=11:measured_I=$IL:measured_TP=$TP:measured_LRA=$LR:measured_thresh=$TH:offset=$OF:linear=true:print_format=summary,aresample=48000,alimiter=limit=0.794:attack=3:release=60:level=false,apad=whole_dur=120,atrim=0:120" -c:a pcm_s16le master.wav
   ffmpeg -hide_banner -nostats -i master.wav -af ebur128=peak=true -f null - 2>&1 | tail -12; ffprobe -v error -show_entries format=duration -of csv=p=0 master.wav ;;
-final)   # concat parts -> video-only encode (kept: film_v.mp4) -> mux with the master -> film.mp4 (exactly 3600 frames / 120.000 s).  `final remux` skips the slow video encode.
-  cd $W/out && if [ "$1" != "remux" ] || [ ! -f $W/film_v.mp4 ]; then ls part_*.mp4 | sort | sed "s/^/file '/;s/$/'/" > list.txt && ffmpeg -y -v error -f concat -safe 0 -i list.txt -c copy video_raw.mp4 && ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames,width,height,r_frame_rate -of csv=p=0 video_raw.mp4
-    ffmpeg -y -v error -i video_raw.mp4 -an -c:v libx264 -preset medium -crf 20 -maxrate 12M -bufsize 24M -pix_fmt yuv420p -colorspace bt709 -color_primaries bt709 -color_trc bt709 -g 60 -t 120 -movflags +faststart $W/film_v.mp4; fi
-  ffmpeg -y -v error -i $W/film_v.mp4 -i $W/audio/master.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 256k -ar 48000 -t 120 -movflags +faststart $W/film.mp4
+final)   # concat the delivery-quality parts (crf 19, <= 12 Mbps) and mux the master -> film.mp4 (exactly 3600 frames / 120.000 s); no second video encode
+  cd $W/out && ls part_*.mp4 | sort | sed "s/^/file '/;s/$/'/" > list.txt && ffmpeg -y -v error -f concat -safe 0 -i list.txt -c copy video_raw.mp4 && ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames,width,height,r_frame_rate -of csv=p=0 video_raw.mp4
+  ffmpeg -y -v error -i video_raw.mp4 -i $W/audio/master.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 256k -ar 48000 -t 120 -movflags +faststart $W/film.mp4
   ffprobe -v error -count_frames -show_entries stream=codec_type,nb_read_frames,duration,width,height:format=duration -of default=nw=1 $W/film.mp4 | head -20; ls -la $W/film.mp4 ;;
+all)     # everything from a fresh VM: setup, fonts, (vo || media), plan, licensed audio, render in 3 segments, audio master, final.  Log: $W/all.log
+  S=$0; export SHA; ( $S setup && $S fonts ) && ( $S vo > $W/vo.log 2>&1 & VP=$!; $S media > $W/media.log 2>&1; wait $VP ) && $S plan && ( python3 $R/tools/audio_layers.py fetch $W/lic > $W/lic.log 2>&1 & LP=$!
+    rm -rf $W/out; mkdir -p $W/out; $S render 0 40 0 && $S render 40 80 20 && $S render 80 120 40; wait $LP ) && $S audio && $S final && echo ALLDONE ;;
 *) echo "unknown stage $stage"; exit 2 ;;
 esac

@@ -9,7 +9,6 @@ Every licensed sound only ever *supports* a procedural one (same event, lower ga
 (nobody has listened to any of them - they were selected by metadata and measurements only) cannot carry a moment on its own.
 Level, peak and clipping of every layer are printed by `fetch`; the mixer prints the layer/score balance."""
 import hashlib, json, os, re, subprocess, sys, zipfile, urllib.parse
-import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__)); DATA = os.path.join(os.path.dirname(HERE), 'data', 'audio')
 UA = 'Mozilla/5.0 (film120-audio; contact leonrdewa@gmail.com)'
@@ -68,6 +67,7 @@ def cut(src, dst, t0, t1, reverse=False):
 
 
 def measure(wav):
+    import numpy as np
     from scipy.io import wavfile
     sr, x = wavfile.read(wav); x = x.astype(np.float32) / 32768.0; m = np.abs(x).max(1) if x.ndim > 1 else np.abs(x); hop = int(.005 * sr); n = len(m) // hop
     env = np.sqrt((m[:n * hop].reshape(n, hop) ** 2).mean(1)) if n else np.zeros(1)

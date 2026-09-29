@@ -21,7 +21,7 @@ def setup(args):
 def worker(job):
     args, a, b, part = job; ctx = setup(args)
     enc = subprocess.Popen([footage.FFMPEG, '-y', '-v', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{W}x{H}', '-r', str(FPS), '-i', '-', '-vf', 'scale=out_color_matrix=bt709:out_range=tv,format=yuv420p',
-                            '-c:v', 'libx264', '-preset', 'fast', '-threads', '2', '-crf', '16', '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-g', '30',
+                            '-c:v', 'libx264', '-preset', 'fast', '-threads', '2', '-crf', '19', '-maxrate', '12M', '-bufsize', '24M', '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-g', '30',
                             os.path.join(args.out, f'part_{part:03d}.mp4')], stdin=subprocess.PIPE, stderr=open(os.path.join(args.out, f'enc_{part:03d}.log'), 'w'))
     t0 = time.time()
     for f in range(a, b): enc.stdin.write(np.ascontiguousarray(compose.compose_frame(ctx, f / FPS, f)).tobytes())
