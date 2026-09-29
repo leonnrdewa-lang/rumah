@@ -13,6 +13,7 @@ from engine.storyboard import Storyboard, norm
 
 def resolve(SB, v):
     if isinstance(v, (int, float)): return float(v)
+    if isinstance(v, list) and len(v) == 2 and isinstance(v[1], str) and not isinstance(v[0], str): return [resolve(SB, v[0]), v[1]]       # [time cue, label]
     if isinstance(v, list) and v and isinstance(v[0], str):
         line, word = v[0], v[1]; nth = v[2] if len(v) > 2 else 0; off = v[3] if len(v) > 3 else 0.0; end = len(v) > 4 and v[4] == 'end'
         hits = [w for w in SB.W[line] if norm(w[0]) == norm(word)]

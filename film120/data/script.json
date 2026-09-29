@@ -1,0 +1,124 @@
+{
+ "lines": [
+  {
+   "id": "L01",
+   "section": "s1",
+   "start": 0.12,
+   "text": "Four years ago, this was AI video."
+  },
+  {
+   "id": "L02",
+   "section": "s1",
+   "start": 3.95,
+   "text": "This is what four years did."
+  },
+  {
+   "id": "L03",
+   "section": "s2",
+   "start": 8.1,
+   "text": "In 2022, research labs showed that plain words could become moving pictures."
+  },
+  {
+   "id": "L04",
+   "section": "s2",
+   "start": 14.3,
+   "text": "But clips lasted a few seconds, and early animation drew every frame on its own."
+  },
+  {
+   "id": "L05",
+   "section": "s2",
+   "start": 20.15,
+   "text": "So faces drifted. Objects melted. Nothing held still."
+  },
+  {
+   "id": "L06",
+   "section": "s3",
+   "start": 25.65,
+   "text": "In 2023, Runway's Gen-2 put text-to-video into public hands."
+  },
+  {
+   "id": "L07",
+   "section": "s3",
+   "start": 31.65,
+   "text": "Then, in February 2024, OpenAI previewed Sora, promising up to a minute of video."
+  },
+  {
+   "id": "L08",
+   "section": "s3",
+   "start": 38.85,
+   "text": "Suddenly, a subject could hold together across a whole shot."
+  },
+  {
+   "id": "L09",
+   "section": "s4",
+   "start": 43.0,
+   "text": "The race began. In June 2024 alone, Kling, Luma and Runway all showed new models."
+  },
+  {
+   "id": "L10",
+   "section": "s4",
+   "start": 51.1,
+   "text": "By December, Sora was public, and Google's Veo 2 arrived a week later."
+  },
+  {
+   "id": "L11",
+   "section": "s4",
+   "start": 57.1,
+   "text": "In May 2025, Veo 3 added generated sound, dialogue included."
+  },
+  {
+   "id": "L12",
+   "section": "s5",
+   "start": 63.5,
+   "text": "Then came control: first and last frames, camera moves, and reference images that keep a character consistent."
+  },
+  {
+   "id": "L13",
+   "section": "s5",
+   "start": 71.55,
+   "text": "Models even learned to edit real footage, adding, removing or restyling objects, not just inventing it."
+  },
+  {
+   "id": "L14",
+   "section": "s5",
+   "start": 79.05,
+   "text": "Video stopped being a slot machine, and started becoming a tool."
+  },
+  {
+   "id": "L15",
+   "section": "s6",
+   "start": 83.6,
+   "text": "By September 2026, developers announce thirty-second clips, native 4K, and sound generated with the picture."
+  },
+  {
+   "id": "L16",
+   "section": "s6",
+   "start": 92.25,
+   "text": "Light behaves. Shots hold together for seconds, not frames."
+  },
+  {
+   "id": "L17",
+   "section": "s6",
+   "start": 97.45,
+   "text": "Even so, Kling's own developers say fingers can warp and text can distort."
+  },
+  {
+   "id": "L19",
+   "section": "s7",
+   "start": 104.6,
+   "text": "Now the frame itself is changing. Genie 3 builds worlds you can steer, in real time."
+  },
+  {
+   "id": "L20",
+   "section": "s7",
+   "start": 111.4,
+   "text": "Motion was the miracle. Now it's the baseline."
+  },
+  {
+   "id": "L21",
+   "section": "s8",
+   "start": 115.7,
+   "text": "From melting pixels... to moving worlds."
+  }
+ ]
+}

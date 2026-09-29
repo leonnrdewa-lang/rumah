@@ -1,8 +1,8 @@
 """SEQUENCE 1 - Explosive before/after hook (0-8 s).
 Cast (data/edit_plan.json -> cast.seq01): early = excerpt id of a GENUINE early, visibly unstable clip (>= 3 s); recent = excerpt id of an exceptional recent clip (>= 4.5 s).
-0.0-2.9   the early clip plays in a framed panel; THIS WAS / AI VIDEO.; a tracked annotation locks onto the most unstable region (measured from the pixels)
-2.9-3.44  FREEZE on the revealing frame, all sound gated out
-3.44-3.5  white flash; 3.5 smash cut: the panel opens to full-bleed and the content becomes the recent clip; LOOK HOW FAR / it has come.
+0.0-3.2   the early clip plays in a framed panel; THIS WAS / AI VIDEO.; a tracked annotation locks onto the most unstable region (measured from the pixels)
+3.2-3.74  FREEZE on the revealing frame, all sound gated out
+3.74-3.8  white flash; 3.8 smash cut: the panel opens to full-bleed and the content becomes the recent clip; LOOK HOW FAR / it has come.
 NAME = 'hook'."""
 import numpy as np
 from engine import gfx as G, ui, kit, tracker
@@ -10,7 +10,7 @@ from engine.tokens import *
 from engine.gfx import clamp, lerp, prog, ease_io, ease_out, kinetic
 
 NAME = 'hook'
-T_FREEZE, T_FLASH, T_CUT, T_END = 2.9, 3.44, 3.5, 8.0
+T_FREEZE, T_FLASH, T_CUT, T_END = 3.2, 3.74, 3.8, 8.0
 SUBS = False
 STYLE = lambda t: 'early' if t < T_CUT else 'now'
 
@@ -83,6 +83,6 @@ def render(ctx, t):
 
 
 def events(ctx):
-    return [('tick_hi', .1, {}), ('type_hit', .3, dict(size=.8)), ('type_hit', .55, dict(size=.8)), ('riser', 1.45, dict(dur=1.45)), ('data_blip', 1.15, dict(f=1500)), ('data_blip', 1.7, dict(f=2200)),
+    return [('tick_hi', .1, {}), ('type_hit', .3, dict(size=.8)), ('type_hit', .55, dict(size=.8)), ('riser', T_FREEZE - 1.45, dict(dur=1.45)), ('data_blip', 1.15, dict(f=1500)), ('data_blip', 1.7, dict(f=2200)),
             ('freeze', T_FREEZE - .02, dict(dur=.45, ungated=True)), ('shutter', T_FREEZE, dict(ungated=True)), ('gate', T_FREEZE, dict(dur=T_CUT - T_FREEZE - .02)),
             ('impact', T_CUT, dict(size=1.0, ungated=True)), ('lock', T_CUT, dict(ungated=True)), ('type_hit', T_CUT + .12, dict(size=.9)), ('type_hit', T_CUT + .5, dict(size=.7)), ('whoosh', T_END - .5, dict(dur=.5))]

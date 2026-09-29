@@ -10,7 +10,7 @@ from engine.gfx import clamp, lerp, prog, ease_io, ease_out, kinetic
 
 NAME = 'control'
 STYLE = 'now'
-T0, T1 = 63.0, 75.0
+T0, T1 = 63.0, 72.0
 
 
 def _items(ctx): return list(ctx.cast('seq08', 'items', [])) or []

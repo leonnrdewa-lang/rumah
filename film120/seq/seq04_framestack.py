@@ -10,7 +10,7 @@ from engine.gfx import clamp, lerp, prog, ease_io, ease_out, kinetic
 
 NAME = 'framestack'
 STYLE = lambda t: 'early' if t < 38.8 else 'now'
-T0, T1 = 34.0, 43.0
+T0, T1 = 36.4, 43.0
 K = 10
 SW, SH = 760, 428
 
@@ -27,7 +27,7 @@ def _data(ctx, key, eid, u0, step, box):
 def render(ctx, t):
     c = G.new_canvas(); u = t - T0; step = ctx.cast('seq04', 'step', .12); box = tuple(ctx.cast('seq04', 'box', (.36, .26, .28, .4)))
     A = _data(ctx, 'early', ctx.cast('seq04', 'early'), ctx.cast('seq04', 'u_early', 0.0), step, box); B = _data(ctx, 'modern', ctx.cast('seq04', 'modern'), ctx.cast('seq04', 'u_modern', 0.0), step, box)
-    ui.spine(c, reveal=1.0, years=range(2016, 2027), highlight=2023 if t < 38.8 else 2025, t=t, alpha=.85)
+    ui.spine(c, reveal=1.0, years=range(2016, 2027), highlight=(int(A['ex'].label.get('year') or 2022) if t < (T0 + T1) / 2 else int(B['ex'].label.get('year') or 2024)), t=t, alpha=.85)
     yaw = np.radians(lerp(-30, 24, ease_io(u / (T1 - T0)))); pitch = np.radians(9); fd = 2100.0
     def proj(p, cy):
         x, y, z = p; x, z = x * np.cos(yaw) - z * np.sin(yaw), x * np.sin(yaw) + z * np.cos(yaw); y, z = y * np.cos(pitch) - z * np.sin(pitch), y * np.sin(pitch) + z * np.cos(pitch)

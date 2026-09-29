@@ -6,8 +6,8 @@ SHORTLIST.json = {"clips": {clip_id: {media_url, page, family, model, year, crea
 import json, sys
 
 SEQUENCES = [('seq01', 'seq.seq01_hook', 0, 8, ['shards', .4]), ('seq02', 'seq.seq02_panels', 8, 16, ['slat', .5]), ('seq03', 'seq.seq03_annotations', 16, 25, ['zoomthrough', .6]),
-             ('seq05', 'seq.seq05_corridor', 25, 34, ['whip_up', .5]), ('seq04', 'seq.seq04_framestack', 34, 43, ['slat_v', .5]), ('seq06', 'seq.seq06_gallery', 43, 56, ['whip', .4]),
-             ('seq07', 'seq.seq07_splits', 56, 63, ['iris', .5]), ('seq08', 'seq.seq08_control', 63, 75, ['dip', .3]), ('seq09', 'seq.seq09_matrix', 75, 83, ['slat_v', .4]),
+             ('seq05', 'seq.seq05_corridor', 25, 36.4, ['whip_up', .5]), ('seq04', 'seq.seq04_framestack', 36.4, 43, ['slat_v', .5]), ('seq06', 'seq.seq06_gallery', 43, 56, ['whip', .4]),
+             ('seq07', 'seq.seq07_splits', 56, 63, ['iris', .5]), ('seq08', 'seq.seq08_control', 63, 72, ['dip', .3]), ('seq09', 'seq.seq09_matrix', 72, 83, ['slat_v', .4]),
              ('seq10', 'seq.seq10_contact', 83, 90, None), ('seq11', 'seq.seq11_heroes', 90, 104, ['dip', .3]), ('seq12', 'seq.seq12_montage', 104, 110, None),
              ('seq13', 'seq.seq13_callback', 110, 115, None), ('seq14', 'seq.seq14_final', 115, 120, None)]
 

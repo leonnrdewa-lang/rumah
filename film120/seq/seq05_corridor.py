@@ -9,7 +9,7 @@ from engine.gfx import clamp, lerp, prog, ease_io, ease_out, kinetic
 
 NAME = 'corridor'
 STYLE = lambda t: 'early' if t < 30.0 else 'now'
-T0, T1 = 25.0, 34.0
+T0, T1 = 25.0, 36.4
 PANEL_W = 720
 DZ = 1000.0                      # spacing between milestones along the axis
 FD = 1500.0

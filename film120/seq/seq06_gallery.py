@@ -54,8 +54,9 @@ def scene(ctx, i, t, ts, letters_mask=None):
     else:                                                       # data card: no reusable footage exists for this product - say so, show only developer-stated facts
         px = (W - PW) // 2; py = 430; card = np.zeros((PH, PW, 3), np.uint8); card[:] = (18, 19, 21); x0, y0, w0, h0 = ui.panel(c, card, px, py)
         G.draw_text(c, 'NO REUSABLE DEMO FOOTAGE', 'mono', 22, px + 34, py + 30, GREY, track=.08, alpha=clamp(u / .4)); G.fill_rect(c, px + 34, py + 70, 120 * ease_out(prog(u, .1, .6)), 3, VOLT, 1.0)
+        ft = ctx.cue(e['fact_cue']) if e.get('fact_cue') else None
         for k, fct in enumerate(e.get('facts', [])[:4]):
-            a2 = ease_out(prog(u, .25 + .18 * k, .6 + .18 * k)); G.draw_text(c, fct, 'ui_xb', kit.fit_size(fct, 'ui_xb', 34, PW - 76, -.005), px + 34, py + 110 + k * 88 + (1 - a2) * 24, WHITE, alpha=a2, track=-.005)
+            a2 = ease_out(prog(t, ft[k], ft[k] + .4)) if ft and k < len(ft) else ease_out(prog(u, .25 + .18 * k, .6 + .18 * k)); G.draw_text(c, fct, 'ui_xb', kit.fit_size(fct, 'ui_xb', 34, PW - 76, -.005), px + 34, py + 110 + k * 88 + (1 - a2) * 24, WHITE, alpha=a2, track=-.005)
             G.fill_rect(c, px + 34, py + 110 + k * 88 + 60, PW - 68, 1, WHITE, .14 * a2)
         G.draw_text(c, 'SOURCE · DEVELOPER PAGES', 'monor', 18, px + 34, py + PH - 44, GREY, track=.05, alpha=clamp((u - .8) / .4))
     # model name + date + note

@@ -8,7 +8,7 @@ from engine.gfx import clamp, lerp, prog, ease_io, ease_out, kinetic
 
 NAME = 'matrix'
 STYLE = 'now'
-T0, T1 = 75.0, 83.0
+T0, T1 = 72.0, 83.0
 
 
 def render(ctx, t):
