@@ -1,10 +1,536 @@
-{"clips": {
- "c_early": {"width": 896, "height": 512, "fps": 24, "duration": 4.0, "local": "x"},
- "c_sq": {"width": 1024, "height": 1024, "fps": 30, "duration": 10.0, "local": "x"},
- "c_hd": {"width": 1920, "height": 1080, "fps": 30, "duration": 20.0, "local": "x"},
- "c_vert": {"width": 512, "height": 896, "fps": 8, "duration": 2.2, "local": "x"}},
+{
+ "clips": {
+  "c_early": {
+   "width": 896,
+   "height": 512,
+   "fps": 24,
+   "duration": 4.0,
+   "local": "x"
+  },
+  "c_sq": {
+   "width": 1024,
+   "height": 1024,
+   "fps": 30,
+   "duration": 10.0,
+   "local": "x"
+  },
+  "c_hd": {
+   "width": 1920,
+   "height": 1080,
+   "fps": 30,
+   "duration": 20.0,
+   "local": "x"
+  },
+  "c_vert": {
+   "width": 512,
+   "height": 896,
+   "fps": 8,
+   "duration": 2.2,
+   "local": "x"
+  }
+ },
  "excerpts": {
- "e1": {"clip": "c_early", "in": 0.2, "out": 3.8, "label": {"model": "Runway Gen-2", "year": "2023", "creator": "Lwneal", "license": "CC BY-SA 4.0"}},
- "e2": {"clip": "c_hd", "in": 2.0, "out": 9.0, "label": {"model": "Veo 3", "year": "2025", "creator": "Google DeepMind", "license": "PD (Commons)"}},
- "e3": {"clip": "c_sq", "in": 1.0, "out": 8.0, "label": {"model": "Stable Diffusion", "year": "2022", "creator": "Benlisquare", "license": "CC BY-SA 4.0"}}},
- "sequences": [{"id": "demo", "module": "seq.seq00_demo", "t0": 0, "t1": 120}]}
+  "e1": {
+   "clip": "c_early",
+   "in": 0.2,
+   "out": 3.8,
+   "label": {
+    "model": "Runway Gen-2",
+    "year": "2023",
+    "creator": "Lwneal",
+    "license": "CC BY-SA 4.0"
+   }
+  },
+  "e2": {
+   "clip": "c_hd",
+   "in": 2.0,
+   "out": 9.0,
+   "label": {
+    "model": "Veo 3",
+    "year": "2025",
+    "creator": "Google DeepMind",
+    "license": "PD (Commons)"
+   }
+  },
+  "e3": {
+   "clip": "c_sq",
+   "in": 1.0,
+   "out": 8.0,
+   "label": {
+    "model": "Stable Diffusion",
+    "year": "2022",
+    "creator": "Benlisquare",
+    "license": "CC BY-SA 4.0"
+   }
+  }
+ },
+ "sequences": [
+  {
+   "id": "seq01",
+   "module": "seq.seq01_hook",
+   "t0": 0,
+   "t1": 8,
+   "transition_out": [
+    "shards",
+    0.4
+   ]
+  },
+  {
+   "id": "seq02",
+   "module": "seq.seq02_panels",
+   "t0": 8,
+   "t1": 16
+  },
+  {
+   "id": "seq03",
+   "module": "seq.seq03_annotations",
+   "t0": 16,
+   "t1": 25
+  },
+  {
+   "id": "seq05",
+   "module": "seq.seq05_corridor",
+   "t0": 25,
+   "t1": 34
+  },
+  {
+   "id": "seq04",
+   "module": "seq.seq04_framestack",
+   "t0": 34,
+   "t1": 43
+  },
+  {
+   "id": "seq06",
+   "module": "seq.seq06_gallery",
+   "t0": 43,
+   "t1": 56
+  },
+  {
+   "id": "seq07",
+   "module": "seq.seq07_splits",
+   "t0": 56,
+   "t1": 63
+  },
+  {
+   "id": "seq08",
+   "module": "seq.seq08_control",
+   "t0": 63,
+   "t1": 75
+  },
+  {
+   "id": "seq09",
+   "module": "seq.seq09_matrix",
+   "t0": 75,
+   "t1": 83
+  },
+  {
+   "id": "seq10",
+   "module": "seq.seq10_contact",
+   "t0": 83,
+   "t1": 90
+  },
+  {
+   "id": "seq11",
+   "module": "seq.seq11_heroes",
+   "t0": 90,
+   "t1": 104,
+   "transition_out": [
+    "dip",
+    0.3
+   ]
+  },
+  {
+   "id": "seq12",
+   "module": "seq.seq12_montage",
+   "t0": 104,
+   "t1": 110
+  },
+  {
+   "id": "seq13",
+   "module": "seq.seq13_callback",
+   "t0": 110,
+   "t1": 115
+  },
+  {
+   "id": "seq14",
+   "module": "seq.seq14_final",
+   "t0": 115,
+   "t1": 120
+  }
+ ],
+ "cast": {
+  "seq01": {
+   "early": "e1",
+   "recent": "e2"
+  },
+  "seq02": {
+   "panels": [
+    "e1",
+    "e3",
+    "e1",
+    "e3",
+    "e1"
+   ]
+  },
+  "seq03": {
+   "targets": [
+    {
+     "ex": "e1",
+     "u0": 0.3,
+     "tag": "IDENTITY DRIFT",
+     "note": "Same prompt, different face from frame to frame.",
+     "zoom": 2.2
+    },
+    {
+     "ex": "e3",
+     "u0": 1.0,
+     "tag": "FLICKER",
+     "note": "Texture is redrawn on every frame.",
+     "zoom": 2.6
+    },
+    {
+     "ex": "e1",
+     "u0": 1.2,
+     "tag": "MELTING EDGES",
+     "note": "Outlines wobble instead of holding.",
+     "zoom": 2.0
+    }
+   ]
+  },
+  "seq04": {
+   "early": "e1",
+   "modern": "e2"
+  },
+  "seq05": {
+   "milestones": [
+    {
+     "year": "2022",
+     "model": "MAKE-A-VIDEO",
+     "dev": "META",
+     "date": "SEP 29, 2022",
+     "ex": "e3",
+     "note": "Text becomes a few seconds of video."
+    },
+    {
+     "year": "2023",
+     "model": "GEN-2",
+     "dev": "RUNWAY",
+     "date": "2023",
+     "ex": "e1",
+     "note": "Anyone can try it."
+    },
+    {
+     "year": "2024",
+     "model": "SORA",
+     "dev": "OPENAI",
+     "date": "FEB 15, 2024",
+     "ex": "e2",
+     "note": "Up to a minute."
+    }
+   ]
+  },
+  "seq06": {
+   "entries": [
+    {
+     "ex": "e1",
+     "model": "MODEL 1",
+     "dev": "RUNWAY",
+     "year": "2023",
+     "date": "JAN 1, 2023",
+     "note": "What to notice goes here.",
+     "hold": 2.0,
+     "tr": "slat"
+    },
+    {
+     "ex": "e2",
+     "model": "MODEL 2",
+     "dev": "GOOGLE",
+     "year": "2025",
+     "date": "JAN 2, 2025",
+     "note": "What to notice goes here.",
+     "hold": 2.0,
+     "tr": "letters"
+    },
+    {
+     "ex": "e3",
+     "model": "MODEL 3",
+     "dev": "STABILITY",
+     "year": "2022",
+     "date": "JAN 3, 2022",
+     "note": "What to notice goes here.",
+     "hold": 2.0,
+     "tr": "iris"
+    },
+    {
+     "ex": "e1",
+     "model": "MODEL 4",
+     "dev": "RUNWAY",
+     "year": "2024",
+     "date": "JAN 4, 2024",
+     "note": "What to notice goes here.",
+     "hold": 2.0,
+     "tr": "slat"
+    },
+    {
+     "ex": "e2",
+     "model": "MODEL 5",
+     "dev": "KUAISHOU",
+     "year": "2024",
+     "date": "JAN 5, 2024",
+     "note": "What to notice goes here.",
+     "hold": 2.0,
+     "tr": "shards"
+    },
+    {
+     "ex": "e3",
+     "model": "MODEL 6",
+     "dev": "MINIMAX",
+     "year": "2024",
+     "date": "JAN 6, 2024",
+     "note": "What to notice goes here.",
+     "hold": 2.0,
+     "tr": "split"
+    }
+   ]
+  },
+  "seq07": {
+   "pairs": [
+    {
+     "a": "e1",
+     "b": "e2",
+     "subject": "walking subject",
+     "ya": "2023",
+     "yb": "2026"
+    },
+    {
+     "a": "e3",
+     "b": "e2",
+     "subject": "landscape",
+     "ya": "2022",
+     "yb": "2025"
+    }
+   ]
+  },
+  "seq08": {
+   "items": [
+    {
+     "type": "i2v",
+     "ex": "e2",
+     "title": "START FROM AN IMAGE",
+     "product": "RUNWAY GEN-2",
+     "date": "2023",
+     "note": "A still frame becomes the first frame of a clip.",
+     "src": "runwayml.com/research/gen-2"
+    },
+    {
+     "type": "camera",
+     "ex": "e2",
+     "path": "orbit",
+     "title": "DIRECT THE CAMERA",
+     "product": "RUNWAY GEN-3",
+     "date": "2024",
+     "note": "Camera moves are part of the prompt controls."
+    },
+    {
+     "type": "refs",
+     "ex": "e1",
+     "refs": [
+      "e1",
+      "e2",
+      "e3"
+     ],
+     "title": "KEEP THE CHARACTER",
+     "product": "VEO 3.1",
+     "date": "2025",
+     "note": "Reference images guide who and what appears."
+    }
+   ]
+  },
+  "seq09": {
+   "cols": [
+    {
+     "name": "RUNWAY",
+     "sub": "GEN-4"
+    },
+    {
+     "name": "GOOGLE",
+     "sub": "VEO 3.1"
+    },
+    {
+     "name": "KLING",
+     "sub": "3.0"
+    },
+    {
+     "name": "SEEDANCE",
+     "sub": "2.0"
+    }
+   ],
+   "rows": [
+    {
+     "name": "IMAGE-TO-VIDEO",
+     "cells": [
+      {
+       "has": true,
+       "since": "2023"
+      },
+      {
+       "has": true,
+       "since": "2025"
+      },
+      {
+       "has": true,
+       "since": "2024"
+      },
+      {
+       "has": true,
+       "since": "2025"
+      }
+     ]
+    },
+    {
+     "name": "CAMERA CONTROL",
+     "cells": [
+      {
+       "has": true,
+       "since": "2024"
+      },
+      null,
+      {
+       "has": true,
+       "since": "2024"
+      },
+      {
+       "has": true,
+       "since": "2026"
+      }
+     ]
+    },
+    {
+     "name": "REFERENCES",
+     "cells": [
+      {
+       "has": true,
+       "since": "2025"
+      },
+      {
+       "has": true,
+       "since": "2025"
+      },
+      null,
+      {
+       "has": true,
+       "since": "2026"
+      }
+     ]
+    },
+    {
+     "name": "NATIVE AUDIO",
+     "cells": [
+      null,
+      {
+       "has": true,
+       "since": "2025"
+      },
+      null,
+      {
+       "has": true,
+       "since": "2026"
+      }
+     ]
+    }
+   ]
+  },
+  "seq10": {
+   "tiles": [
+    "e1",
+    "e2",
+    "e3",
+    "e1",
+    "e2",
+    "e3",
+    "e1",
+    "e2",
+    "e3",
+    "e1",
+    "e2",
+    "e3"
+   ],
+   "hero_tile": 4
+  },
+  "seq11": {
+   "heroes": [
+    {
+     "ex": "e2",
+     "dur": 3.5
+    },
+    {
+     "ex": "e3",
+     "dur": 3.5,
+     "note": "STILL VISIBLE: HANDS, TEXT AND LONG-RANGE PHYSICS CAN BREAK.",
+     "note_src": "developer page"
+    },
+    {
+     "ex": "e2",
+     "dur": 3.5,
+     "drift": 0.1
+    },
+    {
+     "ex": "e3",
+     "dur": 3.5
+    }
+   ]
+  },
+  "seq12": {
+   "panels": [
+    "e1",
+    "e2",
+    "e3",
+    "e2",
+    "e1",
+    "e3",
+    "e2",
+    "e3",
+    "e1",
+    "e2"
+   ],
+   "swaps": [
+    "e3",
+    "e1",
+    "e2",
+    "e3",
+    "e1",
+    "e2",
+    "e3",
+    "e1"
+   ]
+  },
+  "seq13": {
+   "early": "e1",
+   "recent": "e2",
+   "peak_lines": [
+    [
+     "ONE FRAME.",
+     "white"
+    ],
+    [
+     "A WORLD.",
+     "volt"
+    ]
+   ]
+  },
+  "seq14": {
+   "lines": [
+    [
+     "FROM MELTING PIXELS",
+     "white"
+    ],
+    [
+     "TO MOVING WORLDS.",
+     "volt"
+    ]
+   ],
+   "shot": "e3",
+   "credit": "VOICE ELEVENLABS V4 \u00b7 SCORE + SFX ORIGINAL & LICENSED \u00b7 FULL CREDITS IN SOURCE LIST"
+  }
+ }
+}

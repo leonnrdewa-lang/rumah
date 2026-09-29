@@ -10,6 +10,7 @@ and is registered in data/edit_plan.json under "sequences": [{"id","module","t0"
 """
 import importlib, json, os, sys, time
 import numpy as np
+from PIL import Image
 from .tokens import *
 from . import gfx as G, ui, transitions as TR
 from .footage import Footage
@@ -26,6 +27,41 @@ class Ctx:
         self.end_speech = max(self.SB.E.values())
 
     def ex(self, eid): return self.F.ex(eid)
+
+    # ---- plan helpers used by sequences
+    def cue(self, name, default=None):
+        """Named time cue from data/edit_plan.json 'cues' (seconds), else default."""
+        return self.plan.get('cues', {}).get(name, default)
+
+    def cast(self, seq, key, default=None):
+        """Excerpt id (or other value) cast for a sequence role: plan['cast'][seq][key]."""
+        return self.plan.get('cast', {}).get(seq, {}).get(key, default)
+
+    def cast_ex(self, seq, key):
+        eid = self.cast(seq, key); return self.F.ex(eid) if eid else None
+
+    def focus(self, eid):
+        """Horizontal focus of interest 0..1 from edge energy of a few frames of the excerpt (drives 9:16 crops)."""
+        k = ('focus', eid)
+        if k not in self.cache:
+            ex = self.F.ex(eid); acc = None
+            for dt in (.2, .9, 1.6):
+                if dt > ex.dur - .05: continue
+                f = ex.F.frame(ex.spec['clip'], ex.t_in, ex.t_in + dt, max_h=180); g = np.asarray(Image.fromarray(f).convert('L'), np.float32)
+                e = np.abs(np.diff(g, axis=1))[:-1] + np.abs(np.diff(g, axis=0))[:, :-1]; acc = e if acc is None else acc + e
+            if acc is None: self.cache[k] = .5
+            else:
+                col = np.convolve(acc.sum(0), np.ones(9) / 9, 'same'); xs = np.linspace(0, 1, len(col)); w_ = col ** 2; self.cache[k] = float(np.clip((xs * w_).sum() / w_.sum(), .32, .68))
+        return self.cache[k]
+
+    def cover_safe(self, eid, aspect=W / H, cx=.5, zoom=1.0, cy=.5):
+        """True if a cover-crop window (aspect, centre cx/cy, zoom) leaves every profiled static overlay (watermark/logo) inside the frame, i.e. none is cropped away."""
+        ex = self.F.ex(eid); ov = ex.clip.get('overlays') or []
+        if not ov: return True
+        ar = ex.aspect; wh = 1.0 / zoom; ww = wh * aspect                     # source is ar x 1 in these units (same rules as gfx.crop_window)
+        if ww > ar: ww = ar / zoom if zoom > 1 else ar; wh = ww / aspect
+        x0 = min(max(cx * ar - ww / 2, 0), ar - ww) / ar; y0 = min(max(cy - wh / 2, 0), 1 - wh); wn = ww / ar
+        return all(o['x'] >= x0 - 1e-3 and o['x'] + o['w'] <= x0 + wn + 1e-3 and o['y'] >= y0 - 1e-3 and o['y'] + o['h'] <= y0 + wh + 1e-3 for o in ov)
 
 
 def style_params(style, t):
@@ -65,7 +101,9 @@ def compose_frame(ctx, t, fidx):
                 st = blend_style(style_params(pv['mod'].STYLE, t), st, clamp01(p))
     if c is None: c = s['mod'].render(ctx, t)
     c = finish(c, st, fidx)
-    if sub_on and t < ctx.end_speech + .5: ui.draw_subtitle(c, t, ctx.chunks, VOLT, sub_y)
+    if sub_on and t < ctx.end_speech + .5:
+        if getattr(s['mod'], 'SCRIM', True): G.gradient_v(c, sub_y - 150, sub_y + 210, 0, .58)      # legibility scrim under subtitles
+        ui.draw_subtitle(c, t, ctx.chunks, VOLT, sub_y)
     return c
 
 
