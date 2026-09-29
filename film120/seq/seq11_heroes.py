@@ -36,6 +36,7 @@ def shot(ctx, i, t, ts):
     ph = clamp(u / dur); G.fill_rect(c, MARGIN, SPINE_Y - 1, (W - 2 * MARGIN) * ph, 4, VOLT, .9)
     lab_y = 1440 if h.get('note') is None else 1440
     ui.source_label(c, ex.label, MARGIN, lab_y, alpha=ease_out(prog(u, .25, .6)) * (1 - ease_out(prog(u, dur - .35, dur - .05))))
+    if i == 0: ui.chip(c, 'SPECS ANNOUNCED · CLIPS ARE EARLIER DEMOS', MARGIN, 236, 17, alpha=ease_out(prog(t, T0 + .5, T0 + .9)) * (1 - ease_out(prog(t, T0 + 5.2, T0 + 5.6))) * .95)
     if h.get('note'):
         a = ease_out(prog(u, .8, 1.2)) * (1 - ease_out(prog(u, dur - .4, dur - .05))); lines = kit.wrap_text(h['note'], 'ui_xb', 32, W - 2 * MARGIN - 52, -.005)[:3]
         ph = 26 + 42 * len(lines) + (34 if h.get('note_src') else 8)

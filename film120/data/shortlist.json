@@ -1714,9 +1714,9 @@
      "ex": "sora_bigsur",
      "path": "orbit",
      "title": "CAMERA CONTROL",
-     "product": "MINIMAX DIRECTOR",
+     "product": "MINIMAX DIRECTOR MODELS",
      "date": "FEB 11, 2025",
-     "note": "Camera moves written as instructions.",
+     "note": "A model with enhanced camera control.",
      "src": "MINIMAX RELEASE NOTES"
     },
     {
@@ -1794,8 +1794,8 @@
       },
       {
        "has": true,
-       "since": "2025",
-       "src": "Kling 2.1 Start & End Frames, 2025-08-21"
+       "since": "2024",
+       "src": "Kuaishou press release (WAIC), July 2024"
       },
       null
      ]
@@ -1871,7 +1871,7 @@
       {
        "has": true,
        "since": "2025",
-       "src": "Seed blog, Seedance 1.5 pro, 2025-12-15"
+       "src": "Seed blog, Seedance 1.5 pro, 2025-12-16"
       }
      ]
     }

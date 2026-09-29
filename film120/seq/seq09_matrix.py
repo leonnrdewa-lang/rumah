@@ -38,7 +38,7 @@ def render(ctx, t):
                 G.fill_rect(c, cx - 9, cy - 1, 18, 3, GREY, .55 * clamp(e * 3))
     ly = y0 + n * rh + 26; la = clamp((u - 2.8) / .5); r = 7
     G.vector(c, lambda d, ss, ox, oy: d.ellipse([(MARGIN + 6 - r - ox) * ss, (ly + 14 - r - oy) * ss, (MARGIN + 6 + r - ox) * ss, (ly + 14 + r - oy) * ss], fill=VOLT + (int(255 * la),)), bbox=(MARGIN - 4, ly, 24, 30))
-    G.draw_text(c, '= DOCUMENTED (YEAR FIRST DOCUMENTED FOR THAT PRODUCT)   — = NOT DOCUMENTED / NOT VERIFIED', 'monor', 16, MARGIN + 22, ly + 4, (168, 164, 154), track=.02, alpha=la)
+    G.draw_text(c, '= DOCUMENTED (EARLIEST YEAR VERIFIED)   — = NOT VERIFIED HERE', 'monor', 16, MARGIN + 22, ly + 4, (168, 164, 154), track=.02, alpha=la)
     return c
 
 
