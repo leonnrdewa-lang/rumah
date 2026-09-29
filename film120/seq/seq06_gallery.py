@@ -64,6 +64,7 @@ def scene(ctx, i, t, ts, letters_mask=None):
     G.draw_text(c, e['model'], 'display', 130, MARGIN, 1000 + (1 - clamp(a)) * 50, WHITE, alpha=clamp(a * 3), track=-.005)
     G.draw_text(c, f"{e['dev']} · {e.get('date', e['year'])}", 'mono', 26, MARGIN, 1178, VOLT, alpha=clamp((u - .2) / .3), track=.05)
     if e.get('note'): G.draw_text(c, e['note'], 'ui', 32, MARGIN, 1222, (222, 218, 208), alpha=clamp((u - .35) / .3))
+    if e.get('clip_note'): G.draw_text(c, e['clip_note'], 'monor', 18, MARGIN, 1270, GREY, alpha=clamp((u - .6) / .3), track=.04)
     return c
 
 

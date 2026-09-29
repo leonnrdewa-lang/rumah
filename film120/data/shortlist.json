@@ -1231,8 +1231,8 @@
    "in": 2,
    "out": 12,
    "label": {
-    "model": "DEEPDREAM",
-    "year": "2015",
+    "model": "DEEPDREAM (2015 METHOD)",
+    "year": "2021",
     "creator": "PantheraLeo1359531",
     "license": "CC0"
    },
@@ -1572,7 +1572,7 @@
      "u0": 0.5,
      "zoom": 2.4,
      "tag": "FRAME-BY-FRAME",
-     "note": "One image per frame - measured from the pixels."
+     "note": "One image per frame, per the source page."
     },
     {
      "ex": "cogv_swans",
@@ -1598,7 +1598,8 @@
      "dev": "META",
      "date": "SEP 29, 2022",
      "ex": "sd_flowers",
-     "note": "Research demo: text to video, no public release."
+     "note": "Research paper: text to video; demo planned.",
+     "clip_note": "ERA CLIP \u00b7 NOT META'S"
     },
     {
      "year": "2023",
@@ -1606,7 +1607,7 @@
      "dev": "RUNWAY",
      "date": "MAR 20, 2023",
      "ex": "gen2_dog",
-     "note": "Text-to-video and image-to-video; general access came in June."
+     "note": "Text and image modes announced; public in June."
     },
     {
      "year": "2023",
@@ -1614,7 +1615,7 @@
      "dev": "STABILITY AI",
      "date": "NOV 21, 2023",
      "ex": null,
-     "note": "Open image-to-video weights: 14 or 25 frames."
+     "note": "Research-use image-to-video: 14 or 25 frames."
     },
     {
      "year": "2024",
@@ -1637,15 +1638,15 @@
     {
      "ex": null,
      "model": "JUNE 2024",
-     "dev": "KUAISHOU",
+     "dev": "KLING \u00b7 LUMA \u00b7 RUNWAY",
      "year": "2024",
      "date": "JUN 6-17, 2024",
-     "note": "Three launches in twelve days.",
+     "note": "Three reveals, June 6 to 17.",
      "hold": 9.0,
      "tr": "slat",
      "fact_cue": "s6.facts",
      "facts": [
-      "KLING \u00b7 EARLY ACCESS \u00b7 JUN 6, 2024",
+      "KLING \u00b7 SIGN-UPS OPEN \u00b7 JUN 6, 2024",
       "LUMA DREAM MACHINE \u00b7 PUBLIC \u00b7 JUN 12, 2024",
       "RUNWAY GEN-3 ALPHA \u00b7 ANNOUNCED \u00b7 JUN 17, 2024"
      ]
@@ -1656,7 +1657,8 @@
      "dev": "OPENAI",
      "year": "2024",
      "date": "DEC 9, 2024",
-     "note": "Public product: up to 1080p, 20-second clips.",
+     "note": "Public product: 1080p, 20-second clips.",
+     "clip_note": "CLIP SHOWN: FEB 2024 PREVIEW DEMO",
      "hold": 2.2,
      "tr": "letters"
     },
@@ -1687,7 +1689,7 @@
     {
      "a": "sd_park_b",
      "b": "veo31_lemon",
-     "subject": "PORTRAITS",
+     "subject": "PEOPLE",
      "ya": "2022",
      "yb": "2025",
      "ma": "STABLE DIFFUSION 1.4",
@@ -1908,8 +1910,8 @@
     {
      "ex": "veo31_lemon",
      "dur": 3.8,
-     "note": "STILL VISIBLE: FINGERS CAN WARP, TEXT CAN DISTORT.",
-     "note_src": "Kling developer blog, Sep 24, 2026"
+     "note": "PER KLING: FINGERS CAN WARP, TEXT CAN DISTORT.",
+     "note_src": "kling.ai/blog \u00b7 limitations of current AI video generation"
     },
     {
      "ex": "lance",

@@ -71,6 +71,7 @@ def render(ctx, t):
             G.draw_text(c, f"{m['model']} · {m['dev']}", 'mono', max(14, int(28 * s_)), tx, pc[1] + ph / 2 + 22 * s_, WHITE, alpha=appear, track=.04, pad=2)
             G.draw_text(c, m.get('date', ''), 'monor', max(12, int(20 * s_)), tx, pc[1] + ph / 2 + 22 * s_ + 40 * s_, GREY, alpha=appear * .95, track=.05, pad=2)
             if m.get('note') and s_ > .8: G.draw_text(c, m['note'], 'ui', int(28 * s_), tx, pc[1] + ph / 2 + 22 * s_ + 78 * s_, (222, 218, 208), alpha=appear, pad=2)
+            if m.get('clip_note') and s_ > .8: G.draw_text(c, m['clip_note'], 'monor', max(12, int(16 * s_)), tx, pc[1] + ph / 2 + 22 * s_ + 118 * s_, GREY, alpha=appear, track=.04, pad=2)
     ui.spine(c, reveal=1.0, years=range(2016, 2027), highlight=int(ms[min(n - 1, max(0, sum(1 for x in ts if t >= x) - 1))]['year']), t=t, alpha=.9)
     return c
 
