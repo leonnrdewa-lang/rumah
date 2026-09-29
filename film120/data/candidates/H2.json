@@ -1,22 +1,78 @@
 {
   "agent": "H2",
-  "channel": "Wikimedia Commons - early public-tool era 2022-2024 (Stable Diffusion frame-by-frame / Deforum-style animation, ModelScope, AnimateDiff, Runway Gen-1/2/3/4, Pika, Luma Dream Machine/Ray, Midjourney video, Haiper, Kaiber, Genmo, Pixverse, Stable Video Diffusion, CogVideoX). Method: Commons API category enumeration (all AI-video categories and by-year/by-model categories), ~60 file-namespace full-text searches, per-file wikitext + extmetadata + Structured Data read, uploader contribution lists; developer primary sources (Runway, Stability AI, Luma via Wayback, CogVideo GitHub/arXiv, Hugging Face) for model/date corroboration; Wayback captures of the YouTube watch pages behind the video2commons uploads to check the YouTube licence flag independently; ffprobe/scene-cut/frame-difference/corner-static heuristics in the Higgsfield sandbox. No frame was ever viewed by me; all content statements come from Commons page text, ffprobe and pixel statistics. Commons holds very few genuine 2022-2024 AI-video files: there is NO file for Pika, Luma Ray, Runway Gen-4, Kaiber, Deforum, AnimateDiff, ModelScope (other than the Will Smith spaghetti clip), Zeroscope, Haiper, Genmo, Pixverse or Midjourney video.",
+  "channel": "Wikimedia Commons - early public-tool era 2022-2024 (Stable Diffusion frame-by-frame / Deforum-style animation, ModelScope, AnimateDiff, Runway Gen-1/2/3/4, Pika, Luma Dream Machine/Ray, Midjourney video, Haiper, Kaiber, Genmo, Pixverse, Stable Video Diffusion, CogVideoX). Method: Commons API category enumeration (all AI-video categories and by-year/by-model categories), about 130 file- and category-namespace full-text queries (all listed below), per-file wikitext + extmetadata + Structured Data read, uploader contribution lists; developer primary sources (Runway, Stability AI, Luma via Wayback, CogVideo GitHub/arXiv, Hugging Face) for model/date corroboration; Wayback captures of the YouTube watch pages behind the video2commons uploads to check the YouTube licence flag independently; ffprobe/scene-cut/frame-difference/corner-static heuristics in the Higgsfield sandbox. No frame was ever viewed by me; all content statements come from Commons page text, ffprobe and pixel statistics. Commons holds very few genuine 2022-2024 AI-video files: there is NO file for Pika, Luma Ray, Runway Gen-4, Kaiber, Deforum, AnimateDiff, ModelScope (other than the Will Smith spaghetti clip), Zeroscope, Haiper, Genmo, Pixverse or Midjourney video.",
   "integrity_checks": {
     "note": "commons_sha1 = SHA-1 registered on Commons (imageinfo). downloaded_matches_sha1=true means I downloaded the exact media_url in the sandbox and the SHA-1 matched; false/absent = not downloaded in full (large files were only HEAD-checked and probed; 480p transcodes were used for scene analysis).",
-    "sd14_benlisquare_park_2022": {"commons_sha1": "11431067a650f94423020fc475f336b8490ce235", "bytes": 104379671, "downloaded_matches_sha1": false},
-    "sd14_benlisquare_flowers_2022": {"commons_sha1": "82e981f555fa0177335ded9487be5d0277974e3c", "bytes": 102304755, "downloaded_matches_sha1": false},
-    "runway_gen1_watercolor_elephants_2023": {"commons_sha1": "b864503f3852ed4fdc0798a204be6b80696a9069", "bytes": 5148736, "downloaded_matches_sha1": true},
-    "runway_gen2_dog_podium_2023": {"commons_sha1": "e3906b84657097076f72333c85b435ea8106c382", "bytes": 267637, "downloaded_matches_sha1": true},
-    "runway_gen2_wave_still_to_video_2023": {"commons_sha1": "6ba44b65e3d7aacdaba716cb55f8b1d4d50bd8f7", "bytes": 479429, "downloaded_matches_sha1": true},
-    "runway_gen3_alpha_cowboy_2024": {"commons_sha1": "d659df321152adf3029ec1295ffc99e1c47f0e5e", "bytes": 1596755, "downloaded_matches_sha1": true},
-    "runway_gen2_execute_short_film_2024": {"commons_sha1": "e84ff3dee8453ae7ef8bed72f79b37a1478e74ed", "bytes": 481690068, "downloaded_matches_sha1": false},
-    "svd_robo_knightwolf_music_video_2023": {"commons_sha1": "5a9ba3eb3338eaac27c8bdd9aa40d68311c665ba", "bytes": 212611274, "downloaded_matches_sha1": false},
-    "sd_deliberate_morph_animation_2023": {"commons_sha1": "b5c6d889c0139376b18071e69a901648e68e888f", "bytes": 151430319, "downloaded_matches_sha1": false},
-    "vortex_witches_wood_multitool_2024": {"commons_sha1": "f6c02fbad121d0a30f485d16e3628208de6bb2fa", "bytes": 171120459, "downloaded_matches_sha1": false},
-    "cogvideox_late_afternoon_swans_2024": {"commons_sha1": "1674d92bd2188c5f4c298f710637ed016e94795a", "bytes": 274586, "downloaded_matches_sha1": true},
-    "cogvideox_painting_with_the_breeze_2024": {"commons_sha1": "ea9e27c24a939561bea25ab6673334fb81a8743e", "bytes": 238329, "downloaded_matches_sha1": true},
-    "hailuo_video01_cyberpunk_rainy_street_2024": {"commons_sha1": "be865b09e3826d1494b4f757ca02b0c783fc9946", "bytes": 3117507, "downloaded_matches_sha1": true},
-    "unknown_model_oct2022_textprompt_clip": {"commons_sha1": "552e805f2df4f4e90004a004fdf91c4f8a64a107", "bytes": 2289446, "downloaded_matches_sha1": true}
+    "sd14_benlisquare_park_2022": {
+      "commons_sha1": "11431067a650f94423020fc475f336b8490ce235",
+      "bytes": 104379671,
+      "downloaded_matches_sha1": false
+    },
+    "sd14_benlisquare_flowers_2022": {
+      "commons_sha1": "82e981f555fa0177335ded9487be5d0277974e3c",
+      "bytes": 102304755,
+      "downloaded_matches_sha1": false
+    },
+    "runway_gen1_watercolor_elephants_2023": {
+      "commons_sha1": "b864503f3852ed4fdc0798a204be6b80696a9069",
+      "bytes": 5148736,
+      "downloaded_matches_sha1": true
+    },
+    "runway_gen2_dog_podium_2023": {
+      "commons_sha1": "e3906b84657097076f72333c85b435ea8106c382",
+      "bytes": 267637,
+      "downloaded_matches_sha1": true
+    },
+    "runway_gen2_wave_still_to_video_2023": {
+      "commons_sha1": "6ba44b65e3d7aacdaba716cb55f8b1d4d50bd8f7",
+      "bytes": 479429,
+      "downloaded_matches_sha1": true
+    },
+    "runway_gen3_alpha_cowboy_2024": {
+      "commons_sha1": "d659df321152adf3029ec1295ffc99e1c47f0e5e",
+      "bytes": 1596755,
+      "downloaded_matches_sha1": true
+    },
+    "runway_gen2_execute_short_film_2024": {
+      "commons_sha1": "e84ff3dee8453ae7ef8bed72f79b37a1478e74ed",
+      "bytes": 481690068,
+      "downloaded_matches_sha1": false
+    },
+    "svd_robo_knightwolf_music_video_2023": {
+      "commons_sha1": "5a9ba3eb3338eaac27c8bdd9aa40d68311c665ba",
+      "bytes": 212611274,
+      "downloaded_matches_sha1": false
+    },
+    "sd_deliberate_morph_animation_2023": {
+      "commons_sha1": "b5c6d889c0139376b18071e69a901648e68e888f",
+      "bytes": 151430319,
+      "downloaded_matches_sha1": false
+    },
+    "vortex_witches_wood_multitool_2024": {
+      "commons_sha1": "f6c02fbad121d0a30f485d16e3628208de6bb2fa",
+      "bytes": 171120459,
+      "downloaded_matches_sha1": false
+    },
+    "cogvideox_late_afternoon_swans_2024": {
+      "commons_sha1": "1674d92bd2188c5f4c298f710637ed016e94795a",
+      "bytes": 274586,
+      "downloaded_matches_sha1": true
+    },
+    "cogvideox_painting_with_the_breeze_2024": {
+      "commons_sha1": "ea9e27c24a939561bea25ab6673334fb81a8743e",
+      "bytes": 238329,
+      "downloaded_matches_sha1": true
+    },
+    "hailuo_video01_cyberpunk_rainy_street_2024": {
+      "commons_sha1": "be865b09e3826d1494b4f757ca02b0c783fc9946",
+      "bytes": 3117507,
+      "downloaded_matches_sha1": true
+    },
+    "unknown_model_oct2022_textprompt_clip": {
+      "commons_sha1": "552e805f2df4f4e90004a004fdf91c4f8a64a107",
+      "bytes": 2289446,
+      "downloaded_matches_sha1": true
+    }
   },
   "pending_video_analyses": {
     "note": "Higgsfield video_analysis jobs I started on Commons files imported with media_import_url; they were still 'queued' (shared workspace queue) when this file was written. Fetch results later with video_analysis_status(video_analyze_id). Treat output as a tool description of the (transcoded) clip, not as verification.",
@@ -34,211 +90,1632 @@
     "svd_robo_knightwolf_music_video_2023 (480p transcode)": "0e61a15a-1f14-492c-833c-368d8f9fe335"
   },
   "pages_examined": [
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_videos", "kind": "commons_category", "note": "Root AI-video category: 21 subcats, 33 files; enumerated all", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Videos_by_Stable_Diffusion", "kind": "commons_category", "note": "5 files: Benlisquare x2, Vlad Pluzhnikov, Sorelius Beats, Extra Terra", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Videos_by_Dream_Machine_(text-to-video_model)", "kind": "commons_category", "note": "2 files: Dream Machine Egypt, POOF", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Videos_by_CogVideo", "kind": "commons_category", "note": "2 files: VulcanSphere CogVideoX swans and painter", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:VideoPoet", "kind": "commons_category", "note": "3 VideoPoet demo clips uploaded by third party", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_videos_by_artstyle", "kind": "commons_category", "note": "Only AI-generated anime subcategory", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_videos_including_prompts", "kind": "commons_category", "note": "11 files with published prompts; only Benlisquare park is early-era", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Videos_by_unidentified_AI_software", "kind": "commons_category", "note": "9 files: Oronbb x2, Nesnad x2, Witches Wood, others 2025", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_videos_by_human_prompter", "kind": "commons_category", "note": "Subcategory listing only", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_videos_of_animals", "kind": "commons_category", "note": "19 files incl. Gen-2 dog, Gen-3 cowboy, CogVideoX swans", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_videos_of_cities", "kind": "commons_category", "note": "3 files: Void, Hailuo cyberpunk street, Sora Tokyo", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_videos_by_Commons_users", "kind": "commons_category", "note": "Romanian museum restorations (real historical people); not relevant", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_anime", "kind": "commons_category", "note": "Only Sora 2 launch video (2025)", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Videos_by_Sora", "kind": "commons_category", "note": "10 Sora files plus First videos by Sora subcategory (H1 channel)", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:First_videos_by_Sora", "kind": "commons_category", "note": "16 Feb-2024 Sora demo clips, third-party PD-algorithm uploads (lead for H1)", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Videos_by_Hailuo_AI", "kind": "commons_category", "note": "2 files, 2025 (out of era)", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Videos_by_Meta_AI", "kind": "commons_category", "note": "1 file, Meta AI Imagine 2025", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Videos_by_Seedance", "kind": "commons_category", "note": "2 files, 2026 (out of era)", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Deep_Nostalgia", "kind": "commons_category", "note": "4 photo-animation clips of real people", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Explosive_Media", "kind": "commons_category", "note": "Political LEGO-style war videos (2026)", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_music_videos", "kind": "commons_category", "note": "4 files: Void, Italian Brainrot, Robo Knightwolf, Witches Wood", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Text-to-video_models", "kind": "commons_category", "note": "Six model subcategories, no files", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Text-to-video_generation", "kind": "commons_category", "note": "3 subcats incl. Will Smith Eating Spaghetti test", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Will_Smith_Eating_Spaghetti_test", "kind": "commons_category", "note": "2 files (ModelScope 2023 original, Veo 3); real person", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Dream_Machine_(text-to-video_model)", "kind": "commons_category", "note": "Only a screenshot plus the videos subcategory", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Sora_(text-to-video_model)", "kind": "commons_category", "note": "One image plus videos subcategory", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Videos_about_AI-generated_images", "kind": "commons_category", "note": "3 news videos about AI images", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_media", "kind": "commons_category", "note": "18 subcategories; no additional video subcategory", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Hailuo_AI", "kind": "commons_category", "note": "Only videos subcategory", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Stable_Diffusion", "kind": "commons_category", "note": "42 files: tutorials/screenshots plus 5 videos", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:2022_AI-generated_works", "kind": "commons_category", "note": "43 files; only 2 videos (Benlisquare)", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:2023_AI-generated_works", "kind": "commons_category", "note": "3 videos: Onemark logo, Void, Will Smith", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:2024_AI-generated_works", "kind": "commons_category", "note": "138 files, 39 video/animated; source of Gen-3, CogVideoX, Witches Wood", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_works_by_year", "kind": "commons_category", "note": "Year subcategories 2016-2026", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Videos_of_generative_AI_diffusion", "kind": "commons_category", "note": "1 file: Vlad Pluzhnikov SD animation", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI_misgeneration", "kind": "commons_category", "note": "73 files, 6 videos incl. EXECUTE, Sora cat-on-bed, Photoreal-train", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Runway_AI", "kind": "commons_category", "note": "Only EXECUTE short film", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Runway_ML", "kind": "commons_category", "note": "Only Gen-3 Alpha cowboy", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_gibberish", "kind": "commons_category", "note": "79 files; only POOF is video", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-misgenerated_body_parts", "kind": "commons_category", "note": "No videos in body-part misgeneration tree", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-misgenerated_objects", "kind": "commons_category", "note": "Stills only", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-misgenerated_clothing", "kind": "commons_category", "note": "Stills only", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI_slop", "kind": "commons_category", "note": "10 videos: mostly 2025 political; Gen-2 dog and VideoPoet included", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_horses", "kind": "commons_category", "note": "Stills plus Gen-3 cowboy video", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_women", "kind": "commons_category", "note": "5 videos incl. Dream Machine Egypt, Witches Wood", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_dogs", "kind": "commons_category", "note": "4 videos incl. Gen-2 dog", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_cats", "kind": "commons_category", "note": "Cat piano (VideoPoet), Sora cat-on-bed", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Media_modified_by_AI", "kind": "commons_category", "note": "546 files; a few AI-animated photo videos (real/historical people)", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Artificial_intelligence_historic_art", "kind": "commons_category", "note": "Dream Machine Egypt, Sora Gold Rush", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_videos_of_real_people", "kind": "commons_category", "note": "9 videos: political/celebrity; Nusantara Nobles included", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Generative_artificial_intelligence", "kind": "commons_category", "note": "22 subcategories; nothing new for video", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Artificial_intelligence_art", "kind": "commons_category", "note": "10 subcategories", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_works", "kind": "commons_category", "note": "Two subcategories", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Artificial_intelligence", "kind": "commons_category", "note": "61 subcategories, none video-specific", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_creative_works", "kind": "commons_category", "note": "Image series only", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Generative_AI_models", "kind": "commons_category", "note": "17 model subcategories incl. Disco Diffusion, DeepDream", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Midjourney", "kind": "commons_category", "note": "Only a tutorial screencast video", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Wikimedia_projects_and_generative_AI", "kind": "commons_category", "note": "Conference talks only", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Prompt_engineering_for_generative_AI", "kind": "commons_category", "note": "Gen-2 dog is in this category", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Animations_of_artificial_intelligence", "kind": "commons_category", "note": "Algorithm animations, not generative video", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Media_of_artificial_intelligence", "kind": "commons_category", "note": "Photos subcategory only", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_web-based_applications", "kind": "commons_category", "note": "Screenshots only", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Disco_Diffusion", "kind": "commons_category", "note": "One still, no video", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Deep_Dream", "kind": "commons_category", "note": "Images subcategory only", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Craiyon", "kind": "commons_category", "note": "Stills only", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Meta_AI", "kind": "commons_category", "note": "Screenshots plus Meta AI videos subcategory", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Leonardo_AI", "kind": "commons_category", "note": "Stills only", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:ComfyUI", "kind": "commons_category", "note": "11 files; tutorial screencasts incl. I2VGen-XL", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Magnific", "kind": "commons_category", "note": "Two stills", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Images_generated_by_Stable_Diffusion", "kind": "commons_category", "note": "111 files, stills; videos subcategory", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Stable+Diffusion+video", "kind": "commons_search", "note": "227 hits; tutorials plus the SD video files", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Deforum", "kind": "commons_search", "note": "9 hits; only Witches Wood description mentions Deforum", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=AnimateDiff", "kind": "commons_search", "note": "No AnimateDiff files (noise: 'diff')", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Runway+Gen-2", "kind": "commons_search", "note": "EXECUTE, Witches Wood; rest airport noise", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Sora", "kind": "commons_search", "note": "24k hits (fonts/birds); Sora video files seen", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Runway+Gen-1", "kind": "commons_search", "note": "Found Gen-1 watercolor and Gen-3 cowboy", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Runway+Gen-3", "kind": "commons_search", "note": "Found Nusantara Nobles (Gen-3 Alpha Turbo), EXECUTE, Witches Wood", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Gen-3+Alpha", "kind": "commons_search", "note": "Cowboy clip only relevant hit", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Gen-4+Runway", "kind": "commons_search", "note": "No Gen-4 file exists", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=RunwayML", "kind": "commons_search", "note": "Found Hebrew RunwayML wave clip", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Pika+Labs", "kind": "commons_search", "note": "No Pika Labs video (only pika animal noise)", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Luma+Dream+Machine", "kind": "commons_search", "note": "Dream Machine Egypt, POOF only", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Luma+Ray", "kind": "commons_search", "note": "239 noise hits, no Ray video", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Kaiber", "kind": "commons_search", "note": "Only Witches Wood description", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=ModelScope+text-to-video", "kind": "commons_search", "note": "No ModelScope video besides Will Smith spaghetti", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Zeroscope", "kind": "commons_search", "note": "0 hits", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Stable+Video+Diffusion", "kind": "commons_search", "note": "Tutorials plus Robo Knightwolf", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Midjourney+video", "kind": "commons_search", "note": "POOF (Midjourney stills) and tutorial only", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Haiper", "kind": "commons_search", "note": "No Haiper media", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Pixverse", "kind": "commons_search", "note": "0 hits", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Genmo+Mochi", "kind": "commons_search", "note": "0 hits", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+AI-generated", "kind": "commons_search", "note": "362 hits, paged 100; enumerated all AI-generated video titles", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+Runway", "kind": "commons_search", "note": "Airport noise; only Hebrew RunwayML and Nusantara relevant", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+Stable+Diffusion", "kind": "commons_search", "note": "SD tutorials and SD video files", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+txt2video", "kind": "commons_search", "note": "7 hits: CogVideoX, Hailuo, Veo, Meta", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+text-to-video+model+generated", "kind": "commons_search", "note": "1121 hits; scanned first 100", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+image-to-video", "kind": "commons_search", "note": "Noise only", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=img2img+animation", "kind": "commons_search", "note": "Exactly the 2 Benlisquare animations", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Gen2+prompt+seed", "kind": "commons_search", "note": "Exactly the Gen-2 dog clip", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=%22Gen-2%22+Runway+video+generated", "kind": "commons_search", "note": "EXECUTE only", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Make-A-Video", "kind": "commons_search", "note": "Noise, no Meta Make-A-Video media", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:bitmap+AI-generated+animation+gif", "kind": "commons_search", "note": "GIF hits: none from a video model in era", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+Kling", "kind": "commons_search", "note": "Noise; Forgotten Aral and Coca-Cola ad titles only", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=intitle:ComfyUI", "kind": "commons_search", "note": "4 tutorial screencasts incl. I2VGen-XL", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=14&srsearch=AI-generated+video", "kind": "commons_search", "note": "Category search: yielded the model-specific video categories", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=allimages&aiuser=Oronbb", "kind": "commons_search", "note": "Oronbb uploads: 5 AI videos 2022-2024 (Runway + unidentified)", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=allimages&aiuser=Lwneal", "kind": "commons_search", "note": "Lwneal uploads: Gen-2 dog only AI video", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=allimages&aiuser=Benlisquare", "kind": "commons_search", "note": "Benlisquare uploads: only the 2 SD animations are AI", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/w/api.php?action=query&list=allimages&aiuser=VulcanSphere", "kind": "commons_search", "note": "VulcanSphere uploads: CogVideoX clips found via category", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Algorithmically-generated_animation_of_young_woman_in_park.webm", "kind": "commons_file", "note": "Benlisquare SD v1-4 park animation; wikitext, SDC, licence CC BY-SA 4.0 + GFDL read", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Algorithmically-generated_animation_of_young_woman_adorned_with_flowers.webm", "kind": "commons_file", "note": "Benlisquare SD v1-4 flowers animation; PD-algorithm; wikitext read", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Gen-1_IMG_9350_-_Watercolor_painting,_scenic_landscape,_soft.webm", "kind": "commons_file", "note": "Runway Gen-1 style transfer by Oronbb, CC BY-SA 4.0; wikitext and SDC read", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Gen2-Example-Dog-Podium.webm", "kind": "commons_file", "note": "Runway Gen2 dog at podium with prompt and seed, CC BY-SA 4.0", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:%D7%92%D7%9C_%D7%9E%D7%95%D7%A0%D7%A4%D7%A9_%D7%9E%D7%AA%D7%9E%D7%95%D7%A0%D7%AA_%D7%A1%D7%98%D7%99%D7%9C%D7%A1_%D7%91%D7%90%D7%9E%D7%A6%D7%A2%D7%95%D7%AA_RunwayML.webm", "kind": "commons_file", "note": "Hebrew-titled RunwayML still-to-video wave, CC BY-SA 4.0", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Gen-3_Alpha_3480943356,_A_cowboy_riding_his_,_pikaso_texttoimage_C_(1).webm", "kind": "commons_file", "note": "Runway Gen-3 Alpha cowboy; CC BY 4.0 plus PD-algorithm; wikitext and rendered licence read", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:EXECUTE_--_dark_Sci-Fi_AI-short_film.webm", "kind": "commons_file", "note": "Runway Gen-2 short film, YouTube CC BY 3.0, LicenseReview open", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Sorelius_Beats_%E2%80%93_Robo_Knightwolf_(Synthwave_Music_Video_with_Stable_Diffusion).webm", "kind": "commons_file", "note": "Stable Video Diffusion music video, YouTube CC BY 3.0, LicenseReview open", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Animation_of_Stable_Diffusion_generation_(gradual_generative_conceptual_manifestation_into_fantasy_art_works).webm", "kind": "commons_file", "note": "435 s SD morph video by Vlad Pluzhnikov, YouTube CC BY 3.0", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Witches_Wood_(Vocal_AI_music_with_AI_animation_music_video).webm", "kind": "commons_file", "note": "Multi-tool AI music video, YouTube CC BY 3.0, 4K 60 fps", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Unconfirmed_likely_AI-generated_images_to_check", "kind": "commons_category", "note": "11 files; 2 videos by 00Regedit00 (Aug 2024), tool unknown", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Third-party_content_assumed_to_be_AI", "kind": "commons_category", "note": "44 files, 5 videos (2026 TV ident, Iran LEGO propaganda); out of era", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Luciaverse1.webm", "kind": "commons_file", "note": "Unconfirmed AI clip, CC0, Aug 2024, no tool named", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Output.webm", "kind": "commons_file", "note": "Unconfirmed AI clip, CC0, Aug 2024, no tool named", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Sci-Fi_France_ident.webm", "kind": "commons_file", "note": "2026 TV ident; out of era, brand", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_videos_by_VulcanSphere", "kind": "commons_category", "note": "7 VulcanSphere CC0 clips: CogVideoX x2, Hailuo, Meta AI, Veo 3/3.1", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Cyberpunk_Rainy_Street_(Hailuo_AI).webm", "kind": "commons_file", "note": "VulcanSphere Hailuo AI clip 2024-12-24, CC0 + PD-algorithm, prompt published", "retrieved": true},
-    {"url": "https://www.minimax.io/news/video-01", "kind": "official_page", "note": "MiniMax Video-01 launch post dated 2024.08.31: 720p, 25 fps, up to 6 s", "retrieved": true},
-    {"url": "https://hailuoai.video/protocol?type=terms", "kind": "terms_page", "note": "Hailuo terms page is JS-rendered; no text retrievable", "retrieved": false},
-    {"url": "https://commons.wikimedia.org/wiki/File:Late_Afternoon_Swans_(CogVideoX).webm", "kind": "commons_file", "note": "VulcanSphere CogVideoX swans, CC0 + PD-algorithm, prompt published", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Painting_With_The_Breeze_(CogVideoX).webm", "kind": "commons_file", "note": "VulcanSphere CogVideoX painter, CC0 + PD-algorithm, prompt published", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:AI_generated_Video_Clip.webm", "kind": "commons_file", "note": "Oronbb Oct-2022 512x512 12 s clip, tool unnamed, CC BY-SA 4.0", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:AI_generated_video_clip_-New_creative_video.webm", "kind": "commons_file", "note": "Oronbb Dec-2022 vertical clip with AI character/audio, tool unnamed", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Generative_ai_-_electronic_head_moving_Dec_2023.webm", "kind": "commons_file", "note": "Nesnad Dec-2023 4 s clip, model unidentified, PD-algorithm", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Wikimachine_ai_video_example_2024_Jan_14.webm", "kind": "commons_file", "note": "Nesnad Jan-2024 24 s clip, model unidentified, PD-algorithm", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Dream_Machine_Egypt_animation.webm", "kind": "commons_file", "note": "Luma Dream Machine clip from an X post, third-party PD-algorithm upload", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:POOF_(AI_Short_Film).webm", "kind": "commons_file", "note": "Edited multi-tool short film from YouTube, third-party PD-algorithm tag", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Nusantara_Nobles_slow_dance.webm", "kind": "commons_file", "note": "Gen-3 Alpha Turbo animation of an 1898 photo of real people", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Cat_piano_with_audio_3EB0CD1F.webm", "kind": "commons_file", "note": "VideoPoet demo clip re-uploaded by third party as PD-algorithm", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Dog_popcorn_with_audio_6781BD0C.webm", "kind": "commons_file", "note": "VideoPoet demo clip, same provenance issue", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Drums_with_audio_DA80C510.webm", "kind": "commons_file", "note": "VideoPoet demo clip, same provenance issue", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Cat-on-bed.webm", "kind": "commons_file", "note": "Sora Feb-2024 official demo, third-party PD-algorithm upload", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Photoreal-train.webm", "kind": "commons_file", "note": "Sora demo with documented misgeneration in description", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Octopus-and-crab.webm", "kind": "commons_file", "note": "Sora Feb-2024 demo, third-party PD-algorithm upload", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Monster-with-melting-candle.webm", "kind": "commons_file", "note": "Sora Feb-2024 demo, third-party PD-algorithm upload", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Will_Smith_Eating_Spaghetti_Original.webm", "kind": "commons_file", "note": "ModelScope-era 240x240 clip; real person, personality-rights warning", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Pink_Floyd_-_Any_Colour_You_Like_(50th_Anniversary_Competition_Winner's_Video;_no_audio).webm", "kind": "commons_file", "note": "Pink Floyd competition winner video; brand IP", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Example_video_of_using_AI_tools_for_logo_intro_videos_(Onemark_Logo_Effect).webm", "kind": "commons_file", "note": "Company logo animation with SD/Photoshop Beta, YouTube CC BY 3.0", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Extra_Terra_%26_Infraction_%E2%80%93_Void_(AI-generated_music_video_%26_cyberpunk_music).webm", "kind": "commons_file", "note": "Music video with third-party track; conflicting licence signals", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:%D0%9C%D0%90%D0%91%D0%9E%D0%99%D0%A7%D0%98%D0%9A%D0%98_-_%D0%A2%D1%80%D0%B5%D0%B9%D0%BB%D0%B5%D1%80_-_%D0%9C%D1%83%D0%BB%D1%8C%D1%82%D1%84%D0%B8%D0%BB%D1%8C%D0%BC_(2024).webm", "kind": "commons_file", "note": "Commercial animated-film trailer, model unnamed, third-party PD-algorithm", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Chen_Zhen.gif", "kind": "commons_file", "note": "AI-animated Bruce Lee posters; real person and film IP", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Japanese_Buddhist_Nuns_1902_-_AI_video_generation.webm", "kind": "commons_file", "note": "Hailuo animation of 1902 photo of real people, 2025", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Transform_images_to_videos_in_minutes_with_I2VGENXL_in_ComfyUI.webm", "kind": "commons_file", "note": "ComfyUI I2VGen-XL tutorial screencast, YouTube CC BY 3.0", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Micronautas_recolectando_polen_sobre_ala_de_mariposa,_animaci%C3%B3n_con_IA_basada_en_imagen_real_de_ala_de_mariposa_con_polen.webm", "kind": "commons_file", "note": "2025 AI animation of a real macro photo; tool unnamed", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Animated_Representation_of_Meta_AI_and_Llama_(Meta_AI_Imagine).webm", "kind": "commons_file", "note": "Meta AI Imagine 2025 clip, CC0 + PD-algorithm (lead for other hunters)", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Clock_by_Veo_2.webm", "kind": "commons_file", "note": "Veo 2 clip via Gemini Advanced, CC0 + PD-algorithm, 2025 (lead for Google hunter)", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:AI-generated_heavy_metal_music.webm", "kind": "commons_file", "note": "72-minute AI music compilation; irrelevant", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:AI-generated_video_of_a_domestic_dragon.gif", "kind": "commons_file", "note": "2025 YouTube-sourced GIF, tool unidentified", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Brownvelevy.gif", "kind": "commons_file", "note": "Random-walk physics gif; false search hit", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/File:Palantir_(animated_AI_illustration).gif", "kind": "commons_file", "note": "2025 Flux still-to-gif; out of era", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Template:PD-algorithm", "kind": "commons_file", "note": "Rendered PD-algorithm tag text incl. UK/Hong Kong 50-year caveat and AI-derivative disclaimer", "retrieved": true},
-    {"url": "https://commons.wikimedia.org/wiki/Template:YouTube_CC-BY", "kind": "commons_file", "note": "Rendered YouTube CC-BY template (CC BY 3.0 before Aug 2025)", "retrieved": true},
-    {"url": "https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q113660857|Q121133233|P13308|P13381", "kind": "wikipedia", "note": "Labels for Commons SDC items: software-used, prompt, licence and AI-video classes", "retrieved": true},
-    {"url": "https://en.wikipedia.org/wiki/Text-to-video_model", "kind": "wikipedia", "note": "Raw wikitext; timeline table used only as lead (secondary)", "retrieved": true},
-    {"url": "https://en.wikipedia.org/wiki/Runway_(company)", "kind": "wikipedia", "note": "Raw wikitext; only a logo file, no video", "retrieved": true},
-    {"url": "https://en.wikipedia.org/wiki/Stable_Diffusion", "kind": "wikipedia", "note": "Raw wikitext; no video files", "retrieved": true},
-    {"url": "https://en.wikipedia.org/wiki/Sora_(text-to-video_model)", "kind": "wikipedia", "note": "Raw wikitext; Sora Tokyo walk file (H1 channel)", "retrieved": true},
-    {"url": "https://en.wikipedia.org/wiki/Dream_Machine_(text-to-video_model)", "kind": "wikipedia", "note": "Raw wikitext; uses Dream Machine Egypt clip", "retrieved": true},
-    {"url": "https://en.wikipedia.org/wiki/Deepfake", "kind": "wikipedia", "note": "Raw wikitext; political deepfake videos only", "retrieved": true},
-    {"url": "https://en.wikipedia.org/wiki/Veo_(text-to-video_model)", "kind": "wikipedia", "note": "Raw wikitext; Veo 3 file (H1 channel)", "retrieved": true},
-    {"url": "https://en.wikipedia.org/wiki/Stability_AI", "kind": "wikipedia", "note": "Raw wikitext; no video files", "retrieved": true},
-    {"url": "https://en.wikipedia.org/wiki/VideoPoet", "kind": "wikipedia", "note": "Raw wikitext; short stub", "retrieved": true},
-    {"url": "https://en.wikipedia.org/wiki/Pika_(company)", "kind": "wikipedia", "note": "Page does not exist", "retrieved": false},
-    {"url": "https://en.wikipedia.org/wiki/Runway_Gen-2", "kind": "wikipedia", "note": "Page does not exist", "retrieved": false},
-    {"url": "https://en.wikipedia.org/wiki/Make-A-Video", "kind": "wikipedia", "note": "Page does not exist", "retrieved": false},
-    {"url": "https://runwayml.com/research/gen-1", "kind": "official_page", "note": "Runway Gen-1 research page (redirects to runway.com), dated Feb 2023", "retrieved": true},
-    {"url": "https://runwayml.com/research/gen-2", "kind": "official_page", "note": "Runway Gen-2 research page, dated Feb 2023, lists modes", "retrieved": true},
-    {"url": "https://runwayml.com/research/introducing-gen-3-alpha", "kind": "official_page", "note": "Gen-3 Alpha announcement dated June 17, 2024", "retrieved": true},
-    {"url": "https://runwayml.com/research/introducing-runway-gen-4", "kind": "official_page", "note": "Gen-4 page (no Commons Gen-4 file exists)", "retrieved": true},
-    {"url": "https://web.archive.org/web/20230618102343/https://runwayml.com/ai-magic-tools/gen-1/", "kind": "archive_item", "note": "Runway Gen-1 tool page as of 2023-06-18: video-to-video with style reference", "retrieved": true},
-    {"url": "https://web.archive.org/web/20250723184337/https://help.runwayml.com/hc/en-us/articles/30266515017875-Creating-with-Gen-3-Alpha-and-Gen-3-Alpha-Turbo", "kind": "archive_item", "note": "Runway help spec table: Gen-3 Alpha 1280x768, 24 fps, 5 or 10 s", "retrieved": true},
-    {"url": "https://help.runwayml.com/hc/en-us/articles/30266515017875-Creating-with-Gen-3-Alpha-and-Gen-3-Alpha-Turbo", "kind": "official_page", "note": "Live help page blocked (HTTP 403); Wayback copy used instead", "retrieved": false},
-    {"url": "https://web.archive.org/web/20230720142417/https://runwayml.com/terms-of-use/", "kind": "terms_page", "note": "Runway Terms of Use (18 Jul 2023): company claims no ownership of Outputs", "retrieved": true},
-    {"url": "https://web.archive.org/web/20240903153311/https://runwayml.com/terms-of-use", "kind": "terms_page", "note": "Runway Terms of Use (Sep 2024): same no-ownership clause", "retrieved": true},
-    {"url": "https://stability.ai/news/stable-diffusion-public-release", "kind": "official_page", "note": "SD public release post, datePublished 2022-08-22T18:06:20+0000", "retrieved": true},
-    {"url": "https://stability.ai/news/stable-video-diffusion-open-ai-video-model", "kind": "official_page", "note": "SVD announcement, datePublished 2023-11-21T11:14:01+0000; research-only", "retrieved": true},
-    {"url": "https://huggingface.co/CompVis/stable-diffusion-v1-4", "kind": "official_page", "note": "SD v1-4 model card; HF API createdAt 2022-08-20", "retrieved": true},
-    {"url": "https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt", "kind": "official_page", "note": "SVD-XT model card; current Community License", "retrieved": true},
-    {"url": "https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt/resolve/main/LICENSE.md", "kind": "terms_page", "note": "Stability AI Community License (5 Jul 2024), model licence", "retrieved": true},
-    {"url": "https://github.com/CompVis/stable-diffusion", "kind": "github_repo", "note": "SD v1 repo, created 2022-08-10 via GitHub API", "retrieved": true},
-    {"url": "https://raw.githubusercontent.com/CompVis/stable-diffusion/main/LICENSE", "kind": "github_file", "note": "CreativeML Open RAIL-M section 6: Licensor claims no rights in Output", "retrieved": true},
-    {"url": "https://github.com/AUTOMATIC1111/stable-diffusion-webui", "kind": "github_repo", "note": "Web UI repo created 2022-08-22 via GitHub API", "retrieved": true},
-    {"url": "https://api.github.com/repos/Animator-Anon/Animator", "kind": "github_repo", "note": "Animation script repo lookup returned nothing (repo moved/removed)", "retrieved": false},
-    {"url": "https://raw.githubusercontent.com/THUDM/CogVideo/main/README.md", "kind": "github_file", "note": "CogVideoX-2B open-sourced 2024/8/6, 5B 2024/8/27; 720x480", "retrieved": true},
-    {"url": "https://arxiv.org/abs/2408.06072", "kind": "paper", "note": "CogVideoX paper, v1 submitted 12 Aug 2024", "retrieved": true},
-    {"url": "https://huggingface.co/THUDM/CogVideoX-5b/raw/main/LICENSE", "kind": "terms_page", "note": "CogVideoX License: rights in generated content belong to the user", "retrieved": true},
-    {"url": "https://huggingface.co/spaces/THUDM/CogVideoX-5B-Space", "kind": "official_page", "note": "Credited generation Space (JS shell only when fetched)", "retrieved": true},
-    {"url": "https://web.archive.org/web/20240614004524/https://lumalabs.ai/dream-machine", "kind": "archive_item", "note": "Luma Dream Machine launch page (14 Jun 2024), lists current limitations", "retrieved": true},
-    {"url": "https://web.archive.org/web/20240616115531/https://lumalabs.ai/legal/tos", "kind": "terms_page", "note": "Luma ToS Jun 2024: commercial use of Output only with qualifying subscription", "retrieved": true},
-    {"url": "https://lumalabs.ai/news/dream-machine", "kind": "official_page", "note": "Guessed news URL returned 404", "retrieved": false},
-    {"url": "https://web.archive.org/web/20241004173249/https://www.youtube.com/watch?v=Z346NFRSPg4&gl=US&hl=en", "kind": "archive_item", "note": "YouTube page of EXECUTE: License row 'Creative Commons Attribution license (reuse allowed)', published Jun 26, 2024", "retrieved": true},
-    {"url": "https://web.archive.org/web/20240318193031/https://www.youtube.com/watch?v=JOA81hby0Dc", "kind": "archive_item", "note": "YouTube page of Witches Wood: CC BY licence row; published 2024-01-12", "retrieved": true},
-    {"url": "https://web.archive.org/web/20240413212045/https://www.youtube.com/watch?v=kvpj4Dqib_0", "kind": "archive_item", "note": "YouTube page of Robo Knightwolf: CC BY licence row; published Dec 20, 2023", "retrieved": true},
-    {"url": "https://web.archive.org/web/20251004193756/https://www.youtube.com/watch?v=D-Y9GJ39sK4", "kind": "archive_item", "note": "YouTube page of Vlad Pluzhnikov SD animation: CC BY licence row; May 16, 2023", "retrieved": true},
-    {"url": "https://www.youtube.com/watch?v=Z346NFRSPg4", "kind": "official_page", "note": "Live YouTube fetch blocked (HTTP 429 captcha) from sandbox; Wayback used", "retrieved": false},
-    {"url": "https://apps.apple.com/us/app/runway-ai-video-generator/id1665024375", "kind": "official_page", "note": "Looked for Gen-2 public-availability date; no Gen-2 text found", "retrieved": true}
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-generated_videos",
+      "kind": "commons_category",
+      "note": "Root AI-video category: 21 subcats, 33 files; enumerated all",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Videos_by_Stable_Diffusion",
+      "kind": "commons_category",
+      "note": "5 files: Benlisquare x2, Vlad Pluzhnikov, Sorelius Beats, Extra Terra",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Videos_by_Dream_Machine_(text-to-video_model)",
+      "kind": "commons_category",
+      "note": "2 files: Dream Machine Egypt, POOF",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Videos_by_CogVideo",
+      "kind": "commons_category",
+      "note": "2 files: VulcanSphere CogVideoX swans and painter",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:VideoPoet",
+      "kind": "commons_category",
+      "note": "3 VideoPoet demo clips uploaded by third party",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-generated_videos_by_artstyle",
+      "kind": "commons_category",
+      "note": "Only AI-generated anime subcategory",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-generated_videos_including_prompts",
+      "kind": "commons_category",
+      "note": "11 files with published prompts; only Benlisquare park is early-era",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Videos_by_unidentified_AI_software",
+      "kind": "commons_category",
+      "note": "9 files: Oronbb x2, Nesnad x2, Witches Wood, others 2025",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-generated_videos_by_human_prompter",
+      "kind": "commons_category",
+      "note": "Subcategory listing only",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-generated_videos_of_animals",
+      "kind": "commons_category",
+      "note": "19 files incl. Gen-2 dog, Gen-3 cowboy, CogVideoX swans",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-generated_videos_of_cities",
+      "kind": "commons_category",
+      "note": "3 files: Void, Hailuo cyberpunk street, Sora Tokyo",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-generated_videos_by_Commons_users",
+      "kind": "commons_category",
+      "note": "Romanian museum restorations (real historical people); not relevant",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-generated_anime",
+      "kind": "commons_category",
+      "note": "Only Sora 2 launch video (2025)",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Videos_by_Sora",
+      "kind": "commons_category",
+      "note": "10 Sora files plus First videos by Sora subcategory (H1 channel)",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:First_videos_by_Sora",
+      "kind": "commons_category",
+      "note": "16 Feb-2024 Sora demo clips, third-party PD-algorithm uploads (lead for H1)",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Videos_by_Hailuo_AI",
+      "kind": "commons_category",
+      "note": "2 files, 2025 (out of era)",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Videos_by_Meta_AI",
+      "kind": "commons_category",
+      "note": "1 file, Meta AI Imagine 2025",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Videos_by_Seedance",
+      "kind": "commons_category",
+      "note": "2 files, 2026 (out of era)",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Deep_Nostalgia",
+      "kind": "commons_category",
+      "note": "4 photo-animation clips of real people",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Explosive_Media",
+      "kind": "commons_category",
+      "note": "Political LEGO-style war videos (2026)",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-generated_music_videos",
+      "kind": "commons_category",
+      "note": "4 files: Void, Italian Brainrot, Robo Knightwolf, Witches Wood",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Text-to-video_models",
+      "kind": "commons_category",
+      "note": "Six model subcategories, no files",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Text-to-video_generation",
+      "kind": "commons_category",
+      "note": "3 subcats incl. Will Smith Eating Spaghetti test",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Will_Smith_Eating_Spaghetti_test",
+      "kind": "commons_category",
+      "note": "2 files (ModelScope 2023 original, Veo 3); real person",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Dream_Machine_(text-to-video_model)",
+      "kind": "commons_category",
+      "note": "Only a screenshot plus the videos subcategory",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Sora_(text-to-video_model)",
+      "kind": "commons_category",
+      "note": "One image plus videos subcategory",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Videos_about_AI-generated_images",
+      "kind": "commons_category",
+      "note": "3 news videos about AI images",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-generated_media",
+      "kind": "commons_category",
+      "note": "18 subcategories; no additional video subcategory",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Hailuo_AI",
+      "kind": "commons_category",
+      "note": "Only videos subcategory",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Stable_Diffusion",
+      "kind": "commons_category",
+      "note": "42 files: tutorials/screenshots plus 5 videos",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:2022_AI-generated_works",
+      "kind": "commons_category",
+      "note": "43 files; only 2 videos (Benlisquare)",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:2023_AI-generated_works",
+      "kind": "commons_category",
+      "note": "3 videos: Onemark logo, Void, Will Smith",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:2024_AI-generated_works",
+      "kind": "commons_category",
+      "note": "138 files, 39 video/animated; source of Gen-3, CogVideoX, Witches Wood",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-generated_works_by_year",
+      "kind": "commons_category",
+      "note": "Year subcategories 2016-2026",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Videos_of_generative_AI_diffusion",
+      "kind": "commons_category",
+      "note": "1 file: Vlad Pluzhnikov SD animation",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI_misgeneration",
+      "kind": "commons_category",
+      "note": "73 files, 6 videos incl. EXECUTE, Sora cat-on-bed, Photoreal-train",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Runway_AI",
+      "kind": "commons_category",
+      "note": "Only EXECUTE short film",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Runway_ML",
+      "kind": "commons_category",
+      "note": "Only Gen-3 Alpha cowboy",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-generated_gibberish",
+      "kind": "commons_category",
+      "note": "79 files; only POOF is video",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-misgenerated_body_parts",
+      "kind": "commons_category",
+      "note": "No videos in body-part misgeneration tree",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-misgenerated_objects",
+      "kind": "commons_category",
+      "note": "Stills only",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-misgenerated_clothing",
+      "kind": "commons_category",
+      "note": "Stills only",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI_slop",
+      "kind": "commons_category",
+      "note": "10 videos: mostly 2025 political; Gen-2 dog and VideoPoet included",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-generated_horses",
+      "kind": "commons_category",
+      "note": "Stills plus Gen-3 cowboy video",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-generated_women",
+      "kind": "commons_category",
+      "note": "5 videos incl. Dream Machine Egypt, Witches Wood",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-generated_dogs",
+      "kind": "commons_category",
+      "note": "4 videos incl. Gen-2 dog",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-generated_cats",
+      "kind": "commons_category",
+      "note": "Cat piano (VideoPoet), Sora cat-on-bed",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Media_modified_by_AI",
+      "kind": "commons_category",
+      "note": "546 files; a few AI-animated photo videos (real/historical people)",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Artificial_intelligence_historic_art",
+      "kind": "commons_category",
+      "note": "Dream Machine Egypt, Sora Gold Rush",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-generated_videos_of_real_people",
+      "kind": "commons_category",
+      "note": "9 videos: political/celebrity; Nusantara Nobles included",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Generative_artificial_intelligence",
+      "kind": "commons_category",
+      "note": "22 subcategories; nothing new for video",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Artificial_intelligence_art",
+      "kind": "commons_category",
+      "note": "10 subcategories",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-generated_works",
+      "kind": "commons_category",
+      "note": "Two subcategories",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Artificial_intelligence",
+      "kind": "commons_category",
+      "note": "61 subcategories, none video-specific",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-generated_creative_works",
+      "kind": "commons_category",
+      "note": "Image series only",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Generative_AI_models",
+      "kind": "commons_category",
+      "note": "17 model subcategories incl. Disco Diffusion, DeepDream",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Midjourney",
+      "kind": "commons_category",
+      "note": "Only a tutorial screencast video",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Wikimedia_projects_and_generative_AI",
+      "kind": "commons_category",
+      "note": "Conference talks only",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Prompt_engineering_for_generative_AI",
+      "kind": "commons_category",
+      "note": "Gen-2 dog is in this category",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Animations_of_artificial_intelligence",
+      "kind": "commons_category",
+      "note": "Algorithm animations, not generative video",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Media_of_artificial_intelligence",
+      "kind": "commons_category",
+      "note": "Photos subcategory only",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-generated_web-based_applications",
+      "kind": "commons_category",
+      "note": "Screenshots only",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Disco_Diffusion",
+      "kind": "commons_category",
+      "note": "One still, no video",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Deep_Dream",
+      "kind": "commons_category",
+      "note": "Images subcategory only",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Craiyon",
+      "kind": "commons_category",
+      "note": "Stills only",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Meta_AI",
+      "kind": "commons_category",
+      "note": "Screenshots plus Meta AI videos subcategory",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Leonardo_AI",
+      "kind": "commons_category",
+      "note": "Stills only",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:ComfyUI",
+      "kind": "commons_category",
+      "note": "11 files; tutorial screencasts incl. I2VGen-XL",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Magnific",
+      "kind": "commons_category",
+      "note": "Two stills",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Images_generated_by_Stable_Diffusion",
+      "kind": "commons_category",
+      "note": "111 files, stills; videos subcategory",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Stable+Diffusion+video",
+      "kind": "commons_search",
+      "note": "227 hits; tutorials plus the SD video files",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Deforum",
+      "kind": "commons_search",
+      "note": "9 hits; only Witches Wood description mentions Deforum",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=AnimateDiff",
+      "kind": "commons_search",
+      "note": "No AnimateDiff files (noise: 'diff')",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Runway+Gen-2",
+      "kind": "commons_search",
+      "note": "EXECUTE, Witches Wood; rest airport noise",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Sora",
+      "kind": "commons_search",
+      "note": "24k hits (fonts/birds); Sora video files seen",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Runway+Gen-1",
+      "kind": "commons_search",
+      "note": "Found Gen-1 watercolor and Gen-3 cowboy",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Runway+Gen-3",
+      "kind": "commons_search",
+      "note": "Found Nusantara Nobles (Gen-3 Alpha Turbo), EXECUTE, Witches Wood",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Gen-3+Alpha",
+      "kind": "commons_search",
+      "note": "Cowboy clip only relevant hit",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Gen-4+Runway",
+      "kind": "commons_search",
+      "note": "No Gen-4 file exists",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=RunwayML",
+      "kind": "commons_search",
+      "note": "Found Hebrew RunwayML wave clip",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Pika+Labs",
+      "kind": "commons_search",
+      "note": "No Pika Labs video (only pika animal noise)",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Luma+Dream+Machine",
+      "kind": "commons_search",
+      "note": "Dream Machine Egypt, POOF only",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Luma+Ray",
+      "kind": "commons_search",
+      "note": "239 noise hits, no Ray video",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Kaiber",
+      "kind": "commons_search",
+      "note": "Only Witches Wood description",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=ModelScope+text-to-video",
+      "kind": "commons_search",
+      "note": "No ModelScope video besides Will Smith spaghetti",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Zeroscope",
+      "kind": "commons_search",
+      "note": "0 hits",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Stable+Video+Diffusion",
+      "kind": "commons_search",
+      "note": "Tutorials plus Robo Knightwolf",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Midjourney+video",
+      "kind": "commons_search",
+      "note": "POOF (Midjourney stills) and tutorial only",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Haiper",
+      "kind": "commons_search",
+      "note": "No Haiper media",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Pixverse",
+      "kind": "commons_search",
+      "note": "0 hits",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Genmo+Mochi",
+      "kind": "commons_search",
+      "note": "0 hits",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+AI-generated",
+      "kind": "commons_search",
+      "note": "362 hits, paged 100; enumerated all AI-generated video titles",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+Runway",
+      "kind": "commons_search",
+      "note": "Airport noise; only Hebrew RunwayML and Nusantara relevant",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+Stable+Diffusion",
+      "kind": "commons_search",
+      "note": "SD tutorials and SD video files",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+txt2video",
+      "kind": "commons_search",
+      "note": "7 hits: CogVideoX, Hailuo, Veo, Meta",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+text-to-video+model+generated",
+      "kind": "commons_search",
+      "note": "1121 hits; scanned first 100",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+image-to-video",
+      "kind": "commons_search",
+      "note": "Noise only",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=img2img+animation",
+      "kind": "commons_search",
+      "note": "Exactly the 2 Benlisquare animations",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Gen2+prompt+seed",
+      "kind": "commons_search",
+      "note": "Exactly the Gen-2 dog clip",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=%22Gen-2%22+Runway+video+generated",
+      "kind": "commons_search",
+      "note": "EXECUTE only",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Make-A-Video",
+      "kind": "commons_search",
+      "note": "Noise, no Meta Make-A-Video media",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:bitmap+AI-generated+animation+gif",
+      "kind": "commons_search",
+      "note": "GIF hits: none from a video model in era",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+Kling",
+      "kind": "commons_search",
+      "note": "Noise; Forgotten Aral and Coca-Cola ad titles only",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=intitle:ComfyUI",
+      "kind": "commons_search",
+      "note": "4 tutorial screencasts incl. I2VGen-XL",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=14&srsearch=AI-generated+video",
+      "kind": "commons_search",
+      "note": "Category search: yielded the model-specific video categories",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=allimages&aiuser=Oronbb",
+      "kind": "commons_search",
+      "note": "Oronbb uploads: 5 AI videos 2022-2024 (Runway + unidentified)",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=allimages&aiuser=Lwneal",
+      "kind": "commons_search",
+      "note": "Lwneal uploads: Gen-2 dog only AI video",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=allimages&aiuser=Benlisquare",
+      "kind": "commons_search",
+      "note": "Benlisquare uploads: only the 2 SD animations are AI",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=allimages&aiuser=VulcanSphere",
+      "kind": "commons_search",
+      "note": "VulcanSphere uploads: CogVideoX clips found via category",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Algorithmically-generated_animation_of_young_woman_in_park.webm",
+      "kind": "commons_file",
+      "note": "Benlisquare SD v1-4 park animation; wikitext, SDC, licence CC BY-SA 4.0 + GFDL read",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Algorithmically-generated_animation_of_young_woman_adorned_with_flowers.webm",
+      "kind": "commons_file",
+      "note": "Benlisquare SD v1-4 flowers animation; PD-algorithm; wikitext read",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Gen-1_IMG_9350_-_Watercolor_painting,_scenic_landscape,_soft.webm",
+      "kind": "commons_file",
+      "note": "Runway Gen-1 style transfer by Oronbb, CC BY-SA 4.0; wikitext and SDC read",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Gen2-Example-Dog-Podium.webm",
+      "kind": "commons_file",
+      "note": "Runway Gen2 dog at podium with prompt and seed, CC BY-SA 4.0",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:%D7%92%D7%9C_%D7%9E%D7%95%D7%A0%D7%A4%D7%A9_%D7%9E%D7%AA%D7%9E%D7%95%D7%A0%D7%AA_%D7%A1%D7%98%D7%99%D7%9C%D7%A1_%D7%91%D7%90%D7%9E%D7%A6%D7%A2%D7%95%D7%AA_RunwayML.webm",
+      "kind": "commons_file",
+      "note": "Hebrew-titled RunwayML still-to-video wave, CC BY-SA 4.0",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Gen-3_Alpha_3480943356,_A_cowboy_riding_his_,_pikaso_texttoimage_C_(1).webm",
+      "kind": "commons_file",
+      "note": "Runway Gen-3 Alpha cowboy; CC BY 4.0 plus PD-algorithm; wikitext and rendered licence read",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:EXECUTE_--_dark_Sci-Fi_AI-short_film.webm",
+      "kind": "commons_file",
+      "note": "Runway Gen-2 short film, YouTube CC BY 3.0, LicenseReview open",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Sorelius_Beats_%E2%80%93_Robo_Knightwolf_(Synthwave_Music_Video_with_Stable_Diffusion).webm",
+      "kind": "commons_file",
+      "note": "Stable Video Diffusion music video, YouTube CC BY 3.0, LicenseReview open",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Animation_of_Stable_Diffusion_generation_(gradual_generative_conceptual_manifestation_into_fantasy_art_works).webm",
+      "kind": "commons_file",
+      "note": "435 s SD morph video by Vlad Pluzhnikov, YouTube CC BY 3.0",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Witches_Wood_(Vocal_AI_music_with_AI_animation_music_video).webm",
+      "kind": "commons_file",
+      "note": "Multi-tool AI music video, YouTube CC BY 3.0, 4K 60 fps",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Unconfirmed_likely_AI-generated_images_to_check",
+      "kind": "commons_category",
+      "note": "11 files; 2 videos by 00Regedit00 (Aug 2024), tool unknown",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Third-party_content_assumed_to_be_AI",
+      "kind": "commons_category",
+      "note": "44 files, 5 videos (2026 TV ident, Iran LEGO propaganda); out of era",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Luciaverse1.webm",
+      "kind": "commons_file",
+      "note": "Unconfirmed AI clip, CC0, Aug 2024, no tool named",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Output.webm",
+      "kind": "commons_file",
+      "note": "Unconfirmed AI clip, CC0, Aug 2024, no tool named",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Sci-Fi_France_ident.webm",
+      "kind": "commons_file",
+      "note": "2026 TV ident; out of era, brand",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-generated_videos_by_VulcanSphere",
+      "kind": "commons_category",
+      "note": "7 VulcanSphere CC0 clips: CogVideoX x2, Hailuo, Meta AI, Veo 3/3.1",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Cyberpunk_Rainy_Street_(Hailuo_AI).webm",
+      "kind": "commons_file",
+      "note": "VulcanSphere Hailuo AI clip 2024-12-24, CC0 + PD-algorithm, prompt published",
+      "retrieved": true
+    },
+    {
+      "url": "https://www.minimax.io/news/video-01",
+      "kind": "official_page",
+      "note": "MiniMax Video-01 launch post dated 2024.08.31: 720p, 25 fps, up to 6 s",
+      "retrieved": true
+    },
+    {
+      "url": "https://hailuoai.video/protocol?type=terms",
+      "kind": "terms_page",
+      "note": "Hailuo terms page is JS-rendered; no text retrievable",
+      "retrieved": false
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Late_Afternoon_Swans_(CogVideoX).webm",
+      "kind": "commons_file",
+      "note": "VulcanSphere CogVideoX swans, CC0 + PD-algorithm, prompt published",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Painting_With_The_Breeze_(CogVideoX).webm",
+      "kind": "commons_file",
+      "note": "VulcanSphere CogVideoX painter, CC0 + PD-algorithm, prompt published",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:AI_generated_Video_Clip.webm",
+      "kind": "commons_file",
+      "note": "Oronbb Oct-2022 512x512 12 s clip, tool unnamed, CC BY-SA 4.0",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:AI_generated_video_clip_-New_creative_video.webm",
+      "kind": "commons_file",
+      "note": "Oronbb Dec-2022 vertical clip with AI character/audio, tool unnamed",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Generative_ai_-_electronic_head_moving_Dec_2023.webm",
+      "kind": "commons_file",
+      "note": "Nesnad Dec-2023 4 s clip, model unidentified, PD-algorithm",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Wikimachine_ai_video_example_2024_Jan_14.webm",
+      "kind": "commons_file",
+      "note": "Nesnad Jan-2024 24 s clip, model unidentified, PD-algorithm",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Dream_Machine_Egypt_animation.webm",
+      "kind": "commons_file",
+      "note": "Luma Dream Machine clip from an X post, third-party PD-algorithm upload",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:POOF_(AI_Short_Film).webm",
+      "kind": "commons_file",
+      "note": "Edited multi-tool short film from YouTube, third-party PD-algorithm tag",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Nusantara_Nobles_slow_dance.webm",
+      "kind": "commons_file",
+      "note": "Gen-3 Alpha Turbo animation of an 1898 photo of real people",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Cat_piano_with_audio_3EB0CD1F.webm",
+      "kind": "commons_file",
+      "note": "VideoPoet demo clip re-uploaded by third party as PD-algorithm",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Dog_popcorn_with_audio_6781BD0C.webm",
+      "kind": "commons_file",
+      "note": "VideoPoet demo clip, same provenance issue",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Drums_with_audio_DA80C510.webm",
+      "kind": "commons_file",
+      "note": "VideoPoet demo clip, same provenance issue",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Cat-on-bed.webm",
+      "kind": "commons_file",
+      "note": "Sora Feb-2024 official demo, third-party PD-algorithm upload",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Photoreal-train.webm",
+      "kind": "commons_file",
+      "note": "Sora demo with documented misgeneration in description",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Octopus-and-crab.webm",
+      "kind": "commons_file",
+      "note": "Sora Feb-2024 demo, third-party PD-algorithm upload",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Monster-with-melting-candle.webm",
+      "kind": "commons_file",
+      "note": "Sora Feb-2024 demo, third-party PD-algorithm upload",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Will_Smith_Eating_Spaghetti_Original.webm",
+      "kind": "commons_file",
+      "note": "ModelScope-era 240x240 clip; real person, personality-rights warning",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Pink_Floyd_-_Any_Colour_You_Like_(50th_Anniversary_Competition_Winner's_Video;_no_audio).webm",
+      "kind": "commons_file",
+      "note": "Pink Floyd competition winner video; brand IP",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Example_video_of_using_AI_tools_for_logo_intro_videos_(Onemark_Logo_Effect).webm",
+      "kind": "commons_file",
+      "note": "Company logo animation with SD/Photoshop Beta, YouTube CC BY 3.0",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Extra_Terra_%26_Infraction_%E2%80%93_Void_(AI-generated_music_video_%26_cyberpunk_music).webm",
+      "kind": "commons_file",
+      "note": "Music video with third-party track; conflicting licence signals",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:%D0%9C%D0%90%D0%91%D0%9E%D0%99%D0%A7%D0%98%D0%9A%D0%98_-_%D0%A2%D1%80%D0%B5%D0%B9%D0%BB%D0%B5%D1%80_-_%D0%9C%D1%83%D0%BB%D1%8C%D1%82%D1%84%D0%B8%D0%BB%D1%8C%D0%BC_(2024).webm",
+      "kind": "commons_file",
+      "note": "Commercial animated-film trailer, model unnamed, third-party PD-algorithm",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Chen_Zhen.gif",
+      "kind": "commons_file",
+      "note": "AI-animated Bruce Lee posters; real person and film IP",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Japanese_Buddhist_Nuns_1902_-_AI_video_generation.webm",
+      "kind": "commons_file",
+      "note": "Hailuo animation of 1902 photo of real people, 2025",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Transform_images_to_videos_in_minutes_with_I2VGENXL_in_ComfyUI.webm",
+      "kind": "commons_file",
+      "note": "ComfyUI I2VGen-XL tutorial screencast, YouTube CC BY 3.0",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Micronautas_recolectando_polen_sobre_ala_de_mariposa,_animaci%C3%B3n_con_IA_basada_en_imagen_real_de_ala_de_mariposa_con_polen.webm",
+      "kind": "commons_file",
+      "note": "2025 AI animation of a real macro photo; tool unnamed",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Animated_Representation_of_Meta_AI_and_Llama_(Meta_AI_Imagine).webm",
+      "kind": "commons_file",
+      "note": "Meta AI Imagine 2025 clip, CC0 + PD-algorithm (lead for other hunters)",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Clock_by_Veo_2.webm",
+      "kind": "commons_file",
+      "note": "Veo 2 clip via Gemini Advanced, CC0 + PD-algorithm, 2025 (lead for Google hunter)",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:AI-generated_heavy_metal_music.webm",
+      "kind": "commons_file",
+      "note": "72-minute AI music compilation; irrelevant",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:AI-generated_video_of_a_domestic_dragon.gif",
+      "kind": "commons_file",
+      "note": "2025 YouTube-sourced GIF, tool unidentified",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Brownvelevy.gif",
+      "kind": "commons_file",
+      "note": "Random-walk physics gif; false search hit",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Palantir_(animated_AI_illustration).gif",
+      "kind": "commons_file",
+      "note": "2025 Flux still-to-gif; out of era",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Template:PD-algorithm",
+      "kind": "commons_file",
+      "note": "Rendered PD-algorithm tag text incl. UK/Hong Kong 50-year caveat and AI-derivative disclaimer",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Template:YouTube_CC-BY",
+      "kind": "commons_file",
+      "note": "Rendered YouTube CC-BY template (CC BY 3.0 before Aug 2025)",
+      "retrieved": true
+    },
+    {
+      "url": "https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q113660857|Q121133233|P13308|P13381",
+      "kind": "wikipedia",
+      "note": "Labels for Commons SDC items: software-used, prompt, licence and AI-video classes",
+      "retrieved": true
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Text-to-video_model",
+      "kind": "wikipedia",
+      "note": "Raw wikitext; timeline table used only as lead (secondary)",
+      "retrieved": true
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Runway_(company)",
+      "kind": "wikipedia",
+      "note": "Raw wikitext; only a logo file, no video",
+      "retrieved": true
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Stable_Diffusion",
+      "kind": "wikipedia",
+      "note": "Raw wikitext; no video files",
+      "retrieved": true
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Sora_(text-to-video_model)",
+      "kind": "wikipedia",
+      "note": "Raw wikitext; Sora Tokyo walk file (H1 channel)",
+      "retrieved": true
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Dream_Machine_(text-to-video_model)",
+      "kind": "wikipedia",
+      "note": "Raw wikitext; uses Dream Machine Egypt clip",
+      "retrieved": true
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Deepfake",
+      "kind": "wikipedia",
+      "note": "Raw wikitext; political deepfake videos only",
+      "retrieved": true
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Veo_(text-to-video_model)",
+      "kind": "wikipedia",
+      "note": "Raw wikitext; Veo 3 file (H1 channel)",
+      "retrieved": true
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Stability_AI",
+      "kind": "wikipedia",
+      "note": "Raw wikitext; no video files",
+      "retrieved": true
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/VideoPoet",
+      "kind": "wikipedia",
+      "note": "Raw wikitext; short stub",
+      "retrieved": true
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Pika_(company)",
+      "kind": "wikipedia",
+      "note": "Page does not exist",
+      "retrieved": false
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Runway_Gen-2",
+      "kind": "wikipedia",
+      "note": "Page does not exist",
+      "retrieved": false
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Make-A-Video",
+      "kind": "wikipedia",
+      "note": "Page does not exist",
+      "retrieved": false
+    },
+    {
+      "url": "https://runwayml.com/research/gen-1",
+      "kind": "official_page",
+      "note": "Runway Gen-1 research page (redirects to runway.com), dated Feb 2023",
+      "retrieved": true
+    },
+    {
+      "url": "https://runwayml.com/research/gen-2",
+      "kind": "official_page",
+      "note": "Runway Gen-2 research page, dated Feb 2023, lists modes",
+      "retrieved": true
+    },
+    {
+      "url": "https://runwayml.com/research/introducing-gen-3-alpha",
+      "kind": "official_page",
+      "note": "Gen-3 Alpha announcement dated June 17, 2024",
+      "retrieved": true
+    },
+    {
+      "url": "https://runwayml.com/research/introducing-runway-gen-4",
+      "kind": "official_page",
+      "note": "Gen-4 page (no Commons Gen-4 file exists)",
+      "retrieved": true
+    },
+    {
+      "url": "https://web.archive.org/web/20230618102343/https://runwayml.com/ai-magic-tools/gen-1/",
+      "kind": "archive_item",
+      "note": "Runway Gen-1 tool page as of 2023-06-18: video-to-video with style reference",
+      "retrieved": true
+    },
+    {
+      "url": "https://web.archive.org/web/20250723184337/https://help.runwayml.com/hc/en-us/articles/30266515017875-Creating-with-Gen-3-Alpha-and-Gen-3-Alpha-Turbo",
+      "kind": "archive_item",
+      "note": "Runway help spec table: Gen-3 Alpha 1280x768, 24 fps, 5 or 10 s",
+      "retrieved": true
+    },
+    {
+      "url": "https://help.runwayml.com/hc/en-us/articles/30266515017875-Creating-with-Gen-3-Alpha-and-Gen-3-Alpha-Turbo",
+      "kind": "official_page",
+      "note": "Live help page blocked (HTTP 403); Wayback copy used instead",
+      "retrieved": false
+    },
+    {
+      "url": "https://web.archive.org/web/20230720142417/https://runwayml.com/terms-of-use/",
+      "kind": "terms_page",
+      "note": "Runway Terms of Use (18 Jul 2023): company claims no ownership of Outputs",
+      "retrieved": true
+    },
+    {
+      "url": "https://web.archive.org/web/20240903153311/https://runwayml.com/terms-of-use",
+      "kind": "terms_page",
+      "note": "Runway Terms of Use (Sep 2024): same no-ownership clause",
+      "retrieved": true
+    },
+    {
+      "url": "https://stability.ai/news/stable-diffusion-public-release",
+      "kind": "official_page",
+      "note": "SD public release post, datePublished 2022-08-22T18:06:20+0000",
+      "retrieved": true
+    },
+    {
+      "url": "https://stability.ai/news/stable-video-diffusion-open-ai-video-model",
+      "kind": "official_page",
+      "note": "SVD announcement, datePublished 2023-11-21T11:14:01+0000; research-only",
+      "retrieved": true
+    },
+    {
+      "url": "https://huggingface.co/CompVis/stable-diffusion-v1-4",
+      "kind": "official_page",
+      "note": "SD v1-4 model card; HF API createdAt 2022-08-20",
+      "retrieved": true
+    },
+    {
+      "url": "https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt",
+      "kind": "official_page",
+      "note": "SVD-XT model card; current Community License",
+      "retrieved": true
+    },
+    {
+      "url": "https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt/resolve/main/LICENSE.md",
+      "kind": "terms_page",
+      "note": "Stability AI Community License (5 Jul 2024), model licence",
+      "retrieved": true
+    },
+    {
+      "url": "https://github.com/CompVis/stable-diffusion",
+      "kind": "github_repo",
+      "note": "SD v1 repo, created 2022-08-10 via GitHub API",
+      "retrieved": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CompVis/stable-diffusion/main/LICENSE",
+      "kind": "github_file",
+      "note": "CreativeML Open RAIL-M section 6: Licensor claims no rights in Output",
+      "retrieved": true
+    },
+    {
+      "url": "https://github.com/AUTOMATIC1111/stable-diffusion-webui",
+      "kind": "github_repo",
+      "note": "Web UI repo created 2022-08-22 via GitHub API",
+      "retrieved": true
+    },
+    {
+      "url": "https://api.github.com/repos/Animator-Anon/Animator",
+      "kind": "github_repo",
+      "note": "Animation script repo lookup returned nothing (repo moved/removed)",
+      "retrieved": false
+    },
+    {
+      "url": "https://raw.githubusercontent.com/THUDM/CogVideo/main/README.md",
+      "kind": "github_file",
+      "note": "CogVideoX-2B open-sourced 2024/8/6, 5B 2024/8/27; 720x480",
+      "retrieved": true
+    },
+    {
+      "url": "https://arxiv.org/abs/2408.06072",
+      "kind": "paper",
+      "note": "CogVideoX paper, v1 submitted 12 Aug 2024",
+      "retrieved": true
+    },
+    {
+      "url": "https://huggingface.co/THUDM/CogVideoX-5b/raw/main/LICENSE",
+      "kind": "terms_page",
+      "note": "CogVideoX License: rights in generated content belong to the user",
+      "retrieved": true
+    },
+    {
+      "url": "https://huggingface.co/spaces/THUDM/CogVideoX-5B-Space",
+      "kind": "official_page",
+      "note": "Credited generation Space (JS shell only when fetched)",
+      "retrieved": true
+    },
+    {
+      "url": "https://web.archive.org/web/20240614004524/https://lumalabs.ai/dream-machine",
+      "kind": "archive_item",
+      "note": "Luma Dream Machine launch page (14 Jun 2024), lists current limitations",
+      "retrieved": true
+    },
+    {
+      "url": "https://web.archive.org/web/20240616115531/https://lumalabs.ai/legal/tos",
+      "kind": "terms_page",
+      "note": "Luma ToS Jun 2024: commercial use of Output only with qualifying subscription",
+      "retrieved": true
+    },
+    {
+      "url": "https://lumalabs.ai/news/dream-machine",
+      "kind": "official_page",
+      "note": "Guessed news URL returned 404",
+      "retrieved": false
+    },
+    {
+      "url": "https://web.archive.org/web/20241004173249/https://www.youtube.com/watch?v=Z346NFRSPg4&gl=US&hl=en",
+      "kind": "archive_item",
+      "note": "YouTube page of EXECUTE: License row 'Creative Commons Attribution license (reuse allowed)', published Jun 26, 2024",
+      "retrieved": true
+    },
+    {
+      "url": "https://web.archive.org/web/20240318193031/https://www.youtube.com/watch?v=JOA81hby0Dc",
+      "kind": "archive_item",
+      "note": "YouTube page of Witches Wood: CC BY licence row; published 2024-01-12",
+      "retrieved": true
+    },
+    {
+      "url": "https://web.archive.org/web/20240413212045/https://www.youtube.com/watch?v=kvpj4Dqib_0",
+      "kind": "archive_item",
+      "note": "YouTube page of Robo Knightwolf: CC BY licence row; published Dec 20, 2023",
+      "retrieved": true
+    },
+    {
+      "url": "https://web.archive.org/web/20251004193756/https://www.youtube.com/watch?v=D-Y9GJ39sK4",
+      "kind": "archive_item",
+      "note": "YouTube page of Vlad Pluzhnikov SD animation: CC BY licence row; May 16, 2023",
+      "retrieved": true
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=Z346NFRSPg4",
+      "kind": "official_page",
+      "note": "Live YouTube fetch blocked (HTTP 429 captcha) from sandbox; Wayback used",
+      "retrieved": false
+    },
+    {
+      "url": "https://apps.apple.com/us/app/runway-ai-video-generator/id1665024375",
+      "kind": "official_page",
+      "note": "Looked for Gen-2 public-availability date; no Gen-2 text found",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+Lumiere",
+      "kind": "commons_search",
+      "note": "No Google Lumiere media; only Lumiere-brothers films",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+Vidu",
+      "kind": "commons_search",
+      "note": "No Vidu media",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+%22Movie+Gen%22",
+      "kind": "commons_search",
+      "note": "No Meta Movie Gen media",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+Phenaki",
+      "kind": "commons_search",
+      "note": "No Phenaki media",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+Emu",
+      "kind": "commons_search",
+      "note": "No Meta Emu Video media",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+Hailuo+MiniMax",
+      "kind": "commons_search",
+      "note": "Only the two Hailuo files",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+Veo+2",
+      "kind": "commons_search",
+      "note": "Clock by Veo 2 only (out of era)",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+Wan+Alibaba",
+      "kind": "commons_search",
+      "note": "No Wan media",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+Mochi",
+      "kind": "commons_search",
+      "note": "No Genmo Mochi media",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+LTX",
+      "kind": "commons_search",
+      "note": "No LTX-Video media",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+HunyuanVideo",
+      "kind": "commons_search",
+      "note": "No HunyuanVideo media",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+AI+animation+prompt",
+      "kind": "commons_search",
+      "note": "Noise plus known AI clips",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+Midjourney",
+      "kind": "commons_search",
+      "note": "POOF and Midjourney tutorial only",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+Kaiber",
+      "kind": "commons_search",
+      "note": "Only Witches Wood description",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+Luma",
+      "kind": "commons_search",
+      "note": "Lumiere-brothers noise; Dream Machine files known",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+Pika",
+      "kind": "commons_search",
+      "note": "Pika-animal noise; no Pika Labs media",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+diffusion+animation",
+      "kind": "commons_search",
+      "note": "Scientific diffusion animations plus SD clips",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+deepfake",
+      "kind": "commons_search",
+      "note": "Political deepfake clips; excluded",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+AI-animated",
+      "kind": "commons_search",
+      "note": "Deep Nostalgia and AI photo-animation clips (real people)",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+Stable+Video",
+      "kind": "commons_search",
+      "note": "Robo Knightwolf plus SD tutorials",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+Zeroscope",
+      "kind": "commons_search",
+      "note": "0 hits",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+generative+video",
+      "kind": "commons_search",
+      "note": "Known AI clips only",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+Genmo",
+      "kind": "commons_search",
+      "note": "0 hits",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+Haiper",
+      "kind": "commons_search",
+      "note": "0 hits",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Pika+1.0+video",
+      "kind": "commons_search",
+      "note": "Pika-animal noise only",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=ModelScope",
+      "kind": "commons_search",
+      "note": "67k noise hits; no ModelScope video model files",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=%22Stable+Video+Diffusion%22",
+      "kind": "commons_search",
+      "note": "Tutorials plus Robo Knightwolf",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=Midjourney+animated+gif",
+      "kind": "commons_search",
+      "note": "0 hits",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=generated+by+Runway",
+      "kind": "commons_search",
+      "note": "Runway-airport noise",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:bitmap+Stable+Diffusion+animated",
+      "kind": "commons_search",
+      "note": "Only a physics gif (false hit)",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:bitmap+Midjourney+animated+gif",
+      "kind": "commons_search",
+      "note": "0 hits",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:bitmap+animated+by+AI",
+      "kind": "commons_search",
+      "note": "GIF noise; domestic dragon gif (2025)",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:bitmap+generative+AI+animation",
+      "kind": "commons_search",
+      "note": "Chen Zhen gif; stills",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:bitmap+Runway",
+      "kind": "commons_search",
+      "note": "Airport noise",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:bitmap+text-to-video",
+      "kind": "commons_search",
+      "note": "Logo noise",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=AI-generated+animated+gif+prompt",
+      "kind": "commons_search",
+      "note": "0 useful hits",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=animated+using+Stable+Diffusion",
+      "kind": "commons_search",
+      "note": "478 noise hits",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=morph+latent+space+animation+Stable+Diffusion",
+      "kind": "commons_search",
+      "note": "0 hits",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=interpolation+between+images+Stable+Diffusion",
+      "kind": "commons_search",
+      "note": "No relevant media",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=intitle:I2VGEN",
+      "kind": "commons_search",
+      "note": "0 hits",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=intitle:animatediff",
+      "kind": "commons_search",
+      "note": "0 hits",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=intitle:Deforum",
+      "kind": "commons_search",
+      "note": "0 hits",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=intitle:Runway",
+      "kind": "commons_search",
+      "note": "Airport noise (8000 hits)",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=intitle:Kaiber",
+      "kind": "commons_search",
+      "note": "0 hits",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=intitle:Pika",
+      "kind": "commons_search",
+      "note": "Logos/animal noise",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=intitle:Sora",
+      "kind": "commons_search",
+      "note": "Font-glyph noise (Sora typeface)",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=intitle:%22Dream+Machine%22",
+      "kind": "commons_search",
+      "note": "No Dream Machine titles beyond known",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=intitle:%22Stable+Video%22",
+      "kind": "commons_search",
+      "note": "No hits",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+generated+by+artificial+intelligence+prompt",
+      "kind": "commons_search",
+      "note": "109 hits; scanned; nothing new",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+StyleGAN+latent",
+      "kind": "commons_search",
+      "note": "0 hits",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+neural+network+generated+animation",
+      "kind": "commons_search",
+      "note": "2 noise hits",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+AI+hallucination+morph",
+      "kind": "commons_search",
+      "note": "0 hits",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+diffusion+model+generated+video",
+      "kind": "commons_search",
+      "note": "Noise only",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+text+to+video+AI+2023",
+      "kind": "commons_search",
+      "note": "Noise; Wikipedia 25 AI ads (2026)",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&srsearch=filetype:video+AI+animation+2024",
+      "kind": "commons_search",
+      "note": "Noise only",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=14&srsearch=Videos+by",
+      "kind": "commons_search",
+      "note": "Category search: only generic video categories",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=14&srsearch=Runway",
+      "kind": "commons_search",
+      "note": "Category search: only airport runway categories",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=14&srsearch=text-to-video",
+      "kind": "commons_search",
+      "note": "Category search: model categories already enumerated",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=14&srsearch=Stable+Diffusion",
+      "kind": "commons_search",
+      "note": "Category search: image categories plus Videos by Stable Diffusion",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=14&srsearch=generative+AI+animation",
+      "kind": "commons_search",
+      "note": "0 hits",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=14&srsearch=Pika",
+      "kind": "commons_search",
+      "note": "Category search: animal/surname noise",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=14&srsearch=Luma",
+      "kind": "commons_search",
+      "note": "Category search: noise",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=14&srsearch=AnimateDiff",
+      "kind": "commons_search",
+      "note": "0 hits",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=14&srsearch=AI-generated+animations",
+      "kind": "commons_search",
+      "note": "0 hits",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=14&srsearch=AI+animation",
+      "kind": "commons_search",
+      "note": "0 hits",
+      "retrieved": true
+    },
+    {
+      "url": "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=14&srsearch=deepfake",
+      "kind": "commons_search",
+      "note": "Category search: Deepfake and Face swap categories",
+      "retrieved": true
+    }
   ],
   "candidates": [
     {
@@ -262,15 +1739,35 @@
       },
       "attribution_required": true,
       "sharealike": true,
-      "media": {"duration_s": 10.0, "width": 1024, "height": 1024, "fps": 30, "size_mb": 104.38, "has_audio": false, "format": "webm"},
+      "media": {
+        "duration_s": 10.0,
+        "width": 1024,
+        "height": 1024,
+        "fps": 30,
+        "size_mb": 104.38,
+        "has_audio": false,
+        "format": "webm"
+      },
       "description": "Page text: 10-second, 300-frame animation of a young woman in a park, 30 fps, one txt2img frame upscaled to 1024x1024 then 300 img2img passes (denoise 0.4). Keyframes: 'park background' at 0-2 s, 'ocean view background, hair blowing in wind' at 4-6 s, 'ocean view background, smirk' at 8-10 s.",
       "prompt": "txt2img: 'portrait of young woman, medium shot, ((beautiful face)), high detail, collarbones, art by greg rutkowski and Alphonse Mucha, park background, bright lighting, facing camera'. Negative: 'out of frame, extra fingers, mutated hands, ((poorly drawn hands)), ((poorly drawn face)), (((mutation))), (((deformed))), ((ugly)), blurry, ((bad anatomy)), (((bad proportions))), ((extra limbs)), extra face, ((pubic hair)), nipples, hat'. Steps 50, Euler a, CFG 8, 512x512 then SD upscale; animation: denoise 0.4, 30 fps, 10 s.",
       "watermark_notes": "None expected (locally rendered frames, no service overlay). Pixel heuristic on the 480p transcode (temporal std + static-edge test in all four corners) found no static overlay. Not visually verified.",
       "risk_flags": [],
-      "story_roles": ["hook_early", "early_failure_annotation", "frame_stack"],
+      "story_roles": [
+        "hook_early",
+        "early_failure_annotation",
+        "frame_stack"
+      ],
       "excerpt_suggestions": [
-        {"in_s": 0.0, "out_s": 4.0, "why": "Opening keyframes; highest per-second frame-to-frame change in the clip (mean abs luma diff about 7.3/255 in second 1, falling to about 5/255) - every frame is a fresh diffusion pass, so texture churn should be visible. Unviewed."},
-        {"in_s": 4.0, "out_s": 8.0, "why": "Prompt switches to 'ocean view background, hair blowing in wind' at 4 s - expect background and face drift while the subject prompt stays the same. Unviewed; judge by eye."}
+        {
+          "in_s": 0.0,
+          "out_s": 4.0,
+          "why": "Opening keyframes; highest per-second frame-to-frame change in the clip (mean abs luma diff about 7.3/255 in second 1, falling to about 5/255) - every frame is a fresh diffusion pass, so texture churn should be visible. Unviewed."
+        },
+        {
+          "in_s": 4.0,
+          "out_s": 8.0,
+          "why": "Prompt switches to 'ocean view background, hair blowing in wind' at 4 s - expect background and face drift while the subject prompt stays the same. Unviewed; judge by eye."
+        }
       ],
       "reuse_verdict": "clear",
       "notes": "Sibling of the flowers clip (same author/method; H1 lists the flowers clip as sd14_flowers_img2img_animation_2022). ShareAlike: CC BY-SA applies to adaptations (crops/edits) of this clip; keep credit + licence link and mark changes. Commons categories 'Cleavage in AI art' / 'Cleavage of young women' - subject is a synthetic young woman in a park; review frames for suggestiveness before use. Prompt names artists (Greg Rutkowski, Alphonse Mucha) - do not show the prompt on screen without a decision on that. 104 MB, 83 Mbps VP9: make an edit proxy. Heuristic frame metrics (480p transcode): no hard cuts, luma pulses small (<0.2/255)."
@@ -296,15 +1793,35 @@
       },
       "attribution_required": false,
       "sharealike": false,
-      "media": {"duration_s": 10.0, "width": 1024, "height": 1024, "fps": 30, "size_mb": 102.3, "has_audio": false, "format": "webm"},
+      "media": {
+        "duration_s": 10.0,
+        "width": 1024,
+        "height": 1024,
+        "fps": 30,
+        "size_mb": 102.3,
+        "has_audio": false,
+        "format": "webm"
+      },
       "description": "Page text: 10-second, 300-frame animation of a young woman adorned with flowers, 30 fps, img2img chain (denoise 0.4). Keyframes: 'flowers' at 0 s, 'face closer to camera, flowers' at 2 s, 'face closer to camera' at 4 s, 'eye contact with viewer' at 6 s, 'disdain, angry glare' at 8-10 s.",
       "prompt": "txt2img: 'instagram model in art style of Albert Lynch and Carne Griffiths and Franz Xaver Winterhalter and Lilia Alvarado and Sophie Anderson, highly detailed, sharp focus illustration, artstation hq, (detailed face), (((full body))), (((standing)))'. Negative: '(bad anatomy) (portrait)'. Animation: steps 100, Euler a, CFG 12, denoise 0.4, 30 fps, keyframed prompts with negatives '(((dark))), (((fog))), (((mist))), (((blur)))'.",
       "watermark_notes": "None expected (locally rendered). Corner heuristic on the 480p transcode found no static overlay. Not visually verified.",
       "risk_flags": [],
-      "story_roles": ["hook_early", "early_failure_annotation", "frame_stack"],
+      "story_roles": [
+        "hook_early",
+        "early_failure_annotation",
+        "frame_stack"
+      ],
       "excerpt_suggestions": [
-        {"in_s": 0.0, "out_s": 4.0, "why": "Face moves closer to camera at the 2 s keyframe; frame-to-frame change is high (mean abs luma diff about 10/255 per frame). Unviewed."},
-        {"in_s": 6.0, "out_s": 10.0, "why": "Expression keyframes (eye contact, then disdain/angry glare) - documented way to show each frame is a new image pass; per-second max luminance jumps of about 2.5/255 recur between roughly 3-7 s and at 10 s (likely visible brightness pulses / flicker). Unviewed."}
+        {
+          "in_s": 0.0,
+          "out_s": 4.0,
+          "why": "Face moves closer to camera at the 2 s keyframe; frame-to-frame change is high (mean abs luma diff about 10/255 per frame). Unviewed."
+        },
+        {
+          "in_s": 6.0,
+          "out_s": 10.0,
+          "why": "Expression keyframes (eye contact, then disdain/angry glare) - documented way to show each frame is a new image pass; per-second max luminance jumps of about 2.5/255 recur between roughly 3-7 s and at 10 s (likely visible brightness pulses / flicker). Unviewed."
+        }
       ],
       "reuse_verdict": "likely",
       "notes": "Verdict is 'likely' not 'clear' because the only licence tag is the Commons PD-algorithm community assertion (H1 rated the same file 'clear'; both agree it is usable). No real person depicted; prompt names living artists (Carne Griffiths, Lilia Alvarado) and asks for an 'instagram model' look - keep the prompt off screen. The animation lives in a 1024x1024 square: needs a 9:16 crop/pad decision. 102 MB."
@@ -330,14 +1847,31 @@
       },
       "attribution_required": true,
       "sharealike": true,
-      "media": {"duration_s": 5.12, "width": 896, "height": 512, "fps": 25, "size_mb": 5.15, "has_audio": false, "format": "webm"},
+      "media": {
+        "duration_s": 5.12,
+        "width": 896,
+        "height": 512,
+        "fps": 25,
+        "size_mb": 5.15,
+        "has_audio": false,
+        "format": "webm"
+      },
       "description": "Page text: a video of elephants in Tanzania after conversion to a watercolor style with Runway (title carries the style prompt 'Watercolor painting, scenic landscape, soft'). Pixel statistics: mean frame-to-frame luma change rises from 5.6 to 12.1 (/255) across the clip and falls in the last second.",
       "prompt": "Style prompt visible only as the (truncated) file title: 'Watercolor painting, scenic landscape, soft'",
       "watermark_notes": "No static overlay found by the corner heuristic (all four corners, temporal std + static-edge test). Not visually verified; free-tier Runway outputs may carry a logo, so profile visually.",
       "risk_flags": [],
-      "story_roles": ["milestone", "control_demo", "early_failure_annotation", "split_screen_pair"],
+      "story_roles": [
+        "milestone",
+        "control_demo",
+        "early_failure_annotation",
+        "split_screen_pair"
+      ],
       "excerpt_suggestions": [
-        {"in_s": 0.0, "out_s": 5.1, "why": "Whole clip is 5.1 s: a real (uploader-filmed) video re-rendered frame-consistently in watercolor - first-generation video-to-video (Gen-1, Feb 2023). Second-by-second change grows to 12/255 by seconds 4-5, so the last 2 s are the busiest."}
+        {
+          "in_s": 0.0,
+          "out_s": 5.1,
+          "why": "Whole clip is 5.1 s: a real (uploader-filmed) video re-rendered frame-consistently in watercolor - first-generation video-to-video (Gen-1, Feb 2023). Second-by-second change grows to 12/255 by seconds 4-5, so the last 2 s are the busiest."
+        }
       ],
       "reuse_verdict": "likely",
       "notes": "Pairs with the Gen-2 dog (Aug 2023) and Gen-3 Alpha cowboy (Sep 2024) as a same-developer lineage: 896x512 -> 896x512 -> 1280x768, 5.1 s -> 4 s -> 10.5 s. Model version rests on the file title + Hebrew description (Gen-1 named in title, 'RunwayML' in text); ShareAlike applies. Higgsfield scene analysis (job 32ab0e83-aed1-4849-bef6-acb65b0000bd on my import) was still queued at write time; a separate earlier completed analysis of a watercolor-elephants clip in the same workspace describes wet-on-wet watercolor elephants with paint bleeding and 'jittery line work' (import source unverified)."
@@ -363,14 +1897,32 @@
       },
       "attribution_required": true,
       "sharealike": true,
-      "media": {"duration_s": 4.0, "width": 896, "height": 512, "fps": 24, "size_mb": 0.27, "has_audio": false, "format": "webm"},
+      "media": {
+        "duration_s": 4.0,
+        "width": 896,
+        "height": 512,
+        "fps": 24,
+        "size_mb": 0.27,
+        "has_audio": false,
+        "format": "webm"
+      },
       "description": "Page text: video generated by Runway Gen2 from a text prompt about a golden retriever in a suit at a podium giving a speech to the White House press corps. (Commons categories: Anthropomorphic dogs, Videos of the national flag of the United States, AI slop.) Pixel statistics: very low frame-to-frame change (mean abs luma diff about 0.8/255 per frame) - a slow, gentle clip.",
       "prompt": "A golden retriever in a suit sitting at a podium giving a speech to the white house press corp (seed 839976695)",
       "watermark_notes": "No static high-contrast overlay found by the corner heuristic. Not visually verified.",
-      "risk_flags": ["political"],
-      "story_roles": ["milestone", "gallery", "split_screen_pair"],
+      "risk_flags": [
+        "political"
+      ],
+      "story_roles": [
+        "milestone",
+        "gallery",
+        "split_screen_pair"
+      ],
       "excerpt_suggestions": [
-        {"in_s": 0.0, "out_s": 4.0, "why": "Entire 4 s clip; a compact, prompt-published Gen-2 sample (896x512) - useful next to Gen-1 and Gen-3 Alpha in a same-developer comparison. Look for facial/muzzle wobble and hand-less anthropomorphism by eye."}
+        {
+          "in_s": 0.0,
+          "out_s": 4.0,
+          "why": "Entire 4 s clip; a compact, prompt-published Gen-2 sample (896x512) - useful next to Gen-1 and Gen-3 Alpha in a same-developer comparison. Look for facial/muzzle wobble and hand-less anthropomorphism by eye."
+        }
       ],
       "reuse_verdict": "clear",
       "notes": "'political' flag is mild: prompt names the White House press corps and a US flag appears (category), but there is no real person and no election/propaganda content; decide whether the satire framing is acceptable. A Higgsfield scene analysis in the same workspace (not my import) describes a golden-retriever head on a man's body in a navy suit at a wooden podium with dark blue curtains and a red-white striped flag (job ae00c477-7657-4064-8651-7d8de6d3dd6b; import source unverified). Model claim is the uploader's own; Runway output specs are consistent (4 s, 24 fps) but that is not a proof."
@@ -396,14 +1948,31 @@
       },
       "attribution_required": true,
       "sharealike": true,
-      "media": {"duration_s": 4.0, "width": 1024, "height": 640, "fps": 24, "size_mb": 0.48, "has_audio": false, "format": "webm"},
+      "media": {
+        "duration_s": 4.0,
+        "width": 1024,
+        "height": 640,
+        "fps": 24,
+        "size_mb": 0.48,
+        "has_audio": false,
+        "format": "webm"
+      },
       "description": "Page text only: a wave animated from a still image with RunwayML. Pixel statistics: modest motion (mean abs luma diff about 1.5/255 per frame); top-left and top-right corner regions are static across the clip (consistent with a still sky).",
       "prompt": "unknown - not published",
       "watermark_notes": "No static high-contrast overlay found (corner heuristic; top corners are simply static content). Not visually verified.",
-      "risk_flags": ["unverifiable_model_claim"],
-      "story_roles": ["control_demo", "gallery"],
+      "risk_flags": [
+        "unverifiable_model_claim"
+      ],
+      "story_roles": [
+        "control_demo",
+        "gallery"
+      ],
       "excerpt_suggestions": [
-        {"in_s": 0.0, "out_s": 4.0, "why": "Whole 4 s clip; image-to-video (a still brought to life) in the Runway Gen-2 window. Second 2 carries the most motion (about 1.9/255)."}
+        {
+          "in_s": 0.0,
+          "out_s": 4.0,
+          "why": "Whole 4 s clip; image-to-video (a still brought to life) in the Runway Gen-2 window. Second 2 carries the most motion (about 1.9/255)."
+        }
       ],
       "reuse_verdict": "likely",
       "notes": "Weakest model attribution of the Runway clips: only 'RunwayML' is stated. Use the label 'Runway, Aug 2023' unless the uploader confirms Gen-2. Same uploader as the Gen-1 and Gen-3 clips (consistent Runway user). ShareAlike applies."
@@ -429,15 +1998,36 @@
       },
       "attribution_required": true,
       "sharealike": false,
-      "media": {"duration_s": 10.542, "width": 1280, "height": 768, "fps": 24, "size_mb": 1.6, "has_audio": false, "format": "webm"},
+      "media": {
+        "duration_s": 10.542,
+        "width": 1280,
+        "height": 768,
+        "fps": 24,
+        "size_mb": 1.6,
+        "has_audio": false,
+        "format": "webm"
+      },
       "description": "Page text: 'Cowboy riding in the desert'. Pixel statistics: continuous single shot, no cuts, steady low motion (mean abs luma diff about 2.6 falling to 1.3/255), one luminance jump of about 1.0/255 near second 10.",
       "prompt": "Prompt text truncated in the file name: 'A cowboy riding his ...' (input image from a Pikaso text-to-image)",
       "watermark_notes": "No static high-contrast overlay found by the corner heuristic. Not visually verified.",
       "risk_flags": [],
-      "story_roles": ["milestone", "control_demo", "gallery", "split_screen_pair"],
+      "story_roles": [
+        "milestone",
+        "control_demo",
+        "gallery",
+        "split_screen_pair"
+      ],
       "excerpt_suggestions": [
-        {"in_s": 0.0, "out_s": 5.0, "why": "First half: the highest motion of the take (about 2.6/255 per frame) - horse gait and rider anatomy are where 2024 models still slip; judge by eye."},
-        {"in_s": 5.0, "out_s": 10.5, "why": "Second half of the 10.5 s take; long single shot with no cut - useful to show 10-second temporal coherence compared with 4 s Gen-2."}
+        {
+          "in_s": 0.0,
+          "out_s": 5.0,
+          "why": "First half: the highest motion of the take (about 2.6/255 per frame) - horse gait and rider anatomy are where 2024 models still slip; judge by eye."
+        },
+        {
+          "in_s": 5.0,
+          "out_s": 10.5,
+          "why": "Second half of the 10.5 s take; long single shot with no cut - useful to show 10-second temporal coherence compared with 4 s Gen-2."
+        }
       ],
       "reuse_verdict": "likely",
       "notes": "Verdict 'likely' only because of the odd 'Runway ML' author label and because the input still (Pikaso) is itself AI output of unstated licence. Lineage pairing with the Gen-1 (Apr 2023) and Gen-2 (Aug 2023) clips. Not Gen-3 Alpha Turbo (Turbo needs an input image and is named 'Turbo'); title says Gen-3 Alpha."
@@ -463,15 +2053,36 @@
       },
       "attribution_required": true,
       "sharealike": false,
-      "media": {"duration_s": 603.355, "width": 1920, "height": 1080, "fps": 24, "size_mb": 481.69, "has_audio": true, "format": "webm"},
+      "media": {
+        "duration_s": 603.355,
+        "width": 1920,
+        "height": 1080,
+        "fps": 24,
+        "size_mb": 481.69,
+        "has_audio": true,
+        "format": "webm"
+      },
       "description": "Page text: dark sci-fi short film, 'written and directed and music by Vincent Chang Deng'; video from Runway Gen-2, voices from ElevenLabs (speech-to-speech and text-to-speech). Commons categories include AI misgeneration, Fiction about time travel, Videos with English subtitles. Scene-cut detection on the 480p transcode: 138 hard cuts, shots mostly 1.5-4 s (first cuts at 4.0, 7.0, 10.0, 13.0, 16.0, 25.1, 26.7, 28.3, 30.3 s).",
       "prompt": "unknown - not published",
       "watermark_notes": "Corner heuristic (first 120 s) found no static overlay; BUT Commons category 'Videos with English subtitles but without closed captioning in English' implies BURNT-IN English subtitles (probably bottom centre). Not visually verified - profile before cropping to 9:16.",
-      "risk_flags": ["violence"],
-      "story_roles": ["gallery", "early_failure_annotation"],
+      "risk_flags": [
+        "violence"
+      ],
+      "story_roles": [
+        "gallery",
+        "early_failure_annotation"
+      ],
       "excerpt_suggestions": [
-        {"in_s": 25.09, "out_s": 32.38, "why": "Dense cluster of short shots (cuts at 25.1, 26.7, 28.3, 30.3, 31.3, 32.4 s) = many separate Gen-2 generations back to back. Unviewed - chosen from the cut list only."},
-        {"in_s": 4.01, "out_s": 7.01, "why": "First clean 3 s shot after the opening (cuts at 4.0 and 7.0 s). Unviewed; choose final excerpts after a visual pass."}
+        {
+          "in_s": 25.09,
+          "out_s": 32.38,
+          "why": "Dense cluster of short shots (cuts at 25.1, 26.7, 28.3, 30.3, 31.3, 32.4 s) = many separate Gen-2 generations back to back. Unviewed - chosen from the cut list only."
+        },
+        {
+          "in_s": 4.01,
+          "out_s": 7.01,
+          "why": "First clean 3 s shot after the opening (cuts at 4.0 and 7.0 s). Unviewed; choose final excerpts after a visual pass."
+        }
       ],
       "reuse_verdict": "likely",
       "notes": "Only long-form Runway Gen-2 work on Commons; Commons category 'AI misgeneration' suggests visible errors but that is a community label. 'violence' flag is a precaution: title/genre dark sci-fi, content unviewed. 482 MB: use the 480p/1080p transcode for editing. Creator's own music plus ElevenLabs voices: use video only unless audio is cleared. Attribution must state that the clip was cropped/trimmed (CC BY 3.0 'indicate changes')."
@@ -497,15 +2108,37 @@
       },
       "attribution_required": true,
       "sharealike": false,
-      "media": {"duration_s": 102.101, "width": 3840, "height": 2160, "fps": 30, "size_mb": 212.61, "has_audio": true, "format": "webm"},
+      "media": {
+        "duration_s": 102.101,
+        "width": 3840,
+        "height": 2160,
+        "fps": 30,
+        "size_mb": 212.61,
+        "has_audio": true,
+        "format": "webm"
+      },
       "description": "Page text: retro synthwave music video ('heavily gated drums'), animation with Stable Diffusion / Stable Video Diffusion, SD checkpoint Juggernaut Final; hashtags #knightrider #airwolf #synthwave. Scene-cut detection (480p transcode): 42 cuts, first at 4.05 s then a run of uniform ~2 s shots from 24 s to 94 s (e.g. 24.0, 28.0, 30.1, 32.1, 34.1, 36.2, 38.2, 40.2 s), and a burst of sub-second cuts at 94.2, 94.6, 95.2, 95.7, 96.2 s - consistent with stitched short SVD generations.",
       "prompt": "unknown - not published",
       "watermark_notes": "Corner heuristic (480p, first 120 s at 4 fps) found no static overlay. Not visually verified.",
-      "risk_flags": ["brand_ip"],
-      "story_roles": ["milestone", "gallery", "control_demo"],
+      "risk_flags": [
+        "brand_ip"
+      ],
+      "story_roles": [
+        "milestone",
+        "gallery",
+        "control_demo"
+      ],
       "excerpt_suggestions": [
-        {"in_s": 30.05, "out_s": 34.11, "why": "Two consecutive ~2 s shots (cuts at 30.05, 32.08, 34.11) - clean way to show that each SVD clip is only ~2 s and the video is a stitch. Unviewed."},
-        {"in_s": 94.21, "out_s": 96.15, "why": "Fast cut burst (94.2, 94.6, 95.2, 95.7, 96.2 s) - possible montage peak; decide by eye."}
+        {
+          "in_s": 30.05,
+          "out_s": 34.11,
+          "why": "Two consecutive ~2 s shots (cuts at 30.05, 32.08, 34.11) - clean way to show that each SVD clip is only ~2 s and the video is a stitch. Unviewed."
+        },
+        {
+          "in_s": 94.21,
+          "out_s": 96.15,
+          "why": "Fast cut burst (94.2, 94.6, 95.2, 95.7, 96.2 s) - possible montage peak; decide by eye."
+        }
       ],
       "reuse_verdict": "likely",
       "notes": "Hashtags reference Knight Rider / Airwolf (brand_ip precaution - check that no recognisable licensed vehicle appears). 4K/30 fps, 213 MB. Second best 'SVD-era' evidence on Commons (no official SVD sample is on Commons). Attribution must mention cropping/trimming."
@@ -531,14 +2164,31 @@
       },
       "attribution_required": true,
       "sharealike": false,
-      "media": {"duration_s": 435.0, "width": 1920, "height": 1080, "fps": 30, "size_mb": 151.43, "has_audio": false, "format": "webm"},
+      "media": {
+        "duration_s": 435.0,
+        "width": 1920,
+        "height": 1080,
+        "fps": 30,
+        "size_mb": 151.43,
+        "has_audio": false,
+        "format": "webm"
+      },
       "description": "Page text: 'fantasy art #stablediffusion #Deliberate #LowRa #dehancer' (Commons title: gradual generative conceptual manifestation into fantasy art works). Pixel/scene statistics on the 480p transcode: only 2 hard cuts in 435 s (at 43.5 s and 60.9 s) and moderate frame change (mean abs luma diff about 3.6/255 at 4 fps sampling) - i.e. long continuous morphing sequences.",
       "prompt": "unknown - not published",
       "watermark_notes": "Corner heuristic found no static overlay. Not visually verified; a Dehancer film-emulation pass is mentioned in the tags.",
-      "risk_flags": ["unverifiable_model_claim"],
-      "story_roles": ["gallery", "early_failure_annotation"],
+      "risk_flags": [
+        "unverifiable_model_claim"
+      ],
+      "story_roles": [
+        "gallery",
+        "early_failure_annotation"
+      ],
       "excerpt_suggestions": [
-        {"in_s": 41.0, "out_s": 46.0, "why": "Straddles the first of only two hard cuts (43.5 s) - the boundary between two morph sequences. Unviewed; any 4 s window is a continuous morph, so scan for melting faces/objects by eye."}
+        {
+          "in_s": 41.0,
+          "out_s": 46.0,
+          "why": "Straddles the first of only two hard cuts (43.5 s) - the boundary between two morph sequences. Unviewed; any 4 s window is a continuous morph, so scan for melting faces/objects by eye."
+        }
       ],
       "reuse_verdict": "likely",
       "notes": "No prompt, no method, no version - suitable only as an atmospheric 'early 2023 community Stable Diffusion animation' gallery item labelled with the creator's own tags. 435 s / 151 MB: work from the 480p/1080p transcode. Silent (ffprobe shows no audio stream)."
@@ -564,15 +2214,36 @@
       },
       "attribution_required": true,
       "sharealike": false,
-      "media": {"duration_s": 68.441, "width": 3840, "height": 2160, "fps": 60, "size_mb": 171.12, "has_audio": true, "format": "webm"},
+      "media": {
+        "duration_s": 68.441,
+        "width": 3840,
+        "height": 2160,
+        "fps": 60,
+        "size_mb": 171.12,
+        "has_audio": true,
+        "format": "webm"
+      },
       "description": "Page text: AI animation + AI music video; channel toolkit in the description. Scene statistics (480p transcode): no hard cuts at threshold 0.4 (continuous morphs/dissolves) and high frame change (mean abs luma diff about 14.8/255 at 4 fps sampling).",
       "prompt": "unknown - not published",
       "watermark_notes": "Corner heuristic found no static overlay. Not visually verified.",
-      "risk_flags": ["unverifiable_model_claim"],
-      "story_roles": ["gallery", "early_failure_annotation"],
+      "risk_flags": [
+        "unverifiable_model_claim"
+      ],
+      "story_roles": [
+        "gallery",
+        "early_failure_annotation"
+      ],
       "excerpt_suggestions": [
-        {"in_s": 0.0, "out_s": 4.0, "why": "Opening 4 s of a continuous-morph AI music video (early-2024 look: Runway Gen-2 / Kaiber / Deforum mix). Unviewed."},
-        {"in_s": 30.0, "out_s": 34.0, "why": "Mid-video sample; no cut list available (no hard cuts), so windows are arbitrary - choose by eye."}
+        {
+          "in_s": 0.0,
+          "out_s": 4.0,
+          "why": "Opening 4 s of a continuous-morph AI music video (early-2024 look: Runway Gen-2 / Kaiber / Deforum mix). Unviewed."
+        },
+        {
+          "in_s": 30.0,
+          "out_s": 34.0,
+          "why": "Mid-video sample; no cut list available (no hard cuts), so windows are arbitrary - choose by eye."
+        }
       ],
       "reuse_verdict": "likely",
       "notes": "Weak for model-specific claims (mixed tools). Category 'AI-generated women' and a witch theme: check frames for suggestive content. 4K/60 fps 171 MB: use a transcode. Only usable with the honest label 'AI music video, Jan 2024, tools per creator: SDXL, DALL-E 3, Runway Gen-2, Kaiber, Deforum'."
@@ -598,14 +2269,29 @@
       },
       "attribution_required": false,
       "sharealike": false,
-      "media": {"duration_s": 6.125, "width": 720, "height": 480, "fps": 8, "size_mb": 0.27, "has_audio": false, "format": "webm"},
+      "media": {
+        "duration_s": 6.125,
+        "width": 720,
+        "height": 480,
+        "fps": 8,
+        "size_mb": 0.27,
+        "has_audio": false,
+        "format": "webm"
+      },
       "description": "Page text: generative text-to-video of several swans gliding on a still lake reflecting a calm sunset sky; created via the CogVideoX-5B Hugging Face Space. Pixel statistics: steady low motion (mean abs luma diff about 2.4-2.6/255 per frame), no cuts.",
       "prompt": "On a breeze late afternoon day at the lakeshore, The tranquil surface of the lake reflects the calm sunset sky, while several elegant swans glide gracefully through the still water, leaving behind delicate ripples that disturb the mirror-like quality of the lake. The scene is one of serene beauty, providing a picturesque frame .",
       "watermark_notes": "No static overlay found by the corner heuristic. Not visually verified.",
       "risk_flags": [],
-      "story_roles": ["gallery", "milestone"],
+      "story_roles": [
+        "gallery",
+        "milestone"
+      ],
       "excerpt_suggestions": [
-        {"in_s": 0.0, "out_s": 6.1, "why": "Whole 6.1 s clip: open-weights model (Aug 2024) at only 720x480 / 8 fps - shows what a free downloadable model produced and how low-res it still is; check the swans' necks and reflections by eye."}
+        {
+          "in_s": 0.0,
+          "out_s": 6.1,
+          "why": "Whole 6.1 s clip: open-weights model (Aug 2024) at only 720x480 / 8 fps - shows what a free downloadable model produced and how low-res it still is; check the swans' necks and reflections by eye."
+        }
       ],
       "reuse_verdict": "clear",
       "notes": "Open-weights example rather than a frontier model; 8 fps is very visible when played at 24/30 fps (would need frame interpolation). Model 5B licence is not Apache-2.0 for commercial use of the weights but the licence assigns generated-content rights to the user."
@@ -631,14 +2317,29 @@
       },
       "attribution_required": false,
       "sharealike": false,
-      "media": {"duration_s": 6.125, "width": 720, "height": 480, "fps": 8, "size_mb": 0.24, "has_audio": false, "format": "webm"},
+      "media": {
+        "duration_s": 6.125,
+        "width": 720,
+        "height": 480,
+        "fps": 8,
+        "size_mb": 0.24,
+        "has_audio": false,
+        "format": "webm"
+      },
       "description": "Page text: text-to-video of a middle-aged man with green hair sitting at the water's edge painting an oil painting on a canvas propped on a small weathered table, sea breeze billowing his brown t-shirt. Pixel statistics: highest motion of the CogVideoX pair (mean abs luma diff about 6-7/255 per frame), no cuts.",
       "prompt": "A middle-aged gentleman, with a serene expression, sits at the water's edge, He is engrossed in his artwork, brush in hand, as he renders an oil painting on a canvas that's propped up against a small, weathered table. The sea breeze whispers through his green hair, gently billowing his loose-fitting dark brown t-shirt, while the salty air adds an intangible element to his masterpiece in progress. The scene is one of tranquility and inspiration, with the artist's canvas capturing the vibrant hues of the setting sun reflecting off the tranquil sea. .",
       "watermark_notes": "Corner heuristic flagged a static region in the bottom-right corner (temporal std ratio 0.04) but the stricter static-edge test found no high-contrast overlay there (static-edge pixels sit lower-left, likely the table). Most likely dark static scenery; not visually verified.",
       "risk_flags": [],
-      "story_roles": ["gallery", "early_failure_annotation"],
+      "story_roles": [
+        "gallery",
+        "early_failure_annotation"
+      ],
       "excerpt_suggestions": [
-        {"in_s": 0.0, "out_s": 6.1, "why": "Whole clip: hands + brush + fabric in wind are classic weak spots for a 2024 open model at 8 fps; the higher frame-to-frame change (about 6.5/255) suggests visible motion churn. Judge by eye."}
+        {
+          "in_s": 0.0,
+          "out_s": 6.1,
+          "why": "Whole clip: hands + brush + fabric in wind are classic weak spots for a 2024 open model at 8 fps; the higher frame-to-frame change (about 6.5/255) suggests visible motion churn. Judge by eye."
+        }
       ],
       "reuse_verdict": "clear",
       "notes": "Synthetic person (no real identity). Only unusual-motion candidate among the open-weights clips; same 8 fps caveat as the swans clip."
@@ -664,14 +2365,29 @@
       },
       "attribution_required": false,
       "sharealike": false,
-      "media": {"duration_s": 5.64, "width": 1280, "height": 720, "fps": 25, "size_mb": 3.12, "has_audio": false, "format": "webm"},
+      "media": {
+        "duration_s": 5.64,
+        "width": 1280,
+        "height": 720,
+        "fps": 25,
+        "size_mb": 3.12,
+        "has_audio": false,
+        "format": "webm"
+      },
       "description": "Page text: text-to-video of a middle-aged hooded man walking forward with an umbrella in a rainy cyberpunk city street. Pixel statistics: single continuous shot, no cuts, steady motion (mean abs luma diff 4.2-6.3/255 per frame, rising toward the end).",
       "prompt": "A hoodie man walking forward in the rainy cyberpunk street, carrying an umbrella",
       "watermark_notes": "No static high-contrast overlay found by the corner/static-edge heuristics (free-tier Hailuo outputs are often watermarked; this file shows none by pixel statistics). Not visually verified.",
       "risk_flags": [],
-      "story_roles": ["gallery", "milestone"],
+      "story_roles": [
+        "gallery",
+        "milestone"
+      ],
       "excerpt_suggestions": [
-        {"in_s": 0.0, "out_s": 4.0, "why": "Walking figure with an umbrella in rain reflections: gait, umbrella and neon reflections are typical stress points; motion stays steady across 5.6 s. Unviewed."}
+        {
+          "in_s": 0.0,
+          "out_s": 4.0,
+          "why": "Walking figure with an umbrella in rain reflections: gait, umbrella and neon reflections are typical stress points; motion stays steady across 5.6 s. Unviewed."
+        }
       ],
       "reuse_verdict": "likely",
       "notes": "Belongs to the Chinese-model wave (Hailuo, Aug 2024) rather than the 2022-23 experiments; included because it is a clean, prompt-published, CC0 Commons file in 2024. Verdict 'likely' rather than 'clear' only because the platform terms and the exact Hailuo model version are unverified. Synthetic person."
@@ -697,45 +2413,150 @@
       },
       "attribution_required": true,
       "sharealike": true,
-      "media": {"duration_s": 12.084, "width": 512, "height": 512, "fps": 24, "size_mb": 2.29, "has_audio": false, "format": "webm"},
+      "media": {
+        "duration_s": 12.084,
+        "width": 512,
+        "height": 512,
+        "fps": 24,
+        "size_mb": 2.29,
+        "has_audio": false,
+        "format": "webm"
+      },
       "description": "Page text only: a clip created with AI from a text prompt window (Commons category: AI-generated videos of animals). Pixel statistics: the most unstable clip in my set - mean abs luma diff 16/255 per frame overall, 30.8 in the first second, 21.8/21.1 in seconds 6-7 - with luminance jumps of 2-3/255 between frames in most seconds (strong flicker/churn signature).",
       "prompt": "unknown - not published",
       "watermark_notes": "No static overlay found by the corner heuristic. Not visually verified.",
-      "risk_flags": ["unverifiable_model_claim"],
-      "story_roles": ["hook_early", "early_failure_annotation"],
+      "risk_flags": [
+        "unverifiable_model_claim"
+      ],
+      "story_roles": [
+        "hook_early",
+        "early_failure_annotation"
+      ],
       "excerpt_suggestions": [
-        {"in_s": 0.0, "out_s": 4.0, "why": "First 4 s have the largest frame-to-frame change (30.8, 20.8, 14.6, 13.4 per second) - probable heavy flicker/morphing; unviewed."},
-        {"in_s": 5.0, "out_s": 8.0, "why": "Second churn peak (21.8 and 21.1 in seconds 6-7); unviewed."}
+        {
+          "in_s": 0.0,
+          "out_s": 4.0,
+          "why": "First 4 s have the largest frame-to-frame change (30.8, 20.8, 14.6, 13.4 per second) - probable heavy flicker/morphing; unviewed."
+        },
+        {
+          "in_s": 5.0,
+          "out_s": 8.0,
+          "why": "Second churn peak (21.8 and 21.1 in seconds 6-7); unviewed."
+        }
       ],
       "reuse_verdict": "likely",
       "notes": "H1 rejected this file because the tool is unidentified; I keep it as a flagged fallback because it is the only early-Oct-2022 clip on Commons with an explicit free licence and it has the strongest instability signature. It can only be labelled 'AI-generated video clip, Oct 2022, tool not stated (Oronbb, CC BY-SA 4.0)'. Follow-up: contact uploader Oronbb on Commons for the tool name. ShareAlike applies."
     }
   ],
   "rejected": [
-    {"url": "https://commons.wikimedia.org/wiki/File:Dream_Machine_Egypt_animation.webm", "reason": "UNCLEAR (would be a valuable Luma milestone: prompted 2024-06-12, launch week; 1302x720, 24 fps, 5.04 s). Missing evidence: PD-algorithm tag was added by third-party uploader Benmite from an X post (credit x.com/_Ellenor/status/1800954350208155828); the clip is credited to 'director Ellenor Argyropoulos'. Luma Terms of Service captured 2024-06-16 say output may not be used for commercial purposes unless the customer buys a subscription that allows it ('unless Customer purchases a subscription allowing use of Outputs for commercial purposes'), and the prompter's plan is unknown. Needs explicit CC0/permission from the prompter or Luma."},
-    {"url": "https://commons.wikimedia.org/wiki/File:POOF_(AI_Short_Film).webm", "reason": "UNCLEAR: edited 58 s short film ('Pizza Later') ripped from YouTube by a third party and tagged PD-algorithm although it involves human editing (Adobe After Effects/Audition), Udio music and ElevenLabs SFX; mixed Midjourney stills + Luma Dream Machine + Runway Gen-3 clips (per-frame model unverifiable). Missing evidence: licence from the creator."},
-    {"url": "https://commons.wikimedia.org/wiki/File:Nusantara_Nobles_slow_dance.webm", "reason": "Real identifiable people: animates an 1898 photograph of Indonesian royalty (Commons category 'AI-generated videos of real people'); Gen-3 Alpha Turbo per page (2025-03-08, out of 2022-24 era). Licence itself is CC0 + PD-algorithm by the uploader, so it is technically reusable if the producers accept historical-likeness use."},
-    {"url": "https://commons.wikimedia.org/wiki/File:Will_Smith_Eating_Spaghetti_Original.webm", "reason": "Real identifiable person (Will Smith), Commons 'Personality rights warning'; 240x240 ModelScope-era clip ripped from Reddit (chaindrop, 2023-03-23) and uploaded by a third party as PD-algorithm."},
-    {"url": "https://commons.wikimedia.org/wiki/File:Cat_piano_with_audio_3EB0CD1F.webm", "reason": "UNCLEAR (also Dog_popcorn_with_audio_6781BD0C.webm and Drums_with_audio_DA80C510.webm): Google Research VideoPoet demo clips (Dec 2023) re-uploaded by third party Yacawotca as PD-algorithm with 'License review needed'; Google's site terms not checked. H1 covers VideoPoet."},
-    {"url": "https://commons.wikimedia.org/wiki/File:Photoreal-train.webm", "reason": "Out of H2 channel (OpenAI Sora, Feb 2024; H1 covers). Page itself documents misgeneration (wrong viaduct, extra track, extra chimney, distorted windows) - valuable, but the PD-algorithm tag is a third-party tag on an OpenAI demo video with no OpenAI reuse grant found. Same for Cat-on-bed.webm, Octopus-and-crab.webm, Monster-with-melting-candle.webm and the other 12 'First videos by Sora' files."},
-    {"url": "https://commons.wikimedia.org/wiki/File:Generative_ai_-_electronic_head_moving_Dec_2023.webm", "reason": "Model unidentified: Nesnad, 2023-12-26, 832x640, 4 s, PD-algorithm own work, prompt 'A machine that inserts all of Wikipedia into the mind of a human in an instant, suddenly upgrading their mind'; category 'Videos by unidentified AI software'. Licence usable; missing evidence: tool name/version (ask uploader). Also Wikimachine_ai_video_example_2024_Jan_14.webm (24 s, 896x696, 2024-01-14, same uploader, same gap)."},
-    {"url": "https://commons.wikimedia.org/wiki/File:AI_generated_video_clip_-New_creative_video.webm", "reason": "Model unidentified: Oronbb, 2022-12-15, 812x1280 vertical, 18.8 s with audio, 'character, text, audio and video created by AI', CC BY-SA 4.0. Pixel statistics show near-static corners and very low motion (0.9/255) - looks like a talking-avatar clip, not generative video. Missing evidence: tool name and whether the character resembles a real person; unviewed."},
-    {"url": "https://commons.wikimedia.org/wiki/File:Extra_Terra_%26_Infraction_%E2%80%93_Void_(AI-generated_music_video_%26_cyberpunk_music).webm", "reason": "UNCLEAR: music video for a track by Infraction (No Copyright Music, credit terms), page carries conflicting licence signals (file tagged PD/PD-algorithm, category CC-BY-3.0, LicenseReview open); visual model only 'Stable Diffusion' by category, tool unnamed by the creator; 209 s 4K."},
-    {"url": "https://commons.wikimedia.org/wiki/File:Pink_Floyd_-_Any_Colour_You_Like_(50th_Anniversary_Competition_Winner's_Video;_no_audio).webm", "reason": "Brand/IP: official Pink Floyd competition winner video (Damian Gaume) ripped from YouTube, tagged PD-algorithm by a third party although human-animated; tools not stated; LicenseReview open."},
-    {"url": "https://commons.wikimedia.org/wiki/File:Example_video_of_using_AI_tools_for_logo_intro_videos_(Onemark_Logo_Effect).webm", "reason": "Brand: company logo animation (OneMark) made with Photoshop Beta, Stable Diffusion and Topaz; not a video-model capability demo; YouTube CC BY 3.0 with LicenseReview open."},
-    {"url": "https://commons.wikimedia.org/wiki/File:%D0%9C%D0%90%D0%91%D0%9E%D0%99%D0%A7%D0%98%D0%9A%D0%98_-_%D0%A2%D1%80%D0%B5%D0%B9%D0%BB%D0%B5%D1%80_-_%D0%9C%D1%83%D0%BB%D1%8C%D1%82%D1%84%D0%B8%D0%BB%D1%8C%D0%BC_(2024).webm", "reason": "UNCLEAR: trailer of a commercial animated series by Arteki Studio (2024-11-22), model unnamed, YouTube rip tagged PD-algorithm by third party for a human-produced film; no creator licence."},
-    {"url": "https://commons.wikimedia.org/wiki/File:Chen_Zhen.gif", "reason": "Real person and film IP: AI animation of Bruce Lee posters (Fist of Fury); 'Media modified by AI'."},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Deep_Nostalgia", "reason": "Real identifiable people: 4 Deep Nostalgia (MyHeritage/D-ID, 2021) portrait animations of real individuals; file pages not opened."},
-    {"url": "https://commons.wikimedia.org/wiki/File:Japanese_Buddhist_Nuns_1902_-_AI_video_generation.webm", "reason": "Out of era/channel (Hailuo AI, 2025-02-22) and animates a real 1902 photograph of real people."},
-    {"url": "https://commons.wikimedia.org/wiki/File:Transform_images_to_videos_in_minutes_with_I2VGENXL_in_ComfyUI.webm", "reason": "Tutorial screencast (I2VGen-XL in ComfyUI, 2024-02-07, 286 s, YouTube CC BY 3.0, LicenseReview open) - UI recording, not model footage."},
-    {"url": "https://commons.wikimedia.org/wiki/File:Micronautas_recolectando_polen_sobre_ala_de_mariposa,_animaci%C3%B3n_con_IA_basada_en_imagen_real_de_ala_de_mariposa_con_polen.webm", "reason": "Out of era (2025-12) and tool unnamed; AI animation of a real macro photograph (Wiki Science Competition entry, CC BY-SA 4.0)."},
-    {"url": "https://commons.wikimedia.org/wiki/File:Animated_Representation_of_Meta_AI_and_Llama_(Meta_AI_Imagine).webm", "reason": "Out of H2 era (2025-07-01) - lead for other hunters: VulcanSphere, CC0 + PD-algorithm, Meta AI Imagine text-to-video (768x768, 4 s); H1 already lists it."},
-    {"url": "https://commons.wikimedia.org/wiki/File:Clock_by_Veo_2.webm", "reason": "Out of H2 era (2025-05-18) - lead for the Google hunter: FallingGravity, CC0 + PD-algorithm, Veo 2 via Gemini Advanced; H1 already lists it."},
-    {"url": "https://commons.wikimedia.org/wiki/File:Coca-Cola%27s_2024_AI_Christmas_commercial.webm", "reason": "Brand/IP-heavy advert (excluded by hard rule 3); seen only as a search hit, file page not opened."},
-    {"url": "https://commons.wikimedia.org/wiki/File:AI-generated_heavy_metal_music.webm", "reason": "Irrelevant: 72-minute AI music compilation with static artwork (YouTube rip)."},
-    {"url": "https://commons.wikimedia.org/wiki/File:AI-generated_video_of_a_domestic_dragon.gif", "reason": "2025 YouTube-sourced GIF, tool unidentified ('prompted by Lumi's AI Dreams'); out of era."},
-    {"url": "https://commons.wikimedia.org/wiki/File:Luciaverse1.webm", "reason": "UNCLEAR: 2024-08-09, 1024x576, 8.6 s, CC0 own work by 00Regedit00, but only a tag 'Unconfirmed likely AI-generated images to check' - no tool, no prompt, no description ('luciaverse1'), possibly a named person. Missing evidence: that it is AI-generated at all, which model, and its subject. Same for File:Output.webm (2024-08-10, 576x576, 26.7 s, description 'yes yes')."},
-    {"url": "https://commons.wikimedia.org/wiki/Category:AI-generated_videos_of_real_people", "reason": "Political/celebrity deepfake-style clips (Trump, Vance, Putin, Kim Jong-Un, etc.) excluded by hard rule 3; seen as titles only."},
-    {"url": "https://commons.wikimedia.org/wiki/Category:Text-to-video_generation", "reason": "Search result summary: no Commons files exist for Pika, Luma Ray, Runway Gen-4, Kaiber, Deforum, AnimateDiff, Zeroscope, Haiper, Genmo, Pixverse, Midjourney video, or an official Stable Video Diffusion sample - checked by category and full-text search."}
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Dream_Machine_Egypt_animation.webm",
+      "reason": "UNCLEAR (would be a valuable Luma milestone: prompted 2024-06-12, launch week; 1302x720, 24 fps, 5.04 s). Missing evidence: PD-algorithm tag was added by third-party uploader Benmite from an X post (credit x.com/_Ellenor/status/1800954350208155828); the clip is credited to 'director Ellenor Argyropoulos'. Luma Terms of Service captured 2024-06-16 say output may not be used for commercial purposes unless the customer buys a subscription that allows it ('unless Customer purchases a subscription allowing use of Outputs for commercial purposes'), and the prompter's plan is unknown. Needs explicit CC0/permission from the prompter or Luma."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:POOF_(AI_Short_Film).webm",
+      "reason": "UNCLEAR: edited 58 s short film ('Pizza Later') ripped from YouTube by a third party and tagged PD-algorithm although it involves human editing (Adobe After Effects/Audition), Udio music and ElevenLabs SFX; mixed Midjourney stills + Luma Dream Machine + Runway Gen-3 clips (per-frame model unverifiable). Missing evidence: licence from the creator."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Nusantara_Nobles_slow_dance.webm",
+      "reason": "Real identifiable people: animates an 1898 photograph of Indonesian royalty (Commons category 'AI-generated videos of real people'); Gen-3 Alpha Turbo per page (2025-03-08, out of 2022-24 era). Licence itself is CC0 + PD-algorithm by the uploader, so it is technically reusable if the producers accept historical-likeness use."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Will_Smith_Eating_Spaghetti_Original.webm",
+      "reason": "Real identifiable person (Will Smith), Commons 'Personality rights warning'; 240x240 ModelScope-era clip ripped from Reddit (chaindrop, 2023-03-23) and uploaded by a third party as PD-algorithm."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Cat_piano_with_audio_3EB0CD1F.webm",
+      "reason": "UNCLEAR (also Dog_popcorn_with_audio_6781BD0C.webm and Drums_with_audio_DA80C510.webm): Google Research VideoPoet demo clips (Dec 2023) re-uploaded by third party Yacawotca as PD-algorithm with 'License review needed'; Google's site terms not checked. H1 covers VideoPoet."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Photoreal-train.webm",
+      "reason": "Out of H2 channel (OpenAI Sora, Feb 2024; H1 covers). Page itself documents misgeneration (wrong viaduct, extra track, extra chimney, distorted windows) - valuable, but the PD-algorithm tag is a third-party tag on an OpenAI demo video with no OpenAI reuse grant found. Same for Cat-on-bed.webm, Octopus-and-crab.webm, Monster-with-melting-candle.webm and the other 12 'First videos by Sora' files."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Generative_ai_-_electronic_head_moving_Dec_2023.webm",
+      "reason": "Model unidentified: Nesnad, 2023-12-26, 832x640, 4 s, PD-algorithm own work, prompt 'A machine that inserts all of Wikipedia into the mind of a human in an instant, suddenly upgrading their mind'; category 'Videos by unidentified AI software'. Licence usable; missing evidence: tool name/version (ask uploader). Also Wikimachine_ai_video_example_2024_Jan_14.webm (24 s, 896x696, 2024-01-14, same uploader, same gap)."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:AI_generated_video_clip_-New_creative_video.webm",
+      "reason": "Model unidentified: Oronbb, 2022-12-15, 812x1280 vertical, 18.8 s with audio, 'character, text, audio and video created by AI', CC BY-SA 4.0. Pixel statistics show near-static corners and very low motion (0.9/255) - looks like a talking-avatar clip, not generative video. Missing evidence: tool name and whether the character resembles a real person; unviewed."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Extra_Terra_%26_Infraction_%E2%80%93_Void_(AI-generated_music_video_%26_cyberpunk_music).webm",
+      "reason": "UNCLEAR: music video for a track by Infraction (No Copyright Music, credit terms), page carries conflicting licence signals (file tagged PD/PD-algorithm, category CC-BY-3.0, LicenseReview open); visual model only 'Stable Diffusion' by category, tool unnamed by the creator; 209 s 4K."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Pink_Floyd_-_Any_Colour_You_Like_(50th_Anniversary_Competition_Winner's_Video;_no_audio).webm",
+      "reason": "Brand/IP: official Pink Floyd competition winner video (Damian Gaume) ripped from YouTube, tagged PD-algorithm by a third party although human-animated; tools not stated; LicenseReview open."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Example_video_of_using_AI_tools_for_logo_intro_videos_(Onemark_Logo_Effect).webm",
+      "reason": "Brand: company logo animation (OneMark) made with Photoshop Beta, Stable Diffusion and Topaz; not a video-model capability demo; YouTube CC BY 3.0 with LicenseReview open."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:%D0%9C%D0%90%D0%91%D0%9E%D0%99%D0%A7%D0%98%D0%9A%D0%98_-_%D0%A2%D1%80%D0%B5%D0%B9%D0%BB%D0%B5%D1%80_-_%D0%9C%D1%83%D0%BB%D1%8C%D1%82%D1%84%D0%B8%D0%BB%D1%8C%D0%BC_(2024).webm",
+      "reason": "UNCLEAR: trailer of a commercial animated series by Arteki Studio (2024-11-22), model unnamed, YouTube rip tagged PD-algorithm by third party for a human-produced film; no creator licence."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Chen_Zhen.gif",
+      "reason": "Real person and film IP: AI animation of Bruce Lee posters (Fist of Fury); 'Media modified by AI'."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Deep_Nostalgia",
+      "reason": "Real identifiable people: 4 Deep Nostalgia (MyHeritage/D-ID, 2021) portrait animations of real individuals; file pages not opened."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Japanese_Buddhist_Nuns_1902_-_AI_video_generation.webm",
+      "reason": "Out of era/channel (Hailuo AI, 2025-02-22) and animates a real 1902 photograph of real people."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Transform_images_to_videos_in_minutes_with_I2VGENXL_in_ComfyUI.webm",
+      "reason": "Tutorial screencast (I2VGen-XL in ComfyUI, 2024-02-07, 286 s, YouTube CC BY 3.0, LicenseReview open) - UI recording, not model footage."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Micronautas_recolectando_polen_sobre_ala_de_mariposa,_animaci%C3%B3n_con_IA_basada_en_imagen_real_de_ala_de_mariposa_con_polen.webm",
+      "reason": "Out of era (2025-12) and tool unnamed; AI animation of a real macro photograph (Wiki Science Competition entry, CC BY-SA 4.0)."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Animated_Representation_of_Meta_AI_and_Llama_(Meta_AI_Imagine).webm",
+      "reason": "Out of H2 era (2025-07-01) - lead for other hunters: VulcanSphere, CC0 + PD-algorithm, Meta AI Imagine text-to-video (768x768, 4 s); H1 already lists it."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Clock_by_Veo_2.webm",
+      "reason": "Out of H2 era (2025-05-18) - lead for the Google hunter: FallingGravity, CC0 + PD-algorithm, Veo 2 via Gemini Advanced; H1 already lists it."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Coca-Cola%27s_2024_AI_Christmas_commercial.webm",
+      "reason": "Brand/IP-heavy advert (excluded by hard rule 3); seen only as a search hit, file page not opened."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:AI-generated_heavy_metal_music.webm",
+      "reason": "Irrelevant: 72-minute AI music compilation with static artwork (YouTube rip)."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:AI-generated_video_of_a_domestic_dragon.gif",
+      "reason": "2025 YouTube-sourced GIF, tool unidentified ('prompted by Lumi's AI Dreams'); out of era."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/File:Luciaverse1.webm",
+      "reason": "UNCLEAR: 2024-08-09, 1024x576, 8.6 s, CC0 own work by 00Regedit00, but only a tag 'Unconfirmed likely AI-generated images to check' - no tool, no prompt, no description ('luciaverse1'), possibly a named person. Missing evidence: that it is AI-generated at all, which model, and its subject. Same for File:Output.webm (2024-08-10, 576x576, 26.7 s, description 'yes yes')."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:AI-generated_videos_of_real_people",
+      "reason": "Political/celebrity deepfake-style clips (Trump, Vance, Putin, Kim Jong-Un, etc.) excluded by hard rule 3; seen as titles only."
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Category:Text-to-video_generation",
+      "reason": "Search result summary: no Commons files exist for Pika, Luma Ray, Runway Gen-4, Kaiber, Deforum, AnimateDiff, Zeroscope, Haiper, Genmo, Pixverse, Midjourney video, or an official Stable Video Diffusion sample - checked by category and full-text search."
+    }
+  ],
+  "lead_notes": [
+    "Same-developer lineage available from Commons (Runway): Gen-1 (2023-04, 896x512, 5.1 s) -> Gen-2 (2023-08, 896x512, 4 s) -> Gen-3 Alpha (2024-09, 1280x768, 10.5 s). No Gen-4, Luma Ray, Pika, Kaiber, AnimateDiff, Deforum or Zeroscope media exists on Commons (category + full-text checked); Luma Dream Machine only via the unclear Egypt clip.",
+    "Overlap with H1: sd14 flowers (H1 clear, H2 likely), Sora clips (H1), CogVideoX/Hailuo are new. H1 marked the four YouTube-sourced CC BY 3.0 files (EXECUTE, Robo Knightwolf, Witches Wood, SD morph) UNCLEAR only because Commons {{LicenseReview}} is open; H2 checked Wayback captures of each YouTube watch page and each shows the licence row 'Creative Commons Attribution license (reuse allowed)' plus the publish date, so H2 upgrades them to 'likely' (embedded music/voices from other tools are NOT covered).",
+    "Unidentified-model Commons clips (Oronbb Oct/Dec 2022, Nesnad Dec 2023/Jan 2024): only the Oct-2022 Oronbb clip is kept as a flagged candidate; the rest are rejected. A one-line question to Commons users Oronbb / Nesnad could resolve the tool names.",
+    "ShareAlike items (CC BY-SA 4.0): sd14_benlisquare_park_2022, runway_gen1_watercolor_elephants_2023, runway_gen2_dog_podium_2023, runway_gen2_wave_still_to_video_2023, unknown_model_oct2022_textprompt_clip - decide once how the film's licence/credits page handles SA for excerpts.",
+    "PD-algorithm is a Commons community tag with a US-law basis; the rendered template itself warns that the UK and Hong Kong give computer-generated works 50 years of protection. Items that also carry an explicit uploader-made CC0/CC BY grant (CogVideoX, Hailuo, Gen-3 cowboy) are stronger than PD-algorithm-only items (Benlisquare flowers).",
+    "No frame of any clip was viewed. Content statements come from Commons text, ffprobe, scene-cut lists and frame-difference/corner-static pixel heuristics (sandbox). Watermark checks are heuristics only. 12 Higgsfield video_analysis jobs are pending in the shared queue (see pending_video_analyses).",
+    "Secondary-only leads (web-search summaries, not opened as pages): Runway Gen-2 opened to the public in June 2023; no primary page for that date was found. Wikipedia 'Text-to-video model' timeline was used as a lead only."
   ]
 }
