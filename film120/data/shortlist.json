@@ -1702,10 +1702,10 @@
      "type": "keyframes",
      "ex": "ltx_cyber",
      "title": "FIRST + LAST FRAME",
-     "product": "VEO 3.1",
-     "date": "OCT 15, 2025",
+     "product": "RUNWAY GEN-3 ALPHA TURBO",
+     "date": "OCT 8, 2024",
      "note": "A start image and an end image; the model fills the shot between.",
-     "src": "GOOGLE BLOG \u00b7 OCT 15, 2025"
+     "src": "RUNWAY CHANGELOG \u00b7 OCT 8, 2024"
     },
     {
      "type": "camera",
@@ -1740,7 +1740,7 @@
     },
     {
      "name": "GOOGLE",
-     "sub": "VEO 3.1"
+     "sub": "VEO / OMNI"
     },
     {
      "name": "KLING",
@@ -1758,22 +1758,68 @@
       {
        "has": true,
        "since": "2023",
-       "src": "research.runwayml.com Gen-1, 2023-02-06"
+       "src": "Runway Gen-1 research page, 2023-02-06"
       },
       {
        "has": true,
        "since": "2024",
-       "src": "deepmind.google Veo, 2024-05-14 (masked editing, private preview)"
+       "src": "Google DeepMind Veo page, 2024-05-14 (masked editing, private preview)"
       },
       {
        "has": true,
        "since": "2025",
-       "src": "kling.ai release notes VIDEO O1, 2025-12-01"
+       "src": "Kling 2.0 Multi-Elements Editor, 2025-04-15"
       },
       {
        "has": true,
        "since": "2026",
-       "src": "seed.bytedance.com Seedance 2.0, 2026-02-12"
+       "src": "Seed blog, Seedance 2.0, 2026-02-12"
+      }
+     ]
+    },
+    {
+     "name": "FIRST / LAST FRAME",
+     "cells": [
+      {
+       "has": true,
+       "since": "2024",
+       "src": "Runway Gen-3 Alpha Turbo Keyframes, 2024-10-08"
+      },
+      {
+       "has": true,
+       "since": "2025",
+       "src": "Google developers blog, Veo 3.1, 2025-10-15"
+      },
+      {
+       "has": true,
+       "since": "2025",
+       "src": "Kling 2.1 Start & End Frames, 2025-08-21"
+      },
+      null
+     ]
+    },
+    {
+     "name": "CAMERA CONTROL",
+     "cells": [
+      {
+       "has": true,
+       "since": "2023",
+       "src": "Runway Gen-2 Director Mode, 2023-09-13"
+      },
+      {
+       "has": true,
+       "since": "2025",
+       "src": "Google Flow camera controls, 2025-05-20"
+      },
+      {
+       "has": true,
+       "since": "2024",
+       "src": "Kling 1.5 camera movements, 2024-11"
+      },
+      {
+       "has": true,
+       "since": "2026",
+       "src": "Seed blog, Seedance 2.0 reference camera movement, 2026-02-12"
       }
      ]
     },
@@ -1783,47 +1829,22 @@
       {
        "has": true,
        "since": "2025",
-       "src": "runwayml.com/research/introducing-runway-gen-4, 2025-03-31"
+       "src": "Runway Gen-4, 2025-03-31"
       },
       {
        "has": true,
        "since": "2025",
-       "src": "blog.google Flow, 2025-05-20"
+       "src": "Google Flow ingredients, 2025-05-20"
       },
       {
        "has": true,
        "since": "2025",
-       "src": "kling.ai release notes VIDEO O1, 2025-12-01"
+       "src": "Kling 1.6 Elements, 2025-01-23"
       },
       {
        "has": true,
        "since": "2026",
-       "src": "seed.bytedance.com Seedance 2.0, 2026-02-12"
-      }
-     ]
-    },
-    {
-     "name": "CAMERA CONTROL",
-     "cells": [
-      {
-       "has": true,
-       "since": "2024",
-       "src": "runwayml.com/changelog Gen-3 Alpha Turbo, 2024-11-01"
-      },
-      {
-       "has": true,
-       "since": "2025",
-       "src": "blog.google Flow camera controls, 2025-05-20"
-      },
-      {
-       "has": true,
-       "since": "2024",
-       "src": "x.com/Kling_ai KLING 1.5, 2024-11-22"
-      },
-      {
-       "has": true,
-       "since": "2026",
-       "src": "seed.bytedance.com Seedance 2.5 (clay-render references for blocking and camera), 2026-07-31"
+       "src": "Seed blog, Seedance 2.0, 2026-02-12"
       }
      ]
     },
@@ -1833,22 +1854,22 @@
       {
        "has": true,
        "since": "2025",
-       "src": "runwayml.com/research/introducing-runway-gwm-1 Gen-4.5, 2025-12-11"
+       "src": "Runway Gen-4.5, 2025-12-11"
       },
       {
        "has": true,
        "since": "2025",
-       "src": "blog.google Veo 3, 2025-05-20"
+       "src": "Google Veo 3, 2025-05-20"
       },
       {
        "has": true,
        "since": "2025",
-       "src": "kling.ai release notes VIDEO 2.6, 2025-12-03"
+       "src": "Kling VIDEO 2.6, 2025-12-03"
       },
       {
        "has": true,
        "since": "2025",
-       "src": "seed.bytedance.com Seedance 1.5 pro, 2025-12-16"
+       "src": "Seed blog, Seedance 1.5 pro, 2025-12-15"
       }
      ]
     }
