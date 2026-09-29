@@ -1,0 +1,105 @@
+#!/usr/bin/env python3
+"""Author data/shortlist.json (the curated edit: clips, excerpts with spans/labels, cast per sequence) from the verified pool data/shortlist_draft.json.
+usage: author_shortlist.py [POOL.json] [OUT.json]
+Only clips that survived BOTH the hunter and the adversarial verifier (strictest verdict) are in the pool; every excerpt id used in a cast is validated here."""
+import json, os, sys
+
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+POOL = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, 'data/shortlist_draft.json'); OUT = sys.argv[2] if len(sys.argv) > 2 else os.path.join(HERE, 'data/shortlist.json')
+pool = json.load(open(POOL)); C = pool['clips']
+
+# excerpt id -> (clip id, in, out, role, label overrides)
+X = {
+ # ---- early research / early experiments
+ 'tgan_ucf':   ('tgan_ucf101_label_conditional_2016', 0, .8, 'early research: 64x64 video GAN samples', dict(model='TGAN', year='2016', creator='Saito et al. / Preferred Networks', license='MIT (repo)')),
+ 'tgan_golf':  ('tgan_golf_2016', 0, .8, 'early research', dict(model='TGAN', year='2016', creator='Saito et al. / Preferred Networks', license='MIT (repo)')),
+ 'tgan_mnist': ('tgan_moving_mnist_2016', 0, .8, 'early research', dict(model='TGAN', year='2016', creator='Saito et al. / Preferred Networks', license='MIT (repo)')),
+ 'tats_ucf':   ('tats_ucf101_gif_2022', 0, 6, 'early research 2022', dict(model='TATS', year='2022', creator='Ge et al. / UMD, Meta AI', license='MIT (repo)')),
+ 'dcgan_anime': ('dcgan_anime128_63k_2021', 0, 8, 'GAN-era animation (image GAN latent walk)', dict(model='DCGAN (ANIME)', year='2021', creator='Zisaac33', license='CC BY-SA 4.0')),
+ 'deepdream':  ('deepdream_ouroboros_2021', 2, 12, 'pre-diffusion hallucination look (5 fps)', dict(model='DEEPDREAM', year='2015', creator='PantheraLeo1359531', license='CC0')),
+ 'sd_park_a':  ('sd14_benlisquare_park_2022', .5, 5.5, 'HOOK early: frame-by-frame SD animation, identity drift', dict(model='STABLE DIFFUSION 1.4', year='2022', creator='Benlisquare', license='CC BY-SA 4.0')),
+ 'sd_park_b':  ('sd14_benlisquare_park_2022', 4.5, 10.0, 'annotation / frame-stack early', dict(model='STABLE DIFFUSION 1.4', year='2022', creator='Benlisquare', license='CC BY-SA 4.0')),
+ 'sd_flowers': ('sd14_flowers_img2img_animation_2022', 0, 10.0, 'early experiments panel', dict(model='STABLE DIFFUSION 1.4', year='2022', creator='Benlisquare', license='CC BY-SA 4.0')),
+ 'gen1_eleph': ('runway_gen1_watercolor_elephants_2023', 0, 5.1, 'Runway Gen-1 video-to-video (2023)', dict(model='RUNWAY GEN-1', year='2023', creator='Oronbb', license='CC BY-SA 4.0')),
+ 'gen2_dog':   ('runway_gen2_dog_podium_2023', 0, 4.0, 'Runway Gen-2 (2023)', dict(model='RUNWAY GEN-2', year='2023', creator='Lwneal', license='CC BY-SA 4.0')),
+ 'cogv_swans': ('cogvideox_late_afternoon_swans_2024', 0, 6.1, 'open model, 8 fps (2024)', dict(model='COGVIDEOX', year='2024', creator='VulcanSphere', license='CC0')),
+ 'cogv_paint': ('cogvideox_painting_with_the_breeze_2024', 0, 6.1, 'open model, 8 fps (2024)', dict(model='COGVIDEOX', year='2024', creator='VulcanSphere', license='CC0')),
+ 't2vz_horse': ('t2vzero_horse_galloping', 0, 2.6, 'matched subject: horse (2023, 3 fps)', dict(model='TEXT2VIDEO-ZERO', year='2023', creator='Khachatryan et al.', license='OpenRAIL-M (repo)')),
+ # ---- Sora (2024 preview demos)
+ 'sora_mammoth': ('sora_wooly_mammoth', 0, 10.0, 'Sora preview demo', dict(model='SORA', year='2024')),
+ 'sora_bigsur': ('sora_big_sur_drone', .3, 8.3, 'Sora preview demo: aerial camera move', dict(model='SORA', year='2024')),
+ 'sora_ships': ('sora_ships_in_coffee', 0, 15.0, 'Sora preview demo: surreal physics', dict(model='SORA', year='2024')),
+ 'sora_train': ('sora_photoreal_train_glenfinnan', 0, 8.5, 'Sora preview demo', dict(model='SORA', year='2024')),
+ 'sora_pigeon': ('sora_victoria_pigeon_vertical', 2.0, 23.5, 'Sora preview demo, native vertical', dict(model='SORA', year='2024')),
+ 'sora_gold':  ('sora_gold_rush_fake_archive', 0, 24.0, 'Sora preview demo: fake archive look', dict(model='SORA', year='2024')),
+ # ---- Google Veo
+ 'veo2_clock': ('veo2_clock_gemini_advanced', 0, 8.0, 'Veo 2 close-up (2024 model)', dict(model='VEO 2', year='2024', creator='FallingGravity', license='CC0')),
+ 'veo3_lemon': ('veo3_visual_kei_lemonade_gemini', 0, 8.0, 'Veo 3 (native audio) - Veo watermark stays visible', dict(model='VEO 3', year='2025', creator='VulcanSphere', license='CC0')),
+ 'veo31_lemon': ('veo31_visual_kei_lemonade_flow', 0, 8.0, 'Veo 3.1 Fast in Flow - Veo watermark stays visible', dict(model='VEO 3.1', year='2025', creator='VulcanSphere', license='CC0')),
+ # ---- other developers / open models
+ 'hailuo_nuns': ('hailuo_i2v_japanese_nuns_1902', 0, 5.6, 'image-to-video from a historic still', dict(model='HAILUO AI', year='2025', creator='Nesnad', license='PD (Commons: AI output)')),
+ 'ltx_cyber':  ('ltxv2b_cybertruck_from_photos', 0, 5.0, 'image-to-video from two photos (references)', dict(model='LTX-VIDEO 2B', year='2025', creator='Premeditated · photos OWS Photography', license='CC BY 4.0')),
+ 'kand5':      ('kandinsky5_sft_10s_example3', 0, 7.0, 'open model 2025', dict(model='KANDINSKY 5.0', year='2025', creator='Kandinsky Lab', license='MIT (repo)')),
+ 'lance':      ('lance_t2v_demo_01', 0, 9.9, 'recent open model (2026 repo demo)', dict(model='LANCE', year='2026', creator='ByteDance', license='Apache-2.0 (repo)')),
+ 'ovi':        ('ovi_two_women_audio_video', 0, 5.1, 'joint audio-video open model', dict(model='OVI', year='2025', creator='Character.AI / Yale', license='Apache-2.0 (repo)')),
+}
+# manual overlay overrides = watermarks/logos that MUST stay visible (normalised x,y,w,h); the profile heuristic is not authoritative
+OVERLAYS = {
+ 'veo3_visual_kei_lemonade_gemini': [dict(x=.935, y=.92, w=.055, h=.05, note='burned-in white "Veo" mark, bottom-right (verifier)')],
+ 'veo31_visual_kei_lemonade_flow': [dict(x=.945, y=.94, w=.055, h=.045, note='burned-in white "Veo" mark, bottom-right (verifier)')],
+}
+
+CAST = {
+ 'seq01': dict(early='sd_park_a', recent='sora_pigeon'),
+ 'seq02': dict(panels=['tgan_ucf', 'dcgan_anime', 'deepdream', 'sd_flowers', 'gen1_eleph']),
+ 'seq03': dict(targets=[dict(ex='sd_park_b', u0=.5, zoom=2.4, tag='FRAME-BY-FRAME', note='One image per frame - measured from the pixels.'), dict(ex='cogv_swans', u0=.3, zoom=2.2, tag='8 FPS', note='Low frame rate, stated on the source page.'),
+                        dict(ex='deepdream', u0=1.5, zoom=2.2, tag='5 FPS', note='Measured frame rate of the file.')]),
+ 'seq05': dict(milestones=[dict(year='2022', model='MAKE-A-VIDEO', dev='META', date='SEP 29, 2022', ex='sd_flowers', note='Research demo: text to video, no public release.'),
+                           dict(year='2023', model='GEN-2', dev='RUNWAY', date='MAR 20, 2023', ex='gen2_dog', note='Text-to-video and image-to-video; general access came in June.'),
+                           dict(year='2024', model='SORA', dev='OPENAI', date='FEB 15, 2024', ex='sora_mammoth', note='Research preview: up to a minute of video.'),
+                           dict(year='2024', model='VEO 2', dev='GOOGLE', date='DEC 16, 2024', ex='veo2_clock', note='Cinematography-aware prompting; fewer hallucinated details.')]),
+ 'seq04': dict(early='sd_park_b', modern='sora_mammoth', u_early=.4, u_modern=2.0),
+ 'seq06': dict(entries=[dict(ex=None, model='JUNE 2024', dev='KUAISHOU', year='2024', date='JUN 6-17, 2024', note='Three launches in twelve days.', hold=2.8, tr='slat',
+                             facts=['KLING · EARLY ACCESS · JUN 6, 2024', 'LUMA DREAM MACHINE · PUBLIC · JUN 12, 2024', 'RUNWAY GEN-3 ALPHA · ANNOUNCED · JUN 17, 2024']),
+                        dict(ex='sora_bigsur', model='SORA TURBO', dev='OPENAI', year='2024', date='DEC 9, 2024', note='Public product: up to 1080p, 20-second clips.', hold=2.6, tr='letters'),
+                        dict(ex='veo2_clock', model='VEO 2', dev='GOOGLE', year='2024', date='DEC 16, 2024', note='Announced a week after Sora went public.', hold=2.6, tr='iris')]),
+ 'seq10': dict(tiles=['sd_park_b', 'gen1_eleph', 'cogv_swans', 'gen2_dog', 'veo2_clock', 'hailuo_nuns', 'sora_ships', 'veo3_lemon', 'ltx_cyber', 'kand5', 'lance', 'veo31_lemon'], hero_tile=6),
+ 'seq11': dict(heroes=[dict(ex='sora_ships', dur=3.5, continue_seq10=True), dict(ex='sora_bigsur', dur=3.5), dict(ex='veo31_lemon', dur=3.5), dict(ex='lance', dur=3.5)]),
+ 'seq12': dict(panels=['sd_park_b', 'tgan_golf', 'deepdream', 'gen2_dog', 'sora_mammoth', 'sora_ships', 'veo2_clock', 'veo3_lemon', 'hailuo_nuns', 'lance'],
+               swaps=['sora_bigsur', 'sora_gold', 'sora_pigeon', 'veo31_lemon', 'kand5', 'cogv_paint', 'ltx_cyber', 'sora_train']),
+ 'seq13': dict(early='sd_park_a', recent='sora_pigeon', peak_lines=[['ONE FRAME.', 'white'], ['A WORLD.', 'volt']]),
+ 'seq14': dict(shot='sora_bigsur', lines=[['FROM MELTING PIXELS', 'white'], ['TO MOVING WORLDS.', 'volt']], credit='VOICE ELEVENLABS V4 · SCORE ORIGINAL + LICENSED · FULL CREDITS IN SOURCE LIST'),
+}
+
+
+def main():
+    clips, ex, problems = {}, {}, []
+    for eid, (cid, a, b, role, lab) in X.items():
+        if cid not in C: problems.append(f'{eid}: clip {cid} not in the verified pool'); continue
+        c = dict(C[cid]); m = c['listed_media']; probe = pool['excerpts'].get('probe_' + cid, {}).get('label', {})
+        clips[cid] = c; label = dict(probe); label.update(lab); ex[eid] = dict(clip=cid, **{'in': a, 'out': b}, label=label, role=role)
+    for cid, ov in OVERLAYS.items():
+        if cid in clips: clips[cid]['overlays_override'] = ov
+    seen = set()
+    def walk(o):
+        if isinstance(o, dict): [walk(v) for v in o.values()]
+        elif isinstance(o, list): [walk(v) for v in o]
+        elif isinstance(o, str) and o in ex: seen.add(o)
+    for k, v in CAST.items():
+        walk(v)
+    def check(o, path):
+        if isinstance(o, dict):
+            for k, v in o.items(): check(v, path + [k])
+        elif isinstance(o, list):
+            for v in o: check(v, path)
+        elif isinstance(o, str) and path and path[-1] in ('ex', 'early', 'recent', 'modern', 'shot', 'panels', 'tiles', 'swaps', 'ex2') and o not in ex: problems.append(f'{"/".join(path)}: unknown excerpt {o}')
+    check(CAST, [])
+    fam = {c.get('family') for c in clips.values()}; pages = {c['page'] for c in clips.values()}
+    out = dict(clips=clips, excerpts=ex, cast=CAST, cues={})
+    json.dump(out, open(OUT, 'w'), indent=1)
+    print(f'{len(ex)} excerpts, {len(clips)} clips, {len(pages)} distinct pages, {len(fam)} families; used in casts: {len(seen)} excerpts')
+    for p in problems: print('PROBLEM', p)
+    sys.exit(1 if problems else 0)
+
+
+if __name__ == '__main__': main()
