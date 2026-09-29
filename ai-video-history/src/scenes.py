@@ -225,7 +225,7 @@ def warp_quad(c, img, quad, alpha=1.0, edge=None):
     x0, y0, x1, y1 = int(max(0, min(xs) - 2)), int(max(0, min(ys) - 2)), int(min(W, max(xs) + 2)), int(min(H, max(ys) + 2))
     if x1 - x0 < 4 or y1 - y0 < 4: return
     ih, iw = img.shape[:2]; coef = _homography([(0, 0), (iw, 0), (iw, ih), (0, ih)], [(px - x0, py - y0) for px, py in quad])
-    im = Image.fromarray(img).transform((x1 - x0, y1 - y0), Image.PERSPECTIVE, tuple(coef), Image.BICUBIC)
+    im = Image.fromarray(img).transform((x1 - x0, y1 - y0), Image.PERSPECTIVE, tuple(coef), Image.BILINEAR)
     mk = Image.new('L', (iw, ih), 255).transform((x1 - x0, y1 - y0), Image.PERSPECTIVE, tuple(coef), Image.BILINEAR)
     a = np.asarray(mk, np.float32)[..., None] / 255 * alpha; d = c[y0:y1, x0:x1]; d[:] = (d * (1 - a) + np.asarray(im) * a).astype(np.uint8)
     if edge is not None:
@@ -258,15 +258,16 @@ def concept(ctx, t):
         tint = np.array([1 + .18 * j[2], 1, 1 - .18 * j[2]], np.float32); th = np.clip(th * tint, 0, 255).astype(np.uint8)
         slabs.append((z, th, quad))
     slabs.sort(key=lambda s_: -(s_[0] * np.cos(yaw)))
-    for z, th, quad in slabs: warp_quad(c, th, quad, alpha=lerp(.95, .8, merge), edge=(160, 230, 240))
+    for z, th, quad in slabs: warp_quad(c, th, quad, alpha=lerp(.95, .8, merge))
+    D.vector(c, lambda dr, ss, ox, oy: [dr.line([(px * ss, py * ss) for px, py in q + [q[0]]], fill=(160, 230, 240, 120), width=2 * ss) for _, _, q in slabs], ss=1)
     # time axis + tracked labels (connectors drawn in one layer, chips on top)
     a0, _ = proj((-360, 190, -K * sp / 2)); a1, _ = proj((-360, 190, K * sp / 2 + 40)); lines = [(a0, a1, CY, 3)]
     tags = [('LIGHT', (300, -169, -K * sp / 2 + 20), kw['light'], (255, 214, 120), 20, -110), ('WEIGHT', (300, 169, 0), kw['weight'], CY, 40, 70),
             ('MOMENTUM', (0, 190, K * sp / 2), kw['momentum'], (255, 140, 120), 20, 70), ('CAMERA', (-300, -169, K * sp / 2), kw['camera'], PA, -190, -90)]
     live = []
     for label, world, ts, col, dx, dy in tags:
+        if t < ts: continue
         e = out_back(prog(t, ts, ts + .3))
-        if e <= 0: continue
         p, _ = proj(world); q = (p[0] + dx * min(1, e), p[1] + dy * min(1, e)); lines.append((p, q, col, 2)); live.append((label, q, col))
     D.vector(c, lambda d, ss, ox, oy: [d.line([(p0[0] * ss, p0[1] * ss), (p1[0] * ss, p1[1] * ss)], fill=tuple(col) + (230,), width=w_ * ss) for p0, p1, col, w_ in lines], ss=1)
     D.draw_text(c, 'TIME  →', 'mono', 26, a1[0] + 10, a1[1] - 12, CY, track=.1)
