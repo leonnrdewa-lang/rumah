@@ -35,7 +35,7 @@ def main():
     ev = json.load(open(a.events)); lic = json.load(open(a.licensed)) if a.licensed else {}
     gates = [(e['t'], e['t'] + e['params'].get('dur', .4)) for e in ev if e['kind'] == 'gate']
     print('score...', flush=True); music = SC.build_score(TOTAL + .6, gates)[:, :N]
-    print('sfx...', flush=True); bus = Bus(N); ungated = Bus(N)
+    print('sfx...', flush=True); bus = Bus(N); ungated = Bus(N); mus_extra = Bus(N)
     for e in ev:
         k, t, p = e['kind'], e['t'], dict(e.get('params', {}))
         if k == 'gate': continue
@@ -43,6 +43,8 @@ def main():
         if k == 'file':
             spec = lic[p['name']]; x = load_audio(spec['file'], SR, mono=False); tr = spec.get('trim')
             if tr: x = x[:, int(tr[0] * SR):int(tr[1] * SR)]
+            if spec.get('music'):                                             # licensed music bed: long fades, joins the score (so it ducks under the narration too)
+                fi, fo = spec.get('fade_in', 1.0), spec.get('fade_out', 1.0); x = x if x.shape[0] == 2 else x[[0, 0]]; x = np.stack([fade(x[0], fi, fo), fade(x[1], fi, fo)]); mus_extra.add(x, t, g * spec.get('gain', 1.0)); continue
             x = fade(x[0], .003, .03)[None].repeat(2, 0) if x.shape[0] == 1 else np.stack([fade(x[0], .003, .03), fade(x[1], .003, .03)])
             tgt.add(x, t, g * spec.get('gain', 1.0))
         else: tgt.add(SFX.make(k, **p), t, g)
@@ -50,7 +52,7 @@ def main():
     for i, t0 in SB.T.items():
         x = vo_chain(load_audio(os.path.join(a.vo_dir, f'{i}.wav'), SR)); j = int(t0 * SR); m = min(len(x), N - j); vo[j:j + m] += x[:m]
     vo_st = reverb_st(vo, .9, .07) * 1.6
-    duck = duck_curve(vo, .8); mus = music * duck[None, :] * .75
+    lic_music = mus_extra.buf; duck = duck_curve(vo, .8); mus = (music + lic_music) * duck[None, :] * .75
     gate = np.ones(N, np.float32); f = int(.01 * SR)
     for g0, g1 in gates:
         i, j = int(g0 * SR), int(g1 * SR); gate[i:j] = 0; gate[max(0, i - f):i] = np.linspace(1, 0, min(f, i) or 1)[:len(gate[max(0, i - f):i])]; gate[j:j + f] = np.linspace(0, 1, len(gate[j:j + f]))
