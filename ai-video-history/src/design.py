@@ -36,7 +36,7 @@ def prog(t, t0, t1): return clamp((t - t0) / max(1e-6, t1 - t0))
 
 # ---------- image helpers ----------
 def rs(a, w, h, method=Image.BICUBIC):
-    return np.asarray(Image.fromarray(a).resize((int(w), int(h)), method))
+    return np.array(Image.fromarray(a).resize((int(w), int(h)), method))
 
 def crop_window(fr, cx, cy, zoom, aspect=W / H, base_h=None):
     """Virtual camera: window of `aspect` ratio centred at (cx,cy) in normalised source coords, zoom>=1 relative to full height."""

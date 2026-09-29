@@ -166,19 +166,19 @@ def transition(kind, a, b, p, ring=D.PAPER):
         cat = np.concatenate([a, b], 1); win = cat[:, off:off + W]
         return D.motion_blur_h(win, int(260 * np.sin(np.pi * clamp(p))) + 2)
     if kind == 'zoomthrough':
-        e = ease_io(p)
-        if p < .5: return D.motion_blur_h(D.scale_about(a, 1 + 1.6 * ease_io(p * 2)), 0) if False else _radial(D.scale_about(a, 1 + 1.4 * ease_io(p * 2)), ease_io(p * 2))
-        return _radial(D.scale_about(b, 1 + .35 * (1 - ease_io((p - .5) * 2))), 1 - ease_io((p - .5) * 2))
+        if p < .5:
+            k = ease_io(p * 2); return _radial(D.scale_about(a, 1 + 1.4 * k), k)
+        k = ease_io((p - .5) * 2); return _radial(D.scale_about(b, 1 + .35 * (1 - k)), 1 - k)
     if kind in ('iris', 'iris_in'):
         gx, gy = _grids(); r = np.sqrt((gx - W / 2) ** 2 + (gy - H * .46) ** 2); rad = ease_io(p) * 1250
         edge = 3.0; m = np.clip((rad - r) / edge + .5, 0, 1); out = blend_mask(a, b, m)
         ringm = np.clip(1 - np.abs(r - rad) / 5.0, 0, 1) * (1 - abs(p * 2 - 1) * .3) * (1 if 0 < p < 1 else 0)
         return (out * (1 - ringm[..., None]) + np.array(ring, np.float32) * ringm[..., None]).astype(np.uint8)
     if kind == 'slat':
-        gx, gy = _grids(); n = 9; u = ((gx + gy * .55) / (W + H * .55)) * n; fr = u - np.floor(u)
-        m = np.clip((p * 1.35 - (np.floor(u) / n) * .35 - 0.0) * 6 - fr * 5 * 0 , 0, 1)
-        m = np.clip((p * (1 + .3) - (np.floor(u) / n) * .3) * 1.0 - 0.0, 0, 1); m = np.clip((m - fr * .0) * 1.0, 0, 1)
-        m2 = np.clip(p * 1.6 - fr * .6 - np.floor(u) / n * .5, 0, 1); return blend_mask(a, b, np.clip(m2 * 1.5, 0, 1))
+        # diagonal slats: each slat wipes across with a stagger, giving a masked venetian-blind reveal
+        gx, gy = _grids(); n = 9; u = ((gx + gy * .55) / (W + H * .55)) * n; idx = np.floor(u); fr = u - idx
+        m = np.clip((p * 1.6 - idx / n * .6) * 4.0 - (1 - fr) * 1.6, 0, 1)
+        return blend_mask(a, b, m)
     return b if p >= .5 else a
 
 def _radial(img, k):
