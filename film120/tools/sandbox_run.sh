@@ -5,7 +5,7 @@
 set -e
 W=${W:-$HOME/film2}; SHA=${SHA:-claude/eloquent-volta-o5ddg1}; REPO=https://github.com/leonnrdewa-lang/rumah.git
 R=$W/repo/film120; mkdir -p $W; cd $W
-stage=$1; shift || true
+stage=$1; shift || true; export PATH=$HOME/.local/bin:$PATH
 case $stage in
 setup)
   if [ ! -d repo/.git ]; then git clone -q $REPO repo; fi
@@ -13,6 +13,16 @@ setup)
 fonts)
   if [ ! -d $HOME/fonts ]; then mkdir -p $HOME/fonts /tmp/fp && cd /tmp/fp && for p in anton archivo-narrow instrument-serif inter jetbrains-mono; do npm pack @fontsource/$p >/dev/null 2>&1; done
     for f in fontsource-*.tgz; do mkdir -p x && tar xzf $f -C x && cp x/package/files/*.woff $HOME/fonts/; rm -rf x; done; fi; ls $HOME/fonts | wc -l ;;
+vo)      # narration takes (ElevenLabs v4 URLs in data/vo/takes_v4.json) -> tempo 1.06 -> tightened wavs + vo.json (word times from faster-whisper)
+  mkdir -p $W/data/vo/raw && cd $W/data/vo && python3 - <<PY
+import json, subprocess
+t = json.load(open('$R/data/vo/takes_v4.json'))
+for k, v in t.items():
+    subprocess.run(['curl', '-sS', '-L', '-o', f'raw/{k}.mp3', v['url']], check=True)
+    subprocess.run(['ffmpeg', '-y', '-v', 'error', '-i', f'raw/{k}.mp3', '-af', 'atempo=1.06', '-ac', '1', '-ar', '24000', '-sample_fmt', 's16', f'raw/{k}.wav'], check=True)
+print('takes', len(t))
+PY
+  python3 $R/tools/vo_prepare.py $R/data/script.json raw . && cp $R/data/vo/vo.json ../vo_repo.json 2>/dev/null; ls | head -3 ;;
 media)   # download + proxy the shortlisted clips, then profile them
   cd $W && mkdir -p data && cp $R/data/shortlist.json data/shortlist.json
   python3 $R/tools/make_proxies.py data/shortlist.json media data/shortlist_proxied.json --pad 0.5 --max-mb 150

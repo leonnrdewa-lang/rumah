@@ -1387,9 +1387,16 @@
    },
    "claims": [
     {
-     "claim": "Official Kling X post announcing the 3.0 model (created 2026-02-04T15:06:03Z).",
+     "claim": "Official Kling X post announcing the 3.0 model.",
      "quote": "Introducing the Kling 3.0 Model: Everyone a Director.",
      "source_url": "https://x.com/Kling_ai/status/2019064918960668819",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "X syndication data: post created 2026-02-04T15:06:03Z.",
+     "quote": "\"created_at\":\"2026-02-04T15:06:03.000Z\"",
+     "source_url": "https://cdn.syndication.twimg.com/tweet-result?id=2019064918960668819&token=4w72v1x8cxn&lang=en",
      "source_kind": "official_blog",
      "retrieved": true
     },
@@ -1891,9 +1898,16 @@
    },
    "claims": [
     {
-     "claim": "Official Wan X post announcing Wan3.0 public beta (created 2026-08-06T12:18:37Z).",
+     "claim": "Official Wan X post announcing Wan3.0 public beta.",
      "quote": "Introducing Wan3.0 — now in Public Beta.",
      "source_url": "https://x.com/Alibaba_Wan/status/2085339761284104529",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "X syndication data: post created 2026-08-06T12:18:37Z.",
+     "quote": "\"created_at\":\"2026-08-06T12:18:37.000Z\"",
+     "source_url": "https://cdn.syndication.twimg.com/tweet-result?id=2085339761284104529&token=51zadce6ne5&lang=en",
      "source_kind": "official_blog",
      "retrieved": true
     },
@@ -2206,9 +2220,16 @@
      "retrieved": true
     },
     {
-     "claim": "Official X post (2026-09-28T15:38:53Z): Flash live for Ultra Yearly subscribers.",
+     "claim": "Official X post: Flash live for Ultra Yearly subscribers.",
      "quote": "Kling 4.0 is coming this October. Kling 4.0 Flash is live now for Ultra Yearly subscribers.",
      "source_url": "https://x.com/Kling_ai/status/2104596718067257458",
+     "source_kind": "official_blog",
+     "retrieved": true
+    },
+    {
+     "claim": "X syndication data: post created 2026-09-28T15:38:53Z.",
+     "quote": "\"created_at\":\"2026-09-28T15:38:53.000Z\"",
+     "source_url": "https://cdn.syndication.twimg.com/tweet-result?id=2104596718067257458&token=53nsa4elcev&lang=en",
      "source_kind": "official_blog",
      "retrieved": true
     },
