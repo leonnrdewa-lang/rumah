@@ -19,7 +19,7 @@ def fft_shape(x, fn):
     n = len(x); nf = 1 << int(np.ceil(np.log2(max(n, 8)))); X = np.fft.rfft(x, nf); f = np.fft.rfftfreq(nf, 1 / SR)
     return np.fft.irfft(X * fn(f), nf)[:n].astype(np.float32)
 def lowpass(x, fc, order=2): return fft_shape(x, lambda f: 1 / (1 + (f / fc) ** (2 * order)))
-def highpass(x, fc, order=2): return fft_shape(x, lambda f: 1 - 1 / (1 + (f / fc) ** (2 * order)) if False else (f / fc) ** (2 * order) / (1 + (f / fc) ** (2 * order)))
+def highpass(x, fc, order=2): return fft_shape(x, lambda f: (f / fc) ** (2 * order) / (1 + (f / fc) ** (2 * order)))
 def bandpass(x, f0, q=2.0): return fft_shape(x, lambda f: 1 / (1 + ((f - f0) / (f0 / q)) ** 2))
 def tarr(n): return np.arange(n, dtype=np.float32) / SR
 def exp_env(n, tau): return np.exp(-tarr(n) / tau)
@@ -73,7 +73,7 @@ def swept_noise(dur, f0, f1, q=1.6, blocks=14, seed=0):
         fc = f0 * (f1 / f0) ** (i / max(1, blocks - 1)); out[s:s + bl] += bandpass(seg, fc, q) * w
     return out / (np.abs(out).max() + 1e-9)
 def sfx_whoosh(dur=.4, up=False):
-    x = swept_noise(dur, 350 if not up else 2600, 2600 if not up else 350, 1.2, seed=3) if False else swept_noise(dur, 400, 3600, 1.2, seed=3) if up else swept_noise(dur, 3600, 400, 1.2, seed=4)
+    x = swept_noise(dur, 400, 3600, 1.2, seed=3) if up else swept_noise(dur, 3600, 400, 1.2, seed=4)
     n = len(x); env = np.sin(np.pi * np.linspace(0, 1, n)) ** 1.6; return reverb_st(fade(x * env * .8, .01, .05), 1.2, .18) * .8
 def sfx_riser(dur=1.0):
     n = int(dur * SR); t = tarr(n); x = swept_noise(dur, 300, 7000, .9, blocks=18, seed=5) * np.linspace(.05, 1, n) ** 2.2
@@ -243,15 +243,18 @@ def main():
     for n in SB['T']:
         x = vo_chain(load_wav(os.path.join(a.vo_dir, f'L{n}.wav'))); i = int(SB['T'][n] * SR); vo[i:i + len(x)] += x[:N - i]
     vo_st = reverb_st(vo, .9, .07)
-    duck = duck_curve(vo, .5); mus = music * duck[None, :] * 0.62
-    sfx_b = sfx.buf * (1 - .25 * np.clip(1 - duck, 0, 1))[None, :]
-    mix = mus + sfx_b * .85 + vo_st * 1.25
+    duck = duck_curve(vo, .8); mus = music * duck[None, :] * 0.75
+    sfx_b = sfx.buf * .5 * (1 - .3 * np.clip(1 - duck, 0, 1))[None, :]
+    vo_st = vo_st * 1.6
+    mix = mus + sfx_b + vo_st
     # end: hard cut with a 40 ms fade into black
     e = int(SB['total'] * SR); mix[:, e:] *= 0; mix[:, e - int(.04 * SR):e] *= np.linspace(1, 0, int(.04 * SR))[None, :]
     if a.stems:
         os.makedirs(a.stems, exist_ok=True)
-        for nm, b in (('music', mus), ('sfx', sfx_b), ('vo', vo_st)): write(os.path.join(a.stems, nm + '.wav'), b)
-    write(a.out, mix); print('peak', float(np.abs(mix).max()), 'rms dB', 20 * np.log10(np.sqrt((mix ** 2).mean())))
+    pk = float(np.abs(mix).max()); g = min(1.0, .89 / pk)
+    if a.stems:
+        for nm, b in (('music', mus), ('sfx', sfx_b), ('vo', vo_st)): write(os.path.join(a.stems, nm + '.wav'), b * g)
+    mix = mix * g; write(a.out, mix); print('pre-master peak', pk, 'scaled by', g); print('peak', float(np.abs(mix).max()), 'rms dB', 20 * np.log10(np.sqrt((mix ** 2).mean())))
 
 def write(path, st):
     x = np.clip(st.T, -1, 1);
