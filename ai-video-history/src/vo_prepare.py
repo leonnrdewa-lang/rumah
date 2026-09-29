@@ -92,8 +92,8 @@ def main():
         tm = [list(t_) for t_ in tm]
         for a_, b_ in runs:
             for i in range(len(tm)):
-                if a_ - .35 <= tm[i][0] < b_ + .02 and tm[i][0] < b_ - .01 and (i == 0 or tm[i - 1][0] < b_ - .02): tm[i][0] = b_        # word begins after the silence
-                if a_ - .02 <= tm[i][1] <= b_ + .40 and tm[i][1] > a_ + .01 and (i + 1 >= len(tm) or tm[i + 1][0] >= a_ - .05): tm[i][1] = min(tm[i][1], a_) if tm[i][0] < a_ else tm[i][1]
+                if a_ - .02 <= tm[i][0] < b_ - .01: tm[i][0] = b_                                   # word 'starts' inside a silence -> starts when it ends
+                if tm[i][0] < a_ - .02 and a_ + .01 < tm[i][1] <= b_ + .30: tm[i][1] = a_             # word 'ends' after the silence began -> ends where it began
         for i in range(len(tm)):
             if i: tm[i][0] = max(tm[i][0], tm[i - 1][0] + .06)
             tm[i][1] = max(tm[i][1], tm[i][0] + .10)
