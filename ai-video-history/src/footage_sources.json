@@ -1,0 +1,26 @@
+{
+  "_note": "Every clip is a Wikimedia Commons file. License/author/date are re-read live from the Commons API by fetch_footage.py and written to footage_manifest.json. 'label' is the on-screen provenance caption.",
+  "clips": [
+    {"id": "e_sd_park",   "file": "Algorithmically-generated animation of young woman in park.webm", "era": "early",  "label": "STABLE DIFFUSION · OCT 2022", "note": "Image model animated frame-by-frame (not a text-to-video model)"},
+    {"id": "e_2022_a",    "file": "AI generated Video Clip.webm", "era": "early", "label": "AI CLIP · OCT 2022", "note": "Tool not identified by uploader"},
+    {"id": "e_2022_b",    "file": "AI generated video clip -New creative video.webm", "era": "early", "label": "AI CLIP · DEC 2022", "note": "Tool not identified by uploader"},
+    {"id": "e_gen1",      "file": "Gen-1 IMG 9350 - Watercolor painting, scenic landscape, soft.webm", "era": "early", "label": "RUNWAY GEN-1 · 2023", "note": "Video-to-video restyle of real footage"},
+    {"id": "e_gen2_dog",  "file": "Gen2-Example-Dog-Podium.webm", "era": "early", "label": "RUNWAY GEN-2 · 2023", "note": "Text-to-video"},
+    {"id": "e_vp_cat",    "file": "Cat piano with audio 3EB0CD1F.webm", "era": "early", "label": "VIDEOPOET · DEC 2023", "note": "Google research model"},
+    {"id": "e_vp_dog",    "file": "Dog popcorn with audio 6781BD0C.webm", "era": "early", "label": "VIDEOPOET · DEC 2023", "note": "Google research model"},
+    {"id": "e_head",      "file": "Generative ai - electronic head moving Dec 2023.webm", "era": "early", "label": "AI VIDEO · DEC 2023", "note": "Tool not identified by uploader"},
+    {"id": "m_sora_tokyo","file": "OpenAI Sora in Action- Tokyo Walk.webm", "era": "mid", "label": "SORA · FEB 2024", "note": "OpenAI preview"},
+    {"id": "m_sora_pup",  "file": "Open AI Sora in Action- Italian Pup.webm", "era": "mid", "label": "SORA · FEB 2024", "note": "OpenAI preview"},
+    {"id": "m_sora_gold", "file": "OpenAI Sora in Action- Gold Rush.webm", "era": "mid", "label": "SORA · FEB 2024", "note": "OpenAI preview"},
+    {"id": "m_sora_mammoth","file": "Wooly Mammoth by OpenAI Sora.webm", "era": "mid", "label": "SORA · FEB 2024", "note": "OpenAI preview"},
+    {"id": "m_sora_ant",  "file": "POV of an ant walking inside an ant nest tunnel (Sora AI-video).webm", "era": "mid", "label": "SORA · FEB 2024", "note": "OpenAI preview"},
+    {"id": "m_gen3",      "file": "Gen-3 Alpha 3480943356, A cowboy riding his , pikaso texttoimage C (1).webm", "era": "mid", "label": "RUNWAY GEN-3 ALPHA · 2024", "note": "Runway"},
+    {"id": "m_hailuo",    "file": "Cyberpunk Rainy Street (Hailuo AI).webm", "era": "mid", "label": "HAILUO AI · DEC 2024", "note": "MiniMax"},
+    {"id": "n_veo3_owl",  "file": "Veo 3 demo Owl and Badger.webm", "era": "now", "label": "VEO 3 · MAY 2025", "note": "Google DeepMind demo, 4K"},
+    {"id": "n_veo3_b",    "file": "Googleveo3-2.webm", "era": "now", "label": "VEO 3 · 2025", "note": "Google Veo 3"},
+    {"id": "n_veo3_cafe", "file": "Grey Haired Man in a Cosy Cafe (Veo 3).webm", "era": "now", "label": "VEO 3 · AUG 2025", "note": "Synthetic person"},
+    {"id": "n_veo31",     "file": "Visual Kei Man Enjoys Lemonade (Veo 3.1).webm", "era": "now", "label": "VEO 3.1 · OCT 2025", "note": "Synthetic person"},
+    {"id": "n_sora2",     "file": "OpenAI - This is Sora 2.webm", "era": "now", "label": "SORA 2 · SEP 2025", "note": "OpenAI compilation"},
+    {"id": "n_seedance",  "file": "Seedance-2-husband-coming-home.webm", "era": "now", "label": "SEEDANCE 2.0 · 2026", "note": "ByteDance Seed"}
+  ]
+}
