@@ -234,6 +234,8 @@ def warp_quad(c, img, quad, alpha=1.0, edge=None):
 def concept(ctx, t):
     SB = ctx.SB; s = SB['scenes'][4]; kw = SB['cues']['kw']; u = t - s['t0']; dur = s['t1'] - s['t0']
     c = np.full((H, W, 3), (6, 8, 12), np.uint8)
+    gx, gy = np.meshgrid(np.arange(0, W, 4, dtype=np.float32), np.arange(0, H, 4, dtype=np.float32)); gl = np.exp(-(((gx - 540) / 620) ** 2 + ((gy - 720) / 560) ** 2))
+    glow = np.repeat(np.repeat(gl, 4, 0), 4, 1)[:H, :W, None]; c = np.clip(c + glow * np.array([10, 42, 60], np.float32) * (.75 + .25 * np.sin(u * 1.3)), 0, 255).astype(np.uint8)
     yaw = np.radians(lerp(-38, 22, ease_io(u / dur))); pitch = np.radians(lerp(14, 6, ease_io(u / dur))); fdist = 1500.0; cxp, cyp = 540, 690; SC = 1.42
     merge = ease_io(prog(t, kw['merge'], kw['merge'] + 1.2))
     def proj(p):
@@ -356,6 +358,9 @@ def mblur_v(img, px):
 def finale(ctx, t):
     SB = ctx.SB; f = SB['cues']['finale']; u = t - f['start']
     c = np.full((H, W, 3), (5, 5, 7), np.uint8)
+    if t >= f['now'] - .3:
+        cid = 'n_veo3_owl'; tin0 = ctx.F.pick(cid, 0, 3.5) + 6.0; bg = ctx.F.frame(cid, tin0, tin0 + max(0, t - f['now']) * .6, max_h=180)
+        k = ease_out(prog(t, f['now'] - .3, f['now'] + .5)); c = np.maximum(c, (D.blur_bg(bg, dark=.34, k=22) * k).astype(np.uint8))
     if t < f['now']:
         # a film strip accelerates upward; frames evolve from soft/amber (2022) to crisp/vivid (today); it locks on "camera"
         n = len(STRIP); fw, fh_, pitch, sx = 600, 338, 400, 240

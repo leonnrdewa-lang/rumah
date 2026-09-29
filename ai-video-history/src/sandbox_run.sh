@@ -26,11 +26,11 @@ if has render; then
 fi
 if has mux; then
   # two-pass loudness normalisation to -14 LUFS / -1 dBTP, then mux
-  M=$(ffmpeg -hide_banner -nostats -i out/mix_raw.wav -af loudnorm=I=-14:TP=-1.0:LRA=9:print_format=json -f null - 2>&1 | sed -n '/^{/,/^}/p')
+  M=$(ffmpeg -hide_banner -nostats -i out/mix_raw.wav -af loudnorm=I=-14:TP=-1.5:LRA=9:print_format=json -f null - 2>&1 | sed -n '/^{/,/^}/p')
   echo "$M" > out/loudnorm_pass1.json
   g(){ echo "$M" | python3 -c "import sys,json;print(json.load(sys.stdin)['$1'])"; }
-  ffmpeg -y -v error -i out/mix_raw.wav -af "loudnorm=I=-14:TP=-1.0:LRA=9:measured_I=$(g input_i):measured_TP=$(g input_tp):measured_LRA=$(g input_lra):measured_thresh=$(g input_thresh):offset=$(g target_offset):linear=true,alimiter=limit=0.89:level=false" -ar 48000 out/mix.wav
-  ffmpeg -y -v error -i out/video_silent.mp4 -i out/mix.wav -c:v copy -c:a aac -b:a 320k -ar 48000 -movflags +faststart -shortest out/final.mp4
+  ffmpeg -y -v error -i out/mix_raw.wav -af "loudnorm=I=-14:TP=-1.5:LRA=9:measured_I=$(g input_i):measured_TP=$(g input_tp):measured_LRA=$(g input_lra):measured_thresh=$(g input_thresh):offset=$(g target_offset):linear=true,alimiter=limit=0.84:level=false" -ar 48000 out/mix.wav
+  ffmpeg -y -v error -i out/video_silent.mp4 -i out/mix.wav -c:v libx264 -preset medium -crf 19 -maxrate 14M -bufsize 28M -profile:v high -level 4.2 -pix_fmt yuv420p -colorspace bt709 -color_primaries bt709 -color_trc bt709 -c:a aac -b:a 320k -ar 48000 -movflags +faststart -shortest out/final.mp4
   ffprobe -v error -show_entries stream=codec_name,width,height,r_frame_rate,duration,bit_rate,sample_rate,channels -of default=nw=1 out/final.mp4
   ffmpeg -hide_banner -nostats -i out/final.mp4 -af ebur128=peak=true -f null - 2>&1 | tail -12
   echo "mux done"
