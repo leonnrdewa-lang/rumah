@@ -232,6 +232,21 @@
   "seq06": {
    "entries": [
     {
+     "ex": null,
+     "model": "KLING",
+     "dev": "KUAISHOU",
+     "year": "2024",
+     "date": "JUN 6, 2024",
+     "note": "Early-access applications open.",
+     "hold": 2.0,
+     "tr": "slat",
+     "facts": [
+      "KLING \u00b7 EARLY ACCESS \u00b7 JUN 6, 2024",
+      "LUMA DREAM MACHINE \u00b7 PUBLIC \u00b7 JUN 12, 2024",
+      "RUNWAY GEN-3 ALPHA \u00b7 ANNOUNCED \u00b7 JUN 17, 2024"
+     ]
+    },
+    {
      "ex": "e1",
      "model": "MODEL 1",
      "dev": "RUNWAY",
