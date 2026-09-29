@@ -2,7 +2,7 @@
  "agent": "R6",
  "topic": "Honest limitations and the state of the art at 2026-09-29",
  "retrieved_on": "2026-09-29",
- "method_notes": "All pages were fetched from the Higgsfield sandbox (open internet) and every quote was machine-checked as a substring of the fetched page text (whitespace and typographic quotes normalised; PDFs via pdftotext; JS-only pages such as kling.ai release notes and BytePlus docs via headless Chromium; X post timestamps via the syndication endpoint). A few quotes were checked in raw HTML for metadata dates. Where a quote differs from page text only by a stripped-link space (for example \"web ,\" in help pages), the text is present on the page. openai.com and help.openai.com are cited as Wayback id_ captures (redirects resolve to the nearest capture shown in each URL). Sibling files R1-R4 were used as leads and every claim restated here was re-fetched by R6; items R6 did not re-fetch are labelled in notes or unverified_leads. Commons frames were not viewed.",
+ "method_notes": "All pages were fetched from the Higgsfield sandbox (open internet) and every quote was machine-checked as a substring of the fetched page text (whitespace and typographic quotes normalised; PDFs via pdftotext; JS-only pages such as kling.ai release notes and BytePlus docs via headless Chromium; X post timestamps via the syndication endpoint). A few quotes were checked in raw HTML for metadata dates. The Veo 3 model card (PDF) and the Sora 2 system card (PDF on cdn.openai.com) were read via pdftotext. Where a quote differs from page text only by a stripped-link space (for example \"web ,\" in help pages), the text is present on the page. openai.com and help.openai.com are cited as Wayback id_ captures (redirects resolve to the nearest capture shown in each URL). Sibling files R1-R4 were used as leads and every claim restated here was re-fetched by R6; items R6 did not re-fetch are labelled in notes or unverified_leads. Commons frames were not viewed.",
  "milestones": [
   {
    "id": "video_diffusion_models_2022_04",
@@ -736,7 +736,14 @@
    },
    "claims": [
     {
-     "claim": "README news line dated Feb 25, 2025: code and weights released.",
+     "claim": "README news line dated Feb 25, 2025.",
+     "quote": "Feb 25, 2025",
+     "source_url": "https://github.com/Wan-Video/Wan2.1",
+     "source_kind": "docs",
+     "retrieved": true
+    },
+    {
+     "claim": "README news line: inference code and weights released.",
      "quote": "We've released the inference code and weights of Wan2.1.",
      "source_url": "https://github.com/Wan-Video/Wan2.1",
      "source_kind": "model_card",
@@ -2640,6 +2647,39 @@
   },
   {
    "developer": "OpenAI",
+   "product": "Sora 2 system card",
+   "date": "2025-09-30",
+   "topic": "provenance / C2PA",
+   "statement": "System card: C2PA metadata on all assets.",
+   "quote": "C2PA metadata on all assets, providing verifiable origin through an industry standard",
+   "source_url": "https://cdn.openai.com/pdf/50d5973c-c4ff-4c2d-986f-c72b5d0ff069/sora_2_system_card.pdf",
+   "source_kind": "model_card",
+   "retrieved": true
+  },
+  {
+   "developer": "OpenAI",
+   "product": "Sora 2 system card",
+   "date": "2025-09-30",
+   "topic": "provenance / visible watermark",
+   "statement": "System card: visible moving watermark on videos downloaded from sora.com or the Sora app.",
+   "quote": "Visible moving watermark on videos downloaded from sora.com or the Sora app",
+   "source_url": "https://cdn.openai.com/pdf/50d5973c-c4ff-4c2d-986f-c72b5d0ff069/sora_2_system_card.pdf",
+   "source_kind": "model_card",
+   "retrieved": true
+  },
+  {
+   "developer": "OpenAI",
+   "product": "Sora 2 system card",
+   "date": "2025-09-30",
+   "topic": "provenance limits",
+   "statement": "OpenAI concedes there is no single solution to provenance.",
+   "quote": "We recognize that there is not a single solution to provenance",
+   "source_url": "https://cdn.openai.com/pdf/50d5973c-c4ff-4c2d-986f-c72b5d0ff069/sora_2_system_card.pdf",
+   "source_kind": "model_card",
+   "retrieved": true
+  },
+  {
+   "developer": "OpenAI",
    "product": "Sora 2",
    "date": "2025-11-25",
    "topic": "flicker / stability",
@@ -2724,6 +2764,28 @@
    "quote": "Veo 2 outputs include an invisible SynthID watermark that helps identify them as AI-generated",
    "source_url": "https://blog.google/innovation-and-ai/models-and-research/google-labs/video-image-generation-update-december-2024/",
    "source_kind": "official_blog",
+   "retrieved": true
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Veo 3 model card (covers Veo 3 and subsequent versions)",
+   "date": "2025-05-23",
+   "topic": "consistency / complex motion",
+   "statement": "Model card lists consistency across complex scenes or complex motion as a remaining challenge (published May 23, 2025; updated Jan 13, 2026; the Veo 3.1 Lite card of 2026-04-08 defers to it).",
+   "quote": "maintaining complete consistency throughout complex scenes or those with complex motion, remains a challenge",
+   "source_url": "https://storage.googleapis.com/deepmind-media/Model-Cards/Veo-3-Model-Card.pdf",
+   "source_kind": "model_card",
+   "retrieved": true
+  },
+  {
+   "developer": "Google DeepMind",
+   "product": "Veo 3 model card",
+   "date": "2025-05-23",
+   "topic": "provenance / SynthID",
+   "statement": "Model card lists SynthID watermarking as a post-training mitigation.",
+   "quote": "applying tools such as SynthID watermarking and production filtering to reduce information integrity harms and minimise harmful outputs",
+   "source_url": "https://storage.googleapis.com/deepmind-media/Model-Cards/Veo-3-Model-Card.pdf",
+   "source_kind": "model_card",
    "retrieved": true
   },
   {
@@ -3486,7 +3548,7 @@
     "Text-to-video reached the general public only in June 2023 (Runway Gen-2 on web and iOS, \"try it free\"); before that it was Discord early access (March 2023) or research-only open weights.",
     "Runway's page states no clip length, credit cost or quality; secondary press reports 4-second clips and a small free credit allowance (not verified from a primary page).",
     "ModelScope was research-only (non-commercial licence per R1) and needed a GPU or a hosted demo.",
-    "Pika 1.0 was a waitlist on 2023-11-28; Stable Video Diffusion (2023-11-21) was image-to-video, research licence."
+    "Pika 1.0 was a waitlist on 2023-11-28; Stable Video Diffusion (Nov 2023, per R1) was image-to-video only and, per its model card, cannot be controlled through text."
    ],
    "safer_wording": "By mid-2023, ordinary people could try text-to-video in a browser or on a phone.",
    "date_facts": {
@@ -3614,7 +3676,7 @@
     }
    ],
    "caveats": [
-    "Veo 3 = 20 May 2025; Sora 2 = 30 Sep 2025 (both 2025, but Sora 2 was one day before the film's ~2026-09-29 production and is now shut down: app 2026-04-26, API 2026-09-24).",
+    "Veo 3 = 20 May 2025; Sora 2 = 30 Sep 2025 (both 2025; Sora 2 has since been shut down: app 2026-04-26, API 2026-09-24).",
     "Veo 3 was first among these; do not imply Sora 2 introduced audio. Meta Movie Gen (research, 2024-10-04) already generated synced audio.",
     "Both generate audio together with video (joint generation), not sound added afterwards; Google itself lists natural consistent speech as still developing.",
     "Google's newest video model by 2026-09-29 is Gemini Omni 1.1 Flash (2026-08-27), not Veo 3; Veo 3.1 (2025-10-15) is the last named Veo."

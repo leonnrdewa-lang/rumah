@@ -51,7 +51,7 @@ class Ctx:
                 e = np.abs(np.diff(g, axis=1))[:-1] + np.abs(np.diff(g, axis=0))[:, :-1]; acc = e if acc is None else acc + e
             if acc is None: self.cache[k] = .5
             else:
-                col = np.convolve(acc.sum(0), np.ones(9) / 9, 'same'); xs = np.linspace(0, 1, len(col)); w_ = col ** 2; self.cache[k] = float(np.clip((xs * w_).sum() / w_.sum(), .32, .68))
+                col = np.convolve(acc.sum(0), np.ones(9) / 9, 'same'); xs = np.linspace(0, 1, len(col)); w_ = col ** 2; sw_ = float(w_.sum()); v_ = (xs * w_).sum() / sw_ if sw_ > 1e-9 else .5; self.cache[k] = float(np.clip(v_ if np.isfinite(v_) else .5, .32, .68))
         return self.cache[k]
 
     def cover_safe(self, eid, aspect=W / H, cx=.5, zoom=1.0, cy=.5):
