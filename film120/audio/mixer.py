@@ -56,6 +56,7 @@ def main():
     gate = np.ones(N, np.float32); f = int(.01 * SR)
     for g0, g1 in gates:
         i, j = int(g0 * SR), int(g1 * SR); gate[i:j] = 0; gate[max(0, i - f):i] = np.linspace(1, 0, min(f, i) or 1)[:len(gate[max(0, i - f):i])]; gate[j:j + f] = np.linspace(0, 1, len(gate[j:j + f]))
+    vo_st = vo_st * gate[None, :]                                                          # the freeze beat: the narration's reverb tail is cut with the rest of the bed
     sfx_b = bus.buf * .5 * (1 - .3 * np.clip(1 - duck, 0, 1))[None, :] * gate[None, :] + ungated.buf * .5
     mix = mus + sfx_b + vo_st
     fo = int(.02 * SR); mix[:, -fo:] *= np.linspace(1, 0, fo)[None, :]                          # 20 ms fade at the very end (loop seam is tonal, not a click)

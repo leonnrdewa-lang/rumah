@@ -24,7 +24,7 @@ def transition(kind, a, b, p, accent=VOLT, seed=1):
     if kind == 'flash':
         f = 1 - abs(p * 2 - 1); base = b if p >= .5 else a; return (base * (1 - f) + 255 * f).astype(np.uint8)
     if kind == 'dip':
-        f = 1 - abs(p * 2 - 1); base = b if p >= .5 else a; return (base * (1 - f) + np.array(CHARCOAL, np.float32) * f).astype(np.uint8)
+        f = 1 - abs(p * 2 - 1); base = b if p >= .5 else a; return (base * (1 - f) + np.array((46, 46, 50), np.float32) * f).astype(np.uint8)          # dips go through a dark grey, never through black (no black frames)
     if kind == 'whip':
         off = int(ease_io(p) * W); cat = np.concatenate([a, b], 1)[:, off:off + W]
         return G.motion_blur_h(cat, int(240 * np.sin(np.pi * clamp(p))) + 2)
