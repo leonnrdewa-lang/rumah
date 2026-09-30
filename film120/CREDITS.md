@@ -4,7 +4,7 @@
 
 | Layer | Source | Where the full list is |
 |---|---|---|
-| Narration | ElevenLabs Eleven v4 text-to-speech (through Higgsfield), preset voice "Arthur"; original 230-word script | `data/script.json`, `data/vo/` |
+| Narration | ElevenLabs Eleven v4 text-to-speech (through Higgsfield), preset voice "Arthur"; original 229-word script | `data/script.json`, `data/vo/` |
 | Footage | 29 excerpts from 28 distinct source pages, 18 model families / projects (2016 GAN experiments to Sora previews, Veo 3.1, Kandinsky 5, Lance) | `FOOTAGE_SOURCES.md`, `footage_sources.csv` |
 | Music | original procedural score + two low-level licensed beds | `AUDIO_CREDITS.md` |
 | Sound design | original procedural SFX + 60 licensed recordings (CC0, Mixkit free licence, CC BY 4.0) | `AUDIO_CREDITS.md` |
