@@ -637,43 +637,6 @@
    },
    "source_file": "H6.json"
   },
-  "sora_wooly_mammoth": {
-   "media_url": "https://upload.wikimedia.org/wikipedia/commons/4/4c/Wooly_Mammoth_by_OpenAI_Sora.webm",
-   "page": "https://commons.wikimedia.org/wiki/File:Wooly_Mammoth_by_OpenAI_Sora.webm",
-   "family": "Sora",
-   "model_version": "Sora (text-to-video model), per Commons description 'using OpenAI's Sora'",
-   "created": "2024-02-15",
-   "date_basis": "openai.com/sora 'Published February 15, MMXXIV' (wooly-mammoth.mp4 on the 2024-02-16 Wayback snapshot). Commons date field 2024-02-16 (upload day); source is a third-party YouTube re-upload.",
-   "creator": "OpenAI demo",
-   "license": "PD (Commons: AI output)",
-   "license_basis": "OpenAI page lists the same prompt/video (wooly-mammoth.mp4). Commons copy is a third-party re-upload; frame comparison with the OpenAI CDN original: mean abs diff 0.85 (max block 1.65) over 10 frames, no overlay/offset. Uploader assertion; no developer licence.",
-   "verdict": "clear_with_conditions",
-   "verdict_confidence": "low",
-   "conditions": [
-    "Project must accept in writing that the licence basis is Commons' PD-algorithm assertion only (no OpenAI licence; UK/HK computer-generated-work protection and OpenAI's blanket (c) notice remain residual risks).",
-    "No legal attribution or share-alike, but keep the on-screen source label: 'Sora, OpenAI, Feb 2024, public domain (Wikimedia Commons PD-algorithm)'. Credit OpenAI/Sora as creator, never the Commons uploader.",
-    "Present as a curated developer demo of an early model; OpenAI's own page says 'The current model has weaknesses.' Do not imply every generation is like this.",
-    "Source the master from the Commons file or the identical OpenAI CDN original only, never from YouTube; credit OpenAI/Sora, not the YouTube channel.",
-    "Drop the silent audio track."
-   ],
-   "risk_flags": [],
-   "story_roles": [
-    "gallery",
-    "hero"
-   ],
-   "description": "Several giant woolly mammoths tread through a snowy meadow, fur blowing in the wind, snow-covered trees and mountains behind, warm afternoon light, low camera view, depth of field (from prompt on the page). Audio track is digital silence (mean -91 dB); drop it.",
-   "prompt": "Several giant wooly mammoths approach treading through a snowy meadow, their long wooly fur lightly blows in the wind as they walk, snow covered trees and dramatic snow capped mountains in the distance, mid afternoon light with wispy clouds and a sun high in the distance creates a warm glow, the low camera view is stunning capturing the large furry mammal with beautiful photography, depth of field.",
-   "listed_media": {
-    "duration_s": 10.021,
-    "width": 1920,
-    "height": 1080,
-    "fps": 30,
-    "size_mb": 9.65,
-    "has_audio": true,
-    "format": "webm"
-   },
-   "source_file": "H1.json"
-  },
   "sora_big_sur_drone": {
    "media_url": "https://upload.wikimedia.org/wikipedia/commons/a/a7/Big-sur.webm",
    "page": "https://commons.wikimedia.org/wiki/File:Big-sur.webm",
@@ -812,42 +775,6 @@
     "fps": 30,
     "size_mb": 29.67,
     "has_audio": false,
-    "format": "webm"
-   },
-   "source_file": "H1.json"
-  },
-  "sora_gold_rush_fake_archive": {
-   "media_url": "https://upload.wikimedia.org/wikipedia/commons/0/02/OpenAI_Sora_in_Action-_Gold_Rush.webm",
-   "page": "https://commons.wikimedia.org/wiki/File:OpenAI_Sora_in_Action-_Gold_Rush.webm",
-   "family": "Sora",
-   "model_version": "Sora (text-to-video model), per Commons title 'OpenAI Sora in Action'",
-   "created": "2024-02-15",
-   "date_basis": "openai.com/sora 'Published February 15, MMXXIV' (gold-rush.mp4 on the 2024-02-16 Wayback snapshot). Commons date field 2024-02-15; upload 2024-02-16 from a third-party YouTube re-upload.",
-   "creator": "OpenAI demo",
-   "license": "PD (Commons: AI output)",
-   "license_basis": "OpenAI page lists the same prompt/video (gold-rush.mp4). Commons copy is a third-party re-upload; frame comparison with the OpenAI CDN original: mean abs diff 1.20 (max block 2.35) over 25 frames, no overlay/offset. Uploader assertion; no developer licence.",
-   "verdict": "clear_with_conditions",
-   "verdict_confidence": "low",
-   "conditions": [
-    "Project must accept in writing that the licence basis is Commons' PD-algorithm assertion only (no OpenAI licence; UK/HK computer-generated-work protection and OpenAI's blanket (c) notice remain residual risks).",
-    "No legal attribution or share-alike, but keep the on-screen source label: 'Sora, OpenAI, Feb 2024, public domain (Wikimedia Commons PD-algorithm)'. Credit OpenAI/Sora as creator, never the Commons uploader.",
-    "Present as a curated developer demo of an early model; OpenAI's own page says 'The current model has weaknesses.' Do not imply every generation is like this.",
-    "Source the master from the Commons file or the identical OpenAI CDN original only, never from YouTube; credit OpenAI/Sora, not the YouTube channel.",
-    "Show only with an explicit on-screen 'AI-generated, not archival' label; drop the silent audio track."
-   ],
-   "risk_flags": [],
-   "story_roles": [
-    "gallery"
-   ],
-   "description": "Commons description is marketing text plus the prompt: 'Historical footage of California during the gold rush.' Audio track exists but is digital silence (mean -91 dB); drop it.",
-   "prompt": "Historical footage of California during the gold rush.",
-   "listed_media": {
-    "duration_s": 25.021,
-    "width": 1280,
-    "height": 720,
-    "fps": 30,
-    "size_mb": 3.02,
-    "has_audio": true,
     "format": "webm"
    },
    "source_file": "H1.json"
@@ -1125,44 +1052,6 @@
     "format": "mp4"
    },
    "source_file": "H5.json"
-  },
-  "ovi_two_women_audio_video": {
-   "media_url": "https://raw.githubusercontent.com/character-ai/Ovi/5b69b25a4b3115216e9ea53a37a04410be6ad39a/assets/high_res_results/Two_women_stand_facing_each_other_in_what_appears__704x1280_103_0.mp4",
-   "page": "https://github.com/character-ai/Ovi/blob/5b69b25a4b3115216e9ea53a37a04410be6ad39a/README.md",
-   "family": "Ovi",
-   "model_version": "Ovi (twin-backbone audio-video model). File is in assets/high_res_results; README also documents an 'Ovi 1.1 Update (10 November 2025)', file predates it, exact version not stated",
-   "created": "2025-10-09",
-   "date_basis": "Git commit adds the file 2025-10-09T16:05:37+00:00; arXiv 2510.01284 submitted 30 Sep 2025; HF chetwinlow1/Ovi createdAt 2025-09-30T02:41:36Z.",
-   "creator": "Character.AI / Yale - Ovi, 2025",
-   "license": "Apache-2.0",
-   "license_basis": "In-tree asset in an Apache-2.0 repo; the README (checked) has no licence statement about media and does not reference this file; HF card lists apache-2.0 for the model. Argument only: 'documentation source' in the Apache 'Work' definition.",
-   "verdict": "clear_with_conditions",
-   "verdict_confidence": "low",
-   "conditions": [
-    "Credit the developer and name the licence in the on-screen source label and in the credits/rights sheet; ship a copy of the Apache-2.0 text with the rights file (Apache-2.0 s.4: licence copy, retain notices, mark changes to the excerpt). Suggested label: 'Character.AI / Yale - Ovi, Oct 2025 - Apache-2.0'.",
-    "A human must watch the clip (or each tile) before use and confirm: no identifiable real person, no brand/logo/IP, no in-scene political text, no source watermark that a vertical crop would cut; if a watermark/logo/title exists it must stay visible.",
-    "Audio: the clip carries generated speech. Whisper (base) transcribes it as \"human's fight for freedom tonight.\" (0-4 s). Either mute it, or use it only if the line is reviewed and clearly not read as a political/protest slogan or a real person's voice; do not use a claim of 'live' footage.",
-    "Label as 'Ovi (initial 2025 release, before the 2025-11-10 Ovi 1.1 update)'."
-   ],
-   "risk_flags": [
-    "unverifiable_model_claim"
-   ],
-   "story_roles": [
-    "gallery",
-    "milestone"
-   ],
-   "description": "Prompt (truncated in file name): two women standing facing each other. 5.08 s, 1504x608, stereo 44.1 kHz audio. Whisper (tiny, unverified) transcribes the audio as 'humans fight for freedom tonight.' Visuals not viewed.",
-   "prompt": "Two women stand facing each other in what appears ... (truncated in file name; full prompt not published)",
-   "listed_media": {
-    "duration_s": 5.08,
-    "width": 1504,
-    "height": 608,
-    "fps": 24.0,
-    "size_mb": 0.64,
-    "has_audio": true,
-    "format": "mp4"
-   },
-   "source_file": "H5.json"
   }
  },
  "excerpts": {
@@ -1219,7 +1108,7 @@
    "in": 0,
    "out": 8,
    "label": {
-    "model": "DCGAN (ANIME)",
+    "model": "DCGAN (IMAGE GAN)",
     "year": "2021",
     "creator": "Zisaac33",
     "license": "CC BY-SA 4.0"
@@ -1228,7 +1117,7 @@
   },
   "deepdream": {
    "clip": "deepdream_ouroboros_2021",
-   "in": 2,
+   "in": 4,
    "out": 12,
    "label": {
     "model": "DEEPDREAM (2015 METHOD)",
@@ -1279,7 +1168,7 @@
    "in": 0,
    "out": 5.1,
    "label": {
-    "model": "RUNWAY GEN-1",
+    "model": "RUNWAY GEN-1 (V2V)",
     "year": "2023",
     "creator": "Oronbb",
     "license": "CC BY-SA 4.0"
@@ -1330,7 +1219,7 @@
     "model": "TEXT2VIDEO-ZERO",
     "year": "2023",
     "creator": "Khachatryan et al.",
-    "license": "OpenRAIL-M (repo)"
+    "license": "CreativeML Open RAIL-M (repo)"
    },
    "role": "matched subject: horse (2023, 3 fps)"
   },
@@ -1375,34 +1264,22 @@
    "in": 0,
    "out": 5.3,
    "label": {
-    "model": "RUNWAY GEN-3 ALPHA",
+    "model": "RUNWAY ALPHA",
     "year": "2024",
     "creator": "Rapidata dataset",
     "license": "Apache-2.0 (dataset)"
    },
    "role": "Runway Gen-3 Alpha family, same prompt as Wan clip"
   },
-  "sora_mammoth": {
-   "clip": "sora_wooly_mammoth",
-   "in": 0,
-   "out": 10.0,
-   "label": {
-    "model": "SORA",
-    "year": "2024",
-    "creator": "OpenAI demo",
-    "license": "PD (Commons: AI output)"
-   },
-   "role": "Sora preview demo"
-  },
   "sora_bigsur": {
    "clip": "sora_big_sur_drone",
    "in": 0.3,
    "out": 8.3,
    "label": {
-    "model": "SORA",
+    "model": "SORA PREVIEW",
     "year": "2024",
-    "creator": "OpenAI demo",
-    "license": "PD (Commons: AI output)"
+    "creator": "Sora/OpenAI",
+    "license": "PD-algorithm (Commons)"
    },
    "role": "Sora preview demo: aerial camera move"
   },
@@ -1411,10 +1288,10 @@
    "in": 0,
    "out": 15.0,
    "label": {
-    "model": "SORA",
+    "model": "SORA PREVIEW",
     "year": "2024",
-    "creator": "OpenAI demo",
-    "license": "PD (Commons: AI output)"
+    "creator": "Sora/OpenAI",
+    "license": "PD-algorithm (Commons)"
    },
    "role": "Sora preview demo: surreal physics"
   },
@@ -1423,10 +1300,10 @@
    "in": 0,
    "out": 8.5,
    "label": {
-    "model": "SORA",
+    "model": "SORA PREVIEW",
     "year": "2024",
-    "creator": "OpenAI demo",
-    "license": "PD (Commons: AI output)"
+    "creator": "Sora/OpenAI",
+    "license": "PD-algorithm (Commons)"
    },
    "role": "Sora preview demo"
   },
@@ -1435,24 +1312,12 @@
    "in": 2.0,
    "out": 23.5,
    "label": {
-    "model": "SORA",
+    "model": "SORA PREVIEW",
     "year": "2024",
-    "creator": "OpenAI demo",
-    "license": "PD (Commons: AI output)"
+    "creator": "Sora/OpenAI",
+    "license": "PD-algorithm (Commons)"
    },
    "role": "Sora preview demo, native vertical"
-  },
-  "sora_gold": {
-   "clip": "sora_gold_rush_fake_archive",
-   "in": 0,
-   "out": 24.0,
-   "label": {
-    "model": "SORA",
-    "year": "2024",
-    "creator": "OpenAI demo",
-    "license": "PD (Commons: AI output)"
-   },
-   "role": "Sora preview demo: fake archive look"
   },
   "veo2_clock": {
    "clip": "veo2_clock_gemini_advanced",
@@ -1483,7 +1348,7 @@
    "in": 0,
    "out": 8.0,
    "label": {
-    "model": "VEO 3.1",
+    "model": "VEO 3.1 FAST",
     "year": "2025",
     "creator": "VulcanSphere",
     "license": "CC0"
@@ -1495,10 +1360,10 @@
    "in": 0,
    "out": 5.6,
    "label": {
-    "model": "HAILUO AI",
+    "model": "HAILUO AI (PER COMMONS)",
     "year": "2025",
     "creator": "Nesnad",
-    "license": "PD (Commons: AI output)"
+    "license": "PD-algorithm (Commons)"
    },
    "role": "image-to-video from a historic still"
   },
@@ -1519,7 +1384,7 @@
    "in": 0,
    "out": 7.0,
    "label": {
-    "model": "KANDINSKY 5.0",
+    "model": "KANDINSKY 5.0 LITE",
     "year": "2025",
     "creator": "Kandinsky Lab",
     "license": "MIT (repo)"
@@ -1537,18 +1402,6 @@
     "license": "Apache-2.0 (repo)"
    },
    "role": "recent open model (2026 repo demo)"
-  },
-  "ovi": {
-   "clip": "ovi_two_women_audio_video",
-   "in": 0,
-   "out": 5.1,
-   "label": {
-    "model": "OVI",
-    "year": "2025",
-    "creator": "Character.AI / Yale",
-    "license": "Apache-2.0 (repo)"
-   },
-   "role": "joint audio-video open model"
   }
  },
  "cast": {
@@ -1579,7 +1432,7 @@
      "u0": 0.3,
      "zoom": 2.2,
      "tag": "8 FPS",
-     "note": "Low frame rate, stated on the source page."
+     "note": "Low frame rate: 8 fps per CogVideoX docs."
     },
     {
      "ex": "deepdream",
@@ -1622,14 +1475,14 @@
      "model": "SORA",
      "dev": "OPENAI",
      "date": "FEB 15, 2024",
-     "ex": "sora_mammoth",
+     "ex": "sora_bigsur",
      "note": "Research preview: up to a minute of video."
     }
    ]
   },
   "seq04": {
    "early": "sd_park_b",
-   "modern": "sora_mammoth",
+   "modern": "sora_ships",
    "u_early": 0.4,
    "u_modern": 2.0
   },
@@ -1925,7 +1778,7 @@
     "tgan_golf",
     "deepdream",
     "gen2_dog",
-    "sora_mammoth",
+    "sora_pigeon",
     "sora_ships",
     "veo2_clock",
     "veo3_lemon",
@@ -1934,10 +1787,10 @@
    ],
    "swaps": [
     "sora_bigsur",
-    "sora_gold",
+    "ltx_cyber",
     "rap_runway",
     "veo31_lemon",
-    "ovi",
+    "kand5",
     "cogv_paint",
     "rap_wan21",
     "sora_train"
