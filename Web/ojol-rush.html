@@ -82,6 +82,8 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
 }
 .ctrlSeg{display:flex;gap:6px;padding:5px;border-radius:16px;background:rgba(15,12,10,.55);pointer-events:auto;}
 .segB{border:0;border-radius:12px;padding:10px 16px;font:800 16px var(--body);color:#fff;background:transparent;cursor:pointer;opacity:.7;}
+.langB{border:0;border-radius:12px;padding:10px 12px;font:800 16px var(--body);color:#fff;background:transparent;cursor:pointer;opacity:.7;}
+.langB.on{background:#3a64b3;opacity:1;box-shadow:0 3px 0 rgba(0,0,0,.35);}
 .segB.on{background:var(--green);color:#10200f;opacity:1;box-shadow:0 3px 0 rgba(0,0,0,.35);}
 #wallet{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:calc(14px + env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:4px;align-items:flex-start;}
 #wallet span{padding:5px 12px;border-radius:12px;background:rgba(15,12,10,.62);font:800 16px var(--body);}
@@ -139,6 +141,8 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
 #title{justify-content:flex-start;padding-top:calc(40px + env(safe-area-inset-top,0px));
   background:linear-gradient(180deg,rgba(20,12,6,.1) 0%,rgba(20,12,6,.0) 35%,rgba(20,12,6,.55) 62%,rgba(20,12,6,.88) 100%),url(assets/keyart.webp) center/cover no-repeat,#b5663a;}
 #title .spacer{flex:1;}
+#title{overflow-y:auto;touch-action:pan-y;} #title>*{flex-shrink:0;} #over{touch-action:pan-y;}
+@media (max-height:900px) and (orientation:portrait){ #title{gap:10px;padding-top:calc(28px + env(safe-area-inset-top,0px));} #title .logo{font-size:clamp(48px,14vw,84px);} #title .tag{font-size:17px;} #title .hint{font-size:14px;} }
 #players{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:calc(14px + env(safe-area-inset-right,0px));text-align:right;padding:8px 14px;border-radius:14px;
   background:rgba(15,12,10,.62);box-shadow:0 4px 0 rgba(0,0,0,.3);}
 #players b{display:block;font:400 34px/1 var(--display);color:var(--yellow);text-shadow:0 3px 0 rgba(0,0,0,.4);}
@@ -206,7 +210,7 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
     <button class="btn" id="startBtn">MULAI SHIFT</button>
     <div class="menuRow"><button class="mbtn" id="boardBtn">🏆 JUARA</button><button class="mbtn" id="missionBtn">🎯 MISI</button><button class="mbtn" id="garageBtn">🛵 GARASI</button><button class="mbtn" id="badgeBtn">🏅 LENCANA</button></div>
     <div id="chalBox" hidden></div>
-    <div class="ctrlSeg"><button class="segB" data-m="drag">👆 SENTUH</button><button class="segB" data-m="joy">🕹️ JOYSTICK</button></div>
+    <div class="menuRow"><div class="ctrlSeg"><button class="segB" data-m="drag">👆 SENTUH</button><button class="segB" data-m="joy">🕹️ JOYSTICK</button></div><div class="ctrlSeg"><button class="langB" data-l="id">🇮🇩 ID</button><button class="langB" data-l="en">🇬🇧 EN</button></div></div>
     <div class="best" id="bestTitle"></div>
     <p class="hint">Seret jempol = arah motor · Tahan tombol REM (Spasi di PC) = rem<br>Salip mepet = poin · Antar sebelum waktu habis</p>
     <a id="credit" href="https://www.instagram.com/leonrdewa/" target="_blank" rel="noopener">Dibuat oleh <b>@leonrdewa</b></a>
@@ -217,6 +221,7 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
     <button class="btn" id="resumeBtn">LANJUT</button>
     <button class="btn warn" id="restartBtn">ULANG SHIFT</button>
     <div class="ctrlSeg"><button class="segB" data-m="drag">👆 SENTUH</button><button class="segB" data-m="joy">🕹️ JOYSTICK</button></div>
+    <div class="ctrlSeg"><button class="langB" data-l="id">🇮🇩 ID</button><button class="langB" data-l="en">🇬🇧 EN</button></div>
   </div>
 
   <div id="over" class="screen" hidden>
@@ -241,6 +246,115 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script>
 "use strict";
+// ---------------------------------------------------------------- i18n (ID / EN)
+// The game is written in Indonesian; English is applied as a live translation layer: every text node
+// the game writes is looked up (numbers become {0},{1}…, emoji/punctuation edges are kept as-is).
+const I18N=(()=>{
+  const D={
+    'SKOR':'SCORE','WAKTU':'TIME','Mencari order':'Looking for orders','REM':'BRAKE','orang sudah main':'players so far',
+    'Kamu bukan yang tercepat. Kamu jagonya nyelip':"You're not the fastest. You're the king of weaving through traffic",
+    'MULAI SHIFT':'START SHIFT','JUARA':'LEADERBOARD','MISI':'MISSIONS','GARASI':'GARAGE','LENCANA':'BADGES','SENTUH':'TOUCH',
+    'Seret jempol = arah motor':'Drag thumb = steer','Tahan tombol REM (Spasi di PC) = rem':'Hold BRAKE (Space on PC) = brake',
+    'Salip mepet = poin':'Close near misses = points','Antar sebelum waktu habis':'Deliver before time runs out','Dibuat oleh':'Made by',
+    'ISTIRAHAT DULU':'TAKE A BREAK','LANJUT':'RESUME','ULANG SHIFT':'RESTART SHIFT','SHIFT SELESAI':'SHIFT OVER','KIRIM KE JUARA':'SUBMIT TO LEADERBOARD',
+    'LAGI':'AGAIN','PAMER SKOR':'SHOW OFF SCORE','TANTANG TEMAN':'CHALLENGE A FRIEND',
+    'Santai':'Chill','Mulai Padat':'Getting Busy','Hujan Lokal':'Local Showers','Jam Pulang Kantor':'Rush Hour','Kabut Asap':'Haze',
+    'Banjir Kiriman':'Flash Flood','Macet Horor':'Horror Jam','MACET TOTAL':'TOTAL GRIDLOCK',
+    'Nasi Goreng':'Fried Rice','Bakso Urat':'Meatball Soup','Martabak Manis':'Sweet Martabak','Es Kopi Susu x{0}':'Iced Milk Coffee x{0}',
+    'Sate Ayam {0} tusuk':'Chicken Satay x{0}','Mie Ayam Pangsit':'Chicken Noodles & Dumplings','Soto Betawi':'Betawi Soup','Pecel Lele':'Fried Catfish',
+    'Gorengan {0} biji':'{0} Fritters','Paket Olshop':'Online Shop Parcel','Dokumen Kantor':'Office Documents','Kunci Rumah Ketinggalan':'Forgotten House Keys',
+    'Charger HP':'Phone Charger','Sparepart Motor':'Motorbike Parts','Obat dari Apotek':'Pharmacy Medicine','Sepatu COD':'Shoes (cash on delivery)',
+    'BANJIR':'FLOOD','RAZIA':'POLICE CHECK','MACET':'JAM','MACET PARAH':'HEAVY JAM','Cari jalan lain':'Find another route','AWAS ADA ANAK':'WATCH OUT, KIDS',
+    'ORDER MASUK':'NEW ORDER','Makanan':'Food','Paket':'Parcel','DIAMBIL':'PICKED UP','ANTAR KE':'DELIVER TO','{0}/{1} SAMPAI':'{0}/{1} DELIVERED',
+    'ANTAR BERIKUTNYA':'NEXT DROP-OFF','AMBIL':'PICK UP','ANTAR':'DELIVER','TUMPAH':'SPILLED','PAKET PENYOK':'PARCEL DENTED','-{0} bintang':'-{0} stars',
+    '{0} m  (-{1} bintang)':'{0} m  (-{1} stars)','KABUT ASAP':'HAZE','Jarak pandang pendek':'Low visibility','HUJAN':'RAIN','Jalanan licin':'Slippery roads',
+    'Hujan reda':'The rain stopped','Rahasia':'Secret','Shift dimulai - antar semua order':'Shift started - deliver every order','GAS':'GO',
+    'Skor terbaik: {0}':'Best score: {0}','Belum ada skor. Gas':"No score yet. Let's go",'{0} 🪙 koin':'{0} 🪙 coins','REKOR BARU':'NEW RECORD','Terbaik: {0}':'Best: {0}',
+    'Antaran':'Deliveries','Salip':'Near misses','Combo terbaik':'Best combo','Rush tertinggi':'Highest rush',
+    'SALIP':'NEAR MISS','SALIP x{0}':'NEAR MISS x{0}','SALIP! +{0}':'NEAR MISS! +{0}','SALIP x{0}! +{1}':'NEAR MISS x{0}! +{1}',
+    'BRAK':'CRASH','DUK':'BONK','JEGLONG':'POTHOLE','POLISI TIDUR':'SPEED BUMP','GEROBAK':'FOOD CART','PETOK':'CLUCK',
+    'KENA RAZIA':'BUSTED AT CHECKPOINT','-{0} dtk':'-{0} sec','Selamat sore, SIM dan STNK-nya':'Good afternoon, license and registration',
+    'Helm hancur! Kebanyakan nabrak':'Helmets wrecked! Too many crashes','Komplain warga! -{0} bintang':'Residents complained! -{0} stars',
+    'PESANAN SAMPAI! +{0}':'DELIVERED! +{0}','MANTAP':'AWESOME','ORDER DIBATALKAN - ★{0}':'ORDER CANCELLED - ★{0}',
+    'Customer kecewa... rating turun':'Customer upset... rating dropped','Rating anjlok - akun dibekukan':'Rating crashed - account suspended',
+    'Hijau NgoJek-in':'NgoJek-in Green','Oranye Senja':'Sunset Orange','Biru Laut':'Ocean Blue','Pink Sakura':'Sakura Pink','Hitam Sultan':'Big Boss Black','Emas Juragan':'Tycoon Gold',
+    'Antar {0} order':'Deliver {0} orders','SALIP {0} kali':'{0} near misses','Combo SALIP x{0}':'Near-miss combo x{0}','Skor {0} dalam {1} shift':'Score {0} in {1} shift',
+    'Tembus RUSH {0}':'Reach RUSH {0}','Antar {0} pesanan makanan':'Deliver {0} food orders','Bintang {0} sebanyak {1}x':'{1}x {0}-star ratings','Kumpulkan tip {0}':'Collect {0} in tips',
+    'STREAK {0} HARI! Pertahankan':'{0}-DAY STREAK! Keep it up','MISI SELESAI! +{0}':'MISSION COMPLETE! +{0}','streak {0} hari':'{0}-day streak',
+    'MISI HARI INI':"TODAY'S MISSIONS",'{0} koin':'{0} coins','DIPAKAI':'EQUIPPED','PAKAI':'EQUIP',
+    'Koin didapat dari skor tiap shift dan dari misi harian':"Coins come from every shift's score and from daily missions",'MISI HARIAN':'DAILY MISSIONS',
+    'Misi baru setiap hari jam {0} WIB. Main tiap hari buat jaga 🔥 streak':'New missions every day at {0} WIB (Jakarta time). Play daily to keep your 🔥 streak',
+    'PAPAN JUARA':'LEADERBOARD','Hari ini':'Today','Sepanjang masa':'All time','Belum ada skor. Jadilah yang pertama':'No scores yet. Be the first','Memuat':'Loading',
+    'Peringkat #{0} hari ini':'Rank #{0} today','{0} sepanjang masa':'{0} all time','Belum masuk {0} besar hari ini — gas lagi':"Not in today's top {0} yet — go again",
+    'Mesin':'Engine','Ban':'Tires','Rem':'Brakes','+{0}% kecepatan':'+{0}% speed','+{0}% grip (hujan!)':'+{0}% grip (rain!)','+{0}% pengereman':'+{0}% braking',
+    'UPGRADE MOTOR':'BIKE UPGRADES',
+    'KOPI SUSU! NGEBUT {0} DETIK':'MILK COFFEE! SPEED BOOST {0} SEC','HELM EKSTRA! +{0} NYAWA':'EXTRA HELMET! +{0} LIFE',
+    'MAGNET TIP! TIP x{0} ANTARAN BERIKUTNYA':'TIP MAGNET! x{0} TIP ON NEXT DELIVERY','+{0} DETIK!':'+{0} SEC!',
+    'Driver Baru':'New Driver','Main shift pertama':'Play your first shift','Order Pertama':'First Order',
+    'Kurir Rajin':'Hard Worker','Kurir Legend':'Legendary Courier','Raja Salip':'Near-Miss King','Dewa Salip':'Near-Miss God','SALIP {0}x':'{0} near misses',
+    'Tukang Martabak':'Martabak Runner','Antar {0} makanan':'Deliver {0} food orders','Kurir Paket':'Parcel Courier','Antar {0} paket':'Deliver {0} parcels',
+    'Skor {0}':'Score {0}','Skor {0}K':'Score {0}K','Tembus Hujan':'Rain Rider','Capai RUSH {0}':'Reach RUSH {0}','Anti Kabut':'Haze Proof','Anti Banjir':'Flood Proof',
+    'Penakluk Macet':'Jam Conqueror','Sultan Dilayani':'Big Spender Served','Selesaikan Order Sultan':'Complete a Big Spender order','Langganan Sultan':'Big Spender Regular',
+    '{0} Order Sultan':'{0} Big Spender orders','Detektif':'Detective','Selesaikan Pesanan Rahasia':'Complete a Secret order','Rombongan Aman':'Group Delivered',
+    'Selesaikan Order Rombongan':'Complete a Group order','Pemburu Kopi':'Coffee Hunter','Ambil {0} power-up':'Grab {0} power-ups','Nitro Maniak':'Nitro Maniac',
+    'Pakai NITRO {0}x':'Use NITRO {0}x','Kalong Malam':'Night Owl','{0} antaran malam hari':'{0} night deliveries','Streak {0} Hari':'{0}-Day Streak',
+    'Main {0} hari berturut':'Play {0} days in a row','Sultan Koin':'Coin Tycoon','Kumpulkan {0} koin':'Collect {0} coins','Kolektor Skin':'Skin Collector',
+    'Punya {0} skin':'Own {0} skins','Bintang Lima':'Five Stars','{0}x bintang {1}':'{0}x {1}-star ratings','Saksi Kota':'City Witness','Alami {0} event kota':'See {0} city events',
+    'Lencana baru':'New badge','POHON TUMBANG':'FALLEN TREE','NITRO SIAP':'NITRO READY','KONVOI MOTOR LEWAT':'BIKER CONVOY PASSING','Hati-hati':'Careful',
+    'ODONG-ODONG LEWAT':'KIDDIE TRAIN PASSING','Pelan bangettt':'Sooo slow','PAWAI {0}-AN':'INDEPENDENCE PARADE','Jalan ditutup':'Road closed',
+    'PASAR TUMPAH':'STREET MARKET','Pelan-pelan':'Take it slow','Awas':'Watch out',
+    'ORDER SULTAN':'BIG SPENDER ORDER','Tip x{0} — tapi buru-buru':'Tip x{0} — but hurry','PESANAN RAHASIA':'SECRET ORDER','Panah hilang — ikuti jarak':'No arrow — follow the distance',
+    'ORDER ROMBONGAN':'GROUP ORDER','{0} alamat antar':'{0} drop-off addresses',
+    'Seret jempol / geser joystick ke arah tujuan untuk BELOK':'Drag your thumb / move the joystick toward where you want to TURN',
+    'Ikuti PANAH ORANYE ke titik jemput':'Follow the ORANGE ARROW to the pickup point','Antar ke titik HIJAU sebelum waktu habis':'Deliver to the GREEN point before time runs out',
+    'Lewat MEPET kendaraan = SALIP! Skor + isi NITRO':'Pass vehicles CLOSELY = NEAR MISS! Score + fills NITRO',
+    'Tahan REM untuk berhenti · ⚡ tekan NITRO kalau penuh':'Hold BRAKE to stop · ⚡ press NITRO when full','Tutorial selesai — GAS':'Tutorial done — GO',
+    'MOMEN TERBAIK':'BEST MOMENT','{0} / {1} terbuka':'{0} / {1} unlocked','MEMUAT {0}D':'LOADING {0}D','MEMUAT {0}D {1}':'LOADING {0}D {1}',
+    'Nama / IG kamu':'Your name / IG','Teman':'Friend',
+  };
+  const RULES=[
+    [/^Ambil di (.+)$/,(m)=>'Pick up at '+m[1]],
+    [/^⚔️ Tantangan dari (.+): kalahkan (.+)!$/,(m)=>'⚔️ Challenge from '+m[1]+': beat '+m[2]+'!'],
+    [/^🏆 MENANG! Kamu kalahkan (.+)!$/,(m)=>'🏆 YOU WIN! You beat '+m[1]+'!'],
+    [/^😤 KALAH dari (.+) — kurang (.+)$/,(m)=>'😤 LOST to '+m[1]+' — short by '+m[2]],
+  ];
+  const LATE=[[/^(.+?) di (.+)$/,(m)=>tr1(m[1])+' at '+m[2]]];
+  const SEPS=['\n',' · ',' — ','! ',': ',' - '];
+  let lang='id'; try{ lang=localStorage.getItem('ojol_lang')||''; }catch(e){}
+  if(lang!=='id'&&lang!=='en') lang=/^id|^ms/i.test(navigator.language||'id')?'id':'en';
+  const cache=new Map();
+  function look(s){
+    const nums=[]; const k=s.replace(/\d+(?:[.,]\d+)*/g,m=>{ nums.push(m); return '{'+(nums.length-1)+'}'; });
+    let r=D[k];
+    if(r==null){ const m=k.match(/^([^\p{L}{]*)(.*?)([^\p{L}}]*)$/u); if(m&&m[2]&&D[m[2]]!=null) r=m[1]+D[m[2]]+m[3]; }
+    return r==null?null:r.replace(/\{(\d+)\}/g,(_,i)=>nums[+i]);
+  }
+  function tr1(s){
+    if(!/\p{L}/u.test(s)) return s;
+    for(const [re,f] of RULES){ const m=s.match(re); if(m) return f(m); }
+    let r=look(s); if(r!=null) return r;
+    for(const sep of SEPS) if(s.includes(sep)) return s.split(sep).map(tr1).join(sep);
+    for(const [re,f] of LATE){ const m=s.match(re); if(m) return f(m); }
+    return s;
+  }
+  function tr(s){ if(lang==='id'||!s) return s; let r=cache.get(s); if(r==null){ r=tr1(s); if(cache.size>3000) cache.clear(); cache.set(s,r); } return r; }
+  // live DOM layer
+  const orig=new WeakMap(), shown=new WeakMap();
+  function doText(n){ if(shown.has(n)&&n.data===shown.get(n)) return; orig.set(n,n.data); const t=tr(n.data); shown.set(n,t); if(t!==n.data) n.data=t; }
+  function doEl(el){ if(el.placeholder!=null&&el.hasAttribute&&el.hasAttribute('placeholder')){ if(!el._ph) el._ph=el.getAttribute('placeholder'); el.placeholder=tr(el._ph); } }
+  function walk(root){ if(root.nodeType===3){ doText(root); return; } if(root.nodeType!==1||root.tagName==='SCRIPT'||root.tagName==='STYLE') return;
+    doEl(root); const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT); let n; while((n=w.nextNode())){ if(n.nodeType===3) doText(n); else doEl(n); } }
+  function retranslate(){ const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT); let n;
+    while((n=w.nextNode())){ const o=orig.has(n)?orig.get(n):n.data; orig.set(n,o); const t=tr(o); shown.set(n,t); if(n.data!==t) n.data=t; }
+    for(const el of document.querySelectorAll('[placeholder]')) doEl(el); }
+  function start(){ walk(document.body); new MutationObserver(ms=>{ for(const m of ms){ if(m.type==='characterData') doText(m.target); else for(const n of m.addedNodes) walk(n); } })
+    .observe(document.body,{subtree:true,childList:true,characterData:true}); sync(); }
+  function sync(){ document.documentElement.lang=lang; for(const b of document.querySelectorAll('.langB')) b.classList.toggle('on',b.dataset.l===lang); }
+  function set(l){ lang=l; try{ localStorage.setItem('ojol_lang',l); }catch(e){} cache.clear(); retranslate(); sync(); }
+  return {tr,set,start,get lang(){ return lang; }};
+})();
+const LG=(id,en)=>I18N.lang==='en'?en:id;
+I18N.start(); for(const b of document.querySelectorAll('.langB')) b.onclick=()=>I18N.set(b.dataset.l);
 /* ====================================================================================
    OJOL RUSH — browser port of the Unity prototype (same rules, traffic AI and tuning).
    Game logic lives in 2D map coordinates (x east, y north). Three.js: X = x, Z = -y.
@@ -418,7 +532,7 @@ const wbb=(gb,x,y,h,sx,sh,sy,col)=>gb.bb(x,h,-y,sx,sh,sy,col);
 const wbox=(gb,x,y,h,sx,sh,sy,col)=>gb.box(x,h,-y,sx,sh,sy,col);
 
 function signTexture(text,bg,fg,w=512,h=128){
-  const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const g=cv.getContext('2d');
+  text=I18N.tr(text); const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const g=cv.getContext('2d');
   g.fillStyle=bg; g.fillRect(0,0,w,h); g.fillStyle=fg; g.textAlign='center'; g.textBaseline='middle';
   let size=h*0.62; g.font=`900 ${size}px "Bungee","Arial Black",Impact,sans-serif`;
   while(g.measureText(text).width>w*0.9&&size>10){ size-=2; g.font=`900 ${size}px "Bungee","Arial Black",Impact,sans-serif`; }
@@ -1787,15 +1901,15 @@ const share={
     const g=x.createLinearGradient(0,0,0,1350); g.addColorStop(0,'#f6b877'); g.addColorStop(.55,'#b85c38'); g.addColorStop(1,'#2a1a12'); x.fillStyle=g; x.fillRect(0,0,1080,1350);
     x.textAlign='center'; x.fillStyle='rgba(0,0,0,.35)'; x.fillRect(90,400,900,500);
     x.font='130px '+D; x.fillStyle='#27c05a'; x.fillText('OJOL',540,200); x.fillStyle='#ffd23f'; x.fillText('RUSH',540,330);
-    x.fillStyle='#fff'; x.font='bold 46px '+B; x.fillText('SKOR SHIFT-KU',540,480);
+    x.fillStyle='#fff'; x.font='bold 46px '+B; x.fillText(LG('SKOR SHIFT-KU','MY SHIFT SCORE'),540,480);
     x.font='140px '+D; x.fillStyle='#ffd23f'; x.fillText(fmt(score.score),540,645);
-    x.font='bold 44px '+B; x.fillStyle='#fff'; x.fillText(score.deliveries+' antaran · '+score.near+' salip · combo x'+combo.best,540,750);
-    x.fillText('Tembus RUSH '+(rush.idx+1)+' — '+LEVELS[rush.idx].title,540,820);
-    x.font='bold 58px '+B; x.fillText('Bisa kalahin aku? 😏',540,1040);
+    x.font='bold 44px '+B; x.fillStyle='#fff'; x.fillText(score.deliveries+LG(' antaran · ',' deliveries · ')+score.near+LG(' salip · ',' near misses · ')+'combo x'+combo.best,540,750);
+    x.fillText(LG('Tembus RUSH ','Reached RUSH ')+(rush.idx+1)+' — '+I18N.tr(LEVELS[rush.idx].title),540,820);
+    x.font='bold 58px '+B; x.fillText(LG('Bisa kalahin aku? 😏','Can you beat me? 😏'),540,1040);
     x.font='bold 44px '+B; x.fillStyle='#ffd23f'; x.fillText('ojol-rush.higgsfield.app',540,1120);
     x.fillStyle='rgba(255,255,255,.85)'; x.font='bold 36px '+B; x.fillText('game by @leonrdewa',540,1275);
     return new Promise(r=>c.toBlob(r,'image/png')); },
-  async go(){ audio.init(); const text='Skor Ojol Rush-ku '+fmt(score.score)+'! Bisa kalahin aku? 🛵💨 '+this.url;
+  async go(){ audio.init(); const text=LG('Skor Ojol Rush-ku ','My Ojol Rush score: ')+fmt(score.score)+LG('! Bisa kalahin aku? 🛵💨 ','! Can you beat me? 🛵💨 ')+this.url;
     try{ const blob=await this.card(), file=new File([blob],'ojol-rush-skor.png',{type:'image/png'});
       if(navigator.canShare&&navigator.canShare({files:[file]})){ await navigator.share({files:[file],text,title:'Ojol Rush'}); return; }
       const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='ojol-rush-skor.png'; document.body.appendChild(a); a.click(); a.remove();
@@ -1931,8 +2045,8 @@ const fun={
   // ---- friend challenge (?c=score&n=name)
   readChal(){ try{ const q=new URLSearchParams(location.search), c=+q.get('c'); if(c>0) this.chal={score:Math.round(c),name:(q.get('n')||'Teman').replace(/[^A-Za-z0-9 _.@-]/g,'').slice(0,16)}; }catch(e){} },
   chalLink(){ return share.url+'/play/?c='+Math.round(score.score)+'&n='+encodeURIComponent(board.name||'teman'); },
-  async challenge(){ const url=this.chalLink(), text='Aku dapet '+fmt(score.score)+' di Ojol Rush 🛵💨 Berani kalahin? Klik: ';
-    try{ if(navigator.share){ await navigator.share({title:'Tantangan Ojol Rush',text,url}); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
+  async challenge(){ const url=this.chalLink(), text=LG('Aku dapet ','I scored ')+fmt(score.score)+LG(' di Ojol Rush 🛵💨 Berani kalahin? Klik: ',' in Ojol Rush 🛵💨 Think you can beat it? Tap: ');
+    try{ if(navigator.share){ await navigator.share({title:LG('Tantangan Ojol Rush','Ojol Rush Challenge'),text,url}); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
     window.open('https://wa.me/?text='+encodeURIComponent(text+url),'_blank'); },
   // ---- best moment replay: a ring of small frames, frozen around the best near-miss
   afterRender(){ if(game.state!=='play'||game.paused) return; const now=performance.now(); if(now-this.ringT<90) return; this.ringT=now;
