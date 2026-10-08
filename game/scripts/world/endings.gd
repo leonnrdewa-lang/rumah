@@ -387,6 +387,7 @@ func show_book() -> void:
 	scroll.custom_minimum_size = Vector2(cols * (cw + 8.0), minf(ceilf(BADGES.size() / float(cols)) * 92.0, vp.y - 280.0))
 	scroll.add_child(grid)
 	col.add_child(scroll)
+	ui._fit_scroll_later(scroll, grid, vp.y - 280.0)
 	var seen := endings_seen()
 	var names: Array = []
 	for e in ENDINGS:

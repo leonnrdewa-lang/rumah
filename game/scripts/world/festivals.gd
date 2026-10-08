@@ -94,7 +94,7 @@ func day_roll(report: Array) -> void:
 		if ev == "kondangan" and host(GS.day) != "":
 			txt = "Kondangan anak %s (%s)" % [GS.vname(host(GS.day)), hours(ev)]
 		parts.append(txt)
-	report.append("Kalender: %s.%s" % [date_text(GS.day), (" Hari ini: " + ", ".join(parts) + "!") if not parts.is_empty() else ""])
+	report.insert(0, "Kalender: %s.%s" % [date_text(GS.day), (" Hari ini: " + ", ".join(parts) + "!") if not parts.is_empty() else ""])
 	var tomorrow := events_on(GS.day + 1)
 	if "tujuhbelas" in tomorrow:
 		report.append("Besok 17 Agustus! Warga sibuk memasang bendera dan umbul-umbul.")

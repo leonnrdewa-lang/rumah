@@ -434,6 +434,7 @@ func show_panel() -> void:
 	scroll.custom_minimum_size = Vector2(w, minf(ids.size() * 70.0, vp.y - 250.0))
 	scroll.add_child(list)
 	col.add_child(scroll)
+	ui._fit_scroll_later(scroll, list, vp.y - 250.0)
 	var hint: Label = ui._label("Naikkan pertemanan: ngobrol tiap hari, kasih hadiah (kopi, kue, ikan...), penuhi permintaan kecil. Sahabat (4 hati) mau jual kebun harga sahabat & kasih info rahasia. Musuh (0-1 hati) melapor ke Satgas.", 15, ui.BROWN_SOFT)
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint.custom_minimum_size = Vector2(w, 0)

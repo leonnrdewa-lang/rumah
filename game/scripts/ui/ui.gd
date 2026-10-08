@@ -1813,6 +1813,7 @@ func show_help(on_close := Callable()) -> void:
 		"Mancing: hadap ke air (pantai, sungai, dermaga, jembatan) lalu tekan aksi. Tunggu tanda \"!\", tekan, lalu tekan lagi saat penanda di zona hijau. Jual ikan di Warung atau Koperasi. Ikan langka: Arwana Emas!",
 		"Tas: tombol tas di kanan atas (atau B) untuk melihat semua barang bawaanmu.",
 		"Rumah bisa dimasuki lewat pintunya. Tidur di kasur rumahmu (timur Kantor) untuk lanjut hari & menyimpan otomatis. Lewat jam 24:00 kamu pingsan.",
+		"Warga punya hati (pertemanan): ngobrol, kasih hadiah, penuhi permintaan. Daftar Warga: H, Buku Prestasi: J (atau lewat Menu). Rumahmu bisa direnovasi & dihias (KATALOG dekat pintu, mebel di Koperasi). Ada wartawan, demo, LSM, pesta desa... dan empat ending.",
 	]
 	info_panel("Cara Main", lines, "Siap, Juragan!", on_close, TITLE_BROWN, "ui_info")
 
