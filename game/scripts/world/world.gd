@@ -153,6 +153,9 @@ var fishing: Node3D
 var interior: Node3D
 var ambience: Node3D           # nature sounds by place and hour (ambience.gd)
 var animals: Node3D            # cattle, goats, chickens, ducks, frogs, cats, dogs (animals.gd)
+var weather_fx: Node           # rain, smoke haze, land fires, floods (weather_fx.gd)
+var sys_ui: Node               # weather pill, price chart, gudang, workers, upgrades (ui/systems_ui.gd)
+var social: Node               # friendship, journalist, protests, festivals, house decor, endings (social.gd)
 var inside := ""               # house id the player is in ("" = outdoors)
 var _inside_vid := ""
 var _fish_spot := {}           # {"pos", "water"} in front of the player, or {}
@@ -221,6 +224,19 @@ func _ready() -> void:
 	add_child(ui)
 	deals.ui = ui
 	fishing.ui = ui
+	weather_fx = load("res://scripts/world/weather_fx.gd").new()
+	weather_fx.name = "WeatherFx"
+	weather_fx.world = self
+	add_child(weather_fx)
+	sys_ui = load("res://scripts/ui/systems_ui.gd").new()
+	sys_ui.name = "SystemsUI"
+	sys_ui.world = self
+	sys_ui.ui = ui
+	add_child(sys_ui)
+	social = load("res://scripts/world/social.gd").new()
+	social.name = "Social"
+	social.world = self
+	add_child(social)
 	_build_interior_items()
 	GS.parcel_changed.connect(_on_parcel_changed)
 	GS.villager_changed.connect(func(vid): refresh_villager(vid))
@@ -1341,6 +1357,10 @@ func _tile_action(pid: int, idx: int) -> void:
 			burst(tv.global_position + Vector3(0, 2.1, 0) + _to_player(tv.global_position) * 0.7, Color("c9401f"), 10)
 			float_text(tv.global_position + Vector3(0, 1.0, 0), "+TBS", Color("b8401f"))
 			_drop_bunches(tv.global_position)
+		"padam":
+			Sfx.play("whoosh", 0.8)
+			burst(tv.global_position + Vector3(0, 0.5, 0), Color("9cc8e8"), 20)
+			float_text(tv.global_position, "Api padam!", Color("2f5d8a"))
 
 
 func _to_player(at: Vector3) -> Vector3:

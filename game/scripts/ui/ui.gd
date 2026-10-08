@@ -1453,6 +1453,9 @@ func menu(title: String, subtitle: String, items: Array, on_close := Callable(),
 	scroll.add_child(list)
 	_fit_scroll_later(scroll, list, vp.y - 270)
 	for it in items:
+		if it.has("node"):   # a ready-made row (price chart, worker / upgrade rows: ui/systems_ui.gd)
+			list.add_child(it["node"])
+			continue
 		var row := PanelContainer.new()
 		var rs := _box(CREAM_LIGHT, 18, LINE, 2)
 		_margins(rs, 10, 8, 12, 8)
@@ -1659,6 +1662,8 @@ func show_status() -> void:
 		if v["worker"]:
 			extra += " • buruhmu"
 		lines.append("%s: %s • percaya %d%%%s" % [GS.vname(vid), st, int(v["trust"]), extra])
+	if world and world.sys_ui:
+		lines.append_array(world.sys_ui.status_lines())
 	lines.append("— Catatan dosa —")
 	lines.append("Beli wajar %d • Tawar murah %d • Tipu %d • Gusur %d • Sita utang %d" % [GS.stats["land_fair"], GS.stats["land_cheap"], GS.stats["land_fraud"], GS.stats["land_seized"], GS.stats["land_debt"]])
 	info_panel("Status Juragan", lines, "Tutup", Callable(), TITLE_BROWN, "ui_status")
@@ -1705,6 +1710,9 @@ func toggle_pause() -> void:
 		_paused = false
 		_close_modal()
 		toggle_pause(), true, 320))
+	if world.get("social"):   # village life: the Warga list and the Buku Prestasi (social.gd)
+		col.add_child(_hrow([button("Warga (H)", func(): _paused = false; _close_modal(); world.social.rel.show_panel(), true, 156),
+			button("Prestasi (J)", func(): _paused = false; _close_modal(); world.social.endings.show_book(), true, 156)], 8))
 	col.add_child(button("Cara main", func(): _paused = false; _close_modal(); show_help(), true, 320))
 	col.add_child(button("Kode Save (pindah HP)", func(): _paused = false; _close_modal(); show_save_code(), true, 320))
 	col.add_child(button("Dibuat oleh", func(): _paused = false; _close_modal(); show_credits(), true, 320))
@@ -1810,7 +1818,7 @@ func show_help(on_close := Callable()) -> void:
 
 
 # ------------------------------------------------------------------ bag (tas)
-const BAG_ORDER := ["tbs", "bibit", "pupuk", "minyak", "surat", "pancing", "umpan"]
+const BAG_ORDER := ["tbs", "bibit", "pupuk", "minyak", "surat", "pancing", "umpan", "kopi", "kue"]
 
 
 func bag_entries() -> Array:
@@ -2234,6 +2242,9 @@ func fade_screen(mid: Callable, done := Callable()) -> void:
 
 
 func show_game_over(reason: String) -> void:
+	if world and world.get("social"):
+		world.social.endings.finish("kpk", reason)   # the illustrated "Ditangkap KPK" ending
+		return
 	Sfx.play("bad")
 	var lines := [reason, "Hari bertahan: %d • Total pendapatan: %s" % [GS.day, GS.fmt_rp(GS.stats["earned"])],
 		"Lahan yang kamu ambil paksa: %d • yang kamu tipu: %d" % [GS.stats["land_seized"], GS.stats["land_fraud"]],
@@ -2243,6 +2254,9 @@ func show_game_over(reason: String) -> void:
 
 
 func show_ending() -> void:
+	if world and world.get("social"):
+		world.social.endings.finish("raja")   # the illustrated "Raja Sawit" ending
+		return
 	Sfx.play("quest")
 	var s: Dictionary = GS.stats
 	var lines := [

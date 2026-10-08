@@ -298,6 +298,12 @@ func _run() -> void:
 			await wait(0.2)
 		"features":
 			await _features_shots()
+		"systems":
+			# seasons/weather/fires/floods, market chart, gudang, workers, upgrades (debug/systems_check.gd)
+			await SystemsCheck.shots(self)
+		"social":
+			# journalist, protest crowd, festivals, friendship panel, decorated house, endings (debug/social_check.gd)
+			await SocialCheck.shots(self)
 		"walk":
 			world.start_game(false)
 			world.ui.close()
@@ -1109,6 +1115,8 @@ func _features_logic() -> void:
 	GS.load_game()
 	check(int(GS.inv.get("pancing", 0)) == 1 and int(GS.inv.get("ikan_arwana", 0)) == 1, "save keeps rod and fish")
 	await _logic_fish_and_rooms()
+	await SystemsCheck.logic(self)   # weather, market, gudang, crew, upgrades (debug/systems_check.gd)
+	await SocialCheck.logic(self)    # village life: friends, journalist, demos, festivals, house, endings
 	print("features logic: %s (%d failed)" % ["OK" if _fails == 0 else "FAIL", _fails])
 	GS.hour = 8.0
 

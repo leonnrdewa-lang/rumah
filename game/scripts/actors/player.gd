@@ -18,6 +18,8 @@ var model: Node3D
 var anim: CharAnim
 var touch_vec := Vector2.ZERO
 var locked := false
+## walking speed factor: the Jalan Kebun upgrade, mud in the rain (world/weather_fx.gd)
+var speed_mult := 1.0
 var facing := Vector3(0, 0, 1)
 var _t := 0.0
 var _step_t := 0.0
@@ -101,7 +103,7 @@ func _physics_process(delta: float) -> void:
 		iv = Vector2.ZERO
 	var dir := Vector3(iv.x, 0, iv.y)
 	var amount := minf(1.0, dir.length())
-	var spd := SPEED * amount
+	var spd := SPEED * amount * speed_mult
 	if Input.is_action_pressed("run") or touch_vec.length() > 0.95:
 		spd *= RUN_MULT
 	var want := Vector3.ZERO

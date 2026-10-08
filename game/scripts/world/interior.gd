@@ -834,6 +834,8 @@ func _build_room() -> void:
 	var curtain: String = _pick(CURTAINS)
 	_shaft.visible = false
 	_has_back_window = false
+	if kind == "juragan" and world and world.get("social") and world.social.decor.build_room(self):
+		return   # the player's house: upgrade level + placed furniture (decor.gd)
 	match kind:
 		"juragan":
 			_shell({"wall": "e8dcc0", "floor": "b08458", "floor_tex": "plank", "wainscot": "8a5a3a", "trim": "5a3a24"})

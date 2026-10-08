@@ -138,6 +138,12 @@ func vp(vid: String) -> String:
 	return _portrait(GS.VILLAGERS[vid]["model"])
 
 
+func _soc(ev: String, vid: String) -> void:
+	## village life (social.gd): friendship, badges
+	if world and world.get("social"):
+		world.social.on_event(ev, vid)
+
+
 func say(portrait: String, speaker: String, text: String, next := Callable()) -> void:
 	ui.dialog(portrait, speaker, text, [{"text": "Lanjut", "cb": next}] if next.is_valid() else [])
 
@@ -164,14 +170,8 @@ func open_service(id: String) -> void:
 
 func open_kantor() -> void:
 	var items: Array = []
-	var workers_n := GS.workers.size()
-	items.append({"icon": "icon_helm", "text": "Rekrut buruh (%d/%d)" % [workers_n, GS.MAX_WORKERS],
-		"desc": "Tiap pagi memanen & menjual 8 pohon siap panen dan menebas 2 semak. Upah dibayar tiap pagi.",
-		"price": GS.fmt_short(GS.PRICE["buruh_upah"]) + "/hari", "button": "Rekrut",
-		"enabled": workers_n < GS.MAX_WORKERS, "cb": func(): _hire_generic()})
-	if workers_n > 0:
-		items.append({"icon": "icon_helm", "text": "Pecat satu buruh", "desc": "Hemat upah. Buruh pulang tanpa pesangon, tentu saja.",
-			"button": "Pecat", "cb": func(): _fire_worker()})
+	# workers panel + upgrade tree (ui/systems_ui.gd; the old one-button hire is _hire_generic)
+	world.sys_ui.kantor_items(items)
 	if not GS.upgrades["gerobak"]:
 		items.append({"icon": "icon_gerobak", "text": "Gerobak dorong", "desc": "Kapasitas angkut TBS jadi 25.",
 			"price": GS.fmt_short(GS.PRICE["gerobak"]), "cb": func(): _buy_upgrade("gerobak")})
@@ -191,6 +191,8 @@ func open_kantor() -> void:
 		"desc": ("Syarat: kuasai %d lahan (kurang %d)." % [GS.LICENSE_NEED, need]) if need > 0 else "Lahanmu sudah cukup luas. Saatnya jadi Raja Sawit!",
 		"price": GS.fmt_short(GS.PRICE["lisensi"]), "enabled": need <= 0 and GS.money >= GS.PRICE["lisensi"],
 		"cb": func(): _buy_license()})
+	if world.get("social"):
+		world.social.kantor_items(items)   # demo / LSM, the "tobat" ending
 	ui.menu("Kantor Sawit", "Uang: %s • Harga TBS hari ini: %s" % [GS.fmt_rp(GS.money), GS.fmt_rp(GS.tbs_price)], items, Callable(), "portrait_player")
 
 
@@ -283,6 +285,8 @@ func open_toko() -> void:
 	items.append({"icon": "icon_umpan", "text": "Umpan cacing (10)", "desc": "Satu umpan untuk sekali lempar kail. Punya: %d." % int(GS.inv.get("umpan", 0)),
 		"price": GS.fmt_short(GS.PRICE["umpan"]), "cb": func(): _buy("umpan", 10, GS.PRICE["umpan"], open_toko)})
 	_add_fish_sale(items, open_toko, "Koperasi menampung ikan untuk dijual ke kota.")
+	if world.get("social"):
+		world.social.toko_items(items)   # gifts, furniture catalog, house renovation
 	ui.menu("Koperasi Desa Sukamakmur", "Bibit: %d • Pupuk: %d • Uang: %s" % [GS.inv["bibit"], GS.inv["pupuk"], GS.fmt_rp(GS.money)], items, Callable(), "portrait_petani")
 
 
@@ -368,9 +372,11 @@ func _sell_oil_wholesale() -> void:
 func open_pabrik() -> void:
 	var tbs := int(GS.inv["tbs"])
 	var items: Array = []
+	var sale: int = GS.sys.market.sale_price()   # today's price (+ Pak Gondrong's "timbangan")
 	items.append({"icon": "icon_tbs", "text": "Jual semua TBS (%d tandan)" % tbs,
-		"desc": "Harga hari ini %s per tandan." % GS.fmt_rp(GS.tbs_price), "price": GS.fmt_short(tbs * GS.tbs_price),
+		"desc": "Harga hari ini %s per tandan." % GS.fmt_rp(sale), "price": GS.fmt_short(tbs * sale),
 		"button": "Jual", "enabled": tbs > 0, "cb": func(): _sell_tbs()})
+	world.sys_ui.pabrik_items(items)   # 14-day price chart, gudang stock, "main mata"
 	if not GS.upgrades["mesin"]:
 		items.append({"icon": "icon_minyak", "text": "Beli Mesin Olah Minyak", "desc": "Olah TBS jadi minyak goreng (1 TBS → 3 jerigen). Lalu jual ke warga... dengan harga sesukamu.",
 			"price": GS.fmt_short(GS.PRICE["mesin"]), "cb": func():
@@ -393,11 +399,12 @@ func _sell_tbs() -> void:
 	var tbs := int(GS.inv["tbs"])
 	if tbs <= 0:
 		return
+	var sale: int = GS.sys.market.sale_price()
 	GS.take_item("tbs", tbs)
-	GS.add_money(tbs * GS.tbs_price)
+	GS.add_money(tbs * sale)
 	GS.stats["tbs_sold"] += tbs
 	Sfx.play("cash")
-	world.float_text(world.player.global_position, "+" + GS.fmt_short(tbs * GS.tbs_price), Color("2f6d2a"))
+	world.float_text(world.player.global_position, "+" + GS.fmt_short(tbs * sale), Color("2f6d2a"))
 	GS.check_quests()
 	ui.refresh_menu(open_pabrik)
 
@@ -432,6 +439,8 @@ func open_calo() -> void:
 					GS.toast.emit("Amplop diterima. 'Kasus' mendadak hilang.", "good")
 					ui.refresh_menu(open_calo)},
 	]
+	if world.get("social"):
+		world.social.calo_items(items)   # the "kabur ke luar negeri" ending
 	ui.menu("Bang Jeki, Calo Serba Bisa", "\"Mau beres cepat? Abang bisa atur, asal ada 'uang rokok'.\"", items, Callable(), "portrait_calo")
 
 
@@ -456,6 +465,8 @@ func talk(vid: String) -> void:
 		var price: int = GS.OIL_PRICES[GS.oil_price_level]
 		choices.append({"text": "Tawarkan minyak goreng", "hint": GS.fmt_short(price), "enabled": int(v["oil_day"]) != GS.day,
 			"cb": func(): _sell_oil(vid)})
+	if world.get("social"):
+		world.social.talk_choices(vid, choices)   # gifts, requests, secret tips
 	if int(GS.upgrades["preman"]) > 0 and int(v["money"]) >= 50000:
 		choices.append({"text": "Suruh preman memalak uangnya", "hint": "rampok " + GS.fmt_short(v["money"]), "cb": func(): _extort(vid)})
 	if v["status"] == "landless" and not v["worker"]:
@@ -506,6 +517,7 @@ func _chat(vid: String) -> void:
 		v["talk_day"] = GS.day
 		v["trust"] = minf(100.0, v["trust"] + 6.0)
 		line += "\n(Kepercayaan +6)"
+		_soc("chat", vid)
 	say(vp(vid), GS.vname(vid), line)
 
 
@@ -514,6 +526,8 @@ func land_menu(vid: String) -> void:
 	var v: Dictionary = GS.villagers[vid]
 	var value: int = d["value"]
 	var choices: Array = []
+	if world.get("social"):
+		world.social.land_choices(vid, choices)   # best friends: "harga sahabat"
 	choices.append({"text": "Beli harga wajar", "hint": GS.fmt_short(value), "enabled": GS.money >= value, "cb": func(): _buy_fair(vid)})
 	choices.append({"text": "Tawar murah", "hint": GS.fmt_short(int(value * 0.45)), "enabled": GS.money >= int(value * 0.45), "cb": func(): _lowball(vid)})
 	choices.append({"text": "Tipu pakai surat palsu", "hint": "punya %d surat" % GS.inv["surat"], "enabled": int(GS.inv["surat"]) > 0,
@@ -555,6 +569,7 @@ func _buy_fair(vid: String) -> void:
 	for other in GS.villagers:
 		GS.villagers[other]["trust"] = minf(100.0, GS.villagers[other]["trust"] + 5.0)
 	Sfx.play("cash")
+	_soc("buy_fair", vid)
 	_acquire(vid, "fair")
 	say(vp(vid), GS.vname(vid), "Terima kasih, Juragan. Harganya pantas. Semoga kebun ini membawa berkah... untuk kita semua.")
 
@@ -570,11 +585,13 @@ func _lowball(vid: String) -> void:
 		v["money"] += price
 		GS.add_rep(-3)
 		Sfx.play("cash")
+		_soc("lowball_ok", vid)
 		_acquire(vid, "cheap")
 		say(vp(vid), GS.vname(vid), "Hmm... ya sudah, saya butuh uangnya sekarang. Ambil saja kebunnya. (Dia menghela napas panjang.)")
 	else:
 		v["trust"] = maxf(0.0, v["trust"] - 20.0)
 		GS.add_rep(-2)
+		_soc("lowball_fail", vid)
 		Sfx.play("bad")
 		say(vp(vid), GS.vname(vid), "Segitu? Kamu kira kebun saya kebun kacang? Tidak! (Kepercayaan -20)")
 
@@ -592,10 +609,12 @@ func _fraud(vid: String) -> void:
 		GS.add_heat(18.0 + (10.0 if d.get("aktivis", false) else 0.0))
 		GS.add_rep(-6)
 		Sfx.play("cash")
+		_soc("fraud_ok", vid)
 		_acquire(vid, "fraud")
 		say(vp(vid), GS.vname(vid), "Surat apa ini, Juragan? ...Oh, 'surat bantuan pemerintah'? Ya sudah, saya cap jempol di sini. Uang %s ini buat saya?" % GS.fmt_short(pay))
 	else:
 		v["trust"] = maxf(0.0, v["trust"] - 40.0)
+		_soc("fraud_fail", vid)
 		GS.add_heat(30)
 		GS.add_rep(-12)
 		Sfx.play("bad")
@@ -611,6 +630,7 @@ func _evict(vid: String) -> void:
 	for other in GS.villagers:
 		GS.villagers[other]["trust"] = maxf(0.0, GS.villagers[other]["trust"] - 15.0)
 	v["evicted"] = true
+	_soc("evict", vid)
 	_acquire(vid, "seized")
 	world.npcs[vid].emote("!!", 4.0)
 	var house: Vector3 = world.door_points.get(GS.VILLAGERS[vid]["home"], world.player.global_position)
@@ -628,6 +648,7 @@ func _extort(vid: String) -> void:
 	GS.upgrades["preman"] = int(GS.upgrades["preman"]) - 1
 	v["money"] = 0
 	v["trust"] = 0.0
+	_soc("extort", vid)
 	GS.add_money(loot)
 	GS.add_heat(22)
 	GS.add_rep(-15)
@@ -645,6 +666,7 @@ func _bribe_kades(vid: String, cost: int) -> void:
 	GS.add_rep(-5)
 	GS.stats["bribes"] += 1
 	Sfx.play("cash")
+	_soc("bribe_land", vid)
 	_acquire(vid, "cheap")
 	say(vp(vid), GS.vname(vid), "Wah, tebal sekali... 'dokumennya'. Baik, kebun saya serahkan demi pembangunan desa. Soal laporan warga, biar saya yang urus.")
 
@@ -673,6 +695,7 @@ func _sign_franchise(vid: String) -> void:
 		p["tiles"][i] = {"s": "palm", "st": 0, "g": 0, "f": false, "fr": false, "fd": 0}
 	GS.stats["franchise"] += 1
 	GS.add_rep(2)
+	_soc("franchise", vid)
 	GS.parcel_changed.emit(int(p["id"]))
 	GS.check_quests()
 	Sfx.play("quest")
@@ -699,6 +722,7 @@ func _seize_for_debt(vid: String) -> void:
 	v["debt"] = 0
 	GS.add_heat(8)
 	GS.add_rep(-10)
+	_soc("seize_debt", vid)
 	_acquire(vid, "debt")
 	say(vp(vid), GS.vname(vid), "Kebun saya disita? Tapi... ini kan cuma utang minyak goreng dan biaya waralaba... (Semuanya sah secara hukum. Hampir.)")
 
@@ -729,6 +753,7 @@ func _sell_oil(vid: String) -> void:
 	GS.stats["oil_villager"] += 1
 	GS.add_rep([1.0, -2.0, -5.0][level])
 	GS.add_heat([0.0, 1.0, 3.0][level])
+	_soc("oil%d" % level, vid)
 	Sfx.play("coin")
 	GS.check_quests()
 	var line := "Terpaksa beli, Juragan. Dapur harus tetap ngebul." if level > 0 else "Terima kasih, harganya wajar."
@@ -740,6 +765,7 @@ func _sell_oil(vid: String) -> void:
 func _hire_villager(vid: String) -> void:
 	var v: Dictionary = GS.villagers[vid]
 	v["worker"] = true
+	_soc("hire", vid)
 	GS.workers.append({"id": vid, "name": GS.vname(vid), "wage": GS.PRICE["buruh_murah"], "vid": vid})
 	GS.stats_changed.emit()
 	world.refresh_workers()
@@ -799,6 +825,10 @@ func run_morning_events() -> void:
 	if GS.pending_events.is_empty():
 		return
 	var ev: String = GS.pending_events.pop_front()
+	if world.sys_ui and world.sys_ui.run_event(ev):   # mogok, kabut asap, banjir, ikan mati
+		return
+	if world.get("social") and world.social.morning_event(ev):   # wartawan, demo, LSM, koran, festival
+		return
 	match ev:
 		"demo":
 			var kd: Vector3 = world.door_points.get("kantor", Vector3.ZERO)

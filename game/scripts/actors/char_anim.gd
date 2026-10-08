@@ -18,6 +18,7 @@ const ACTIONS := {
 	"harvest": ["harvest", 1.0, "egrek"],
 	"chop": ["chop", 1.0, "parang"],
 	"clear": ["chop", 1.0, "parang"],
+	"padam": ["chop", 1.3, "parang"],   # beating out a land fire (weather_sys.gd)
 	"plant": ["plant", 1.0, "trowel"],
 	"fert": ["plant", 1.45, "sack"],
 	"cheer": ["cheer", 1.0, ""],

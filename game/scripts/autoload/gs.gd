@@ -10,6 +10,9 @@ signal villager_changed(vid: String)
 signal day_started(report: Array)
 signal game_over(reason: String)
 signal game_won
+## new day rolled over (before the autosave): village-life modules (scripts/world/social.gd)
+## add their morning report lines and events here
+signal day_rolled(report: Array)
 
 const SAVE_PATH := "user://sawit_save.json"
 ## 2 = map v3 (20 parcels of 20 staggered tiles, 19 villagers); older saves start over
@@ -92,6 +95,8 @@ const ITEMS := {
 	"surat": {"name": "Surat tanah palsu", "icon": "icon_surat", "desc": "Dipakai untuk 'membeli' kebun warga yang kurang teliti."},
 	"pancing": {"name": "Pancing bambu", "icon": "icon_pancing", "desc": "Hadap ke air (pantai, sungai, dermaga, jembatan) lalu tekan aksi: Mancing."},
 	"umpan": {"name": "Umpan cacing", "icon": "icon_umpan", "desc": "Satu umpan untuk sekali lempar kail. Beli lagi di Koperasi (10 umpan Rp 10.000)."},
+	"kopi": {"name": "Kopi bubuk", "icon": "icon_kopi", "desc": "Oleh-oleh untuk warga. Bapak-bapak dusun suka sekali."},
+	"kue": {"name": "Kue klepon", "icon": "icon_kue", "desc": "Hadiah manis untuk warga. Ibu-ibu dan anak-anak suka."},
 }
 const TOOLS := [
 	{"name": "Parang", "icon": "icon_parang", "desc": "Untuk menebas semak di lahanmu."},
@@ -103,7 +108,7 @@ const CAPACITY := {"base": 10, "gerobak": 25, "truk": 80}
 const STAGE_DAYS := [2, 2, 2]
 const FRUIT_DAYS := 2
 const ENERGY_COST := {"clear": 10.0, "plant": 5.0, "fert": 3.0, "harvest": 6.0, "fish": 4.0}
-const MAX_WORKERS := 4
+const MAX_WORKERS := 8   # (systems round: 6 buruh + mandor + sopir, scripts/systems/crew_sys.gd)
 ## lands to control before the franchise licence can be bought (map v3 has 20 parcels:
 ## the player chooses whose gardens to take)
 const LICENSE_NEED := 7
@@ -203,10 +208,15 @@ var stats := {}
 ## start from the fish in the bag)
 var fish_log := {}
 var pending_events: Array = []
+## village life (scripts/world/social.gd): relationships, journalist, protests, festivals,
+## house decor, endings & achievements; saved as one block, missing keys get defaults
+var social := {}
 var game_active := false
 ## true when the last new day started from a bed (not passing out at midnight)
 var last_slept := false
 var rng := RandomNumberGenerator.new()
+## seasons & weather, TBS market & gudang, crew, upgrade tree (scripts/systems/), saved as "sys"
+var sys := SawitSystems.new()
 
 
 func _ready() -> void:
@@ -220,6 +230,8 @@ func _ready() -> void:
 
 # ------------------------------------------------------------------ setup
 func new_game() -> void:
+	sys.bind(self)
+	sys.reset()
 	money = 2000000
 	day = 1
 	hour = DAY_START
@@ -241,6 +253,7 @@ func new_game() -> void:
 		"fish_caught": 0, "fish_sold": 0}
 	parcels = []
 	fish_log = {}
+	social = {}
 	var layout: Dictionary = load_layout()
 	var n := tile_count()
 	for p in layout.get("parcels", []):
@@ -382,7 +395,7 @@ func take_item(item: String, n: int = 1) -> bool:
 
 
 func stage_need(stage: int, fert: bool) -> int:
-	return maxi(1, STAGE_DAYS[stage] - (1 if fert else 0))
+	return maxi(1, STAGE_DAYS[stage] - (1 if fert else 0) - sys.tech.growth_bonus(stage))
 
 
 func owned_parcels() -> int:
@@ -425,6 +438,9 @@ func tile_action_info(pid: int, idx: int) -> Dictionary:
 	## What the context action would do on this tile: {"verb": String, "ok": bool}
 	var p: Dictionary = parcels[pid]
 	var t: Dictionary = p["tiles"][idx]
+	var fire := sys.weather.fire_action(pid, idx)   # a land fire on the tile: "Padamkan api!"
+	if not fire.is_empty():
+		return fire
 	if p["owner"] != "player":
 		if p["plasma"]:
 			return {"verb": "Kebun mitra franchise " + vname(p["owner"]), "ok": false}
@@ -472,14 +488,18 @@ func do_tile_action(pid: int, idx: int) -> String:
 				return ""
 			take_item("bibit")
 			parcels[pid]["tiles"][idx] = _tile("palm", 0)
+			sys.tech.on_planted(parcels[pid]["tiles"][idx])
 			stats["planted"] += 1
 		"fert":
 			if not use_energy(ENERGY_COST["fert"]):
 				return ""
 			take_item("pupuk")
 			t["f"] = true
+		"padam":
+			if not sys.weather.put_out(pid, idx):
+				return ""
 		"harvest":
-			var gain := 2 if t["f"] else 1
+			var gain := sys.tech.fert_yield() if t["f"] else 1
 			if int(inv["tbs"]) + gain > capacity():
 				toast.emit("Bawaan penuh (%d/%d TBS). Jual dulu ke Pabrik!" % [inv["tbs"], capacity()], "bad")
 				return ""
@@ -527,31 +547,19 @@ func start_new_day(slept: bool) -> void:
 	day += 1
 	hour = DAY_START
 	energy = max_energy if slept else max_energy * 0.6
+	# --- the day's weather (scripts/systems/weather_sys.gd)
+	sys.before_growth(report)
 	# --- palms grow
 	for p in parcels:
 		if p["owner"] != "player" and not p["plasma"]:
 			continue
 		for t in p["tiles"]:
-			if t["s"] != "palm":
-				continue
-			if t["st"] < 3:
-				t["g"] += 1
-				if t["g"] >= stage_need(t["st"], t["f"]):
-					t["st"] += 1
-					t["g"] = 0
-					t["f"] = false
-			elif not t["fr"]:
-				t["fd"] += 1
-				if t["fd"] >= maxi(1, FRUIT_DAYS - (1 if t["f"] else 0)):
-					t["fr"] = true
-					t["fd"] = 0
-	# --- TBS market price random walk
-	var old := tbs_price
-	tbs_price = clampi(tbs_price + rng.randi_range(-3, 3) * 10000 + tbs_trend * 5000, 90000, 230000)
-	tbs_trend = rng.randi_range(-1, 1)
-	report.append("Harga TBS hari ini: %s/tandan (%s)" % [fmt_rp(tbs_price), "naik" if tbs_price > old else ("turun" if tbs_price < old else "stabil")])
-	# --- workers
-	_pay_and_run_workers(report)
+			if t["s"] == "palm":
+				grow_tile(t)
+	# --- rain growth, land fires, floods
+	sys.after_growth(report)
+	# --- TBS market price + gudang, workers, upgrades (scripts/systems/)
+	sys.economy(report)
 	# --- franchise (plasma) partners
 	_run_plasma(report)
 	# --- slow drift
@@ -572,6 +580,10 @@ func start_new_day(slept: bool) -> void:
 		pending_events.append("wartawan")
 	elif rng.randf() < 0.18:
 		pending_events.append("harga_naik" if rng.randf() < 0.5 else "hujan")
+	sys.flush_events(pending_events)
+	day_rolled.emit(report)
+	if not game_active:
+		return
 	for p in parcels:
 		parcel_changed.emit(p["id"])
 	check_quests()
@@ -580,7 +592,23 @@ func start_new_day(slept: bool) -> void:
 	day_started.emit(report)
 
 
+func grow_tile(t: Dictionary) -> void:
+	## one night of growth for a palm tile (also the rain's extra step, weather_sys.gd)
+	if t["st"] < 3:
+		t["g"] += 1
+		if t["g"] >= stage_need(t["st"], t["f"]):
+			t["st"] += 1
+			t["g"] = 0
+			t["f"] = false
+	elif not t["fr"]:
+		t["fd"] += 1
+		if t["fd"] >= maxi(1, FRUIT_DAYS - (1 if t["f"] else 0)):
+			t["fr"] = true
+			t["fd"] = 0
+
+
 func _pay_and_run_workers(report: Array) -> void:
+	## (before the systems round; the crew now works in scripts/systems/crew_sys.gd)
 	if workers.is_empty():
 		return
 	var kept: Array = []
@@ -812,7 +840,7 @@ func save_game() -> void:
 		"v": SAVE_VERSION, "money": money, "day": day, "hour": hour, "energy": energy, "rep": rep, "heat": heat,
 		"inv": inv, "upgrades": upgrades, "oil": oil_price_level, "tbs_price": tbs_price, "parcels": parcels,
 		"villagers": villagers, "workers": workers, "quest": quest_index, "stats": stats,
-		"fish_log": fish_log,
+		"fish_log": fish_log, "social": social, "sys": sys.to_dict(),
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f:
@@ -908,6 +936,10 @@ func load_game() -> bool:
 	for k in FISH:   # saves from before the collection: count the fish in the bag
 		if int(inv.get(k, 0)) > 0 and not fish_log.has(k):
 			fish_log[k] = int(inv[k])
+	var so = data.get("social", {})
+	social = so if typeof(so) == TYPE_DICTIONARY else {}
+	var sy = data.get("sys", {})   # weather, market, crew, upgrades (saves from before: defaults)
+	sys.from_dict(sy if typeof(sy) == TYPE_DICTIONARY else {})
 	game_active = true
 	stats_changed.emit()
 	quest_changed.emit()
