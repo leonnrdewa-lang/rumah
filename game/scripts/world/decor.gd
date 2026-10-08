@@ -491,7 +491,7 @@ func build_item(id: String, n: Node3D) -> void:
 			for k in 3:
 				hub.box(n, Vector3(W / 3.0 - 0.15, 0.16, D - 0.35), Vector3(-W / 3.0 + k * W / 3.0, 0.5, 0.05), "a0584a")
 			# still in its shop plastic ("biar awet")
-			var wrap := hub.box(n, Vector3(W - 0.05, 0.74, D - 0.05), Vector3(0, 0.5, 0), "e8f4f8", Vector3.ZERO, false)
+			var wrap: MeshInstance3D = hub.box(n, Vector3(W - 0.05, 0.74, D - 0.05), Vector3(0, 0.5, 0), "e8f4f8", Vector3.ZERO, false)
 			var pm := StandardMaterial3D.new()
 			pm.albedo_color = Color(0.92, 0.97, 1.0, 0.22)
 			pm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -600,7 +600,11 @@ func _aquarium(n: Node3D, W: float, D: float) -> void:
 	glass.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	n.add_child(glass)
 	hub.box(n, Vector3(W - 0.22, 0.08, D - 0.32), Vector3(0, 0.75, 0), "e8d8a8")
-	hub.box(n, Vector3(W - 0.16, 0.05, D - 0.26), Vector3(0, 1.47, 0), "3a3a42")
+	# an open rim on top (a lid would hide the fish from the play camera)
+	for sz in [-1.0, 1.0]:
+		hub.box(n, Vector3(W - 0.16, 0.05, 0.05), Vector3(0, 1.47, sz * (D - 0.3) * 0.5), "3a3a42")
+	for sx in [-1.0, 1.0]:
+		hub.box(n, Vector3(0.05, 0.05, D - 0.26), Vector3(sx * (W - 0.2) * 0.5, 1.47, 0), "3a3a42")
 	for k in 3:
 		var plant: MeshInstance3D = hub.box(n, Vector3(0.05, 0.35 + k * 0.08, 0.02), Vector3(-W * 0.35 + k * 0.12, 0.95, -0.1), "4a9a4a")
 		plant.rotation.z = (k - 1) * 0.2
@@ -619,6 +623,7 @@ func _aquarium(n: Node3D, W: float, D: float) -> void:
 		sp.pixel_size = 0.0028 if GS.fish_rarity(ids[k]) == "SR" else 0.0034
 		sp.shaded = false
 		sp.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
+		sp.rotation.x = -0.5   # leaning back towards the high play camera
 		sp.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		var base := Vector3(0, 0.95 + (k % 3) * 0.17, -0.05 + (k % 2) * 0.1)
 		sp.position = base

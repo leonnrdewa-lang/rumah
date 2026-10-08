@@ -303,8 +303,8 @@ func _string_lights(n: Node3D, tops: Array) -> void:
 	mm.transform_format = MultiMesh.TRANSFORM_3D
 	mm.use_colors = true
 	var sm := SphereMesh.new()
-	sm.radius = 0.07
-	sm.height = 0.14
+	sm.radius = 0.1
+	sm.height = 0.2
 	sm.radial_segments = 6
 	sm.rings = 3
 	_lamp_mat = StandardMaterial3D.new()
@@ -323,9 +323,9 @@ func _string_lights(n: Node3D, tops: Array) -> void:
 	n.add_child(mmi)
 	var l := OmniLight3D.new()
 	l.light_color = Color(1.0, 0.75, 0.5)
-	l.omni_range = 11.0
+	l.omni_range = 13.0
 	l.light_energy = 0.0
-	l.position = Vector3(0, 3.0, 1.0)
+	l.position = Vector3(0, 2.6, 0.5)
 	n.add_child(l)
 	_lights.append(l)
 
@@ -374,7 +374,7 @@ func _process(delta: float) -> void:
 	var night: float = hub.world.night_k
 	for l in _lights:
 		if is_instance_valid(l):
-			l.light_energy = night * 1.4
+			l.light_energy = night * 2.2
 	if _lamp_mat:
 		_lamp_mat.albedo_color = Color(1, 1, 1).lerp(Color(1.6, 1.6, 1.6), night)
 	_tick -= delta
@@ -411,6 +411,7 @@ func _gather(ev: String, instant := false) -> void:
 		var n: Npc = w.npcs[vid]
 		var a := k * TAU / maxf(1.0, want.size()) + 0.4
 		var at := p + Vector3(cos(a) * 2.6, 0, sin(a) * 2.0 + 0.6)
+		n.sleeps_at_night = false   # pasar malam / pengajian: they stay up for it
 		n.set_anchor(at, 1.2, instant or n.global_position.distance_to(at) > 70.0)
 		out.append(vid)
 	_gathered[ev] = out
@@ -419,6 +420,7 @@ func _gather(ev: String, instant := false) -> void:
 func _release(ev: String) -> void:
 	for vid in _gathered.get(ev, []):
 		if hub.world.npcs.has(vid):
+			hub.world.npcs[vid].sleeps_at_night = true
 			hub.world.refresh_villager(vid)
 	_gathered.erase(ev)
 

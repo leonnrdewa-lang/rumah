@@ -546,16 +546,19 @@ static func shots(at: Node) -> void:
 	at.tp(dp.x, dp.z - 0.6, Vector3(0, 0, -1))
 	await at.wait(1.0)
 	await _shot(at, "house_gedongan", 25)
-	# close-up of the aquarium
+	# close-up of the aquarium: it goes to the middle of the room, the camera zooms in
 	for k in D.hs()["placed"].size():
 		if D.hs()["placed"][k]["id"] == "akuarium":
-			var p: Dictionary = D.hs()["placed"][k]
-			var fp: Vector2i = D.footprint(p)
-			var c: Vector3 = world.interior.to_world(D.cell_center(int(p["c"]), int(p["r"]), fp.x, fp.y))
-			at.tp(c.x, c.z + 1.6, Vector3(0, 0, -1))
-	await at.wait(0.8)
-	world.cam_rig.global_position = world.player.global_position
+			var g: Vector2i = D.grid_size()
+			for dr in range(0, 3):
+				if D.move_to(k, g.x / 2 - 1, g.y / 2 + dr):
+					break
+	var real_half: Vector2 = world.interior.half
+	world.interior.half = real_half * 0.42
+	at.tp(world.interior.to_world(Vector3(0, 0, 2.5)).x, world.interior.to_world(Vector3(0, 0, 2.5)).z, Vector3(0, 0, -1))
+	await at.wait(1.2)
 	await _shot(at, "house_aquarium", 20)
+	world.interior.half = real_half
 	D.sel = 0
 	D.show_editor()
 	await _shot(at, "decor_editor", 15)

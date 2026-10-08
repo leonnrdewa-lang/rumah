@@ -490,10 +490,21 @@ class Scene extends Control:
 		var ink := Color("3e2617")
 		match eid:
 			"raja":
+				# blue tents of the evicted on the horizon, endless palm rows
+				for k in 4:
+					var tx := sz.x * (0.08 + k * 0.07)
+					c.draw_colored_polygon(PackedVector2Array([Vector2(tx - 22, hy + 4), Vector2(tx, hy - 22), Vector2(tx + 22, hy + 4)]), Color("3a74c0"))
 				for row in 3:
 					var yy := hy + row * sz.y * 0.07
 					for k in 9:
 						_palm(c, Vector2(sz.x * (0.04 + k * 0.12) + row * 20, yy + 10), sz.y * (0.12 + row * 0.03))
+				# money sacks
+				for k in 3:
+					var mp := Vector2(sz.x * (0.72 + k * 0.08), sz.y * 0.9)
+					c.draw_circle(mp, 34, Color("c8a060"))
+					c.draw_arc(mp, 34, 0, TAU, 24, ink, 3.0)
+					c.draw_rect(Rect2(mp.x - 10, mp.y - 46, 20, 14), Color("a88040"))
+					c.draw_string(ThemeDB.fallback_font, mp + Vector2(-16, 10), "Rp", HORIZONTAL_ALIGNMENT_LEFT, -1, 26, ink)
 				# a throne of TBS and a crown
 				var cx := sz.x * 0.5
 				var by := sz.y * 0.9
