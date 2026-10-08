@@ -164,6 +164,9 @@ func _run() -> void:
 		"anim":
 			# character animation checks (anim track): scripts/actors/anim_check.gd
 			await AnimCheck.run(self)
+		"faces":
+			# villager faces + looks (blender/characters.py, scripts/actors/char_look.gd): screenshots
+			await FacesCheck.run(self)
 		"animals_models":
 			# animal GLBs (blender/animals.py): clips, extras, materials; screenshots
 			await AnimalModelsCheck.run(self)

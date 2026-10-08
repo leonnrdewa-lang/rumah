@@ -227,6 +227,13 @@ static func convert_material(m: Material, fade := true, rim := 0.0, outline := t
 				sm.set_shader_parameter("night_emission", 1.0)
 		if rim > 0.0:
 			sm.set_shader_parameter("rim_strength", rim)
+			# characters: a lighter shade band; the painted face features lighter still
+			sm.set_shader_parameter("shade_lift", 0.75 if mname == "M_Face" else 0.4)
+		if mname == "M_Face":
+			# eyes, brows and mouth are flat decals on the head: no ink hull, no rim glow
+			sm.set_shader_parameter("rim_strength", 0.0)
+			sm.set_shader_parameter("tint_strength", 0.0)
+			outline = false
 		if not cut and outline:
 			# anime ink line around the solid models (characters get a bolder one)
 			sm.next_pass = _outline(2.4 if rim > 0.0 else 1.6, fade)
@@ -351,6 +358,42 @@ static func merged_mesh(name: String, fade := true, only_under := "", exclude_un
 		st.set_material(convert_material(mats[mk], fade, 0.0, ol))
 		st.commit(mesh)
 	root.free()
+	_merged[key] = mesh
+	return mesh
+
+
+static func flat_mesh(name: String, fade := true) -> ArrayMesh:
+	## The whole model as ONE surface: each material's colour is baked into the vertex
+	## colours (x the baked AO) under a single white material, so a small many-coloured
+	## prop (yard life: laundry, pots, motorbikes, shops) costs one draw instead of 5-13.
+	## Untextured models only (textures would be lost).
+	var key := "flat|%s|%s" % [name, fade]
+	if _merged.has(key):
+		return _merged[key]
+	var src := merged_mesh(name, fade)
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var white := StandardMaterial3D.new()
+	white.resource_name = "M_FlatProp"
+	for i in src.get_surface_count():
+		var arr := src.surface_get_arrays(i)
+		var m := src.surface_get_material(i) as ShaderMaterial
+		var col := Color.WHITE
+		if m and m.get_shader_parameter("albedo") != null:
+			col = m.get_shader_parameter("albedo")
+		var verts: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+		var cols: PackedColorArray = arr[Mesh.ARRAY_COLOR] if arr[Mesh.ARRAY_COLOR] != null else PackedColorArray()
+		var out := PackedColorArray()
+		out.resize(verts.size())
+		for k in verts.size():
+			var c: Color = cols[k] if k < cols.size() else Color.WHITE
+			out[k] = Color(c.r * col.r, c.g * col.g, c.b * col.b, 1.0)
+		arr[Mesh.ARRAY_COLOR] = out
+		var part := ArrayMesh.new()
+		part.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
+		st.append_from(part, 0, Transform3D.IDENTITY)
+	st.set_material(convert_material(white, fade, 0.0, false))
+	var mesh := st.commit()
 	_merged[key] = mesh
 	return mesh
 

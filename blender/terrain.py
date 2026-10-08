@@ -162,6 +162,10 @@ def _dead_ends():
 DEAD_ENDS = _dead_ends()
 for ex, ez in DEAD_ENDS:
     road_d = road_d + 1.9 * (1.0 - smoothstep(0.0, 4.5, np.hypot(X - ex, Z - ez)))
+# map v3 dense round: the hamlets' gang footpaths, narrower, joined into the road distance
+# (offset so the same edge test paints them ALLEY_WIDTH wide)
+for (a_, b_) in L.ALLEYS:
+    road_d = np.minimum(road_d, seg_dist(X, Z, a_, b_) + (L.ROAD_WIDTH - L.ALLEY_WIDTH) / 2)
 wobble = (fractal_noise(N, (20, 120), 1.5, seed=5) - 0.5) * 0.9
 road = 1.0 - smoothstep(L.ROAD_WIDTH / 2 - 0.4, L.ROAD_WIDTH / 2 + 0.5, road_d + wobble)
 road *= (sd_sea > 2).astype(float) * smoothstep(0.2, 1.0, river_d)
@@ -237,6 +241,8 @@ for m, pos, _ in L.PROPS:
     circles.append((pos[0], pos[1], 1.6 if m != "truck" else 3.5))
 for m, pos, _ in L.FENCES:
     circles.append((pos[0], pos[1], 1.2))
+for m, pos, _, _ in L.HOUSE_DECOR:
+    circles.append((pos[0], pos[1], {"kios": 2.2, "jemuran": 1.5}.get(m, 1.0)))
 for pos in L.TENT_SPOTS:
     circles.append((pos[0], pos[1], 2.5))
 def snap_to_coast(pos, target=1.5):
@@ -345,6 +351,10 @@ def try_place(model, count, r_self, sd_min, sd_max, region=None, scale=(0.85, 1.
 
 
 # map v3: the hamlets' yard plants first (they stay by their houses)
+# map v3 dense round: the hamlets' yard life (laundry lines, potted plants, motorbikes, shops)
+for m, pos, rot, sc in L.HOUSE_DECOR:
+    decor.append({"model": m, "pos": [pos[0], round(sample(enc_h, *pos) * 7.0 - 5.0, 3), pos[1]], "rot": rot, "scale": sc})
+    placed.append((pos[0], pos[1], 1.5))
 for m, pos, rot, sc in L.HOUSE_PLANT_DECOR:
     if sample(sd, *pos) < 2.5:
         continue
@@ -471,6 +481,8 @@ for m, pos, _ in L.PROPS:
     keep_out.append((pos[0], pos[1], 3.2 if m == "truck" else (0.6 if m == "lampu" else 1.1)))
 for m, pos, _ in L.FENCES:
     keep_out.append((pos[0], pos[1], 0.9))
+for m, pos, _, _ in L.HOUSE_DECOR:
+    keep_out.append((pos[0], pos[1], {"kios": 1.9, "jemuran": 1.2, "motor": 1.0}.get(m, 0.7)))
 for br in L.BRIDGES:           # the bridge ends (ramps)
     th = math.radians(br["rot"])
     for k in (-7.5, -5.0, 5.0, 7.5):
@@ -861,6 +873,7 @@ out = {
     "props": [{"model": m, "pos": [p[0], height_at(*p), p[1]], "rot": r} for m, p, r in L.PROPS],
     "tent_spots": [list(p) for p in L.TENT_SPOTS],
     "roads": [[list(pt) for pt in line] for line in L.ROADS],
+    "alleys": [[list(pt) for pt in line] for line in L.ALLEYS],
     "player_spawn": list(L.PLAYER_SPAWN),
     "decor": decor,
     # v2: {model: [x, y, z, rot_deg, scale, x, y, z, ...]} small plants without collision

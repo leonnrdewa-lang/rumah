@@ -196,26 +196,28 @@ PLAYER_SPAWN = (-3.5, 37.5)
 # their hamlet closest to their garden ("home" ids rumah_<vid>).
 VILLAGES = [
     {"id": "sukamakmur", "name": "Desa Sukamakmur", "center": (0, 4),
-     "streets": [[(-62, 8), (-30, 9), (0, 8), (30, 7), (62, 8)], [(-48, -26), (44, -26)], [(-4, -26), (-4, 8)]],
-     "n": 9, "villagers": []},
+     "streets": [[(-62, 8), (-30, 9), (0, 8), (30, 7), (62, 8)], [(-48, -26), (44, -26)], [(-4, -26), (-4, 8)],
+                 [(-46, -26), (-46, 8)], [(34, -26), (34, 8)], [(30, 7), (30, 22)], [(-46, 8), (-46, 22)],
+                 [(-20, -26), (-20, -36)], [(18, -26), (18, -36)], [(62, 8), (73, 12.5)]],
+     "n": 30, "shops": 2, "villagers": []},
     {"id": "seberang", "name": "Dusun Seberang", "center": (128, -28),
-     "streets": [[(102, -28), (160, -28)], [(128, -28), (128, -62)], [(104, -60), (104, -4)]], "n": 16,
+     "streets": [[(102, -28), (160, -28)], [(128, -28), (128, -62)], [(104, -60), (104, -4)]], "n": 34,
      "villagers": ["somad", "ucok", "rian"]},
     {"id": "muara", "name": "Dusun Muara", "center": (126, 62),
-     "streets": [[(108, 62), (152, 62)], [(126, 62), (126, 94)], [(62, 62), (92, 62)], [(45, 40), (62, 62)]], "n": 14,
+     "streets": [[(108, 62), (152, 62)], [(126, 62), (126, 94)], [(62, 62), (92, 62)], [(45, 40), (62, 62)]], "n": 32,
      "villagers": ["wati", "slamet"]},
     {"id": "barat", "name": "Dusun Barat", "center": (-132, 8),
      "streets": [[(-160, 8), (-112, 8)], [(-132, 8), (-132, 42)], [(-92, 8), (-64, 8)], [(-112, 8), (-112, -24)]],
-     "n": 16, "villagers": ["dullah", "romlah"]},
+     "n": 34, "villagers": ["dullah", "romlah"]},
     {"id": "bukit", "name": "Dusun Bukit", "center": (-128, -45),
      "streets": [[(-152, -45), (-110, -45)], [(-128, -45), (-128, -72)], [(-90, -45), (-75, -45)],
-                 [(-75, -45), (-48, -26)]], "n": 14,
+                 [(-75, -45), (-48, -26)]], "n": 30,
      "villagers": ["darsih"]},
     {"id": "utara", "name": "Dusun Utara", "center": (34, -85),
-     "streets": [[(-30, -85), (90, -85)], [(34, -40), (34, -85)], [(106, -85), (122, -85)]], "n": 14,
+     "streets": [[(-30, -85), (90, -85)], [(34, -40), (34, -85)], [(106, -85), (122, -85)]], "n": 32,
      "villagers": ["yanto", "karta"]},
     {"id": "selatan", "name": "Dusun Selatan", "center": (30, 88),
-     "streets": [[(-38, 88), (62, 88)], [(30, 58), (30, 88)], [(45, 40), (30, 58)]], "n": 16,
+     "streets": [[(-38, 88), (62, 88)], [(30, 58), (30, 88)], [(45, 40), (30, 58)]], "n": 34,
      "villagers": ["bidan", "rt", "lastri"]},
 ]
 
@@ -229,6 +231,10 @@ WALL_COLOURS = ["#f4e3bf", "#e9d3a4", "#a86d3e", "#d6a867", "#b98a58", "#9fd0c0"
 ROOF_COLOURS = ["#c2714a", "#9c4c2b", "#b8543a", "#6f8ea6", "#4e9a5a", "#8c8f86", "#3f6f9a", "#a33b2b",
                 "#7a5a44", "#2f7d73", "#c98a3a", "#5c6d7a"]
 HOUSE_PLANTS = ["banana", "bush_a", "bush_b", "keladi", "banana", "coconut", "bush_a", "flowers"]
+# yard life (models from blender/props.py) and their footprints (half x, half z; local, front = +z)
+DECOR_HALF = {"jemuran": (1.4, 0.25), "pot_tanaman": (0.6, 0.25), "motor": (0.36, 0.9), "kios": (1.45, 1.2)}
+# narrow footpaths (gang) between the houses of a hamlet, painted on the ground like the roads
+ALLEY_WIDTH = 1.8
 
 
 def _seg_dist(px, pz, a, b):
@@ -272,96 +278,223 @@ def _rect_circle(rect, x, z, r):
     return qx * qx + qz * qz < r * r
 
 
+class _OBB:
+    """Footprint rectangle: centre, half extents along the local x / z, rotation (deg, Godot y)."""
+
+    def __init__(self, x, z, hx, hz, rot):
+        th = math.radians(rot)
+        self.c = (x, z)
+        self.h = (hx, hz)
+        self.ax = (math.cos(th), -math.sin(th))     # local +x in the world
+        self.az = (math.sin(th), math.cos(th))      # local +z (front)
+
+    def pts(self):
+        (x, z), (hx, hz) = self.c, self.h
+        out = [(x, z)]
+        for sx in (-1, 0, 1):
+            for sz in (-1, 0, 1):
+                if sx or sz:
+                    out.append((x + self.ax[0] * hx * sx + self.az[0] * hz * sz,
+                                z + self.ax[1] * hx * sx + self.az[1] * hz * sz))
+        return out
+
+    def overlaps(self, o, pad=0.0):
+        for axis in (self.ax, self.az, o.ax, o.az):
+            def proj(b):
+                return b.c[0] * axis[0] + b.c[1] * axis[1], \
+                    abs(b.ax[0] * axis[0] + b.ax[1] * axis[1]) * b.h[0] + abs(b.az[0] * axis[0] + b.az[1] * axis[1]) * b.h[1]
+            c1, r1 = proj(self)
+            c2, r2 = proj(o)
+            if abs(c1 - c2) > r1 + r2 + pad:
+                return False
+        return True
+
+
+def _alleys_for(v, rng, rects, taken):
+    """Gang: footpaths leaving a hamlet street at right angles every ~22-30 m on both sides,
+    up to ~24 m long, stopping short of water, gardens, buildings and the coast."""
+    out = []
+    for st in v["streets"]:
+        for a, b in zip(st[:-1], st[1:]):
+            L = math.hypot(b[0] - a[0], b[1] - a[1])
+            ux, uz = (b[0] - a[0]) / L, (b[1] - a[1]) / L
+            nx, nz = -uz, ux
+            k = rng.uniform(9.0, 14.0)
+            while k < L - 8.0:
+                for side in (-1, 1):
+                    if rng.random() < 0.2:
+                        continue
+                    x0 = a[0] + ux * k + nx * side * (ROAD_WIDTH * 0.5 - 0.2)
+                    z0 = a[1] + uz * k + nz * side * (ROAD_WIDTH * 0.5 - 0.2)
+                    length = 0.0
+                    want = rng.uniform(16.0, 26.0)
+                    while length < want:
+                        t = length + 1.0
+                        x, z = x0 + nx * side * t, z0 + nz * side * t
+                        if island_rho(x, z) > 0.86 or water_dist(x, z) < 3.0:
+                            break
+                        if any(_rect_circle(rc, x, z, 1.5) for rc in rects):
+                            break
+                        if any(math.hypot(x - tx, z - tz) < tr + 0.5 for tx, tz, tr in taken):
+                            break
+                        if t > 4.0 and road_dist(x, z) < ROAD_WIDTH * 0.5 + 2.0:
+                            break
+                        length = t
+                    if length >= 11.0:
+                        out.append([(round(x0, 2), round(z0, 2)),
+                                    (round(x0 + nx * side * length, 2), round(z0 + nz * side * length, 2))])
+                k += rng.uniform(22.0, 30.0)
+    return out
+
+
 def generate_houses():
     """Houses of every hamlet: [{"id", "model", "pos", "rot", "wall", "roof", "village"}],
-    their fences [(model, (x, z), rot)] and yard plants [(model, (x, z), rot, scale)]."""
+    their fences [(model, (x, z), rot)], yard plants [(model, (x, z), rot, scale)], the named
+    villagers' homes, yard life [(model, (x, z), rot, scale)] (laundry lines, potted plants,
+    parked motorbikes, little shops) and the gang footpaths [[(x, z), (x, z)]].
+
+    Map v3 dense round: houses stand shoulder to shoulder along the streets (~1-2 m apart, small
+    front yards) and along gang footpaths leading off them, like a real kampung."""
     rng = random.Random(2024)
-    houses, fences, plants = [], [], []
-    taken = [(b["pos"][0], b["pos"][1], 8.5) for b in BUILDINGS]
-    taken += [(p[1][0], p[1][1], 3.0 if p[0] != "truck" else 5.0) for p in PROPS]
+    houses, fences, plants, decor, alleys = [], [], [], [], []
+    b_r = {"kantor": 7.0, "toko": 6.0, "warung": 5.0, "pabrik": 11.5, "pos_calo": 4.0, "dermaga": 7.0, "gudang": 5.0}
+    taken = [(b["pos"][0], b["pos"][1], b_r.get(b["model"], 5.5)) for b in BUILDINGS]
+    taken += [(p[1][0], p[1][1], {"truck": 5.0, "lampu": 1.0, "bangku": 1.4}.get(p[0], 2.0)) for p in PROPS]
     taken += [(x, z, 4.0) for (x, z) in TENT_SPOTS]
     taken.append((PLAYER_SPAWN[0], PLAYER_SPAWN[1], 6.0))
     for b in BRIDGES:
         taken.append((b["pos"][0], b["pos"][1], BRIDGE_LEN * 0.5 + 4.0))
     rects = [_parcel_rect(p, 3.0) for p in PARCELS]
+    boxes = []        # every placed footprint (_OBB): houses, shops, yard things
+
+    def alley_dist(x, z):
+        return min((_seg_dist(x, z, a[0], a[1]) for a in alleys), default=1e9)
+
+    def free(ob, pad, road_pad=0.4, alley_pad=0.25):
+        for (px, pz) in ob.pts():
+            if road_dist(px, pz) < ROAD_WIDTH * 0.5 + road_pad:
+                return False
+            if alley_dist(px, pz) < ALLEY_WIDTH * 0.5 + alley_pad:
+                return False
+            if water_dist(px, pz) < 2.5 or island_rho(px, pz) > 0.87:
+                return False
+            if any(_rect_circle(rc, px, pz, 0.6) for rc in rects):
+                return False
+        if any(math.hypot(ob.c[0] - tx, ob.c[1] - tz) < max(ob.h) + tr for tx, tz, tr in taken):
+            return False
+        return not any(ob.overlaps(o, pad) for o in boxes)
+
     for v in VILLAGES:
+        valleys = _alleys_for(v, rng, rects, taken)
+        alleys += valleys
         cand = []
         for st in v["streets"]:
             for a, b in zip(st[:-1], st[1:]):
                 L = math.hypot(b[0] - a[0], b[1] - a[1])
                 ux, uz = (b[0] - a[0]) / L, (b[1] - a[1]) / L
                 nx, nz = -uz, ux
-                k = 6.0
-                while k < L - 4.0:
+                k = 5.0
+                while k < L - 3.0:
                     for side in (-1, 1):
-                        cand.append((a[0] + ux * k, a[1] + uz * k, nx * side, nz * side))
-                    k += rng.uniform(11.5, 14.5)
-        rng.shuffle(cand)
+                        cand.append((a[0] + ux * k, a[1] + uz * k, nx * side, nz * side, ROAD_WIDTH * 0.5 + 2.0, "street"))
+                    k += rng.uniform(3.2, 4.2)
+        for (p0, p1) in valleys:
+            L = math.hypot(p1[0] - p0[0], p1[1] - p0[1])
+            ux, uz = (p1[0] - p0[0]) / L, (p1[1] - p0[1]) / L
+            nx, nz = -uz, ux
+            k = 5.5
+            while k < L - 1.0:
+                for side in (-1, 1):
+                    cand.append((p0[0] + ux * k, p0[1] + uz * k, nx * side, nz * side, ALLEY_WIDTH * 0.5 + 1.3, "gang"))
+                k += rng.uniform(3.0, 4.0)
         # the hamlet centre first: houses cluster round the crossing
         cx0, cz0 = v["center"]
-        cand.sort(key=lambda c: math.hypot(c[0] - cx0, c[1] - cz0) + rng.uniform(0, 14))
+        cand.sort(key=lambda c: math.hypot(c[0] - cx0, c[1] - cz0) + rng.uniform(0, 10))
         placed = 0
-        for (sx, sz, nx, nz) in cand:
+        shops = 0
+        for (sx, sz, nx, nz, setback0, kind) in cand:
             if placed >= v["n"]:
                 break
-            model = HOUSE_TYPES[rng.randrange(len(HOUSE_TYPES))]
-            hx, hz = HOUSE_HALF[model]
-            setback = ROAD_WIDTH * 0.5 + 2.6 + hz
+            # a little shop (warung kelontong) or two near the centre of each hamlet, on its street
+            shop = kind == "street" and shops < v.get("shops", 2) and rng.random() < 0.35
+            model = "kios" if shop else HOUSE_TYPES[rng.randrange(len(HOUSE_TYPES))]
+            hx, hz = DECOR_HALF["kios"] if shop else HOUSE_HALF[model]
+            setback = setback0 + hz + rng.uniform(0.0, 0.8)
             x, z = sx + nx * setback, sz + nz * setback
-            # face the street: the local +z (front) points back along -n
+            # face the street / gang: the local +z (front) points back along -n
             rot = math.degrees(math.atan2(-nx, -nz))
             rot = round(rot / 90.0) * 90.0 if abs(nx) < 0.2 or abs(nz) < 0.2 else rot
-            r_foot = math.hypot(hx, hz) + 0.8
-            if island_rho(x, z) > 0.86:
+            ob = _OBB(x, z, hx, hz, rot)
+            if not free(ob, 1.0 if not shop else 0.6):
                 continue
-            if water_dist(x, z) < r_foot + 4.0:
-                continue
-            if road_dist(x, z) < r_foot + 0.2 - 0.9:
-                continue
-            if any(_rect_circle(rc, x, z, r_foot) for rc in rects):
-                continue
-            if any(math.hypot(x - tx, z - tz) < r_foot + tr for tx, tz, tr in taken):
+            boxes.append(ob)
+            if shop:
+                decor.append(("kios", (round(x, 2), round(z, 2)), round(rot, 1), 1.0))
+                shops += 1
                 continue
             hid = "rumah_%s_%d" % (v["id"], placed)
             houses.append({"id": hid, "model": model, "pos": (round(x, 2), round(z, 2)), "rot": round(rot, 1),
                            "wall": WALL_COLOURS[rng.randrange(len(WALL_COLOURS))],
                            "roof": ROOF_COLOURS[rng.randrange(len(ROOF_COLOURS))], "village": v["id"]})
-            taken.append((x, z, r_foot + 1.2))
             placed += 1
-            th = math.radians(rot)
-            fx, fz = math.sin(th), math.cos(th)        # front direction
-            rx, rz = math.cos(th), -math.sin(th)       # local +x
-            # a bamboo / rail fence along the front of the yard with a gate at the door
-            if rng.random() < 0.6:
-                fm = "pagar_bambu" if rng.random() < 0.65 else "pagar"
-                d = hz + 1.9
-                for s in (-1, 1):
-                    for k in range(2):
-                        off = s * (2.1 + k * 2.0)
-                        px_ = x + fx * d + rx * off
-                        pz_ = z + fz * d + rz * off
-                        if road_dist(px_, pz_) > ROAD_WIDTH * 0.5 + 0.6:
-                            fences.append((fm, (round(px_, 2), round(pz_, 2)), round(rot, 1)))
-                # a side run from the front corner back along the yard
-                if rng.random() < 0.5:
-                    s = rng.choice((-1, 1))
-                    for k in range(2):
-                        px_ = x + fx * (d - 1.0 - k * 2.0) + rx * s * (hx + 2.0)
-                        pz_ = z + fz * (d - 1.0 - k * 2.0) + rz * s * (hx + 2.0)
-                        fences.append((fm, (round(px_, 2), round(pz_, 2)), round(rot + 90.0, 1)))
-            # yard plants: beside and behind the house (tall ones never on its camera side)
-            for k in range(rng.randint(2, 4)):
-                m = HOUSE_PLANTS[rng.randrange(len(HOUSE_PLANTS))]
-                side = rng.choice((-1, 1))
-                along = rng.uniform(-hz, hz * 0.4)
-                px_ = x + rx * side * (hx + rng.uniform(1.0, 2.2)) + fx * along
-                pz_ = z + rz * side * (hx + rng.uniform(1.0, 2.2)) + fz * along
-                if m in ("banana", "coconut") and pz_ > z + 1.0:
-                    m = "bush_b"
-                if road_dist(px_, pz_) < ROAD_WIDTH * 0.5 + 1.2 or water_dist(px_, pz_) < 1.5:
-                    continue
-                plants.append((m, (round(px_, 2), round(pz_, 2)), round(rng.uniform(0, 360), 1),
-                               round(rng.uniform(0.85, 1.15), 2)))
+    # yard life after all houses stand: fences, laundry, pots, motorbikes, plants
+    for h in houses:
+        x, z = h["pos"]
+        rot = h["rot"]
+        hx, hz = HOUSE_HALF[h["model"]]
+        th = math.radians(rot)
+        fx, fz = math.sin(th), math.cos(th)        # front direction
+        rx, rz = math.cos(th), -math.sin(th)       # local +x
+
+        def at(lx, lz):
+            return x + rx * lx + fx * lz, z + rz * lx + fz * lz
+
+        def try_put(m, lx, lz, drot=0.0, pad=0.25, sc=1.0):
+            px, pz = at(lx, lz)
+            dhx, dhz = DECOR_HALF[m]
+            ob = _OBB(px, pz, dhx, dhz, rot + drot)
+            if not free(ob, pad, road_pad=0.2, alley_pad=0.15):
+                return False
+            boxes.append(ob)
+            decor.append((m, (round(px, 2), round(pz, 2)), round(rot + drot, 1), sc))
+            return True
+        # (the door is at local (0, hz + 1.1): yard things stay to the sides)
+        if rng.random() < 0.55:
+            side = rng.choice((-1, 1))
+            try_put("pot_tanaman", side * (hx - 0.75), hz + 0.95)
+        if rng.random() < 0.4:
+            side = rng.choice((-1, 1))
+            try_put("jemuran", side * (hx + 1.7), rng.uniform(-hz * 0.6, hz * 0.3), 90.0) or \
+                try_put("jemuran", rng.uniform(-0.6, 0.6), -hz - 1.0)
+        if rng.random() < 0.22:
+            side = rng.choice((-1, 1))
+            try_put("motor", side * (hx + 0.7), hz - 0.4, rng.uniform(-20, 20))
+        # a short bamboo / rail fence across the front corners of the yard
+        if rng.random() < 0.45:
+            fm = "pagar_bambu" if rng.random() < 0.65 else "pagar"
+            d = hz + 1.7
+            for s_ in (-1, 1):
+                off = s_ * (hx - 0.4)
+                ob = _OBB(*at(off, d), 1.0, 0.1, rot)
+                if free(ob, 0.15, road_pad=0.3, alley_pad=0.2):
+                    boxes.append(ob)
+                    px_, pz_ = ob.c
+                    fences.append((fm, (round(px_, 2), round(pz_, 2)), round(rot, 1)))
+        # yard plants: beside and behind the house (tall ones never on its camera side)
+        for k in range(rng.randint(1, 3)):
+            m = HOUSE_PLANTS[rng.randrange(len(HOUSE_PLANTS))]
+            side = rng.choice((-1, 1))
+            lx = side * (hx + rng.uniform(0.6, 1.4))
+            lz = rng.uniform(-hz - 1.2, hz * 0.3)
+            px_, pz_ = at(lx, lz)
+            if m in ("banana", "coconut") and pz_ > z + 1.0:
+                m = "bush_b"
+            r = 0.5 if m in ("bush_a", "bush_b", "keladi", "flowers") else 0.4
+            ob = _OBB(px_, pz_, r, r, 0.0)
+            if not free(ob, 0.1, road_pad=0.8, alley_pad=0.4):
+                continue
+            plants.append((m, (round(px_, 2), round(pz_, 2)), round(rng.uniform(0, 360), 1),
+                           round(rng.uniform(0.85, 1.15), 2)))
     # named villagers: the house of their hamlet nearest their garden
     homes = {}
     for v in VILLAGES:
@@ -372,7 +505,7 @@ def generate_houses():
                        key=lambda h: math.hypot(h["pos"][0] - pc[0], h["pos"][1] - pc[1]))
             homes[vid] = best["id"]
             best["id"] = "rumah_" + vid
-    return houses, fences, plants, homes
+    return houses, fences, plants, homes, decor, alleys
 
 
-HOUSES, FENCES, HOUSE_PLANT_DECOR, VILLAGER_HOMES = generate_houses()
+HOUSES, FENCES, HOUSE_PLANT_DECOR, VILLAGER_HOMES, HOUSE_DECOR, ALLEYS = generate_houses()

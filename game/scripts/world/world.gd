@@ -62,6 +62,8 @@ const LQ_SATURATION := 1.25
 
 const DECOR_COLLIDE := {"tree_big": 0.55, "coconut": 0.35, "banana": 0.3, "rock_b": -1.0, "rock_c": -1.0,
 	"cliff_a": -1.0, "bush_a": 0.45, "bush_b": 0.45, "sawit_wild": 0.45}
+## hamlet yard life (map v3 dense round) collides as boxes (model -> footprint shrink)
+const DECOR_BOX := {"kios": 0.92, "motor": 0.8, "jemuran": 0.9, "pot_tanaman": 0.85}
 ## decor that has no model of its own: [model, only_under, exclude_under]
 const DECOR_ALIAS := {"sawit_wild": ["sawit_3", "", "Fruits"]}
 ## small decor that should not cast shadows
@@ -527,6 +529,8 @@ func _build_decor() -> void:
 		if DECOR_ALIAS.has(m):
 			var al: Array = DECOR_ALIAS[m]
 			mesh = ModelLib.merged_mesh(al[0], true, al[1], al[2])
+		elif DECOR_BOX.has(m):
+			mesh = ModelLib.flat_mesh(m, true)   # many-coloured yard props: one draw each chunk
 		else:
 			mesh = ModelLib.merged_mesh(m, true)
 		if mesh.get_surface_count() == 0:
@@ -542,7 +546,9 @@ func _build_decor() -> void:
 			var s: float = d.get("scale", 1.0)
 			var basis := Basis(Vector3.UP, deg_to_rad(d.get("rot", 0.0))).scaled(Vector3.ONE * s)
 			mm.set_instance_transform(i, Transform3D(basis, p))
-			if DECOR_COLLIDE.has(m):
+			if DECOR_BOX.has(m):
+				_add_box(Transform3D(basis, p), aabb, DECOR_BOX[m])
+			elif DECOR_COLLIDE.has(m):
 				var r: float = DECOR_COLLIDE[m]
 				if m == "cliff_a":
 					_add_box(Transform3D(basis, p), aabb, 0.85)
@@ -997,6 +1003,7 @@ func _build_npcs() -> void:
 		var d: Dictionary = GS.VILLAGERS[vid]
 		var npc := Npc.new()
 		npc.vid = vid
+		npc.look_key = vid
 		var home: Vector3 = door_points.get(d["home"], Vector3.ZERO)
 		npc.setup(self, d["model"], d["name"], home, 5.0)
 		add_child(npc)
@@ -1012,7 +1019,7 @@ func _build_npcs() -> void:
 	extras["anak"] = _extra("char_anak", "Dik Udin", Vector3(0, 0, 14), 9.0, true)
 	interactables.append({"node": extras["anak"], "r": 1.6, "npc": true, "prompt": func(): return "Ngobrol dengan Dik Udin",
 		"act": func(): deals.talk_extra("anak")})
-	extras["mak"] = _extra("char_ibu", "Mak Inah", door_points.get("warung", Vector3(8, 0, 5)) + Vector3(1.5, 0, -0.5), 0.8, true)
+	extras["mak"] = _extra("char_ibu", "Mak Inah", door_points.get("warung", Vector3(8, 0, 5)) + Vector3(1.5, 0, -0.5), 0.8, true, "mak")
 	# map v3: named villagers of the hamlets who own no garden (chat only) ...
 	var vill := {}
 	for v in layout.get("villages", []):
@@ -1029,7 +1036,7 @@ func _build_npcs() -> void:
 		if not is_walkable(at.x, at.z) or not is_free(at.x, at.z, 0.3):
 			at = v3(v.get("center", [0, 0])) + Vector3(2.5, 0, 2.5)
 		at.y = height_at(at.x, at.z)
-		var n := _extra(e["model"], e["name"], at, float(e.get("radius", 4.0)), true)
+		var n := _extra(e["model"], e["name"], at, float(e.get("radius", 4.0)), true, id)
 		extras[id] = n
 		var eid: String = id
 		var ename: String = e["name"]
@@ -1043,7 +1050,7 @@ func _build_npcs() -> void:
 		for i in DEALS_SCRIPT.WALKER_MODELS.size():
 			var c: Vector3 = centres[i % centres.size()] + Vector3(randf_range(-4, 4), 0, randf_range(2.5, 4.5))
 			c.y = height_at(c.x, c.z)
-			var n := _extra(DEALS_SCRIPT.WALKER_MODELS[i], "Warga", c, 4.0, true)
+			var n := _extra(DEALS_SCRIPT.WALKER_MODELS[i], "Warga", c, 4.0, true, "walker%d" % i)
 			n.set_meta("walker", i)
 			walkers.append(n)
 			_walker_t.append(randf_range(20.0, 90.0))
@@ -1054,8 +1061,9 @@ func _build_npcs() -> void:
 		refresh_villager(vid)
 
 
-func _extra(model: String, n: String, pos: Vector3, radius: float, sleeps: bool) -> Npc:
+func _extra(model: String, n: String, pos: Vector3, radius: float, sleeps: bool, look := "") -> Npc:
 	var npc := Npc.new()
+	npc.look_key = look
 	npc.setup(self, model, n, pos, radius)
 	npc.sleeps_at_night = sleeps
 	add_child(npc)
@@ -1134,7 +1142,7 @@ func refresh_workers() -> void:
 		if w["vid"] == "":
 			generic += 1
 	while worker_npcs.size() < generic:
-		var n := _extra("char_buruh", "Buruh", Vector3.ZERO, 6.0, true)
+		var n := _extra("char_buruh", "Buruh", Vector3.ZERO, 6.0, true, "buruh%d" % worker_npcs.size())
 		n.set_anchor(_worker_anchor("buruh%d" % worker_npcs.size()), 6.0, true)
 		worker_npcs.append(n)
 	while worker_npcs.size() > generic:

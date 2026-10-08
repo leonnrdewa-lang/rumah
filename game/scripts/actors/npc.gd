@@ -39,6 +39,7 @@ static var _roads := {}    # road graph shared by all villagers (see _road_graph
 var vid := ""            # villager id in GS.villagers, or "" for extras
 var display_name := ""
 var model_name := ""
+var look_key := ""       # CharLook variant (villager / extra id, "walker3"...); "" = the model as is
 var world: Node
 var model: Node3D
 var anim: CharAnim
@@ -91,6 +92,7 @@ func setup(p_world: Node, p_model: String, p_name: String, p_anchor: Vector3, p_
 
 func _ready() -> void:
 	model = ModelLib.instance(model_name, false)
+	CharLook.apply(model, model_name, look_key)
 	add_child(model)
 	anim = CharAnim.new(model)
 	var sp := gait_speeds(anim, model_name)
@@ -238,7 +240,7 @@ func _process(delta: float) -> void:
 		var d := talk_target.global_position - global_position
 		anim.turn_towards(atan2(d.x, d.z), delta, 7.0)
 		anim.talk_t = 0.2
-		anim.look_at_point(talk_target.global_position + Vector3(0, 0.9, 0))
+		anim.look_at_point(_player_look(talk_target))
 		if talk_target.has_method("face_point"):
 			talk_target.face_point(global_position)
 		_cur_speed = 0.0
@@ -254,7 +256,7 @@ func _process(delta: float) -> void:
 		if _face_player_t > 0.0 and pl:
 			_face_player_t -= delta
 			_face(pl.global_position, delta)
-			anim.look_at_point(pl.global_position + Vector3(0, 0.9, 0))
+			anim.look_at_point(_player_look(pl))
 		_animate(delta)
 		return
 	# a player walking up gets a wave (the dispossessed just stare)
@@ -322,7 +324,7 @@ func _process(delta: float) -> void:
 	if world:
 		position.y = world.height_at(position.x, position.z)
 	if pl and awake and pdist < LOOK_RANGE and world.state == "play":
-		anim.look_at_point(pl.global_position + Vector3(0, 0.9, 0))
+		anim.look_at_point(_player_look(pl))
 	_animate(delta)
 
 
@@ -358,6 +360,16 @@ func in_view() -> bool:
 		if pl.distance_to(p) > VIEW_MARGIN:
 			return false
 	return true
+
+
+func _player_look(pl: Node3D) -> Vector3:
+	## Where to look when looking at the player: their face, nudged up towards the game
+	## camera, so the villager's face turns to the screen (it reads from the 45 deg view)
+	var t := pl.global_position + Vector3(0, 0.9, 0)
+	var cam: Camera3D = world.get("camera") if world else null
+	if cam and cam.current:
+		t = t.lerp(cam.global_position, 0.14)
+	return t
 
 
 func _face(p: Vector3, delta: float) -> void:

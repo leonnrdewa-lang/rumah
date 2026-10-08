@@ -1294,6 +1294,161 @@ def build_pagar_bambu():
     return root
 
 
+def build_jemuran():
+    """Laundry line (jemuran) ~2.6 m: two bamboo poles, a sagging rope and colourful clothes
+    pegged on it (sarong, shirts, a towel), faces -Y."""
+    name = "jemuran"
+    root = prop_root(name)
+    M = dict(b=mat("M_Bamboo", "#c9a462"), rope=mat("M_Rope", "#7a6446"))
+    cloth = [mat("M_ClothRed", "#d9534a"), mat("M_ClothBlue", "#4d86c9"), mat("M_ClothYellow", "#f0c24c"),
+             mat("M_ClothWhite", "#f3efe4"), mat("M_ClothBatik", "#9c5a2e"), mat("M_ClothPink", "#e98fb0"),
+             mat("M_ClothTeal", "#3fa39a")]
+    P = []
+    L, H = 1.3, 1.75
+    for sx in (-1, 1):
+        bamboo(P, (sx * L, 0.0, 0.0), (sx * L * 1.02, 0.0, H + 0.08), 0.032, M['b'], 6, slant=0.03, name="pole")
+    n = 10
+
+    def ry(x):   # rope height: sags in the middle
+        return H - 0.12 * (1 - (x / L) ** 2)
+    for i in range(n):
+        x0, x1 = -L + 2 * L * i / n, -L + 2 * L * (i + 1) / n
+        P.append(rod("rope", (x0, 0.0, ry(x0)), (x1, 0.0, ry(x1)), 0.009, M['rope'], 5))
+    rnd = random.Random(11)
+    x = -L + 0.18
+    k = 0
+    while x < L - 0.3:
+        w = rnd.uniform(0.32, 0.5)
+        h = rnd.uniform(0.42, 0.72) if k % 3 else rnd.uniform(0.7, 0.95)
+        m = cloth[(k * 3 + 1) % len(cloth)]
+        cx = x + w / 2
+        top = ry(cx) - 0.01
+        o = bx("cloth", (w, 0.025, h), (cx, rnd.uniform(-0.01, 0.01), top - h / 2), m, 0.01, 1,
+               rotz=rnd.uniform(-6, 6))
+        P.append(o)
+        if k % 2 == 0:   # shirt: short sleeves
+            for sx in (-1, 1):
+                P.append(bx("sleeve", (0.13, 0.024, 0.16), (cx + sx * (w / 2 + 0.05), 0.0, top - 0.09), m, 0.01, 1))
+        x += w + rnd.uniform(0.06, 0.14)
+        k += 1
+    finish(root, P, name, var=0.05)
+    return root
+
+
+def build_pot_tanaman():
+    """Row of three clay pots with leafy house plants (by porches and shop fronts), ~1 m."""
+    name = "pot_tanaman"
+    root = prop_root(name)
+    M = dict(pot=mat("M_Clay", "#c4643a"), rim=mat("M_ClayDark", "#9c4a2a"), g=mat("M_PotGreen", "#4f9a3e"),
+             g2=mat("M_PotGreenLight", "#7cbf4f"), r=mat("M_PotRed", "#e0483e"))
+    P = []
+    rnd = random.Random(5)
+    for i, x in enumerate((-0.38, 0.0, 0.4)):
+        s = (0.9, 1.15, 0.85)[i]
+        P.append(lathe("pot", [(0.0, 0.0), (0.11 * s, 0.0), (0.15 * s, 0.24 * s), (0.0, 0.24 * s)], 10, M['pot'],
+                       cap_bot=True, loc=(x, 0, 0)))
+        P.append(lathe("rim", [(0.15 * s, 0.22 * s), (0.17 * s, 0.23 * s), (0.17 * s, 0.27 * s), (0.14 * s, 0.27 * s)],
+                       10, M['rim'], loc=(x, 0, 0)))
+        for j in range(6):
+            a = j * math.tau / 6 + rnd.uniform(-0.3, 0.3)
+            L = rnd.uniform(0.22, 0.34) * s
+            tip = (x + math.cos(a) * L * 0.8, math.sin(a) * L * 0.8, 0.27 * s + L * 0.9)
+            o = rod("leafblade", (x, 0, 0.26 * s), tip, 0.05 * s, M['g'] if j % 2 else M['g2'], 5, r2=0.012)
+            P.append(o)
+        if i == 1:
+            for j in range(3):
+                a = j * 2.1
+                P.append(bx("bloom", (0.06, 0.06, 0.06), (x + math.cos(a) * 0.1, math.sin(a) * 0.1, 0.27 * s + 0.3),
+                            M['r'], 0.02, 1))
+    finish(root, P, name, var=0.05)
+    return root
+
+
+def build_kios():
+    """Small village shop (warung kelontong) ~2.4 x 1.7 m: plank stall with a front counter,
+    shelves of colourful goods, hanging snack strips, a rusty-red corrugated lean-to roof (it is
+    what the game camera sees most), a striped awning over the counter and a sign board."""
+    name = "kios"
+    root = prop_root(name)
+    M = dict(w=mat("M_Wood", "wood"), wl=mat("M_WoodLight", "wood_light"), roof=mat("M_TinRed", "#c0563a"),
+             rib=mat("M_TinRib", "#8e3a27"), wall=mat("M_KiosWall", "#d9b06a"), sign=mat("M_Board", "cream"),
+             aw1=mat("M_AwningA", "#2f8f7a"), aw2=mat("M_AwningB", "#f3efe4"),
+             g1=mat("M_GoodsRed", "#d9473f"), g2=mat("M_GoodsYellow", "#f2c14e"), g3=mat("M_GoodsBlue", "#3d7cc9"),
+             g4=mat("M_GoodsWhite", "#f3efe4"), g5=mat("M_GoodsGreen", "#58a84a"))
+    P = []
+    W, D, H = 2.4, 1.6, 2.1
+    P.append(bx("back", (W, 0.08, H), (0, D / 2 - 0.04, H / 2), M['wall'], 0.02, 1))
+    for sx in (-1, 1):
+        P.append(bx("side", (0.08, D, H), (sx * (W / 2 - 0.04), 0, H / 2), M['wall'], 0.02, 1))
+        P.append(bx("post", (0.1, 0.1, H + 0.1), (sx * (W / 2 - 0.05), -D / 2 + 0.05, (H + 0.1) / 2), M['w'], 0.02, 1))
+    for z in (0.5, 1.1, 1.7):    # plank seams on the sides
+        for sx in (-1, 1):
+            P.append(bx("seam", (0.1, D + 0.01, 0.03), (sx * (W / 2 - 0.04), 0, z), M['w'], 0.0, 1))
+    P.append(bx("counter", (W - 0.16, 0.5, 0.9), (0, -D / 2 + 0.3, 0.45), M['wl'], 0.03, 1))
+    P.append(bx("counter_top", (W - 0.06, 0.6, 0.06), (0, -D / 2 + 0.3, 0.92), M['w'], 0.02, 1))
+    goods = [M['g1'], M['g2'], M['g3'], M['g4'], M['g5']]
+    rnd = random.Random(9)
+    for z in (1.12, 1.5):
+        P.append(bx("shelf", (W - 0.25, 0.32, 0.04), (0, D / 2 - 0.22, z), M['w'], 0.01, 1))
+        x = -W / 2 + 0.25
+        while x < W / 2 - 0.3:
+            w = rnd.uniform(0.1, 0.2)
+            h = rnd.uniform(0.14, 0.3)
+            P.append(bx("good", (w, 0.2, h), (x + w / 2, D / 2 - 0.22, z + 0.02 + h / 2), rnd.choice(goods), 0.01, 1))
+            x += w + 0.04
+    for i in range(4):
+        P.append(lathe("jar", [(0.0, 0.0), (0.08, 0.0), (0.08, 0.2), (0.05, 0.24), (0.0, 0.24)], 8, M['g4'],
+                       loc=(-0.7 + i * 0.45, -D / 2 + 0.3, 0.95)))
+    for i in range(7):
+        x = -W / 2 + 0.3 + i * 0.3
+        P.append(bx("sachet", (0.12, 0.02, 0.45), (x, -D / 2 + 0.1, H - 0.45), goods[i % 5], 0.005, 1))
+    # corrugated lean-to roof sloping down to the back, ribs along the slope
+    th = math.radians(-14)
+    Ry = D + 0.5
+    zc = H + 0.2
+    P.append(bx("roof", (W + 0.36, Ry, 0.05), (0, 0.05, zc), M['roof'], 0.01, 1, rot=(th, 0, 0)))
+    for k in range(9):
+        x = -W / 2 - 0.1 + k * (W + 0.2) / 8
+        P.append(bx("rib", (0.05, Ry + 0.02, 0.03), (x, 0.05, zc + 0.04), M['rib'], 0.0, 1, rot=(th, 0, 0)))
+    # striped awning over the counter, sloping out to the front
+    tha = math.radians(28)
+    n = 8
+    for k in range(n):
+        x = -W / 2 + (k + 0.5) * W / n
+        P.append(bx("awning", (W / n + 0.002, 0.7, 0.03), (x, -D / 2 - 0.28, H - 0.12), M['aw1'] if k % 2 else M['aw2'],
+                    0.0, 1, rot=(tha, 0, 0)))
+    P.append(bx("sign", (1.3, 0.05, 0.34), (0, -1.03, H + 0.66), M["sign"], 0.02, 1))
+    for sx in (-1, 1):
+        P.append(bx("sign_leg", (0.05, 0.05, 0.4), (sx * 0.5, -1.0, H + 0.42), M["w"], 0.0, 1))
+    finish(root, P, name, var=0.06)
+    return root
+
+
+def build_motor():
+    """Parked step-through motorbike (motor bebek), ~1.8 m, nose toward -Y, on its side stand."""
+    name = "motor"
+    root = prop_root(name)
+    M = dict(body=mat("M_MotorBody", "#c8352f"), dark=mat("M_Tyre", "black"), seat=mat("M_MotorSeat", "#2d2a2a"),
+             metal=mat("M_Chrome", "#b9c1c4"), lamp=mat("M_LampGlass", "#fff2b0"))
+    P = []
+    for y in (-0.62, 0.6):
+        o = rod("tyre", (-0.05, y, 0.27), (0.05, y, 0.27), 0.27, M['dark'], 14)
+        P.append(o)
+        P.append(rod("hub", (-0.07, y, 0.27), (0.07, y, 0.27), 0.1, M['metal'], 10))
+    P.append(bx("floor", (0.3, 0.55, 0.1), (0, -0.05, 0.38), M['body'], 0.04, 2))
+    P.append(bx("rear", (0.36, 0.75, 0.38), (0, 0.42, 0.62), M['body'], 0.12, 3))
+    P.append(bx("seat", (0.3, 0.72, 0.1), (0, 0.38, 0.85), M['seat'], 0.05, 2))
+    P.append(bx("shield", (0.34, 0.16, 0.62), (0, -0.42, 0.66), M['body'], 0.08, 2, rot=(math.radians(-15), 0, 0)))
+    P.append(rod("fork", (0, -0.55, 0.3), (0, -0.48, 1.0), 0.03, M['metal'], 6))
+    P.append(rod("bar", (-0.35, -0.48, 1.02), (0.35, -0.48, 1.02), 0.022, M['metal'], 6))
+    P.append(bx("head", (0.26, 0.2, 0.18), (0, -0.52, 1.02), M['body'], 0.06, 2))
+    P.append(bx("lamp", (0.14, 0.04, 0.1), (0, -0.63, 1.02), M['lamp'], 0.02, 1))
+    finish(root, P, name, var=0.03)
+    o = root.children[0]
+    o.rotation_euler = (0.0, math.radians(-8), 0.0)   # leaning on the stand
+    return root
+
+
 def build_meja():
     """Small wooden table (~0.9 x 0.6 x 0.72 m)."""
     name = "meja"
@@ -1583,6 +1738,7 @@ BUILDERS = {
     "karung_tumpuk": build_karung_tumpuk,
     "drum": build_drum,
     "pagar_bambu": build_pagar_bambu,
+    "jemuran": build_jemuran, "pot_tanaman": build_pot_tanaman, "kios": build_kios, "motor": build_motor,
 }
 # baked AO + weathering per prop (weather_bake kwargs); small props: short AO rays, low dirt band
 PROP_WEATHER = dict(dirt=0.4, dirt_h=0.25, distance=0.6)

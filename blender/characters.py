@@ -155,14 +155,34 @@ MATS = {
     "M_Bamboo": ("#d0a257", 0.9), "M_FadedShirt": ("#dcd7c6", 0.9), "M_Sarong": ("#8b4f2e", 0.9),
     "M_Hijab": ("#d08791", 0.9), "M_Dress": ("#f59f7c", 0.9), "M_Floral": ("#fff4de", 0.9),
     "M_Trousers": ("#3b4155", 0.9), "M_Gold": ("#edbc3c", 0.5),
-    "M_HairGrey": ("#c4c0b8", 0.8), "M_Kebaya": ("#f6ead3", 0.9), "M_Kain": ("#56502c", 0.9),
+    "M_HairGrey": ("#c4c0b8", 0.8), "M_Kebaya": ("#6f9a5a", 0.9), "M_Kain": ("#56502c", 0.9),
     "M_GreenTee": ("#62c24c", 0.9), "M_Jeans": ("#5079b0", 0.9), "M_SarongRed": ("#ac3c4f", 0.9),
     "M_WorkBlue": ("#4c78ab", 0.9), "M_Olive": ("#7f7e46", 0.9), "M_CapBlue": ("#3274d9", 0.7),
     "M_TeeOrange": ("#f58d2e", 0.9), "M_Ink": ("#3e5068", 0.8), "M_Army": ("#626e45", 0.9),
     "M_Hawaii": ("#26aca7", 0.9), "M_HawaiiBloom": ("#ffd94c", 0.9), "M_Tweed": ("#8f826a", 0.9),
     "M_Uniform": ("#8f6e45", 0.9), "M_HardHat": ("#f6c63f", 0.55), "M_Dusty": ("#b1a78f", 0.9),
     "M_WorkPants": ("#5a5e69", 0.9),
+    # face features (eyes, brows, mouth) are one white material coloured by vertex paint
+    "M_Face": ("#ffffff", 0.6),
+    # hair gets its own materials (M_Hair*) so the game can recolour it per villager
+    "M_Hair": ("#2e2724", 0.6), "M_HairWhite": ("#e9e5dc", 0.8),
+    "M_Peci": ("#26211e", 0.5), "M_Bandana": ("#b8322c", 0.9),
 }
+
+
+def lin_srgb(x):
+    x = max(0.0, min(1.0, x))
+    return x * 12.92 if x <= 0.0031308 else 1.055 * x ** (1 / 2.4) - 0.055
+
+
+def srgb_lin(h):
+    """'#rrggbb' -> linear (r, g, b) (vertex colours are stored linear)."""
+    h = h.lstrip("#")
+    out = []
+    for i in (0, 2, 4):
+        c = int(h[i:i + 2], 16) / 255.0
+        out.append(c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4)
+    return tuple(out)
 
 
 def M(name):
@@ -582,12 +602,24 @@ class Char:
         self.blush = []           # (centre, radius) cheek tint spots
         self.skin = "M_Skin"
         self.skirt = None         # skirt panel rig (long skirts / sarongs), see skirt_rig()
+        self.part = "Body"        # mesh the next chunks go to: "Body" or "Look" (hair, hats, hijab...)
+        self.jaw_k, self.cheek_k = 0.13, 0.035   # head shape: jaw taper, cheek fullness
 
     # ---- geometry bookkeeping
-    def add(self, rule, vf, m, smooth=True):
+    def add(self, rule, vf, m, smooth=True, paint=None):
         """vf = (verts, faces) or (verts, faces, anchors): anchors are the points whose skin weights
-        the vertices take (decals use the cloth surface point under them, so they ride the cloth)."""
-        self.chunks.append((vf[0], vf[1], m, smooth, rule, vf[2] if len(vf) > 2 else None))
+        the vertices take (decals use the cloth surface point under them, so they ride the cloth).
+        paint: vertex colour written over the baked AO (face features on M_Face): one hex colour
+        or a list with one hex / linear (r, g, b) per vertex."""
+        self.chunks.append((vf[0], vf[1], m, smooth, rule, vf[2] if len(vf) > 2 else None, self.part, paint))
+
+    def look(self):
+        """Following chunks are the swappable look (hair, hats, hijab, glasses, moustache): a second
+        skinned mesh `Look` the game hides when it dresses a villager variant (char_look.gd)."""
+        self.part = "Look"
+
+    def body(self):
+        self.part = "Body"
 
     def hp(self, yaw, el, lift=0.0):
         a, e = rad(yaw), rad(el)
@@ -755,88 +787,220 @@ class Char:
 
 
 # --------------------------------------------------------------------------- face / head
-def face(c, skin, eyes="round", mouth="smile", brows="normal", brow_mat="M_Dark", ears=True, nose=True,
-         eye_yaw=25.0, eye_el=-6.0, eye_k=1.0, hl="M_White", lash=False, blush=True, mouth_el=-21.0):
-    DK = "M_Dark"
+# Face features are flat decals conforming to the head (and a few ink tubes), all on ONE white
+# material (M_Face) coloured by vertex paint: white sclera, a coloured iris (darker at the top),
+# a dark pupil, two highlights, a thick upper lash line with a flick, brows, nose, a mouth (closed
+# line or an open grin with teeth and tongue) and the open-mouth lens that extra_jaw scales open
+# when talking. Eyes are weighted to extra_eye_* (scaling Z blinks them).
+INK = "#2b1a15"        # lash lines, eye rims, pupils
+SCLERA = "#fffaf0"
+MOUTH = "#6a2c25"      # closed mouth line
+MOUTH_IN = "#86302c"   # open mouth
+TONGUE = "#e8867f"
+TEETH = "#fffaf2"
+HL = "#ffffff"
+
+
+def _mix(a, b, t):
+    A, B = srgb_lin(a) if isinstance(a, str) else a, srgb_lin(b) if isinstance(b, str) else b
+    return tuple(A[i] + (B[i] - A[i]) * t for i in range(3))
+
+
+def head_deform(c):
+    """Chibi head shape on the ellipsoid: the lower face tapers to a soft small chin, full cheeks
+    and a slightly flatter face front (q relative to the head centre, unscaled)."""
+    rx, ry, rz = c.hr
+
+    def deform(q):
+        v, w = -q.y / ry, q.z / rz
+        front = ss(-0.1, 0.75, v)
+        low = ss(-0.12, -0.92, w)
+        k = 1.0 - c.jaw_k * low * (0.35 + 0.65 * front)
+        k *= 1.0 + c.cheek_k * math.exp(-((w + 0.32) / 0.22) ** 2) * ss(0.15, 0.8, v)
+        y = q.y * (1.0 - 0.05 * ss(0.55, 1.0, v))
+        z = q.z - 0.014 * ss(-0.55, -0.95, w) * front
+        return Vector((q.x * k, y, z))
+    return deform
+
+
+def head_surface(c):
+    base = ell_surf(Vector((0.0, 0.0, 0.0)), c.hr)
+    dfm = head_deform(c)
+
+    def f(yaw, el):
+        return c.hc + dfm(base(yaw, el))
+    return f
+
+
+def fdecal(c, yaw, el, outline, off):
+    return decal_vf(c.head, rad(yaw), rad(el), outline, off)
+
+
+def fpath(c, yaw, el, pts_uv, off):
+    """Points u m sideways (+ = character's left) and v m up from (yaw, el) on the head, lifted."""
+    f = c.head
+    a, e = rad(yaw), rad(el)
+    du, dz = _metric(f, a, e)
+    out = []
+    for (u, v) in pts_uv:
+        aa, ee = a + u / du, e + v / dz
+        out.append(f(aa, ee) + snormal(f, aa, ee) * off)
+    return out
+
+
+EYE_LIDS = {"round": (1.3, -1.3), "big": (1.3, -1.3), "smug": (0.32, -1.3), "gentle": (0.42, -1.3),
+            "narrow": (0.12, -0.5), "sleepy": (0.1, -1.3)}
+
+
+def eye(c, s, yaw, el, k, style, iris, lash):
+    """One anime eye centred at (yaw, el) deg; s = +1 the character's left eye, -1 its right."""
+    rule = ("eye", s)
+    W, H = 0.036 * k, 0.045 * k
+    top, bot = EYE_LIDS.get(style, EYE_LIDS["round"])
+
+    def ell(rx, ry, cx=0.0, cy=0.0, n=16):
+        return [(cx + rx * math.cos(TAU * i / n), max(min(cy + ry * math.sin(TAU * i / n), top * H), bot * H))
+                for i in range(n)]
+
+    def put(ol_outer, off, centre, ring=None):
+        """ol_outer: (u towards the outer corner, v up) metres; ring(u_outer, v) -> colour."""
+        src = list(ol_outer)
+        ol = [(s * x, y) for (x, y) in src]
+        # mirrored outlines run clockwise: reverse them (decal faces must face out)
+        if sum(ol[i][0] * ol[(i + 1) % len(ol)][1] - ol[(i + 1) % len(ol)][0] * ol[i][1] for i in range(len(ol))) < 0:
+            ol, src = ol[::-1], src[::-1]
+        if ring is None:
+            paint = centre
+        else:
+            paint = [srgb_lin(centre) if isinstance(centre, str) else centre] + [ring(u, v) for (u, v) in src]
+        c.add(rule, fdecal(c, yaw, el, ol, off), "M_Face", paint=paint)
+
+    # dark rim, white, iris (dark top -> light bottom), pupil, highlights
+    put(ell(W, H), 0.0020, INK)
+    put(ell(W * 0.86, H * 0.87), 0.0030, SCLERA)
+    ir_dark = _mix(iris, "#120806", 0.55)
+    ir_lite = _mix(iris, "#d8964f", 0.3)
+    ic = -0.05 * H
+    put(ell(W * 0.74, H * 0.83, 0.0, ic), 0.0040, _mix(iris, "#120806", 0.2),
+        ring=lambda u, v: _mix(ir_dark, ir_lite, ss(0.5 * H, -0.85 * H, v)))
+    put(ell(W * 0.4, H * 0.5, 0.0, ic, 12), 0.0050, INK)
+    hl = [(x, y) for (x, y) in ell(W * 0.27, W * 0.27, -s * 0.28 * W, 0.3 * H, 10)]
+    if top * H > 0.3 * H + W * 0.12:
+        put(hl, 0.0060, HL)
+    put(ell(W * 0.12, W * 0.12, s * 0.32 * W, -0.42 * H, 8), 0.0060, HL)
+    # thick upper lash line along the lid, with a flick at the outer corner
+    pts = []
+    for i in range(9):
+        t = math.pi * (0.97 - 0.92 * i / 8)
+        pts.append((W * 1.03 * math.cos(t), min(H * 1.02 * math.sin(t), top * H + 0.002)))
+    flick = (W * 1.3, min(H * 0.5, top * H + 0.004))
+    pts.append(flick)
+    rr = [0.0028, 0.0042, 0.0052, 0.0058, 0.006, 0.006, 0.0058, 0.0052, 0.0042, 0.0022]
+    rr = [r * min(1.0, k) * (1.15 if lash else 1.0) for r in rr]
+    c.add(rule, tube_vf(fpath(c, yaw, el, [(s * u, v) for (u, v) in pts], 0.0052), rr, 5, round_caps=1),
+          "M_Face", paint=INK)
+    if lash:   # two little lashes at the outer corner
+        for (u0, v0, u1, v1) in ((W * 0.95, H * 0.62, W * 1.28, H * 0.95), (W * 1.12, H * 0.25, W * 1.42, H * 0.5)):
+            v0, v1 = min(v0, top * H + 0.002), min(v1, top * H + 0.008)
+            c.add(rule, tube_vf(fpath(c, yaw, el, [(s * u0, v0), (s * u1, v1)], 0.0052), [0.0032, 0.0012], 4),
+                  "M_Face", paint=INK)
+    if style in ("smug", "gentle", "sleepy"):   # a soft crease above the lid
+        cp = [(W * 0.95 * math.cos(t), top * H + 0.009 + 0.004 * math.sin(t)) for t in
+              (math.pi * 0.8, math.pi * 0.6, math.pi * 0.4, math.pi * 0.2)]
+        c.add(rule, tube_vf(fpath(c, yaw, el, [(s * u, v) for (u, v) in cp], 0.004), [0.0012, 0.002, 0.002, 0.0012],
+                            4), "M_Face", paint=_mix(INK, "#c8907a", 0.45))
+
+
+def face(c, skin, eyes="round", mouth="smile", brows="normal", brow_col=None, ears=True, nose=True,
+         eye_yaw=24.0, eye_el=-10.0, eye_k=1.0, lash=False, blush=True, mouth_el=-29.0, iris="#6e4428",
+         jaw=0.13, cheek=0.035, **_old):
+    """Head + anime face. eyes: round, big, smug, gentle, narrow, sleepy, happy (closed arcs) or None
+    (sunglasses). mouth: smile, grin (open), smirk, flat, frown or None. brows: normal, soft, smug,
+    angry, worried, bushy or None. brow_col: hex (default dark brown)."""
     c.skin = skin
-    c.add("head", xf(ellipsoid_vf(c.hr, 24, 13), T(c.hc)), skin)
+    c.jaw_k, c.cheek_k = jaw, cheek
+    c.head = head_surface(c)
+    dfm = head_deform(c)
+    hv, hf = ellipsoid_vf(c.hr, 26, 14)
+    c.add("head", ([c.hc + dfm(p) for p in hv], hf), skin)
     if ears:
         for s in (1, -1):
             p, n = c.hp(90 * s, -8, -0.012)
             c.add("head", xf(ellipsoid_vf((0.032, 0.022, 0.042), 8, 5), orient(p, n)), skin)
             p2, n2 = c.hp(90 * s, -8, 0.004)
             c.add("head", xf(ellipsoid_vf((0.016, 0.008, 0.024), 6, 3), orient(p2 + n2 * 0.004, n2)), skin)
+    nose_el = eye_el - 11.5 * eye_k
     if nose:
-        p, n = c.hp(0, -13.5, -0.008)
-        c.add("head", xf(ellipsoid_vf((0.021, 0.018, 0.016), 8, 4), orient(p, n)), skin)
+        p, n = c.hp(0, nose_el, -0.007)
+        c.add("head", xf(ellipsoid_vf((0.017, 0.016, 0.013), 8, 4), orient(p, n)), skin)
+    bc = brow_col or "#3a2620"
     for s in (1, -1):
         y = s * eye_yaw
         p, n = c.hp(y, eye_el, 0.0)
         c.extras["extra_eye_" + sfx(s)] = (p.copy(), n.copy())
-        E = orient(p, n)
-        rule = ("eye", s)
-        if eyes in ("round", "big", "smug"):
-            k = eye_k * (1.14 if eyes == "big" else 1.0)
-            clip = 0.012 * k if eyes == "smug" else None
-            c.add(rule, xf(ellipsoid_vf((0.026 * k, 0.012, 0.037 * k), 10, 6, clip_top=clip), E @ T(0, 0.004, 0)),
-                  DK)
-            if hl:
-                c.add(rule, xf(ellipsoid_vf((0.0095 * k, 0.004, 0.011 * k), 8, 4),
-                               E @ T(0.0085 * k, -0.0085, (0.004 if eyes == "smug" else 0.013) * k)), hl)
-                c.add(rule, xf(ellipsoid_vf((0.0048 * k, 0.003, 0.0048 * k), 6, 3),
-                               E @ T(-0.009 * k, -0.0082, -0.016 * k)), hl)
-            if eyes == "smug":   # heavy upper lid
-                lid = [(y - s * 5.2, eye_el + 1.6), (y, eye_el + 2.6), (y + s * 5.2, eye_el + 1.2)]
-                c.add(rule, tube_vf(c.head_path(lid, 0.004), [0.004, 0.006, 0.004], 5, round_caps=1), DK)
-            if lash:
-                lp = [(y - s * 4.5, eye_el + 4.2 * k), (y + s * 1.5, eye_el + 5.4 * k), (y + s * 6.8, eye_el + 4.6 * k),
-                      (y + s * 8.6, eye_el + 6.6 * k)]
-                c.add(rule, tube_vf(c.head_path(lp, 0.003), [0.0025, 0.0045, 0.004, 0.002], 5), DK)
-        elif eyes == "narrow":
-            c.add(rule, xf(ellipsoid_vf((0.029, 0.01, 0.013), 10, 5), E @ T(0, 0.003, 0)), DK)
-            lid = [(y - s * 6, eye_el + 0.5), (y, eye_el + 2.2), (y + s * 6, eye_el + 2.6)]
-            c.add(rule, tube_vf(c.head_path(lid, 0.003), [0.004, 0.0055, 0.004], 5), DK)
-        elif eyes == "happy":
-            pts = [(y + 4.2 * t, eye_el - 1.5 + 3.8 * (1 - t * t)) for t in (-1, -0.5, 0, 0.5, 1)]
-            c.add(rule, tube_vf(c.head_path(pts, 0.002), [0.0045, 0.0065, 0.007, 0.0065, 0.0045], 6), DK)
+        if eyes == "happy":
+            pts = [(y + 5.0 * t, eye_el - 1.5 + 4.2 * (1 - t * t)) for t in (-1, -0.5, 0, 0.5, 1)]
+            c.add(("eye", s), tube_vf(c.head_path(pts, 0.003), [0.004, 0.0065, 0.007, 0.0065, 0.004], 6,
+                                      round_caps=1), "M_Face", paint=INK)
+        elif eyes:
+            eye(c, s, y, eye_el, eye_k * (1.12 if eyes == "big" else 1.0), eyes, iris, lash)
         if blush:
-            bp, _ = c.hp(s * 41, -17.5, 0.0)
-            c.blush.append((bp, 0.04))
+            bp, _ = c.hp(s * 41, nose_el - 2.0, 0.0)
+            c.blush.append((bp, 0.042))
     # brows
     if brows:
+        hdeg = math.degrees(0.045 * eye_k / c.hr[2])
         for s in (1, -1):
             y0 = s * eye_yaw
-            e0 = eye_el + 13.0 * eye_k
-            r = [0.0045, 0.007, 0.0045]
+            e0 = eye_el + hdeg + 5.0
+            r = [0.004, 0.0062, 0.0042]
             if brows == "normal":
-                pts = [(y0 - s * 6, e0), (y0, e0 + 1.3), (y0 + s * 6, e0)]
+                pts = [(y0 - s * 6.5, e0 - 0.6), (y0 + s * 0.5, e0 + 1.0), (y0 + s * 7, e0 - 0.4)]
             elif brows == "soft":
-                pts = [(y0 - s * 5.5, e0 + 0.5), (y0, e0 + 1.8), (y0 + s * 5.5, e0 + 0.2)]
-                r = [0.0035, 0.0055, 0.0035]
+                pts = [(y0 - s * 6, e0 + 0.2), (y0, e0 + 1.6), (y0 + s * 6, e0)]
+                r = [0.003, 0.0048, 0.003]
             elif brows == "smug":
                 lift = 2.6 if s > 0 else 0.0
-                pts = [(y0 - s * 6, e0 + lift - 1.0), (y0, e0 + lift + 1.0), (y0 + s * 6, e0 + lift - 0.2)]
+                pts = [(y0 - s * 6.5, e0 + lift - 1.0), (y0, e0 + lift + 1.0), (y0 + s * 6.5, e0 + lift - 0.2)]
             elif brows == "angry":
-                pts = [(y0 - s * 7, e0 - 3.5), (y0, e0 - 1.0), (y0 + s * 6, e0 + 1.2)]
-                r = [0.0065, 0.0095, 0.0065]
+                pts = [(y0 - s * 7.5, e0 - 4.0), (y0, e0 - 1.2), (y0 + s * 6.5, e0 + 1.2)]
+                r = [0.006, 0.0085, 0.006]
             elif brows == "worried":
-                pts = [(y0 - s * 6, e0 + 2.2), (y0, e0 + 1.2), (y0 + s * 6, e0 - 0.8)]
-            elif brows == "bushy":
-                pts = [(y0 - s * 7, e0 - 0.5), (y0, e0 + 1.4), (y0 + s * 7, e0 - 1.5)]
-                r = [0.008, 0.012, 0.008]
+                pts = [(y0 - s * 6.5, e0 + 2.4), (y0, e0 + 1.2), (y0 + s * 6.5, e0 - 1.0)]
+            else:   # bushy
+                pts = [(y0 - s * 7.5, e0 - 0.5), (y0, e0 + 1.4), (y0 + s * 7.5, e0 - 1.8)]
+                r = [0.0075, 0.0115, 0.0075]
             bp, bn = c.hp(y0, e0 + 0.5, 0.0)
             c.extras["extra_brow_" + sfx(s)] = (bp, bn)
-            c.add(("brow", s), tube_vf(c.head_path(pts, 0.005), r, 5, round_caps=1), brow_mat)
-    # mouth (the resting expression line) + the open mouth (extra_jaw, scaled open when talking)
+            c.add(("brow", s), tube_vf(c.head_path(pts, 0.005), r, 5, round_caps=1), "M_Face", paint=bc)
+    # mouth (the resting expression) + the open mouth (extra_jaw, scaled open when talking)
     me = mouth_el
     mp, mn = c.hp(0, me - 0.5, 0.0)
     c.extras["extra_mouth"] = (mp, mn)
     c.extras["extra_jaw"] = (mp, mn)
-    rr = [0.0035, 0.0055, 0.006, 0.0055, 0.0035]
+    rr = [0.0028, 0.0042, 0.0046, 0.0042, 0.0028]
+    pts = None
     if mouth == "smile":
-        pts = [(yy, me - 2.6 * (1 - (yy / 8.5) ** 2)) for yy in (-8.5, -4.2, 0, 4.2, 8.5)]
+        pts = [(yy, me - 2.8 * (1 - (yy / 9.5) ** 2) + 1.0 * (abs(yy) / 9.5) ** 4) for yy in (-10.0, -5.0, 0, 5.0, 10.0)]
     elif mouth == "grin":
-        pts = [(yy, me - 3.2 * (1 - (yy / 10.0) ** 2)) for yy in (-10, -5, 0, 5, 10)]
+        # an open D: dark inside, tongue at the bottom, a row of teeth under the top lip
+        w, h = 0.033, 0.029
+        ol = [(w * math.cos(math.pi + math.pi * i / 10), -h * math.sin(math.pi * i / 10)) for i in range(11)]
+        ol = ol[::-1]
+        ol = [(x, y) for (x, y) in ol] + [(w * 0.5 * math.cos(math.pi * t), 0.004 * math.sin(math.pi * t) - 0.0005)
+                                          for t in (0.35, 0.65)]
+        cw = sum(ol[i][0] * ol[(i + 1) % len(ol)][1] - ol[(i + 1) % len(ol)][0] * ol[i][1] for i in range(len(ol))) < 0
+        if cw:
+            ol = ol[::-1]
+        paint = [srgb_lin(MOUTH_IN)] + [_mix(MOUTH_IN, TONGUE, ss(-0.4 * h, -0.95 * h, v) * ss(0.95 * w, 0.2 * w, abs(u)))
+                                        for (u, v) in ol]
+        c.add("mouth", fdecal(c, 0, me + 1.0, ol, 0.0028), "M_Face", paint=paint)
+        tt = [(-w * 0.72, -0.0015), (w * 0.72, -0.0015), (w * 0.62, -0.0075), (-w * 0.62, -0.0075)]
+        c.add("mouth", fdecal(c, 0, me + 1.0, tt, 0.0036), "M_Face", paint=TEETH)
+        lip = [(w * 1.12 * math.cos(math.pi * t), 0.0045 * math.sin(math.pi * t) + 0.0005) for t in
+               (1.0, 0.8, 0.5, 0.2, 0.0)]
+        c.add("mouth", tube_vf(fpath(c, 0, me + 1.0, lip, 0.0036), [0.0022, 0.0034, 0.0036, 0.0034, 0.0022], 5,
+                               round_caps=1), "M_Face", paint=MOUTH)
     elif mouth == "smirk":
         pts = [(-6, me - 0.6), (-2, me - 1.0), (2, me - 0.6), (6, me + 0.6), (9.5, me + 2.6)]
     elif mouth == "flat":
@@ -844,12 +1008,12 @@ def face(c, skin, eyes="round", mouth="smile", brows="normal", brow_mat="M_Dark"
         rr = rr[:4]
     elif mouth == "frown":
         pts = [(yy, me - 1.5 + 1.8 * (1 - (yy / 7.0) ** 2)) for yy in (-7, -3.5, 0, 3.5, 7)]
-    else:
-        pts = None
     if pts:
-        c.add("mouth", tube_vf(c.head_path(pts, 0.0025), rr, 6, round_caps=1), DK)
-    # open mouth: a thin dark lens hidden behind the line, scaled open by extra_jaw
-    c.add("jaw", xf(ellipsoid_vf((0.02, 0.006, 0.0035), 10, 5), orient(mp + mn * 0.0005, mn)), DK)
+        c.add("mouth", tube_vf(c.head_path(pts, 0.0026), rr, 6, round_caps=1), "M_Face", paint=MOUTH)
+    # open mouth: a dark lens under the line, scaled open by extra_jaw (pink at its bottom)
+    jol = ellipse(0.019, 0.0042, 14)
+    jp = [srgb_lin(MOUTH_IN)] + [_mix(MOUTH_IN, TONGUE, ss(-0.001, -0.0042, v) * 0.8) for (u, v) in jol]
+    c.add("jaw", fdecal(c, 0, me - 1.6, jol, 0.0018), "M_Face", paint=jp)
 
 
 def hair(c, m, front=68, side=95, back=118, part=0.0, lift=0.016, rim=0.93, seg=24, rings=5, rmod=None,
@@ -890,14 +1054,54 @@ def cowlick(c, m, spots, lift=0.026):
                          align_z(p - n * 0.018, z)), m)
 
 
-def moustache(c, m, thick=1.0, droop=4.0, width=15.0, el=-15.0):
+PECI = [(0.21, 0.078), (0.216, 0.088), (0.214, 0.18), (0.2, 0.205), (0.11, 0.216), (0.0, 0.218)]
+CAPING = [(0.17, 0.146), (0.385, 0.04), (0.402, 0.041), (0.412, 0.052), (0.406, 0.066), (0.388, 0.07),
+          (0.258, 0.14), (0.13, 0.22), (0.045, 0.278), (0.0, 0.295)]
+
+
+def caping(c, m="M_Bamboo", band="M_Sarong", tilt=-10.0):
+    """Wide conical caping (woven bamboo) with a thick rim and two woven rings."""
+    H = hat_xf(c, tilt=tilt)
+    c.add("head", xf(lathe_vf(CAPING, 24), H), m)
+    c.add("head", xf(ellipsoid_vf((0.024, 0.024, 0.026), 8, 4), H @ T(0, 0, 0.294)), m)
+    for rr in (0.35, 0.21):
+        z = 0.07 + (0.388 - rr) / 0.13 * 0.07 if rr > 0.258 else 0.14 + (0.258 - rr) / 0.128 * 0.08
+        prof = [(rr + 0.014, z - 0.006), (rr + 0.001, z + 0.008), (rr - 0.013, z + 0.018)]
+        c.add("head", xf(lathe_vf(prof, 24), H @ T(0, 0, 0.004)), band)
+
+
+def bandana(c, m, el=21.0, lift=0.03, knot=True):
+    """A cloth band tied round the head above the brows (knot and two tails at the back)."""
+    N = 28
+    loop = []
+    for i in range(N):
+        y = 360.0 * i / N
+        e = el + 9.0 * (1 - math.cos(rad(y))) / 2
+        loop.append(c.hp(y, e, lift)[0])
+    c.add("head", tube_vf(loop, (0.009, 0.026), 6, closed=True), m)
+    if knot:
+        kp, kn = c.hp(180, el + 7.0, lift + 0.012)
+        c.add("head", xf(ellipsoid_vf((0.03, 0.022, 0.026), 8, 5), T(kp)), m)
+        for s in (1, -1):
+            pts = [kp + Vector((s * 0.012, 0.006, -0.006)), kp + Vector((s * 0.05, 0.04, -0.06)),
+                   kp + Vector((s * 0.07, 0.055, -0.12))]
+            c.add("head", tube_vf(pts, [(0.016, 0.005), (0.02, 0.005), (0.016, 0.004)], 5, up=(0, 1, 0), round_caps=1), m)
+
+
+def goatee(c, m, el=-41.0, size=1.0):
+    """A little chin tuft (kakek, preman)."""
+    p, n = c.hp(0, el, -0.006)
+    c.add("head", xf(ellipsoid_vf((0.024 * size, 0.017, 0.036 * size), 8, 5), orient(p, n) @ R("X", 18)), m)
+
+
+def moustache(c, m, thick=1.0, droop=4.0, width=15.0, el=-25.0):
     ys = [-width, -width * 0.6, -width * 0.27, 0.0, width * 0.27, width * 0.6, width]
     es = [el - droop, el - 0.3, el + 0.5, el, el + 0.5, el - 0.3, el - droop]
     r = [x * thick for x in (0.004, 0.011, 0.013, 0.01, 0.013, 0.011, 0.004)]
     c.add("head", tube_vf(c.head_path(list(zip(ys, es)), 0.007 * thick), r, 6, round_caps=1), m)
 
 
-def sunglasses_on_face(c, m, eye_yaw=25.0, eye_el=-6.0):
+def sunglasses_on_face(c, m, eye_yaw=24.0, eye_el=-10.0):
     for s in (1, -1):
         p, n = c.hp(s * eye_yaw, eye_el, 0.012)
         c.add("head", xf(ellipsoid_vf((0.05, 0.012, 0.035), 12, 6), orient(p, n)), m)
@@ -906,6 +1110,22 @@ def sunglasses_on_face(c, m, eye_yaw=25.0, eye_el=-6.0):
     for s in (1, -1):
         tp = c.head_path([(s * (eye_yaw + 12), eye_el + 2), (s * 60, eye_el + 3), (s * 86, eye_el + 1)], 0.008)
         c.add("head", tube_vf(tp, 0.0045, 5), m)
+
+
+def round_glasses(c, m, eye_yaw=24.0, eye_el=-10.0, rx=0.042, rz=0.039, square=False):
+    for s in (1, -1):
+        p, n = c.hp(s * eye_yaw, eye_el, 0.016)
+        k = 12
+        if square:
+            loop = [orient(p, n) @ Vector((rx * max(-1, min(1, 1.3 * math.cos(t))), 0, rz * 0.85 * max(-1, min(1, 1.3 * math.sin(t)))))
+                    for t in [TAU * i / k for i in range(k)]]
+        else:
+            loop = [orient(p, n) @ Vector((rx * math.cos(t), 0, rz * math.sin(t))) for t in [TAU * i / k for i in range(k)]]
+        c.add("head", tube_vf(loop, 0.0048, 4, closed=True, up=-n), m)
+        tp = c.head_path([(s * (eye_yaw + 13), eye_el + 1), (s * 62, eye_el + 3), (s * 86, eye_el + 2)], 0.008)
+        c.add("head", tube_vf(tp, 0.004, 4), m)
+    c.add("head", tube_vf(c.head_path([(-eye_yaw + 11, eye_el + 2), (0, eye_el + 3.5), (eye_yaw - 11, eye_el + 2)],
+                                      0.019), 0.0045, 4), m)
 
 
 def hat_xf(c, tilt=-10.0, roll=0.0, lift=0.0, fwd=0.0):
@@ -1183,15 +1403,23 @@ def build_rig(c, name):
     return ob
 
 
-def build_mesh(c, name):
+def build_mesh(c, name, part="Body"):
     verts, faces, fmat, fsmooth, mats, vw = [], [], [], [], [], []
-    c.vranges = []
-    for (vs, fs, mname, smooth, rule, anchors) in c.chunks:
+    vranges, paints = [], []
+    for (vs, fs, mname, smooth, rule, anchors, cpart, paint) in c.chunks:
+        if cpart != part:
+            continue
         if mname not in mats:
             mats.append(mname)
         mi = mats.index(mname)
         base = len(verts)
-        c.vranges.append((base, base + len(vs), rule, mname))
+        vranges.append((base, base + len(vs), rule, mname))
+        if paint is not None:
+            if isinstance(paint, (list, tuple)) and len(paint) == len(vs) and not isinstance(paint[0], float):
+                cols = [srgb_lin(p) if isinstance(p, str) else tuple(p) for p in paint]
+            else:
+                cols = [srgb_lin(paint) if isinstance(paint, str) else tuple(paint)] * len(vs)
+            paints.append((base, cols))
         for k, v in enumerate(vs):
             v = Vector(v)
             vw.append(c.weights(rule, Vector(anchors[k]) if anchors is not None else v))
@@ -1218,7 +1446,31 @@ def build_mesh(c, name):
         tot = sum(x for _, x in items)
         for b, x in items:
             groups[b].add([i], x / tot, "REPLACE")
+    ob["_part"] = name
+    c.paints = getattr(c, "paints", {})
+    c.paints[name] = paints
+    if part == "Body":
+        c.vranges = vranges
     return ob
+
+
+def apply_paint(c, ob):
+    """Write the painted chunks' colours (face features) over the baked AO."""
+    paints = c.paints.get(ob.get("_part", ob.name), [])
+    if not paints or "Col" not in ob.data.color_attributes:
+        return
+    me = ob.data
+    col = me.color_attributes["Col"]
+    vcol = {}
+    for base, cols in paints:
+        for k, cc in enumerate(cols):
+            vcol[base + k] = cc
+    for li, lp in enumerate(me.loops):
+        cc = vcol.get(lp.vertex_index)
+        if cc is not None:
+            # (the game's shader decodes vertex colours as sRGB once more: store the sRGB encoding
+            # of the wanted linear colour; measured on the imported mesh)
+            col.data[li].color = tuple(lin_srgb(x) for x in cc) + (1.0,)
 
 
 def tint_blush(c, ob, tint=(1.0, 0.64, 0.74)):
@@ -1247,12 +1499,19 @@ def assemble(c, bake=True):
     name = "char_" + c.name
     rig = build_rig(c, name)
     body = build_mesh(c, "Body")
+    meshes = [body]
+    if any(ch[6] == "Look" for ch in c.chunks):
+        meshes.append(build_mesh(c, "Look", "Look"))
     if bake:
-        bake_vertex_ao([body], samples=24, distance=0.13 * c.S, floor=0.5, gamma=0.8, ground=True)
+        bake_vertex_ao(meshes, samples=24, distance=0.13 * c.S, floor=0.5, gamma=0.8, ground=True)
         tint_blush(c, body)
-    body.parent = rig
-    mod = body.modifiers.new("Armature", "ARMATURE")
-    mod.object = rig
+        for m in meshes:
+            apply_paint(c, m)
+    for m in meshes:
+        m.parent = rig
+        mod = m.modifiers.new("Armature", "ARMATURE")
+        mod.object = rig
+    c.look_mesh = meshes[1] if len(meshes) > 1 else None
     return rig, body
 
 
@@ -2988,7 +3247,8 @@ def build_player():
     c = Char("player", style=dict(energy=1.0, bob=1.05, arm_out=4.0))
     SK, DK = "M_Skin", "M_Dark"
     face(c, SK, eyes="smug", mouth="smirk", brows="smug")
-    hair(c, DK, front=70, side=95, back=134, part=8, tmin=48, rings=4)
+    c.look()
+    hair(c, "M_Hair", front=70, side=95, back=134, part=8, tmin=48, rings=4)
     # straw safari hat, tipped back, thick rolled brim + batik band
     H = hat_xf(c, tilt=-13, roll=3, lift=0.004)
     crown = [(0.214, 0.066), (0.33, 0.047), (0.35, 0.052), (0.357, 0.066), (0.347, 0.078), (0.3, 0.078),
@@ -3006,6 +3266,7 @@ def build_player():
     c.add("head", xf(tube_vf([(-0.018, -0.242, 0.124), (0.0, -0.245, 0.129), (0.018, -0.242, 0.124)], 0.0055, 5), H),
           DK)
     # batik shirt (open collar) + khaki shorts
+    c.body()
     neck(c, SK)
     surf = torso(c, "M_Batik")
     collar(c, "M_Batik", dip=0.035)
@@ -3028,20 +3289,16 @@ def build_kakek():
     c = Char("kakek", style=dict(stoop=9.0, stride=0.9, bob=0.7, energy=0.7, idle_arms="behind", arm_out=8.0),
              head_r=(0.226, 0.212, 0.204))
     SK, DK, PALE = "M_SkinTan", "M_Dark", "M_FadedShirt"
-    face(c, SK, eyes="happy", mouth=None, brows="bushy", brow_mat=PALE)
-    hair(c, PALE, front=80, side=95, back=130, seg=20, tmin=60, rings=4)
-    moustache(c, PALE, thick=1.1, droop=5.0)
-    # wide conical caping (woven bamboo) with a thick rim and two woven rings
-    H = hat_xf(c, tilt=-10)
-    cone = [(0.17, 0.146), (0.385, 0.04), (0.402, 0.041), (0.412, 0.052), (0.406, 0.066), (0.388, 0.07),
-            (0.258, 0.14), (0.13, 0.22), (0.045, 0.278), (0.0, 0.295)]
-    c.add("head", xf(lathe_vf(cone, 24), H), "M_Bamboo")
-    c.add("head", xf(ellipsoid_vf((0.024, 0.024, 0.026), 8, 4), H @ T(0, 0, 0.294)), "M_Bamboo")
-    for rr in (0.35, 0.21):
-        z = 0.07 + (0.388 - rr) / 0.13 * 0.07 if rr > 0.258 else 0.14 + (0.258 - rr) / 0.128 * 0.08
-        prof = [(rr + 0.014, z - 0.006), (rr + 0.001, z + 0.008), (rr - 0.013, z + 0.018)]
-        c.add("head", xf(lathe_vf(prof, 24), H @ T(0, 0, 0.004)), "M_Sarong")
+    face(c, SK, eyes="gentle", mouth="smile", brows="bushy", brow_col="#ddd8cf", iris="#5a3a24", jaw=0.1)
+    c.look()
+    # (portrait: black peci over white hair, white moustache and a little goatee)
+    hair(c, "M_HairWhite", front=66, side=102, back=128, seg=20, tmin=64, rings=3)
+    moustache(c, "M_HairWhite", thick=1.05, droop=5.0)
+    goatee(c, "M_HairWhite")
+    H = hat_xf(c, tilt=-4)
+    c.add("head", xf(lathe_vf(PECI, 24, 1.0, 0.93), H), "M_Peci")
     # faded shirt over a checked sarong to mid-shin
+    c.body()
     neck(c, SK)
     torso(c, PALE)
     collar(c, PALE, dip=0.02, thick=(0.014, 0.018))
@@ -3066,13 +3323,20 @@ def build_ibu():
     c = Char("ibu", style=dict(stride=0.88, energy=0.85, idle_arms="front", head_tilt=2.0, arm_out=12.0), sh_x=0.118,
              sh_z=0.545)
     SK = "M_Skin"
-    face(c, SK, eyes="round", mouth="smile", brows="soft", ears=False, lash=True, hl="M_Floral")
+    face(c, SK, eyes="round", mouth="grin", brows="soft", ears=False, lash=True, iris="#6a3f22")
+    c.look()
     # hijab: a hood framing the face, and a short drape over the shoulders
     radii = (c.hr[0] + 0.022, c.hr[1] + 0.026, c.hr[2] + 0.026)
     c.add("head", xf(hood_vf(radii, 52, 30, 46, 24, 7, 0.9), T(c.hc + Vector((0, 0.012, -0.008)))), "M_Hijab")
     cape = [(0.0, 0.47), (0.15, 0.472), (0.178, 0.48), (0.183, 0.494), (0.176, 0.52), (0.16, 0.56),
             (0.128, 0.6), (0.085, 0.64), (0.0, 0.66)]
     c.add("cape", lathe_vf(cape, 22, 1.0, 0.86), "M_Hijab")
+    c.body()
+    # (under the hijab: a neck and the dress's bodice up to the shoulders, so a villager variant
+    # without the hijab (char_look.gd) still has a whole body)
+    neck(c, SK)
+    c.add("torso", lathe_vf([(0.0, 0.47), (0.124, 0.474), (0.13, 0.5), (0.126, 0.545), (0.101, 0.58),
+                             (0.062, 0.603), (0.0, 0.61)], 20, 1.0, 0.86), "M_Dress")
     # long floral dress, bell shaped
     dress = [(0.0, 0.07), (0.19, 0.066), (0.228, 0.074), (0.234, 0.094), (0.215, 0.18), (0.182, 0.27),
              (0.158, 0.35), (0.148, 0.42), (0.132, 0.5), (0.0, 0.53)]
@@ -3094,13 +3358,14 @@ def build_kades():
     c = Char("kades", style=dict(chest=-5.0, idle_arms="behind", swagger=2.0, energy=0.85, arm_out=4.0))
     SK, DK = "M_Skin", "M_Dark"
     face(c, SK, eyes="round", mouth="smile", brows="normal")
-    hair(c, DK, front=74, side=95, back=132, lift=0.012, seg=20, tmin=40, rings=4)
-    moustache(c, DK, thick=1.2, droop=3.0, width=14)
+    c.look()
+    hair(c, "M_Hair", front=74, side=95, back=132, lift=0.012, seg=20, tmin=40, rings=4)
+    moustache(c, "M_Hair", thick=1.2, droop=3.0, width=14)
     # black peci (velvet cap)
     H = hat_xf(c, tilt=-4)
-    peci = [(0.21, 0.078), (0.216, 0.088), (0.214, 0.18), (0.2, 0.205), (0.11, 0.216), (0.0, 0.218)]
-    c.add("head", xf(lathe_vf(peci, 24, 1.0, 0.93), H), DK)
+    c.add("head", xf(lathe_vf(PECI, 24, 1.0, 0.93), H), "M_Peci")
 
+    c.body()
     # crisp white shirt with a round belly, tucked into dark trousers
     def belly(p, a, z):
         g = math.exp(-((z - 0.39) / 0.085) ** 2)
@@ -3129,22 +3394,15 @@ def build_nenek():
     c = Char("nenek", style=dict(stoop=15.0, stride=0.85, bob=0.6, energy=0.6, idle_arms="front", head_tilt=-2.0,
                               arm_out=12.0))
     SK, DK, GR = "M_Skin", "M_Dark", "M_HairGrey"
-    face(c, SK, eyes="happy", mouth="smile", brows="soft", brow_mat=GR)
+    face(c, SK, eyes="gentle", mouth="smile", brows="soft", brow_col="#8f8a84", iris="#5e3d26", jaw=0.1)
+    c.look()
     hair(c, GR, front=62, side=92, back=116, lift=0.018)
-    # bun + hair stick
+    # bun + hair stick (portrait: grey hair in a bun)
     c.add("head", xf(ellipsoid_vf((0.088, 0.08, 0.075), 12, 7), T(c.hc + Vector((0, 0.165, 0.15)))), GR)
     c.add("head", tube_vf([c.hc + Vector((-0.09, 0.155, 0.215)), c.hc + Vector((0.09, 0.19, 0.13))], 0.0065, 5,
                           round_caps=1), "M_Kain")
-    # round glasses
-    for s in (1, -1):
-        p, n = c.hp(s * 25, -6, 0.014)
-        loop = [orient(p, n) @ Vector((0.04 * math.cos(t), 0, 0.037 * math.sin(t))) for t in
-                [TAU * i / 12 for i in range(12)]]
-        c.add("head", tube_vf(loop, 0.0048, 4, closed=True, up=-n), DK)
-        tp = c.head_path([(s * 37, -5), (s * 62, -3), (s * 86, -4)], 0.008)
-        c.add("head", tube_vf(tp, 0.004, 4), DK)
-    c.add("head", tube_vf(c.head_path([(-14, -4), (0, -2.5), (14, -4)], 0.017), 0.0045, 4), DK)
     # kebaya top (light, with a peplum) and batik kain to the ankles
+    c.body()
     neck(c, SK)
     keb = [(0.0, 0.3), (0.136, 0.296), (0.166, 0.305), (0.164, 0.33), (0.1595, 0.35), (0.156, 0.37), (0.153, 0.39),
            (0.148, 0.45), (0.141, 0.5),
@@ -3171,11 +3429,14 @@ def build_nenek():
 def build_pemuda():
     c = Char("pemuda", style=dict(energy=1.2, bob=1.2, swagger=3.0, stride=1.05, arm_out=12.0))
     SK, DK = "M_Skin", "M_Dark"
-    face(c, SK, eyes="round", mouth="grin", brows="normal")
-    messy_hair(c, DK)
-    cowlick(c, DK, [(-8, 64, (0.1, 0.6, 0.3), 0.065), (14, 60, (-0.3, 0.8, 0.1), 0.058),
+    face(c, SK, eyes="round", mouth="grin", brows="normal", iris="#5b3820")
+    c.look()
+    messy_hair(c, "M_Hair")
+    cowlick(c, "M_Hair", [(-8, 64, (0.1, 0.6, 0.3), 0.065), (14, 60, (-0.3, 0.8, 0.1), 0.058),
                     (178, 58, (0.2, 0.9, -0.2), 0.052)])
+    bandana(c, "M_Bandana")   # (portrait: red bandana)
     # bright green tee + jeans shorts + checked sarong slung over the left shoulder
+    c.body()
     neck(c, SK)
     torso(c, "M_GreenTee")
     collar(c, "M_GreenTee", dip=0.0, vneck=False, thick=(0.012, 0.014), rx=0.07, ry=0.062)
@@ -3205,15 +3466,12 @@ def build_pemuda():
 def build_petani():
     c = Char("petani", style=dict(energy=0.95, arm_out=4.0))
     SK, DK = "M_SkinTan", "M_Dark"
-    face(c, SK, eyes="round", mouth="smile", brows="normal")
-    hair(c, DK, front=78, side=95, back=134, seg=20, tmin=58, rings=4)
-    # olive bucket hat with a thick rolled brim
-    H = hat_xf(c, tilt=-9)
-    bucket = [(0.212, 0.074), (0.3, 0.024), (0.318, 0.022), (0.326, 0.034), (0.318, 0.048), (0.3, 0.052),
-              (0.226, 0.088), (0.216, 0.148), (0.196, 0.214), (0.14, 0.246), (0.0, 0.255)]
-    c.add("head", xf(lathe_vf(bucket, 24, 1.0, 0.94), H), "M_Olive")
-    c.add("head", xf(lathe_vf([(0.223, 0.086), (0.23, 0.1), (0.228, 0.116), (0.22, 0.128)], 24, 1.0, 0.94), H), DK)
+    face(c, SK, eyes="round", mouth="smile", brows="normal", iris="#563620")
+    c.look()
+    hair(c, "M_Hair", front=78, side=95, back=134, seg=20, tmin=58, rings=4)
+    caping(c)   # (portrait: caping)
     # blue work shirt, rolled sleeves; white towel round the neck
+    c.body()
     neck(c, SK)
     surf = torso(c, "M_WorkBlue")
     collar_flaps(c, "M_WorkBlue", z=0.6)
@@ -3238,24 +3496,16 @@ def build_anak():
     c = Char("anak", scale=0.76, style=dict(energy=1.3, bob=1.35, stride=1.1, arm_out=4.0),
              head_r=(0.248, 0.23, 0.224), head_c=0.855)
     SK, DK = "M_Skin", "M_Dark"
-    face(c, SK, eyes="big", mouth="grin", brows="soft", eye_yaw=25, eye_el=-7)
-    messy_hair(c, DK, front=76, side=97, back=116, teeth=18, amp=9.0, lump=0.0, lump2=0.0, lift=0.013, seg=32,
-               rings=4)
-    # baseball cap worn backwards: crown + flat bill sticking out at the back
-    capr = (c.hr[0] + 0.024, c.hr[1] + 0.024, c.hr[2] + 0.02)
-    Hc = T(c.hc + Vector((0, 0.006, 0.008)))
-
-    def ctm(phi):
-        return rad(blend3(phi, 66, 78, 88))
-    c.add("head", xf(shell_vf(capr, ctm, 24, 5, 0.95), Hc), "M_CapBlue")
-    c.add("head", xf(ellipsoid_vf((0.024, 0.024, 0.014), 6, 3), Hc @ T(0, 0, capr[2])), "M_TeeOrange")
-    c.add("head", xf(bill_vf(0.155, 0.18, 0.011, 10, bend=0.6), Hc @ T(0, 0.19, 0.045) @ R("X", 8) @ R("Z", 180)),
-          "M_CapBlue", smooth=False)
-    cowlick(c, DK, [(0, 24, (0, -0.9, 0.2), 0.055)], lift=0.028)
-    cs = ell_surf(Vector((0, 0, 0)), capr)
-    c.add("head", tube_vf([Hc @ cs(rad(a_), rad(20 + 0.014 * a_ * a_)) for a_ in (-28, -14, 0, 14, 28)],
-                          0.007, 4), "M_CapBlue")
+    face(c, SK, eyes="big", mouth="grin", brows="soft", iris="#5e3a1e", jaw=0.08, cheek=0.05)
+    c.look()
+    # (portrait: spiky black hair, no cap)
+    messy_hair(c, "M_Hair", front=72, side=97, back=116, teeth=18, amp=11.0, lump=0.03, lump2=0.02, lift=0.016,
+               seg=32, rings=4)
+    cowlick(c, "M_Hair", [(-20, 50, (0.2, -0.6, 0.3), 0.045), (14, 46, (-0.1, -0.7, 0.3), 0.05),
+                          (-70, 40, (0.6, 0.0, 0.4), 0.04), (75, 38, (-0.6, 0.1, 0.4), 0.04),
+                          (150, 50, (-0.1, 0.7, 0.3), 0.045), (-150, 52, (0.1, 0.7, 0.3), 0.045)], lift=0.026)
     # orange tee with a star, blue shorts
+    c.body()
     neck(c, SK)
     surf = torso(c, "M_TeeOrange")
     collar(c, "M_TeeOrange", dip=0.0, vneck=False, thick=(0.012, 0.014), rx=0.07, ry=0.062)
@@ -3280,11 +3530,13 @@ def build_preman():
              crotch_z=0.315)
     SK, DK, INK = "M_SkinTan", "M_Dark", "M_Ink"
     face(c, SK, eyes="narrow", mouth="frown", brows="angry", hl=None)
-    hair(c, DK, front=60, side=90, back=122, lift=0.006, rim=None, seg=22, rings=4)
+    c.look()
+    hair(c, "M_Hair", front=60, side=90, back=122, lift=0.006, rim=None, seg=22, rings=4)
     p0, n0 = c.hp(9, -21.2, 0.0)   # toothpick
     c.add("head", tube_vf([p0 - n0 * 0.01, p0 + Vector((0.055, -0.03, -0.018))], [0.0045, 0.0035], 4), "M_Gold")
     # black tank top over a big chest, skin shoulders
     sy = 0.78
+    c.body()
     neck(c, SK, r=0.062)
     tank = [p for p in PREMAN_TORSO if p[1] <= 0.69] + [(0.19, 0.698), (0.0, 0.7)]
     tank = [(r + (0.004 if z > 0.6 else 0.0), z) for (r, z) in tank]
@@ -3329,17 +3581,19 @@ def build_calo():
     c = Char("calo", style=dict(swagger=4.0, idle_arms="front", head_tilt=4.0, energy=1.0, rub=1.0, arm_out=12.0))
     SK, DK, TW = "M_Skin", "M_Dark", "M_Tweed"
     face(c, SK, eyes=None, mouth="smirk", brows=None)
-    hair(c, DK, front=80, side=95, back=132, lift=0.014, seg=20, tmin=60, rings=4)
+    c.look()
+    hair(c, "M_Hair", front=80, side=95, back=132, lift=0.014, seg=20, tmin=60, rings=4)
     sunglasses_on_face(c, DK)
     for s in (1, -1):   # pencil moustache
-        pts = [(s * 2.5, -15.8), (s * 7, -16.2), (s * 11.5, -15.2), (s * 14, -13.2)]
-        c.add("head", tube_vf(c.head_path(pts, 0.004), [0.004, 0.0055, 0.0045, 0.003], 4), DK)
+        pts = [(s * 2.5, -25.6), (s * 7, -26.0), (s * 11.5, -25.0), (s * 14, -23.0)]
+        c.add("head", tube_vf(c.head_path(pts, 0.004), [0.004, 0.0055, 0.0045, 0.003], 4), "M_Hair")
     # flat cap
     H = hat_xf(c, tilt=4)
     c.add("head", xf(ellipsoid_vf((0.25, 0.26, 0.1), 22, 7), H @ T(0, -0.01, 0.148)), TW)
     c.add("head", xf(ellipsoid_vf((0.16, 0.09, 0.02), 12, 4), H @ T(0, -0.215, 0.12) @ R("X", 14)), TW)
     c.add("head", xf(ellipsoid_vf((0.02, 0.02, 0.011), 6, 3), H @ T(0, -0.018, 0.246)), TW)
     # loud Hawaiian shirt, bum bag
+    c.body()
     neck(c, SK)
     surf = torso(c, "M_Hawaii")
     collar_flaps(c, "M_Hawaii", z=0.6, spread=0.06)
@@ -3366,7 +3620,8 @@ def build_petugas():
     c = Char("petugas", style=dict(chest=-3.0, idle_arms="clip", energy=0.8, arm_out=4.0, plant_lift_L=0.024))
     SK, DK, UN = "M_Skin", "M_Dark", "M_Uniform"
     face(c, SK, eyes="round", mouth="flat", brows="angry")
-    hair(c, DK, front=80, side=95, back=132, lift=0.012, seg=20, tmin=58, rings=4)
+    c.look()
+    hair(c, "M_Hair", front=80, side=95, back=132, lift=0.012, seg=20, tmin=58, rings=4)
     # peaked uniform cap with a dark band, visor and a gold badge
     H = hat_xf(c, tilt=-3)
     cap = [(0.205, 0.086), (0.212, 0.146), (0.245, 0.194), (0.254, 0.2), (0.255, 0.212), (0.236, 0.222),
@@ -3376,6 +3631,7 @@ def build_petugas():
     c.add("head", xf(ellipsoid_vf((0.14, 0.09, 0.017), 12, 4), H @ T(0, -0.205, 0.096) @ R("X", 18)), DK)
     c.add("head", xf(ellipsoid_vf((0.025, 0.012, 0.027), 6, 4), H @ T(0, -0.215, 0.165) @ R("X", -30)), "M_Gold")
     # uniform shirt tucked in, belt, badge, name tag, epaulettes
+    c.body()
     neck(c, SK)
     surf = torso(c, UN, TUCKED, hem=False)
     collar_flaps(c, UN, z=0.6)
@@ -3404,7 +3660,8 @@ def build_buruh():
     c = Char("buruh", style=dict(stoop=4.0, energy=0.8, stride=0.95, arm_out=6.0))
     SK, DK = "M_SkinTan", "M_Dark"
     face(c, SK, eyes="round", mouth="flat", brows="worried")
-    hair(c, DK, front=80, side=95, back=132, lift=0.012, seg=20, tmin=58, rings=4)
+    c.look()
+    hair(c, "M_Hair", front=80, side=95, back=132, lift=0.012, seg=20, tmin=58, rings=4)
     # yellow hard hat with a short front peak and a ridge over the top
     H = hat_xf(c, tilt=-5)
 
@@ -3421,6 +3678,7 @@ def build_buruh():
     rp.insert(4, Vector((0, 0, 0.279)))
     c.add("head", xf(tube_vf(rp, (0.018, 0.01), 5, up=(1, 0, 0)), H), "M_HardHat")
     # dusty long-sleeve shirt with pockets, work trousers, boots
+    c.body()
     neck(c, SK)
     surf = torso(c, "M_Dusty")
     collar_flaps(c, "M_Dusty", z=0.6)
@@ -3459,12 +3717,33 @@ def preview_materials(on=True):
             nt.links.new(mix.outputs[2], b.inputs["Base Color"])
 
 
+def char_meshes(body):
+    """The character's skinned meshes: Body plus its swappable Look (when the rig has one)."""
+    if body.parent is None or body.parent.type != "ARMATURE":
+        return [body]
+    return [body] + [o for o in body.parent.children if o.type == "MESH" and o is not body and
+                     o.name.startswith("Look")]
+
+
+def set_hidden(body, hide):
+    for o in char_meshes(body):
+        o.hide_render = hide
+
+
 def snapshot(body, name, loc=(0, 0, 0), yaw=0.0):
-    """Static copy of the posed (evaluated) mesh."""
+    """Static copy of the posed (evaluated) mesh (Body + Look joined)."""
     dg = bpy.context.evaluated_depsgraph_get()
-    me = bpy.data.meshes.new_from_object(body.evaluated_get(dg))
-    o = bpy.data.objects.new(name, me)
-    link(o)
+    objs = []
+    for k, src in enumerate(char_meshes(body)):
+        me = bpy.data.meshes.new_from_object(src.evaluated_get(dg))
+        o = bpy.data.objects.new(name if k == 0 else name + "_l%d" % k, me)
+        link(o)
+        objs.append(o)
+    if len(objs) > 1:
+        with bpy.context.temp_override(active_object=objs[0], selected_editable_objects=objs,
+                                       selected_objects=objs):
+            bpy.ops.object.join()
+    o = objs[0]
     o.location = loc
     o.rotation_euler = (0.0, 0.0, rad(yaw))
     return o
@@ -3606,7 +3885,7 @@ def render_sheet(c, rig, body, acts, clip, path, n=8, views=("game", "side")):
     frames = [round(i * N / (n - 1 if clip not in LOOPS else n)) for i in range(n)]
     cell = 0.62 * max(1.0, c.S * 1.1)
     rows = []
-    body.hide_render = False
+    set_hidden(body, False)
     tools = attach_proxy(c, rig, clip)
     for view in views:
         snaps = []
@@ -3620,7 +3899,7 @@ def render_sheet(c, rig, body, acts, clip, path, n=8, views=("game", "side")):
                 ts = snapshot(t, "snapt%d_%d" % (i, j))
                 ts.matrix_world = T(x, 0, 0) @ R("Z", yaw) @ tw
                 snaps.append(ts)
-        body.hide_render = True
+        set_hidden(body, True)
         for t in tools:
             t.hide_render = True
         _px = int(os.environ.get('SHEET_PX', '150'))
@@ -3633,7 +3912,7 @@ def render_sheet(c, rig, body, acts, clip, path, n=8, views=("game", "side")):
         bpy.context.scene.render.filepath = out
         bpy.ops.render.render(write_still=True)
         _cleanup(snaps + tmp)
-        body.hide_render = False
+        set_hidden(body, False)
         rows.append(out)
     _cleanup(tools)
     ims = [Image.open(p).convert("RGB") for p in rows]
@@ -3654,14 +3933,14 @@ def render_sheet(c, rig, body, acts, clip, path, n=8, views=("game", "side")):
 def render_preview_posed(c, rig, body, acts, name):
     set_frame(rig, acts["idle"], 0)
     sn = snapshot(body, "snapP", (0, 0, 0), 20.0)
-    body.hide_render = True
+    set_hidden(body, True)
     tmp = _scene_setup(512, 512, samples=20, ground="#8fb35c")
     k = c.S * (1.12 if c.name == "preman" else 1.0)
     tmp.append(_camera((0, 0, 0.5 * k), 38.0, 0.0, 10, ortho=1.32 * k))
     bpy.context.scene.render.filepath = os.path.join(PREVIEW_DIR, name + ".png")
     bpy.ops.render.render(write_still=True)
     _cleanup([sn] + tmp)
-    body.hide_render = False
+    set_hidden(body, False)
     print("[preview]", name)
 
 
@@ -3669,7 +3948,7 @@ def render_portrait(c, rig, body, acts):
     """256 px transparent head-and-shoulders icon (fallback dialog portrait), near-front."""
     set_frame(rig, acts["idle"], 0)
     sn = snapshot(body, "snapQ", (0, 0, 0), 0.0)
-    body.hide_render = True
+    set_hidden(body, True)
     pts = [sn.matrix_world @ v.co for v in sn.data.vertices]
     top = max(p.z for p in pts)
     bottom = (c.d["sh_z"] - 0.1) * c.S
@@ -3682,7 +3961,7 @@ def render_portrait(c, rig, body, acts):
     bpy.context.scene.render.filepath = os.path.join(ICONS_DIR, "portrait_%s.png" % c.name)
     bpy.ops.render.render(write_still=True)
     _cleanup([sn] + tmp)
-    body.hide_render = False
+    set_hidden(body, False)
     print("[portrait]", c.name)
 
 
@@ -3761,7 +4040,10 @@ def mark_loops_in_import(name):
 def gait_extras(c, st):
     """Numbers the game needs to drive the clips, stored as glTF extras on the armature node
     (Godot imports them as the node's "extras" metadata)."""
-    out = {"grip_offset": round(0.036 * c.S * c.d["hand_k"], 4)}
+    out = {"grip_offset": round(0.036 * c.S * c.d["hand_k"], 4),
+           # head centre height / radii (m, scaled): char_look.gd fits hats and hair to the head
+           "head_c": round(c.hc.z * c.S, 4), "head_r": [round(r * c.S, 4) for r in c.hr],
+           "chest_k": round(c.S * c.d["sh_x"] / 0.126, 3), "neck_z": round(c.d["neck_z"] * c.S, 4)}
     for kind in ("walk", "run"):
         v, ratio = gait_speed(c, st, kind)
         sig = GAIT[kind]["sigma"]
@@ -3857,6 +4139,172 @@ def build_one(name, out=True, sheets=None, bake=True, allow_fail=False, views=("
     return c, rig, body, info
 
 
+# --------------------------------------------------------------------------- look library
+# Swappable hair / hats / hijab / glasses / beards for villager variants (game: char_look.gd).
+# Each piece is a static mesh in char_looks.glb modelled on the default head; "head" pieces have
+# their origin at the head centre, "neck" pieces at the neck base (0, 0, neck_z). The game hides a
+# character's own `Look` mesh, fixes these to its head / chest bone and scales them to the head
+# (glTF extras head_c / head_r / chest_k / neck_z). Recoloured at runtime: M_Hair (hair colour),
+# M_LookA / M_LookB (hat colours), M_Hijab (hijab colour).
+LOOK_MATS = {"M_LookA": ("#d8a95c", 0.85), "M_LookB": ("#8b4f2e", 0.85), "M_Towel": ("#f4f0e4", 0.9)}
+
+
+def _look_pieces():
+    A, B = "M_LookA", "M_LookB"
+
+    def bucket(c):
+        H = hat_xf(c, tilt=-9)
+        prof = [(0.212, 0.074), (0.3, 0.024), (0.318, 0.022), (0.326, 0.034), (0.318, 0.048), (0.3, 0.052),
+                (0.226, 0.088), (0.216, 0.148), (0.196, 0.214), (0.14, 0.246), (0.0, 0.255)]
+        c.add("head", xf(lathe_vf(prof, 24, 1.0, 0.94), H), A)
+        c.add("head", xf(lathe_vf([(0.223, 0.086), (0.23, 0.1), (0.228, 0.116), (0.22, 0.128)], 24, 1.0, 0.94), H), B)
+
+    def cap(c):
+        capr = (c.hr[0] + 0.024, c.hr[1] + 0.024, c.hr[2] + 0.02)
+        Hc = T(c.hc + Vector((0, 0.006, 0.008)))
+        c.add("head", xf(shell_vf(capr, lambda phi: rad(blend3(phi, 64, 80, 90)), 24, 5, 0.95), Hc), A)
+        c.add("head", xf(ellipsoid_vf((0.024, 0.024, 0.014), 6, 3), Hc @ T(0, 0, capr[2])), B)
+        c.add("head", xf(bill_vf(0.15, 0.17, 0.011, 10, bend=0.6), Hc @ T(0, -0.2, 0.06) @ R("X", -10)), A, smooth=False)
+
+    def straw(c):
+        H = hat_xf(c, tilt=-8, lift=0.004)
+        crown = [(0.214, 0.066), (0.33, 0.047), (0.35, 0.052), (0.357, 0.066), (0.347, 0.078), (0.3, 0.078),
+                 (0.24, 0.086), (0.232, 0.15), (0.215, 0.215), (0.176, 0.262), (0.095, 0.29), (0.0, 0.296)]
+        c.add("head", xf(lathe_vf(crown, 24, 1.0, 0.95), H), A)
+        c.add("head", xf(lathe_vf([(0.236, 0.084), (0.244, 0.097), (0.244, 0.124), (0.236, 0.136)], 24, 1.0, 0.95),
+                         H), B)
+
+    def long_hair(c):
+        hair(c, "M_Hair", front=62, side=118, back=150, lift=0.018)
+        # a soft fall of hair down the back to the shoulders
+        c.add("head", xf(ellipsoid_vf((0.19, 0.09, 0.17), 14, 7), T(c.hc + Vector((0, 0.15, -0.14)))), "M_Hair")
+
+    def pony(c):
+        hair(c, "M_Hair", front=62, side=96, back=118, lift=0.018)
+        p = c.hc + Vector((0, 0.2, 0.06))
+        c.add("head", xf(ellipsoid_vf((0.04, 0.035, 0.035), 8, 5), T(p)), "M_Hair")
+        c.add("head", tube_vf([p + Vector((0, 0.02, -0.01)), p + Vector((0, 0.07, -0.08)), p + Vector((0, 0.07, -0.18)),
+                               p + Vector((0, 0.05, -0.26))], [0.045, 0.05, 0.04, 0.02], 8, round_caps=1), "M_Hair")
+
+    def bun(c):
+        hair(c, "M_Hair", front=62, side=92, back=116, lift=0.018)
+        c.add("head", xf(ellipsoid_vf((0.088, 0.08, 0.075), 12, 7), T(c.hc + Vector((0, 0.165, 0.15)))), "M_Hair")
+
+    def towel(c):
+        loop = []
+        for i in range(18):
+            t = TAU * i / 18
+            dip = 0.02 * max(0.0, math.cos(t))
+            loop.append(Vector((0.108 * math.sin(t), -0.098 * math.cos(t), 0.594 - dip)))
+        c.add("torso", tube_vf(loop, (0.029, 0.025), 6, closed=True), "M_Towel")
+        for s in (1, -1):
+            path = [Vector((s * 0.05, -0.108, 0.574)), Vector((s * 0.047, -0.13, 0.52)), Vector((s * 0.045, -0.136, 0.45))]
+            c.add("torso", tube_vf(path, [(0.032, 0.011), (0.034, 0.012), (0.036, 0.012)], 6, up=(0, -1, 0),
+                                   round_caps=1), "M_Towel")
+
+    def drape(c):
+        cape = [(0.0, 0.47), (0.15, 0.472), (0.178, 0.48), (0.183, 0.494), (0.176, 0.52), (0.16, 0.56),
+                (0.128, 0.6), (0.085, 0.64), (0.0, 0.66)]
+        c.add("cape", lathe_vf(cape, 22, 1.0, 0.86), "M_Hijab")
+
+    def hood(c):
+        radii = (c.hr[0] + 0.022, c.hr[1] + 0.026, c.hr[2] + 0.026)
+        c.add("head", xf(hood_vf(radii, 52, 30, 46, 24, 7, 0.9), T(c.hc + Vector((0, 0.012, -0.008)))), "M_Hijab")
+
+    return {
+        "hair_short": ("head", lambda c: hair(c, "M_Hair", front=70, side=96, back=130, part=8, lift=0.016)),
+        "hair_messy": ("head", lambda c: (messy_hair(c, "M_Hair"), cowlick(c, "M_Hair", [(-8, 64, (0.1, 0.6, 0.3), 0.05),
+                                                                                       (178, 58, (0.2, 0.9, -0.2), 0.045)]))),
+        "hair_band": ("head", lambda c: hair(c, "M_Hair", front=80, side=96, back=132, seg=20, tmin=58, rings=4)),
+        "hair_sides": ("head", lambda c: hair(c, "M_Hair", front=66, side=102, back=128, seg=20, tmin=64, rings=3)),
+        "hair_long": ("head", long_hair),
+        "hair_pony": ("head", pony),
+        "hair_bun": ("head", bun),
+        "hat_peci": ("head", lambda c: c.add("head", xf(lathe_vf(PECI, 24, 1.0, 0.93), hat_xf(c, tilt=-4)), A)),
+        "hat_caping": ("head", lambda c: caping(c, A, B)),
+        "hat_bucket": ("head", bucket),
+        "hat_cap": ("head", cap),
+        "hat_straw": ("head", straw),
+        "hat_bandana": ("head", lambda c: bandana(c, A, lift=0.034)),
+        "hijab": ("head", hood),
+        "hijab_drape": ("neck", drape),
+        "glasses": ("head", lambda c: round_glasses(c, "M_Dark")),
+        "glasses_sq": ("head", lambda c: round_glasses(c, "M_Dark", square=True)),
+        "sunglasses": ("head", lambda c: sunglasses_on_face(c, "M_Dark")),
+        "moustache": ("head", lambda c: moustache(c, "M_Hair", thick=1.05, droop=4.0)),
+        "goatee": ("head", lambda c: goatee(c, "M_Hair")),
+        "beard": ("head", lambda c: (goatee(c, "M_Hair", el=-40, size=1.7), moustache(c, "M_Hair", thick=1.1))),
+        "towel": ("neck", towel),
+    }
+
+
+def build_looks():
+    """Export game/assets/models/char_looks.glb (one static mesh object per piece) + a preview."""
+    reset_scene()
+    MATS.update(LOOK_MATS)
+    MATS.setdefault("M_Hijab", ("#d08791", 0.9))
+    root = bpy.data.objects.new("char_looks", None)
+    link(root)
+    for name, (anchor, fn) in _look_pieces().items():
+        c = Char("lk")
+        face(c, "M_Skin")
+        c.chunks = []
+        c.look()
+        fn(c)
+        origin = c.hc if anchor == "head" else Vector((0.0, 0.0, c.d["neck_z"]))
+        verts, faces, fmat, mats = [], [], [], []
+        for (vs, fs, mname, smooth, rule, anchors, cpart, paint) in c.chunks:
+            if mname not in mats:
+                mats.append(mname)
+            base = len(verts)
+            verts += [tuple(Vector(v) - origin) for v in vs]
+            for f in fs:
+                faces.append(tuple(base + i for i in f))
+                fmat.append(mats.index(mname))
+        me = bpy.data.meshes.new(name)
+        me.from_pydata(verts, [], faces)
+        for mn in mats:
+            me.materials.append(M(mn))
+        me.polygons.foreach_set("material_index", fmat)
+        me.polygons.foreach_set("use_smooth", [True] * len(faces))
+        me.validate()
+        ob = bpy.data.objects.new(name, me)
+        link(ob)
+        ob.parent = root
+        print(f"[look] {name}: tris={sum(len(p.vertices) - 2 for p in me.polygons)} mats={mats}")
+    common.export_glb(root, "char_looks")
+
+
+def face_sheet(names, path=None, yaw=14.0, pitch=8.0):
+    """Head close-ups of the characters in their rest pose (AO + paint baked), side by side:
+    python3 blender/characters.py --faces [names] (fast face iteration, no clips / export)."""
+    from PIL import Image
+    tiles = []
+    for n in names:
+        reset_scene()
+        c = BUILDERS[n]()
+        rig_ob, body = assemble(c, bake=True)
+        preview_materials(True)
+        sn = snapshot(body, "snapF", (0, 0, 0), yaw)
+        set_hidden(body, True)
+        tmp = _scene_setup(360, 360, samples=16, ground="#8fb35c")
+        hz = c.hc.z * c.S
+        tmp.append(_camera((0, 0, hz - 0.02 * c.S), pitch, 0.0, 6, ortho=0.62 * c.S * max(1.0, c.hr[0] / 0.228)))
+        out = os.path.join(PREVIEW_DIR, "_face_%s.png" % n)
+        bpy.context.scene.render.filepath = out
+        bpy.ops.render.render(write_still=True)
+        tiles.append(Image.open(out).convert("RGB"))
+        os.remove(out)
+    per = 6
+    rows = (len(tiles) + per - 1) // per
+    sheet = Image.new("RGB", (360 * min(per, len(tiles)), 360 * rows), (40, 40, 40))
+    for i, t in enumerate(tiles):
+        sheet.paste(t, ((i % per) * 360, (i // per) * 360))
+    path = path or os.path.join(PREVIEW_DIR, "faces.png")
+    sheet.save(path)
+    print("[preview]", path)
+
+
 def lineup(names):
     reset_scene()
     per_row = 6
@@ -3870,7 +4318,7 @@ def lineup(names):
         set_frame(rig, acts["idle"], (i * 11) % 72)
         row, col = divmod(i, per_row)
         snaps.append(snapshot(body, "snapL%d" % i, ((col - (per_row - 1) / 2) * 0.95, row * 1.3, 0.0), 0.0))
-        body.hide_render = True
+        set_hidden(body, True)
     preview_materials(True)
     tmp = _scene_setup(1200, 750, samples=12, ground="#8fb35c")
     tmp.append(_camera((0, 0.62, 0.5), 30.0, 0.0, 20, ortho=5.9))
@@ -3899,6 +4347,12 @@ def main(argv):
         if a.startswith("--sheet-n="):
             sheet_n = int(a.split("=", 1)[1])
     order = list(BUILDERS)
+    if "--looks" in argv:
+        build_looks()
+        return
+    if "--faces" in argv:
+        face_sheet(names or order)
+        return
     todo = names or ([] if only_lineup else order)
     infos = []
     for n in todo:

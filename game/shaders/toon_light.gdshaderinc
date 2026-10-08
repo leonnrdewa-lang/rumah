@@ -6,6 +6,9 @@
 
 uniform float toon_edge = 0.035;
 uniform float toon_lit = 0.92;
+// characters: lifts the shade band a little (warm), so faces turned away from the sun
+// still read (anime faces are rarely in deep shadow)
+uniform float shade_lift = 0.0;
 
 void light() {
 	float ndl = dot(NORMAL, LIGHT);
@@ -18,6 +21,7 @@ void light() {
 		DIFFUSE_LIGHT += c * (lit * (toon_lit + 0.12 * hi));
 		// cool fill in the shade band (anime shadows are blue, never grey)
 		DIFFUSE_LIGHT += c * (1.0 - lit) * vec3(0.03, 0.05, 0.13);
+		DIFFUSE_LIGHT += c * (1.0 - lit) * shade_lift * vec3(0.5, 0.44, 0.4);
 #ifdef TOON_BACKLIGHT
 		DIFFUSE_LIGHT += c * BACKLIGHT * smoothstep(0.0, 0.25, -ndl) * smoothstep(0.42, 0.58, ATTENUATION);
 #endif

@@ -1093,6 +1093,7 @@ func setup_for(hid: String, vid: String) -> void:
 	if vid != "":
 		var d: Dictionary = GS.VILLAGERS[vid]
 		_owner_node = ModelLib.instance(d["model"], false)
+		CharLook.apply(_owner_node, d["model"], vid)
 		add_child(_owner_node)
 		_owner_node.position = _P(owner_local)
 		_owner_anim = CharAnim.new(_owner_node)
