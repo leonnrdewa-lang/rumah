@@ -54,6 +54,19 @@ const ALL := {
 		"desc": "Lesat menyambar musuh terdekat dengan petir: {v} kerusakan.", "base": 20},
 	"indra_pasif": {"god": "indra", "slot": "pasif", "name": "Mata Wajra",
 		"desc": "{v}% peluang serangan kritis (3x kerusakan).", "base": 8},
+	# --- Duo: two gods together, offered once you carry both
+	"duo_badai": {"god": "bayu", "gods": ["bayu", "indra"], "slot": "pasif", "name": "Duo: Badai Gelap Ngampar",
+		"desc": "Hantaman ketiga memanggil petir ke 3 musuh terdekat: {v} kerusakan.", "base": 16},
+	"duo_uap": {"god": "surya", "gods": ["surya", "baruna"], "slot": "pasif", "name": "Duo: Uap Kawah",
+		"desc": "Musuh yang Basah sekaligus Terbakar menerima +{v}% kerusakan.", "base": 45},
+	"duo_topan": {"god": "bayu", "gods": ["bayu", "surya"], "slot": "pasif", "name": "Duo: Topan Geni",
+		"desc": "Tongkat Mulur meninggalkan jalur api yang membakar {v}/detik.", "base": 7},
+	"duo_gelombang": {"god": "baruna", "gods": ["baruna", "indra"], "slot": "pasif", "name": "Duo: Ombak Bajra",
+		"desc": "Memukul musuh Basah memercikkan petir ke musuh lain: {v} kerusakan.", "base": 10},
+	"duo_fajar": {"god": "surya", "gods": ["surya", "indra"], "slot": "pasif", "name": "Duo: Fajar Halilintar",
+		"desc": "Serangan kritis membuat ledakan api {v} di sekitar sasaran.", "base": 20},
+	"duo_samudra": {"god": "baruna", "gods": ["baruna", "bayu"], "slot": "pasif", "name": "Duo: Prahara Samudra",
+		"desc": "Lesat menyapu musuh sekitar: Basah dan {v} kerusakan.", "base": 14},
 }
 
 const LINES := {
@@ -112,7 +125,7 @@ static func roll_rarity(bonus := 0.0) -> int:
 static func offers(god: String) -> Array:
 	var pool := []
 	for id in ALL:
-		if ALL[id].god == god and not owned(id):
+		if ALL[id].god == god and not owned(id) and not ALL[id].has("gods"):
 			pool.append(id)
 	pool.shuffle()
 	# prefer filling empty slots early
@@ -120,7 +133,28 @@ static func offers(god: String) -> Array:
 	var out := []
 	for i in min(3, pool.size()):
 		out.append({"id": pool[i], "rar": roll_rarity()})
+	# a Duo blessing appears when you already carry the partner god's gift
+	var duos := []
+	for id in ALL:
+		if ALL[id].has("gods") and not owned(id) and god in ALL[id].gods:
+			for g in ALL[id].gods:
+				if g != god and _has_god(g):
+					duos.append(id)
+	if not duos.is_empty() and randf() < 0.5:
+		var d: String = duos[randi() % duos.size()]
+		var entry := {"id": d, "rar": max(1, roll_rarity())}
+		if out.size() >= 3:
+			out[2] = entry
+		else:
+			out.append(entry)
 	return out
+
+
+static func _has_god(g: String) -> bool:
+	for id in G.run.get("boons", {}):
+		if ALL[id].god == g and not ALL[id].has("gods"):
+			return true
+	return false
 
 
 static func take(id: String, rar: int) -> void:

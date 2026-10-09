@@ -12,6 +12,9 @@ const FALLBACK := {
 	"sfx_enemy_slam": "sfx_slam", "sfx_staff_slam": "sfx_slam", "sfx_bite": "sfx_croc_snap",
 	"sfx_gate": "sfx_door_open", "sfx_boon": "sfx_boon_appear",
 	"mus_miniboss": "mus_dandaka",
+	"sfx_punch1": "sfx_hit", "sfx_punch2": "sfx_hit", "sfx_punch_heavy": "sfx_hit_heavy",
+	"sfx_pot_break": "sfx_explode", "sfx_coin_drop": "sfx_pickup_coin", "sfx_bell": "sfx_boon_appear",
+	"sfx_rock_hit": "sfx_hit_heavy", "sfx_staff_draw": "sfx_swing1",
 }
 
 var _mus: Array[AudioStreamPlayer] = []
@@ -46,6 +49,42 @@ func _ready() -> void:
 		p.bus = "SFX"
 		add_child(p)
 		_pool.append(p)
+	G.settings_changed.connect(_apply_volumes)
+	_apply_volumes.call_deferred()
+
+
+## Music level follows the action (combat louder, calm rooms softer), the
+## player's volume settings and dialogue/menu ducking.
+var _combat := false
+var _ducked := false
+
+
+func _music_db() -> float:
+	var base := -3.0 if _combat else -9.0
+	if _ducked:
+		base -= 10.0
+	return base + linear_to_db(maxf(float(G.setting("music")), 0.001))
+
+
+func _apply_volumes(fade := 0.0) -> void:
+	var mi := AudioServer.get_bus_index("Music")
+	var si := AudioServer.get_bus_index("SFX")
+	AudioServer.set_bus_volume_db(si, linear_to_db(maxf(float(G.setting("sfx")), 0.001)))
+	AudioServer.set_bus_mute(si, float(G.setting("sfx")) < 0.01)
+	AudioServer.set_bus_mute(mi, float(G.setting("music")) < 0.01)
+	var target := _music_db()
+	if fade <= 0.0:
+		AudioServer.set_bus_volume_db(mi, target)
+	else:
+		create_tween().tween_method(func(v): AudioServer.set_bus_volume_db(mi, v),
+			AudioServer.get_bus_volume_db(mi), target, fade)
+
+
+func intensity(combat: bool) -> void:
+	if combat == _combat:
+		return
+	_combat = combat
+	_apply_volumes(1.5)
 
 
 func _bus(name: String, db: float) -> void:
@@ -151,6 +190,5 @@ func sfx(name: String, vol_db := 0.0, vary := 0.08, pitch := 1.0) -> void:
 
 
 func duck(on: bool) -> void:
-	var i := AudioServer.get_bus_index("Music")
-	create_tween().tween_method(func(v): AudioServer.set_bus_volume_db(i, v),
-		AudioServer.get_bus_volume_db(i), -14.0 if on else -4.0, 0.4)
+	_ducked = on
+	_apply_volumes(0.4)

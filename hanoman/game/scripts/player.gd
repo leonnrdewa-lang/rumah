@@ -244,6 +244,11 @@ func _swing_hit(i: int) -> void:
 	if holder != "":
 		col = G.GOD_COLORS[Boons.god_of(holder)]
 	var center := global_position
+	if i == 2 and Boons.owned("duo_badai"):
+		var targets: Array = G.main.enemies().filter(func(e): return not e.dead)
+		targets.sort_custom(func(a, b): return a.global_position.distance_to(global_position) < b.global_position.distance_to(global_position))
+		for e in targets.slice(0, 3):
+			strike(e, Boons.val("duo_badai"))
 	if i == 2:
 		center += atk_dir * 1.2
 		Fx.shock(center, c.range + 0.4, col, 0.38, true)
@@ -260,6 +265,7 @@ func _swing_hit(i: int) -> void:
 	var kb := 3.5 if i < 2 else 6.0
 	if Boons.owned("bayu_serang"):
 		kb *= 2.2
+	Breakable.hit_area(get_tree(), center, c.range + 0.2, atk_dir, c.arc)
 	var hits := 0
 	for e in G.main.enemies():
 		if e.dead:
@@ -281,7 +287,10 @@ func _swing_hit(i: int) -> void:
 			chain_lightning(e, Boons.val("indra_serang"), 2)
 	if hits > 0:
 		Au.sfx("sfx_hit" if i < 2 else "sfx_hit_heavy", -2.0, 0.1, 1.0 if i < 2 else 0.8)
+		# layered body blow under the painted whoosh
+		Au.sfx("sfx_punch_heavy" if i == 2 else ("sfx_punch1" if i == 0 else "sfx_punch2"), -4.0, 0.1)
 		G.main.hitstop(0.05 if i < 2 else 0.09)
+		G.vibrate(18 if i < 2 else 45)
 
 
 func _deal(e: Actor, dmg: float, kb: float, col: Color) -> float:
@@ -289,6 +298,15 @@ func _deal(e: Actor, dmg: float, kb: float, col: Color) -> float:
 	var d := e.take_hit(dmg, global_position, kb, {"crit": crit, "color": Color(1, 0.4, 0.3) if crit else Color(1, 0.95, 0.8)})
 	if d > 0.0:
 		Fx.impact(e.global_position + Vector3(0, 1.0, 0), col, crit or dmg >= 25.0)
+		if Boons.owned("duo_gelombang") and e.wet_t > 0.0:
+			chain_lightning(e, Boons.val("duo_gelombang"), 1)
+		if crit and Boons.owned("duo_fajar"):
+			var c: Vector3 = e.global_position
+			Fx.fire(c + Vector3(0, 1, 0), 2.6, G.GOD_COLORS.surya)
+			Fx.shock(c, 2.6, G.GOD_COLORS.surya, 0.3)
+			for o in G.main.enemies():
+				if not o.dead and o != e and o.global_position.distance_to(c) < 2.6 + o.radius:
+					o.take_hit(Boons.val("duo_fajar"), c, 3.0, {"color": G.GOD_COLORS.surya})
 		if crit:
 			Au.sfx("sfx_crit", -3.0)
 			G.main.flash(Color(1, 0.95, 0.8), 0.12, 0.1)
@@ -299,6 +317,8 @@ func damage_taken_mult(e: Actor) -> float:
 	var m := 1.0
 	if e.burn_t > 0.0 and Boons.owned("surya_pasif"):
 		m += Boons.val("surya_pasif") / 100.0
+	if e.burn_t > 0.0 and e.wet_t > 0.0 and Boons.owned("duo_uap"):
+		m += Boons.val("duo_uap") / 100.0
 	return m
 
 
@@ -371,6 +391,13 @@ func _fire_laser(dir: Vector3, col: Color, wave: bool) -> void:
 	var width := LASER_WIDTH * (1.9 if wave else 1.0)
 	var length := LASER_LEN
 	Fx.laser(from, dir, length, width, col, 0.42)
+	Breakable.hit_line(get_tree(), from, dir, length, width)
+	if Boons.owned("duo_topan"):
+		for k in int(length / 1.6):
+			var fp := from + dir * (1.0 + k * 1.6)
+			if G.main.room_contains(fp, -0.5):
+				FirePatch.spawn(Vector3(fp.x, 0, fp.z), Boons.val("duo_topan"))
+	G.vibrate(70)
 	# the staff itself stretches out along the beam
 	var beam_staff := Staff.new()
 	Fx.layer.add_child(beam_staff)
@@ -473,6 +500,13 @@ func try_dash(mv: Vector3) -> void:
 		for e in G.main.enemies():
 			if not e.dead and e.global_position.distance_to(global_position) < 2.5 + e.radius:
 				_deal(e, Boons.val("bayu_lesat"), 9.0, G.GOD_COLORS.bayu)
+	if Boons.owned("duo_samudra"):
+		Fx.splash(global_position, 3.4, G.GOD_COLORS.baruna)
+		Fx.wind(global_position, 3.4, G.GOD_COLORS.bayu)
+		for e in G.main.enemies():
+			if not e.dead and e.global_position.distance_to(global_position) < 3.2 + e.radius:
+				_deal(e, Boons.val("duo_samudra"), 7.0, G.GOD_COLORS.baruna)
+				e.apply_wet(0.3)
 	if Boons.owned("indra_lesat"):
 		var best: Actor = null
 		var bd := 9.0
@@ -520,6 +554,9 @@ func take_hit(dmg: float, from: Vector3, knockback := 3.0, info := {}) -> float:
 	if away.length_squared() > 0.001:
 		knock += away.normalized() * knockback * 0.6
 	Au.sfx("sfx_player_hurt", -1.0)
+	Au.sfx("sfx_punch_heavy", -5.0, 0.1)
+	G.vibrate(90)
+	G.main.flash(Color(1.0, 0.2, 0.15), 0.15, 0.25)
 	G.main.shake(0.35)
 	G.main.hurt_flash()
 	Fx.number(global_position, dmg, Color(1, 0.3, 0.3))

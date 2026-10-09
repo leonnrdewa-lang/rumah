@@ -113,6 +113,9 @@ func take_hit(dmg: float, from: Vector3, knockback := 3.0, info := {}) -> float:
 	on_hurt(d, info)
 	if hp <= 0.0:
 		hp = 0.0
+		if team == "enemy":
+			G.main.hitstop(0.07)
+			Fx.sprite("k_flare", global_position + Vector3(0, 1.0, 0), 3.5 + radius * 2.0, Color(1.0, 0.85, 0.6), 0.25, {"from": 0.3, "grow": 1.3, "tint": 0.2, "intensity": 2.2, "hold": 0.05})
 		die()
 	return d
 

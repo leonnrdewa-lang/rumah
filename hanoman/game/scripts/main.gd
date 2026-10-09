@@ -31,6 +31,9 @@ var _flash_a := 0.0
 var cam_override := false    # autotest overview shots
 var _flash_col := Color.WHITE
 var _flash_decay := 1.0
+var _zoom := 0.0            # 0 = normal, 1 = punched in
+var _focus: Node3D = null   # boss intro: camera looks at this instead of Hanoman
+var _focus_until := 0
 
 
 func _ready() -> void:
@@ -65,6 +68,7 @@ func _setup_world() -> void:
 	e.fog_enabled = false
 	env.environment = e
 	add_child(env)
+	G.settings_changed.connect(_apply_quality)
 	sun = DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-58, -35, 0)
 	sun.light_color = Color(0.66, 0.76, 1.0)
@@ -74,6 +78,7 @@ func _setup_world() -> void:
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
 	sun.directional_shadow_max_distance = 45.0
 	add_child(sun)
+	_apply_quality()
 	cam = Camera3D.new()
 	cam.fov = 34.0
 	cam.near = 1.0
@@ -91,6 +96,14 @@ func _setup_world() -> void:
 	post_mat.shader = POST
 	rect.material = post_mat
 	layer.add_child(rect)
+
+
+## "Rendah" graphics for weak phones: no glow, no sun shadows.
+func _apply_quality() -> void:
+	var hq := G.high_quality()
+	env.environment.glow_enabled = hq
+	if sun:
+		sun.shadow_enabled = hq
 
 
 var _title_scene: Node3D
@@ -135,14 +148,19 @@ func _process(delta: float) -> void:
 			var mid := b.get_center()
 			p.x = clamp(p.x, lo.x, hi.x) if lo.x < hi.x else mid.x
 			p.z = clamp(p.z, lo.y - 1.0, hi.y + 0.5) if lo.y < hi.y else mid.y
-		_cam_target = _cam_target.lerp(p, clamp(delta * 5.0, 0.0, 1.0))
+		if _focus and is_instance_valid(_focus) and Time.get_ticks_msec() < _focus_until:
+			p = _focus.global_position
+		else:
+			_focus = null
+		_cam_target = _cam_target.lerp(p, clamp(delta * (3.0 if _focus else 5.0), 0.0, 1.0))
 	var sh := Vector3.ZERO
 	if _shake > 0.0:
 		_shake = max(0.0, _shake - delta * 1.8)
 		var a := _shake * _shake * 0.9
 		sh = Vector3(randf_range(-a, a), randf_range(-a, a), randf_range(-a, a))
+	_zoom = move_toward(_zoom, 0.55 if _focus else 0.0, delta * (1.5 if _focus else 2.5))
 	if not cam_override:
-		cam.global_position = _cam_target + CAM_OFFSET + sh
+		cam.global_position = _cam_target + CAM_OFFSET * (1.0 - _zoom * 0.45) + sh
 		cam.look_at(_cam_target + sh * 0.5 + Vector3(0, 0.6, 0))
 	_hurt = move_toward(_hurt, 0.0, delta * 1.5)
 	if _hitstop_until > 0 and Time.get_ticks_msec() >= _hitstop_until:
@@ -213,6 +231,24 @@ func shake(a: float) -> void:
 func hitstop(t: float) -> void:
 	Engine.time_scale = 0.08
 	_hitstop_until = Time.get_ticks_msec() + int(t * 1000.0)
+
+
+## Dramatic slow motion (last kill of a room), in real seconds.
+func slowmo(scale: float, real_time: float) -> void:
+	Engine.time_scale = scale
+	_hitstop_until = Time.get_ticks_msec() + int(real_time * 1000.0)
+	_zoom = 0.35
+
+
+## Boss entrance: the camera swings to the boss and a title card slams in.
+func boss_intro(boss: Node3D, title: String, sub: String) -> void:
+	_focus = boss
+	_focus_until = Time.get_ticks_msec() + 2200
+	ui.boss_card(title, sub)
+	flash(Color(1, 0.9, 0.75), 0.25, 0.4)
+	shake(0.35)
+	Au.sfx("sfx_bell", -2.0)
+	Au.sfx("sfx_boss_roar", -1.0)
 
 
 func hurt_flash() -> void:

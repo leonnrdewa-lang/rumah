@@ -108,14 +108,46 @@ static func _talk_rama(main: Node) -> void:
 	main.ui.dialog(lines, func(): main.busy = false)
 
 
+## One-off conversations that unlock as the story moves on (checked first).
+const STORY := [
+	["first_death", "deaths", 1, [["sugriwa", "Hahaha! Lihat dirimu, Hanoman. Babak belur dihajar raksasa hutan!"],
+		["hanoman", "Tertawalah, Kakang. Besok aku kembali, dan mereka yang babak belur."],
+		["sugriwa", "Itu baru adikku. Ingat: Lesat, lalu pukul. Jangan sebaliknya."]]],
+	["met_kijang", "best_room", 5, [["sugriwa", "Kau bertemu kijang emas itu? Kala Marica... dialah yang dulu memancing Rama menjauh dari Sinta."],
+		["hanoman", "Kali ini dia tidak akan menipu siapa pun lagi."]]],
+	["deaths_5", "deaths", 5, [["sugriwa", "Lima kali kau pulang dengan tubuh lebam, tapi lima kali pula kau berangkat lagi."],
+		["sugriwa", "Pasukan wanara mulai menyanyikan namamu, Hanoman. Jangan kecewakan mereka."]]],
+	["reached_muara", "best_room", 7, [["sugriwa", "Muara Kalimas! Kau sudah sejauh itu? Bau amis hiu dan buaya masih menempel di bulumu."],
+		["hanoman", "Sura dan Baya bertengkar sepanjang waktu. Mungkin itu kelemahan mereka."],
+		["sugriwa", "Hehe... adu saja mereka. Biar mereka saling gigit."]]],
+	["first_win", "wins", 1, [["sugriwa", "Sura dan Baya takluk! Seluruh Kiskenda berpesta untukmu, adikku!"],
+		["hanoman", "Belum waktunya berpesta, Kakang. Alengka masih di seberang samudra."]]],
+]
+
+
 static func _talk_sugriwa(main: Node) -> void:
 	main.busy = true
+	for s in STORY:
+		if not G.seen("story_" + s[0]) and int(G.meta.get(s[1], 0)) >= int(s[2]):
+			G.mark_seen("story_" + s[0])
+			main.ui.dialog(s[3], func(): main.busy = false)
+			return
 	main.ui.dialog([["sugriwa", SUGRIWA_TIPS[randi() % SUGRIWA_TIPS.size()]]], func(): main.busy = false)
 
 
 static func _talk_jembawan(main: Node) -> void:
 	main.busy = true
-	main.ui.dialog([["jembawan", "Kembang Wijayakusuma... bunga kehidupan. Bawakan padaku, dan akan kuajarkan kesaktian lama."]], func():
+	var line := "Kembang Wijayakusuma... bunga kehidupan. Bawakan padaku, dan akan kuajarkan kesaktian lama."
+	var bought := 0
+	for id in G.meta.upgrades:
+		bought += int(G.meta.upgrades[id])
+	if bought >= 4:
+		line = "Kesaktianmu tumbuh, cucuku. Tulang-tulangmu kini sekeras besi. Masih ada yang bisa kuajarkan."
+	elif int(G.meta.bunga) >= 6:
+		line = "Harum sekali... kau membawa banyak Kembang Wijayakusuma. Mari, pilih kesaktian yang kau mau."
+	elif int(G.meta.deaths) >= 3 and bought == 0:
+		line = "Kau terus gugur tanpa belajar apa pun dariku? Kumpulkan Kembang, lalu kembalilah padaku."
+	main.ui.dialog([["jembawan", line]], func():
 		_open_shop(main))
 
 

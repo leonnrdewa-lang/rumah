@@ -396,6 +396,113 @@ func area_title(title: String, sub: String) -> void:
 	tw.tween_callback(box.queue_free)
 
 
+## Boss entrance title card: a dark band sweeps across with the name.
+func boss_card(title: String, sub: String) -> void:
+	var band := ColorRect.new()
+	band.color = Color(0.02, 0.01, 0.03, 0.82)
+	band.anchor_left = 0.0
+	band.anchor_right = 1.0
+	band.anchor_top = 0.62
+	band.anchor_bottom = 0.62
+	band.offset_top = -70
+	band.offset_bottom = 70
+	band.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	overlay.add_child(band)
+	var vb := VBoxContainer.new()
+	vb.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vb.alignment = BoxContainer.ALIGNMENT_CENTER
+	vb.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	band.add_child(vb)
+	var t := _label(title, 64, F_TITLE, Color(0.95, 0.3, 0.25), 14)
+	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vb.add_child(t)
+	var s := _label(sub, 24, F_HEAD, CREAM, 8)
+	s.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vb.add_child(s)
+	band.scale = Vector2(1.0, 0.0)
+	band.pivot_offset = Vector2(0, 70)
+	t.modulate.a = 0.0
+	var tw := band.create_tween()
+	tw.tween_property(band, "scale:y", 1.0, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(t, "modulate:a", 1.0, 0.2)
+	tw.tween_interval(1.7)
+	tw.tween_property(band, "modulate:a", 0.0, 0.5)
+	tw.tween_callback(band.queue_free)
+
+
+func phase_banner(text: String) -> void:
+	var l := _label(text, 52, F_TITLE, Color(1.0, 0.75, 0.35), 12)
+	l.set_anchors_preset(Control.PRESET_CENTER)
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.position = Vector2(-450, -220)
+	l.custom_minimum_size = Vector2(900, 0)
+	l.pivot_offset = Vector2(450, 30)
+	overlay.add_child(l)
+	l.scale = Vector2(1.6, 1.6)
+	var tw := l.create_tween()
+	tw.tween_property(l, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_interval(1.4)
+	tw.tween_property(l, "modulate:a", 0.0, 0.5)
+	tw.tween_callback(l.queue_free)
+
+
+## Pengaturan: music / effect volume, phone vibration, graphics quality.
+func settings_menu() -> void:
+	var root := _modal(0.75)
+	var box := PanelContainer.new()
+	box.add_theme_stylebox_override("panel", _panel_style())
+	box.set_anchors_preset(Control.PRESET_CENTER)
+	box.custom_minimum_size = Vector2(620, 0)
+	box.position = Vector2(-310, -230)
+	root.add_child(box)
+	var vb := VBoxContainer.new()
+	vb.add_theme_constant_override("separation", 14)
+	box.add_child(vb)
+	var t := _label("Pengaturan", 44, F_TITLE, GOLD, 8)
+	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vb.add_child(t)
+	for spec in [["music", "Musik"], ["sfx", "Efek suara"]]:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 16)
+		vb.add_child(row)
+		var l := _label(spec[1], 24, F_HEAD, CREAM, 4)
+		l.custom_minimum_size = Vector2(190, 0)
+		row.add_child(l)
+		var sl := HSlider.new()
+		sl.min_value = 0.0
+		sl.max_value = 1.0
+		sl.step = 0.05
+		sl.value = float(G.setting(spec[0]))
+		sl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		sl.custom_minimum_size = Vector2(0, 40)
+		var key: String = spec[0]
+		sl.value_changed.connect(func(v): G.set_setting(key, v))
+		row.add_child(sl)
+	var vib := _big_button("", func(): pass)
+	var upd_vib := func(): vib.text = "Getar HP: " + ("Nyala" if G.setting("vibrate") else "Mati")
+	upd_vib.call()
+	vib.pressed.connect(func():
+		G.set_setting("vibrate", not G.setting("vibrate"))
+		upd_vib.call()
+		G.vibrate(60))
+	vb.add_child(vib)
+	var q := _big_button("", func(): pass)
+	var upd_q := func(): q.text = "Grafis: " + ("Tinggi" if G.high_quality() else "Rendah (HP lemah)")
+	upd_q.call()
+	q.pressed.connect(func():
+		G.set_setting("quality", "low" if G.high_quality() else "high")
+		upd_q.call())
+	vb.add_child(q)
+	var note := _label("Grafis berlaku mulai ruang berikutnya.", 16, F_BODY, Color(0.7, 0.68, 0.62), 3)
+	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vb.add_child(note)
+	var close := _big_button("Tutup", func(): pass)
+	close.pressed.connect(func(): _close_modal(root))
+	vb.add_child(close)
+	_back = func(): _close_modal(root)
+	close.call_deferred("grab_focus")
+
+
 func room_clear_banner() -> void:
 	var l := _label("Raksasa Tumpas!", 44, F_TITLE, GOLD, 12)
 	l.set_anchors_preset(Control.PRESET_CENTER)
@@ -831,6 +938,7 @@ func title_screen(start: Callable) -> void:
 				go.grab_focus())
 	var ctl := _big_button("Kontrol", func(): _controls_help())
 	bb.add_child(ctl)
+	bb.add_child(_big_button("Pengaturan", func(): settings_menu()))
 	go.call_deferred("grab_focus")
 	var snd := _label("Nyalakan suara (di iPhone matikan mode senyap)", 16, F_BODY, Color(0.7, 0.68, 0.62), 4)
 	snd.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -864,6 +972,7 @@ func pause_menu() -> void:
 	var b := _big_button("Lanjut", resume)
 	vb.add_child(b)
 	vb.add_child(_big_button("Kontrol", func(): _controls_help()))
+	vb.add_child(_big_button("Pengaturan", func(): settings_menu()))
 	if G.in_run:
 		vb.add_child(_big_button("Kembali ke Pancawati", func():
 			resume.call()

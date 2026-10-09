@@ -51,10 +51,22 @@ static func _bill_unit() -> QuadMesh:
 
 # --- painted sprites --------------------------------------------------------------
 
+## Kenney CC0 particle sprites (k_*) ship in the Higgsfield pack; without them the
+## closest painted sprite stands in.
+const K_FALLBACK := {"k_spark": "shards", "k_flare": "impact", "k_star": "impact", "k_magic": "circle",
+	"k_twirl": "wind", "k_light": "impact", "k_dirt": "smoke", "k_scorch": "shock", "k_puff": "smoke",
+	"k_slash": "slash", "k_circle": "circle", "k_trace": "beam", "k_flame": "fire", "k_symbol": "circle"}
+
+
 static func tex(name: String) -> Texture2D:
 	var t: Texture2D = Hf.fx_tex(name)
 	if t:
 		return t
+	if K_FALLBACK.has(name):
+		t = Hf.fx_tex(K_FALLBACK[name])
+		if t:
+			return t
+		name = K_FALLBACK[name]
 	if not _tex_cache.has(name):
 		_tex_cache[name] = _make_tex(name)
 	return _tex_cache[name]
@@ -230,8 +242,10 @@ static func impact(pos: Vector3, color: Color, big := false) -> void:
 	sprite("impact", pos, s, color, 0.16 if not big else 0.24, {"from": 0.45, "grow": 1.15, "spin": randf_range(-0.8, 0.8), "tint": 0.25, "intensity": 2.4, "hold": 0.2})
 	sprite("shards", pos, s * 1.4, color, 0.32, {"from": 0.4, "grow": 1.2, "tint": 0.35, "intensity": 1.8, "hold": 0.1})
 	burst(pos, color, 12 if big else 7, 7.0 if big else 5.0, 0.13, 0.35)
+	sprite("k_star", pos, s * 0.9, color.lerp(Color.WHITE, 0.4), 0.14, {"from": 0.3, "grow": 1.3, "spin": randf_range(-2, 2), "tint": 0.2, "intensity": 2.6, "hold": 0.1})
 	if big:
 		light(pos, color, 3.0, 5.0, 0.2)
+		sprite("k_flare", pos, s * 1.8, color, 0.22, {"from": 0.5, "grow": 1.4, "tint": 0.3, "intensity": 2.0, "hold": 0.05})
 
 
 ## Directional spark spray.

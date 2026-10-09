@@ -64,6 +64,10 @@ func _ready() -> void:
 	Fx.magic_circle(global_position, radius + 1.0, Color(0.75, 0.25, 0.95), 0.9, 2.0)
 	Fx.smoke(global_position + Vector3(0, 0.8, 0), 2.2, Color(0.55, 0.2, 0.75))
 	Fx.burst(global_position + Vector3(0, 0.3, 0), Color(0.7, 0.3, 0.9), 14, 4.0, 0.25, 0.6)
+	Fx.sprite("k_magic", global_position + Vector3(0, 0.1, 0), radius * 3.0 + 2.0, Color(0.8, 0.35, 1.0), 0.8, {"flat": true, "from": 0.3, "grow": 1.1, "spin": 3.0, "tint": 0.5, "intensity": 1.8, "hold": 0.4})
+	if elite:
+		Fx.text(global_position + Vector3(0, 0.6, 0), "Raksasa Sakti!", Color(1, 0.8, 0.3))
+		Fx.magic_circle(global_position, radius + 1.6, Color(1.0, 0.75, 0.25), 1.2, -2.5)
 
 
 func _make_bar() -> void:
@@ -127,9 +131,55 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	global_position.y = 0.0
 	if G.main.room:
+		var before := global_position
 		global_position = G.main.room.push_inside(global_position, radius * 0.8)
+		_wall_bounce(before)
 	if rig:
 		rig.update(delta * (0.4 + 0.6 * sf), Vector2(want.x, want.z).length() * sf)
+
+
+## Knocked hard into the arena's edge: bounce back off it, take a bit extra.
+var _bounce_cd := 0.0
+
+
+func _wall_bounce(before: Vector3) -> void:
+	_bounce_cd = maxf(0.0, _bounce_cd - get_physics_process_delta_time())
+	var push := global_position - before
+	push.y = 0
+	if push.length() < 0.02 or knock.length() < 5.5 or _bounce_cd > 0.0 or heavy:
+		return
+	_bounce_cd = 0.4
+	var n := push.normalized()
+	knock = knock.bounce(n) * 0.55
+	Fx.impact(global_position + Vector3(0, 0.8, 0) - n * radius, Color(1.0, 0.85, 0.6), true)
+	Fx.dust(global_position - n * radius, 1.0)
+	Au.sfx("sfx_rock_hit", -4.0, 0.1)
+	G.main.shake(0.25)
+	if not dead:
+		super.take_hit(max_hp * 0.08 + 4.0, global_position - n, 0.0, {"color": Color(1, 0.75, 0.4)})
+
+
+## Elite raksasa: bigger, golden aura, tougher, hits harder, drops Kepeng.
+func make_elite() -> void:
+	elite = true
+	max_hp *= 2.2
+	hp = max_hp
+	dmg *= 1.35
+	move_speed *= 1.1
+	knock_resist = clampf(knock_resist + 0.3, 0.0, 0.85)
+	if model:
+		model.scale *= 1.25
+		Art.set_param(model, "rim", 1.8)
+	var aura := Fx.trail(Color(1.0, 0.75, 0.25), 0.32)
+	aura.amount = 26
+	aura.position.y = 0.9
+	add_child(aura)
+	var l := OmniLight3D.new()
+	l.light_color = Color(1.0, 0.75, 0.3)
+	l.light_energy = 1.4
+	l.omni_range = 3.2
+	l.position.y = 1.2
+	add_child(l)
 
 
 func _separation() -> Vector3:
@@ -396,4 +446,10 @@ func take_hit(amount: float, from: Vector3, knockback := 3.0, info := {}) -> flo
 
 func die() -> void:
 	_clear_tele()
+	if elite and not dead and G.in_run:
+		var n := randi_range(20, 35)
+		G.add_kepeng(n)
+		Fx.text(global_position, "+%d Kepeng" % n, Color(1, 0.85, 0.4))
+		Fx.burst(global_position + Vector3(0, 1.0, 0), Color(1, 0.8, 0.3), 24, 6.0, 0.14, 0.6)
+		Au.sfx("sfx_coin_drop", -2.0)
 	super.die()

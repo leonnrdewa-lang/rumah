@@ -255,6 +255,7 @@ func build() -> void:
 	_build_veils()
 	if kind != "hub":
 		_build_entrance()
+	Atmos.build(self)
 
 
 # --- floor / ground / water -------------------------------------------------
@@ -511,6 +512,7 @@ func _decorate_chamber(i: int) -> void:
 				holes.append({"c": hp, "h": Vector2(2.4, 1.9), "r": 1.6})
 		return
 	var inside := ["candi_pilar", "arca", "batu_besar"] if biome != "muara" else ["batu_besar", "candi_pilar"]
+	_add_breakables(c, h)
 	match theme:
 		"pond":
 			var ph := Vector2(h.x * _rng.randf_range(0.28, 0.36), h.y * _rng.randf_range(0.28, 0.38))
@@ -569,6 +571,29 @@ func _decorate_chamber(i: int) -> void:
 					if p.distance_to(c) > 3.0 and _free_spot(p, 0.8):
 						add_obstacle(inside[_rng.randi() % inside.size()], p, 0.8, _rng.randf() * TAU)
 						break
+
+
+## Clusters of gentong / peti near the chamber walls.
+func _add_breakables(c: Vector2, h: Vector2) -> void:
+	var groups := _rng.randi_range(1, 3)
+	for g in groups:
+		for attempt in 16:
+			var side := _rng.randi() % 4
+			var p := c
+			match side:
+				0: p += Vector2(_rng.randf_range(-h.x + 2, h.x - 2), -h.y + 1.6)
+				1: p += Vector2(_rng.randf_range(-h.x + 2, h.x - 2), h.y - 1.6)
+				2: p += Vector2(-h.x + 1.6, _rng.randf_range(-h.y + 2, h.y - 2))
+				_: p += Vector2(h.x - 1.6, _rng.randf_range(-h.y + 2, h.y - 2))
+			if sd_all(p) > -1.0 or not _free_spot(p, 1.4) or _near_corridor(p, 3.0):
+				continue
+			for k in _rng.randi_range(1, 3):
+				var q := p + Vector2(_rng.randf_range(-0.9, 0.9), _rng.randf_range(-0.9, 0.9))
+				var b := Breakable.make("peti" if biome == "muara" and _rng.randf() < 0.6 else "gentong")
+				add_child(b)
+				b.position = Vector3(q.x, 0, q.y)
+			obstacles.append([p, 1.2])
+			break
 
 
 ## Scenery bands hugging the whole map's edge (outside the walkable floor).
@@ -867,6 +892,7 @@ func _combat_tick(delta: float) -> void:
 					_hint.queue_free()
 					_hint = null
 		"fight":
+			Au.intensity(true)
 			if alive.size() + _pending <= (1 if ch.wave_i < cw.size() - 1 else 0):
 				if ch.wave_i + 1 < cw.size():
 					_wave_delay -= delta
@@ -876,6 +902,7 @@ func _combat_tick(delta: float) -> void:
 						_spawn_wave(cw[ch.wave_i], cur)
 				elif alive.is_empty() and _pending == 0:
 					ch.state = "clear"
+					Au.intensity(false)
 					if cur + 1 < chambers.size():
 						cur += 1
 						_open_chamber(cur)
@@ -892,6 +919,9 @@ func _spawn_wave(list: Array, chamber: int) -> void:
 		Fx.ring(pos, 1.0, Color(0.7, 0.2, 0.9), 0.6)
 		var e := Enemy.new()
 		e.setup(kind_i, depth)
+		# elite chance grows with depth and in later chambers
+		if i == 0 and _rng.randf() < 0.08 + depth * 0.03 + chamber * 0.06:
+			e.make_elite()
 		_pending += 1
 		var t := get_tree().create_timer(0.55 + i * 0.12)
 		t.timeout.connect(func():
@@ -928,6 +958,8 @@ func _spawn_boss() -> void:
 		G.main.spawn_actor(b, Vector3(0, 0, -half.y * 0.45))
 		alive.append(b)
 		G.main.ui.set_bosses([b])
+		_add_hazards([b])
+		G.main.boss_intro(b, b.boss_name, b.boss_title)
 	else:
 		var s := Boss.new()
 		s.setup_boss("sura")
@@ -940,14 +972,25 @@ func _spawn_boss() -> void:
 		alive.append(s)
 		alive.append(y)
 		G.main.ui.set_bosses([s, y])
+		_add_hazards([s, y])
+		G.main.boss_intro(s, "Sura & Baya", "Penguasa Muara Kalimas")
+
+
+func _add_hazards(list: Array) -> void:
+	var hz := Hazards.new()
+	hz.arena = self
+	hz.bosses = list
+	add_child(hz)
 
 
 func _on_clear() -> void:
 	if is_clear:
 		return
 	is_clear = true
+	Au.intensity(false)
 	if kind != "rest" and kind != "hub":
 		Au.sfx("sfx_room_clear", -2.0)
 		G.main.ui.room_clear_banner()
+		G.main.slowmo(0.25, 0.6)
 	cleared.emit()
 	G.main.on_room_cleared(self)

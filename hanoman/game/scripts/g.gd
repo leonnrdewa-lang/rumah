@@ -4,6 +4,7 @@ extends Node
 
 signal run_changed
 signal meta_changed
+signal settings_changed
 signal toast(text: String, color: Color)
 
 const SAVE_PATH := "user://hanoman_save.json"
@@ -34,7 +35,9 @@ const UPGRADES := {
 var meta := {
 	"bunga": 0, "runs": 0, "wins": 0, "deaths": 0, "best_room": 0,
 	"upgrades": {}, "seen": {}, "boss_kills": 0,
+	"settings": {},
 }
+const SETTING_DEFAULTS := {"music": 0.8, "sfx": 1.0, "vibrate": true, "quality": "high"}
 var run := {}
 var in_run := false
 var touch_mode := false
@@ -135,6 +138,28 @@ func save_meta() -> void:
 	if f:
 		f.store_string(JSON.stringify(meta))
 	meta_changed.emit()
+
+
+func setting(k: String):
+	return meta.get("settings", {}).get(k, SETTING_DEFAULTS[k])
+
+
+func set_setting(k: String, v) -> void:
+	if not meta.has("settings") or not meta.settings is Dictionary:
+		meta.settings = {}
+	meta.settings[k] = v
+	save_meta()
+	settings_changed.emit()
+
+
+func high_quality() -> bool:
+	return setting("quality") == "high"
+
+
+## Short rumble on phones (hits, slams, getting hurt).
+func vibrate(ms: int) -> void:
+	if touch_mode and setting("vibrate"):
+		Input.vibrate_handheld(ms)
 
 
 func up_rank(id: String) -> int:
