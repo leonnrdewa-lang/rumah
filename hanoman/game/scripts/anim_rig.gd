@@ -58,10 +58,10 @@ func _play_clip(anim: String, spd := 1.0, blend := BLEND) -> void:
 const ACTION_MAP := {
 	"swing_a": ["attack_1", "attack"], "swing_b": ["attack_2", "attack_1", "attack"],
 	"slam": ["attack_3", "slam", "attack"], "thrust": ["special", "attack_1", "attack"],
-	"cast": ["cast", "attack_3", "attack"], "lunge": ["attack", "attack_1"],
+	"cast": ["cast", "attack_3", "attack"], "lunge": ["special", "attack", "attack_1"],
 	"bite": ["attack", "bite"], "snap": ["attack"], "charge": ["run", "walk"],
-	"windup": ["attack", "attack_1"], "rear": ["roar", "attack", "idle"], "roar": ["roar", "idle"],
-	"spin": ["attack_3", "attack"], "dash": ["dash"], "talk": ["talk", "idle"],
+	"windup": ["attack", "attack_1"], "rear": ["roar", "special", "attack", "idle"], "roar": ["roar", "special", "idle"],
+	"spin": ["spin", "attack_3", "attack"], "victory": ["victory", "cast", "idle"], "getup": ["getup", "idle"], "dash": ["dash"], "talk": ["talk", "idle"],
 	"guard": [], "die": ["die", "dead"], "hurt": ["hit", "hurt"],
 }
 
@@ -99,12 +99,17 @@ func play(a: String, length := 0.3) -> void:
 
 func revive() -> void:
 	super.revive()
+	var was_dead := _dead
 	_dead = false
 	_locked_until = 0.0
 	_freeze_at = -1.0
 	if ap:
 		ap.speed_scale = 1.0
-		_play_clip(_first(["idle", "walk", "run"]), 1.0, 0.0)
+		if was_dead and clips.has("getup"):
+			_play_clip(clips.getup, 1.2, 0.0)
+			_locked_until = t + ap.get_animation(clips.getup).length / 1.2
+		else:
+			_play_clip(_first(["idle", "walk", "run"]), 1.0, 0.0)
 
 
 func hit() -> void:

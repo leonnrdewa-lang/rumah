@@ -48,12 +48,12 @@ func _physics_process(_delta: float) -> void:
 				Au.sfx("sfx_pickup_coin")
 			"tirta":
 				G.heal(25)
-				G.say("Tirta Amerta: +25 nyawa", Color(1, 0.55, 0.6))
+				G.say("Tirta Amerta: +25 health", Color(1, 0.55, 0.6))
 				Au.sfx("sfx_pickup_heal")
 			"bunga":
 				G.add_bunga(3)
 				G.run.bunga_gained = int(G.run.get("bunga_gained", 0)) + 3
-				G.say("+3 Kembang Wijayakusuma", Color(0.95, 0.95, 1.0))
+				G.say("+3 Wijayakusuma Blossoms", Color(0.95, 0.95, 1.0))
 				Au.sfx("sfx_boon_pick", -4.0)
 		Fx.burst(global_position + Vector3(0, 0.8, 0), Color(1, 0.9, 0.6), 18, 4.0, 0.2, 0.5)
 		queue_free()

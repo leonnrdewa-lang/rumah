@@ -11,8 +11,20 @@ const PLAN := {
 	1: ["combat", "dandaka"], 2: ["combat", "dandaka"], 3: ["combat", "dandaka"],
 	4: ["combat", "dandaka"], 5: ["miniboss", "dandaka"], 6: ["rest", "dandaka"],
 	7: ["combat", "muara"], 8: ["combat", "muara"], 9: ["boss", "muara"],
+	10: ["combat", "samudra"], 11: ["combat", "samudra"], 12: ["rest", "samudra"],
+	13: ["miniboss", "alengka"], 14: ["combat", "argasoka"], 15: ["boss", "alengka"],
 }
-const LAST_ROOM := 9
+const LAST_ROOM := 15
+const STAGE_TITLE := {
+	"dandaka": "Dandaka Forest", "muara": "Kalimas Estuary", "samudra": "The Southern Ocean",
+	"argasoka": "Asoka Garden of Alengka", "alengka": "Alengka Palace",
+}
+## Painted stage cards: first time a stage is reached each journey.
+const STAGE_CUT := {
+	1: ["scene/dandaka", ["The forest of Dandaka, where Sinta was stolen.", "Ogres stir in the dark between the temple ruins..."]],
+	10: ["scene/samudra", ["Beyond the estuary lies the endless southern ocean.", "An ancient sea turtle rises to carry the envoy of Rama."]],
+	13: ["scene/argasoka", ["Alengka. Gold towers burn against the night.", "Somewhere in the Asoka garden, Dewi Sinta waits."]],
+}
 
 var player: Player
 var cam: Camera3D
@@ -113,15 +125,9 @@ var _title_t := 0.0
 ## Title backdrop: the Hutan Dandaka diorama built in Higgsfield 3D Jutsu (Blender),
 ## slowly orbited by the camera.
 func _build_title_scene() -> void:
+	# the title is a painted screen now; keep an empty effect layer behind it
 	_title_scene = Node3D.new()
 	add_child(_title_scene)
-	var d := Art.model("diorama_dandaka", false, 2.0)
-	d.rotation.y = PI
-	_title_scene.add_child(d)
-	for l in d.find_children("*", "Light3D", true, false):
-		(l as Light3D).light_energy *= 0.02 if l is OmniLight3D else 0.3
-		if l is OmniLight3D:
-			(l as OmniLight3D).omni_range = 8.0
 	Fx.layer = _title_scene
 
 
@@ -300,7 +306,7 @@ func go_hub(first := false) -> void:
 		Au.ambience("amb_forest")
 		ui.fade(false, func():
 			busy = false
-			ui.area_title("Pertapaan Pancawati", "Perkemahan Prabu Rama")
+			ui.area_title("Pancawati Hermitage", "King Rama's Camp")
 			if not G.seen("intro"):
 				Hub.intro(self)))
 
@@ -318,6 +324,7 @@ func enter_room(reward: Dictionary) -> void:
 		_clear_area()
 		G.run.room = int(G.run.room) + 1
 		var n: int = G.run.room
+		G.save_run(reward)
 		var spec: Array = PLAN.get(n, PLAN[LAST_ROOM])
 		room = Arena.new()
 		room.kind = spec[0]
@@ -341,50 +348,81 @@ func enter_room(reward: Dictionary) -> void:
 		ui.hud_visible(true)
 		if room.kind == "rest":
 			_populate_rest(room)
-		var mus := "mus_dandaka" if room.biome == "dandaka" else "mus_muara"
+		var mus := "mus_dandaka" if room.biome == "dandaka" else ("mus_muara" if room.biome in Arena.WATERY else "mus_miniboss")
 		if room.kind == "boss":
 			mus = "mus_boss"
 		elif room.kind == "miniboss":
 			mus = "mus_miniboss"
 		if room.kind != "rest":
 			Au.music(mus)
-		Au.ambience("amb_forest" if room.biome == "dandaka" else "amb_river")
-		ui.fade(false, func():
-			busy = false
-			var title := "Hutan Dandaka" if room.biome == "dandaka" else "Muara Kalimas"
-			var sub := "Ruang %d" % n
-			if room.kind == "miniboss":
-				sub = "Sarang Kijang Kencana"
-			elif room.kind == "boss":
-				sub = "Wilayah Sura dan Baya"
-			elif room.kind == "rest":
-				sub = "Pasar Sang Hyang & Sendang Suci"
-			ui.area_title(title, sub)
-			if room.kind == "boss" and not G.seen("boss_intro"):
-				_boss_intro()
-			elif room.kind == "miniboss" and not G.seen("kijang_intro"):
-				G.mark_seen("kijang_intro")
-				busy = true
-				ui.dialog([
-					["hanoman", "Seekor kijang emas... berkilau seperti dalam cerita Dewi Sinta."],
-					["kijang", "Kemarilah, kera kecil. Tangkap aku kalau bisa. Hi hi hi..."],
-					["hanoman", "Suara itu bukan suara kijang. Kau Kala Marica, abdi Rahwana!"],
-				], func():
-					busy = false
-					room.start())
-				return
-			room.start()))
+		Au.ambience("amb_river" if room.biome in Arena.WATERY else "amb_forest")
+		if STAGE_CUT.has(n) and Hf.textures.has(STAGE_CUT[n][0]):
+			ui.cutscene(STAGE_CUT[n][0], STAGE_CUT[n][1], func(): _room_intro(n))
+			return
+		_room_intro(n))
+
+
+func _room_intro(n: int) -> void:
+	ui.fade(false, func():
+		busy = false
+		var title: String = STAGE_TITLE.get(room.biome, "Alengka")
+		var sub := "Chamber %d" % n
+		if room.kind == "miniboss":
+			sub = "Lair of Kijang Kencana" if room.biome != "alengka" else "Kumbakarna's Hall"
+		elif room.kind == "boss":
+			sub = "Domain of Sura and Baya" if room.biome != "alengka" else "Indrajit's Throne Court"
+		elif room.kind == "rest":
+			sub = "Divine Market & Sacred Spring"
+		ui.area_title(title, sub)
+		if room.biome == "alengka" and room.kind != "rest":
+			_alengka_intro()
+			return
+		if room.kind == "boss" and not G.seen("boss_intro"):
+			_boss_intro()
+		elif room.kind == "miniboss" and not G.seen("kijang_intro"):
+			G.mark_seen("kijang_intro")
+			busy = true
+			ui.dialog([
+				["hanoman", "A golden deer... shimmering, just like in Dewi Sinta's tale."],
+				["kijang", "Come here, little monkey. Catch me if you can. Hee hee hee..."],
+				["hanoman", "That's no deer's voice. You're Kala Marica, Rahwana's servant!"],
+			], func():
+				busy = false
+				room.start())
+			return
+		room.start())
+
+
+func _alengka_intro() -> void:
+	var key := "kumba_intro" if room.kind == "miniboss" else "indrajit_intro"
+	if G.seen(key):
+		room.start()
+		return
+	G.mark_seen(key)
+	busy = true
+	var lines := [
+		["kumbakarna", "Hrrmmm... who wakes me? I was dreaming of rice mountains..."],
+		["hanoman", "Kumbakarna! I have no quarrel with you. Let me pass to Dewi Sinta."],
+		["kumbakarna", "My brother is wrong to keep her, little monkey. But this is MY land. I will defend it!"],
+	] if room.kind == "miniboss" else [
+		["indrajit", "So the monkey crossed the ocean. My uncle sleeps and my father hides behind his walls."],
+		["hanoman", "Indrajit. Tell Rahwana that Rama is coming for Sinta."],
+		["indrajit", "You will tell him nothing. My Nagapasa has bound gods. It will bind a monkey!"],
+	]
+	ui.dialog(lines, func():
+		busy = false
+		room.start())
 
 
 func _boss_intro() -> void:
 	G.mark_seen("boss_intro")
 	busy = true
 	ui.dialog([
-		["sura", "Siapa berani menginjak muara ini? Laut adalah milik Sura!"],
-		["baya", "Laut milikmu, darat milikku, itu janji kita! Tapi muara ini... MILIKKU, Sura!"],
-		["hanoman", "Aku Hanoman, duta Prabu Rama. Beri aku jalan menyeberang ke Alengka."],
-		["sura", "Rahwana membayar kami untuk menenggelamkan siapa pun yang lewat."],
-		["baya", "Untuk sekali ini, Sura, kita bertarung di pihak yang sama. Robek kera itu!"],
+		["sura", "Who dares set foot in this estuary? The sea belongs to Sura!"],
+		["baya", "The sea is yours, the land is mine, that was our pact! But this estuary... is MINE, Sura!"],
+		["hanoman", "I am Hanoman, envoy of King Rama. Let me cross to Alengka."],
+		["sura", "Rahwana pays us to drown anyone who passes."],
+		["baya", "Just this once, Sura, we fight on the same side. Tear that ape apart!"],
 	], func():
 		busy = false
 		room.start())
@@ -399,7 +437,10 @@ func _waves_for(n: int, chambers_n: int) -> Array:
 		3: ["wil", "cakil", "banaspati", "buto_ijo"],
 		4: ["cakil", "banaspati", "wil", "buto_ijo"],
 		7: ["yuyu", "wil", "banaspati", "cakil"],
-		8: ["yuyu", "cakil", "banaspati", "wil", "buto_ijo"],
+		8: ["yuyu", "cakil", "banaspati", "wil", "pemanah", "buto_ijo"],
+		10: ["yuyu", "pemanah", "banaspati", "tameng"],
+		11: ["pemanah", "yuyu", "dukun", "banaspati", "tameng"],
+		14: ["pemanah", "dukun", "cakil", "tameng", "buto_ijo"],
 	}
 	var pool: Array = pools.get(n, ["wil", "wil"])
 	var out := []
@@ -428,7 +469,13 @@ func _exits_for(n: int) -> Array:
 			return [{"type": "rest"}]
 		8:
 			return [{"type": "boss"}]
-		9:
+		11:
+			return [{"type": "rest"}]
+		12:
+			return [{"type": "miniboss"}]
+		14:
+			return [{"type": "boss"}]
+		LAST_ROOM:
 			return []
 	var out := []
 	var count := 2
@@ -458,14 +505,33 @@ func _exits_for(n: int) -> Array:
 # --- rewards --------------------------------------------------------------------
 
 func on_room_cleared(r: Arena) -> void:
-	if r.kind == "boss":
+	if r.kind == "boss" and r.biome == "alengka":
 		_victory()
 		return
 	var rw: Dictionary = r.reward
+	if r.kind == "boss":
+		# Sura and Baya fall: the legend of Surabaya, then onward across the ocean
+		G.meta.boss_kills = int(G.meta.boss_kills) + 1
+		G.add_bunga(6)
+		G.run.bunga_gained = int(G.run.bunga_gained) + 6
+		busy = true
+		cinematic_kill("Sura and Baya are defeated!", func():
+			ui.dialog([
+				["baya", "Sura... we were beaten by a monkey..."],
+				["sura", "Shut up, Baya! This is all your fault. This estuary is still mine!"],
+				["hanoman", "Even in defeat, you two still squabble. People will remember this place by both your names: Sura and Baya."],
+				["dewa_baruna", "Go, envoy. The ocean opens a way for you. Alengka awaits on the far shore."],
+			], func():
+				busy = false
+				_spawn_reward(r, {"type": "boon", "god": "baruna"})
+				r.open_gates()))
+		return
 	if r.kind == "miniboss":
+		G.meta.boss_kills = int(G.meta.boss_kills) + 1
+		cinematic_kill(("Kumbakarna" if r.biome == "alengka" else "Kijang Kencana") + " falls!", func(): pass)
 		G.add_bunga(5)
 		G.run.bunga_gained = int(G.run.bunga_gained) + 5
-		G.say("+5 Kembang Wijayakusuma", Color(1, 0.95, 0.85))
+		G.say("+5 Wijayakusuma Blossoms", Color(1, 0.95, 0.85))
 		rw = {"type": "boon", "god": Boons.random_god()}
 	if r.kind == "rest":
 		r.open_gates()
@@ -480,7 +546,7 @@ func _spawn_reward(r: Arena, rw: Dictionary) -> void:
 	var node: Node3D
 	match t:
 		"boon":
-			node = Interactable.make("Terima anugerah " + G.GOD_NAMES[rw.god], func(i: Interactable):
+			node = Interactable.make("Accept boon of " + G.GOD_NAMES[rw.god], func(i: Interactable):
 				i.active = false
 				_open_boon(rw.god, func(): i.queue_free()))
 			var m := Art.model("orb_dewa")
@@ -496,7 +562,7 @@ func _spawn_reward(r: Arena, rw: Dictionary) -> void:
 			node.add_child(l)
 			Au.sfx("sfx_boon_appear", -3.0)
 		"palu":
-			node = Interactable.make("Ambil Pusaka Palu", func(i: Interactable):
+			node = Interactable.make("Take the Palu Heirloom", func(i: Interactable):
 				i.active = false
 				_open_palu(func(): i.queue_free()))
 			var s := Sprite3D.new()
@@ -520,7 +586,7 @@ func _open_boon(god: String, done: Callable) -> void:
 	var offers := Boons.offers(god)
 	if offers.is_empty():
 		G.add_kepeng(80)
-		G.say("Semua anugerah %s sudah kau miliki. +80 Kepeng" % G.GOD_NAMES[god])
+		G.say("You already hold every boon of %s. +80 Kepeng" % G.GOD_NAMES[god])
 		busy = false
 		Au.duck(false)
 		done.call()
@@ -546,9 +612,9 @@ func _open_palu(done: Callable) -> void:
 	var opts := []
 	for id in owned:
 		var b: Dictionary = G.run.boons[id]
-		opts.append({"title": "%s  (Tk %d → %d)" % [Boons.ALL[id].name, b.lvl, int(b.lvl) + 1],
+		opts.append({"title": "%s  (Lv %d → %d)" % [Boons.ALL[id].name, b.lvl, int(b.lvl) + 1],
 			"desc": Boons.desc(id, b.rar, int(b.lvl) + 1), "icon": "res://assets/icons/god_%s.png" % Boons.god_of(id), "id": id})
-	ui.choice_menu("Pusaka Palu", "Pilih satu anugerah untuk dinaikkan tingkatnya.", opts, func(o: Dictionary):
+	ui.choice_menu("Palu Heirloom", "Choose one boon to raise its level.", opts, func(o: Dictionary):
 		Boons.level_up(o.id)
 		Au.sfx("sfx_boon_pick", -2.0)
 		busy = false
@@ -558,12 +624,12 @@ func _open_palu(done: Callable) -> void:
 func _populate_rest(r: Arena) -> void:
 	Au.music("mus_hub")
 	# Sendang: healing spring
-	var spring := Interactable.make("Minum air Sendang Suci (pulih 40%)", func(i: Interactable):
+	var spring := Interactable.make("Drink from the Sacred Spring (heal 40%)", func(i: Interactable):
 		i.active = false
 		G.heal(float(G.run.max_hp) * 0.4)
 		Au.sfx("sfx_pickup_heal")
 		Fx.burst(player.global_position + Vector3(0, 1, 0), Color(0.5, 0.9, 1.0), 24, 4.0, 0.2, 0.6)
-		G.say("Air sendang menyegarkan tubuh Hanoman."))
+		G.say("The spring water revives Hanoman."))
 	spring.add_child(Art.model("sumur"))
 	r.add_child(spring)
 	spring.position = Vector3(-5.0, 0, 1.0)
@@ -578,14 +644,14 @@ func _populate_rest(r: Arena) -> void:
 		var label := ""
 		match g.t:
 			"boon":
-				label = "Anugerah " + G.GOD_NAMES[g.god]
+				label = "Boon of " + G.GOD_NAMES[g.god]
 			"tirta":
-				label = "Tirta Amerta (+25 nyawa)"
+				label = "Tirta Amerta (+25 health)"
 			"palu":
-				label = "Pusaka Palu"
+				label = "Palu Heirloom"
 			"bunga":
-				label = "3 Kembang Wijayakusuma"
-		var it := Interactable.make("Beli %s — %d Kepeng" % [label, g.price], func(i: Interactable): _buy(i, g))
+				label = "3 Wijayakusuma Blossoms"
+		var it := Interactable.make("Buy %s — %d Kepeng" % [label, g.price], func(i: Interactable): _buy(i, g))
 		it.add_child(Art.model("altar_dewa"))
 		var s := Sprite3D.new()
 		s.texture = load("res://assets/icons/god_%s.png" % g.god if g.t == "boon" else Arena.REWARD_ICON[g.t])
@@ -610,7 +676,7 @@ func _populate_rest(r: Arena) -> void:
 
 func _buy(i: Interactable, g: Dictionary) -> void:
 	if int(G.run.kepeng) < int(g.price):
-		G.say("Kepengmu kurang.", Color(1, 0.5, 0.4))
+		G.say("Not enough Kepeng.", Color(1, 0.5, 0.4))
 		Au.sfx("sfx_ui_back")
 		return
 	G.add_kepeng(-int(g.price))
@@ -642,20 +708,46 @@ func on_player_death() -> void:
 		ui.death_screen(func(): go_hub()))
 
 
+## Boss down: letterbox, slow motion on the fallen foe, a caption.
+func cinematic_kill(caption: String, done: Callable) -> void:
+	slowmo(0.2, 1.2)
+	_zoom = 0.6
+	ui.letterbox(true)
+	ui.phase_banner(caption)
+	flash(Color(1, 0.95, 0.85), 0.35, 0.6)
+	get_tree().create_timer(2.2, true, false, true).timeout.connect(func():
+		ui.letterbox(false)
+		done.call())
+
+
+## Continue a saved journey from the title screen.
+func resume_run() -> void:
+	var rw := G.load_run()
+	if rw.is_empty():
+		go_hub(true)
+		return
+	area = "run"
+	player.reset_for_run()
+	enter_room(rw)
+
+
 func _victory() -> void:
 	busy = true
-	G.end_run(true)
 	G.meta.boss_kills = int(G.meta.boss_kills) + 1
 	G.add_bunga(10)
 	G.run.bunga_gained = int(G.run.bunga_gained) + 10
+	G.end_run(true)
+	player.bark("vo_victory", true)
 	Au.music("")
 	Au.sting("stg_victory")
-	get_tree().create_timer(2.0).timeout.connect(func():
+	player.rig.play("victory", 2.5)
+	cinematic_kill("Indrajit retreats into the smoke!", func(): pass)
+	get_tree().create_timer(2.6).timeout.connect(func():
 		ui.dialog([
-			["baya", "Sura... kita dikalahkan seekor kera..."],
-			["sura", "Diam, Baya! Ini semua salahmu. Muara ini tetap milikku!"],
-			["hanoman", "Bahkan setelah kalah, kalian masih bertengkar. Pantas orang akan mengenang tempat ini dengan nama kalian berdua: Sura dan Baya."],
-			["dewa_baruna", "Pergilah, utusan. Samudra membuka jalan untukmu. Alengka menanti di seberang."],
-			["hanoman", "Tunggu aku, Dewi Sinta. Hanoman datang membawa cincin Prabu Rama."],
+			["indrajit", "This is not over, monkey... my father's army is endless..."],
+			["hanoman", "Then let him count his soldiers. Rama is coming."],
+			["hanoman", "(In the Asoka garden, a woman in white looks up as a white monkey drops from the trees.)"],
+			["hanoman", "Dewi Sinta. I am Hanoman, envoy of King Rama. He sends you his ring... and his promise."],
+			["rama", "(Far away, at Pancawati, Rama feels the wind change. His envoy has found her.)"],
 		], func():
 			ui.victory_screen(func(): go_hub())))

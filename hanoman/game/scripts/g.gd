@@ -18,18 +18,18 @@ const GOD_NAMES := {
 	"baruna": "Batara Baruna", "indra": "Batara Indra",
 }
 const GOD_TITLES := {
-	"bayu": "Dewa Angin", "surya": "Dewa Matahari",
-	"baruna": "Dewa Samudra", "indra": "Raja Kahyangan, Dewa Petir",
+	"bayu": "God of Wind", "surya": "God of the Sun",
+	"baruna": "God of the Sea", "indra": "King of Heaven, God of Thunder",
 }
 
 ## Jembawan's permanent upgrades ("Kesaktian"): id -> [name, desc, cost per rank, max rank]
 const UPGRADES := {
-	"otot": ["Otot Kawat", "+10 nyawa maksimum per tingkat.", [2, 4, 6], 3],
-	"tulang": ["Balung Wesi", "Kebal satu serangan mematikan per perjalanan (bangkit 50% nyawa).", [6], 1],
-	"lesat": ["Langkah Bayu", "+1 muatan Lesat.", [5], 1],
-	"gada": ["Tongkat Mustika", "+15% kerusakan Serang per tingkat.", [3, 5], 2],
-	"prana": ["Prana Sejati", "+1 muatan Jurus.", [4], 1],
-	"rejeki": ["Rejeki Kepeng", "Mulai perjalanan dengan 60 Kepeng per tingkat.", [2, 3], 2],
+	"otot": ["Wire Sinews", "+10 max health per rank.", [2, 4, 6], 3],
+	"tulang": ["Iron Bones", "Survive one fatal blow per journey (revive at 50% health).", [6], 1],
+	"lesat": ["Stride of Bayu", "+1 Dash charge.", [5], 1],
+	"gada": ["Jeweled Staff", "+15% Attack damage per rank.", [3, 5], 2],
+	"prana": ["True Prana", "+1 Special charge.", [4], 1],
+	"rejeki": ["Kepeng Fortune", "Begin each journey with 60 Kepeng per rank.", [2, 3], 2],
 }
 
 var meta := {
@@ -167,8 +167,94 @@ func up_rank(id: String) -> int:
 
 
 func add_bunga(n: int) -> void:
+	# vows (Heat) raise the reward
+	if in_run and n > 0:
+		n = int(round(n * (1.0 + 0.25 * run.get("heat", {}).size())))
 	meta.bunga = int(meta.bunga) + n
 	save_meta()
+
+
+# --- vows (Heat): optional challenges unlocked after the first victory ----------
+
+const VOWS := {
+	"swift": ["Vow of Haste", "All foes move 25% faster."],
+	"iron": ["Vow of Iron Hides", "All foes have 40% more health."],
+	"fragile": ["Vow of Frailty", "Hanoman starts with 25% less health."],
+	"horde": ["Vow of the Horde", "Empowered ogres appear far more often."],
+	"kings": ["Vow of Wrathful Kings", "Bosses have 50% more health and hit harder."],
+}
+
+
+func vows() -> Array:
+	return meta.get("vows", [])
+
+
+func toggle_vow(id: String) -> void:
+	var v: Array = vows().duplicate()
+	if v.has(id):
+		v.erase(id)
+	else:
+		v.append(id)
+	meta.vows = v
+	save_meta()
+
+
+# --- records & codex -------------------------------------------------------------
+
+func stat(k: String) -> float:
+	return float(meta.get("stats", {}).get(k, 0))
+
+
+func add_stat(k: String, v := 1.0) -> void:
+	if not meta.has("stats") or not meta.stats is Dictionary:
+		meta.stats = {}
+	meta.stats[k] = float(meta.stats.get(k, 0)) + v
+
+
+func unlock_codex(id: String) -> void:
+	if Codex.ENTRIES.has(id) and not seen("codex_" + id):
+		mark_seen("codex_" + id)
+		say("Codex entry unlocked: " + Codex.ENTRIES[id][0], Color(0.75, 0.9, 1.0))
+
+
+# --- mid-journey save -------------------------------------------------------------
+
+const RUN_PATH := "user://hanoman_run.json"
+
+
+func save_run(reward: Dictionary) -> void:
+	var f := FileAccess.open(RUN_PATH, FileAccess.WRITE)
+	if f:
+		f.store_string(JSON.stringify({"run": run, "reward": reward}))
+
+
+func has_saved_run() -> bool:
+	return FileAccess.file_exists(RUN_PATH)
+
+
+func clear_saved_run() -> void:
+	if FileAccess.file_exists(RUN_PATH):
+		DirAccess.remove_absolute(RUN_PATH)
+
+
+## Restore a saved journey; returns the reward of the room to re-enter.
+func load_run() -> Dictionary:
+	var f := FileAccess.open(RUN_PATH, FileAccess.READ)
+	if f == null:
+		return {}
+	var d = JSON.parse_string(f.get_as_text())
+	if not d is Dictionary or not d.has("run"):
+		return {}
+	run = d.run
+	for id in run.get("boons", {}):
+		run.boons[id].lvl = int(run.boons[id].lvl)
+		run.boons[id].rar = int(run.boons[id].rar)
+	for k in ["room", "kepeng", "death_defy", "dash_charges", "prana_max", "kills", "bunga_gained"]:
+		run[k] = int(run.get(k, 0))
+	run.room = int(run.room) - 1     # enter_room() steps back into the same room
+	in_run = true
+	run_changed.emit()
+	return d.get("reward", {"type": "kepeng"})
 
 
 func seen(key: String) -> bool:
@@ -197,7 +283,14 @@ func new_run() -> void:
 		"prana_max": 3 + up_rank("prana"),
 		"attack_mult": 1.0 + 0.15 * up_rank("gada"),
 		"kills": 0,
+		"heat": {},
+		"started": Time.get_unix_time_from_system(),
 	}
+	for v in vows():
+		run.heat[v] = true
+	if run.heat.has("fragile"):
+		run.max_hp = int(run.max_hp * 0.75)
+		run.hp = run.max_hp
 	in_run = true
 	meta.runs = int(meta.runs) + 1
 	save_meta()
@@ -206,7 +299,14 @@ func new_run() -> void:
 
 func end_run(won: bool) -> void:
 	in_run = false
+	clear_saved_run()
+	add_stat("kills", float(run.get("kills", 0)))
+	var secs := Time.get_unix_time_from_system() - float(run.get("started", Time.get_unix_time_from_system()))
+	add_stat("playtime", secs)
 	if won:
+		if stat("fastest") <= 0.0 or secs < stat("fastest"):
+			meta.stats.fastest = secs
+		meta.max_heat = max(int(meta.get("max_heat", 0)), run.get("heat", {}).size())
 		meta.wins = int(meta.wins) + 1
 	else:
 		meta.deaths = int(meta.deaths) + 1

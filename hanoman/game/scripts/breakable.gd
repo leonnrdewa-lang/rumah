@@ -120,7 +120,7 @@ func smash(from: Vector3) -> void:
 		Au.sfx("sfx_coin_drop", -4.0)
 	elif G.in_run and r < 0.55:
 		G.heal(5)
-		Fx.text(p, "+5 nyawa", Color(1, 0.55, 0.6))
+		Fx.text(p, "+5 health", Color(1, 0.55, 0.6))
 		Fx.burst(p + Vector3(0, 0.8, 0), Color(1, 0.45, 0.55), 10, 3.0, 0.12, 0.5)
 	var tw := create_tween()
 	tw.tween_property(self, "scale", Vector3(scale.x * 1.25, scale.y * 0.2, scale.z * 1.25), 0.08)

@@ -27,7 +27,7 @@ func setup_boss(p_kind: String) -> void:
 	match kind:
 		"kijang":
 			boss_name = "Kijang Kencana"
-			boss_title = "Kala Marica menyamar"
+			boss_title = "Kala Marica in disguise"
 			max_hp = 460.0 if not clone else 1.0
 			move_speed = 6.5
 			dmg = 12
@@ -37,7 +37,7 @@ func setup_boss(p_kind: String) -> void:
 				Art.set_param(model, "glow", 0.4)
 		"sura":
 			boss_name = "Sura"
-			boss_title = "Raja Hiu Samudra Kidul"
+			boss_title = "Shark King of the Southern Sea"
 			max_hp = 820.0
 			move_speed = 5.0
 			dmg = 16
@@ -45,12 +45,15 @@ func setup_boss(p_kind: String) -> void:
 			set_model("sura", "fish")
 		"baya":
 			boss_name = "Baya"
-			boss_title = "Raja Buaya Kali Mas"
+			boss_title = "Crocodile King of Kali Mas"
 			max_hp = 900.0
 			move_speed = 3.2
 			dmg = 15
 			setup_body(1.5, 2.0, L_ENEMY, L_WORLD | L_PLAYER)
 			set_model("baya", "quad")
+	if G.run.get("heat", {}).has("kings") and not clone:
+		max_hp *= 1.5
+		dmg *= 1.25
 	hp = max_hp
 	cooldown = 1.2
 
@@ -66,6 +69,9 @@ func _ready() -> void:
 		super._ready()
 		return
 	add_to_group("boss")
+	G.unlock_codex(kind)
+	if kind == "sura" or kind == "baya":
+		G.unlock_codex("surabaya")
 	invuln = 1.0
 	state = "intro"
 	state_t = 0.0
@@ -96,7 +102,7 @@ func _boss_melee(center: Vector3, r: float, amount: float, kb := 6.0) -> void:
 		if d < r + rival.radius and not rival.has_meta("hit_by_%d" % get_instance_id()):
 			rival.set_meta("hit_by_%d" % get_instance_id(), true)
 			rival.take_hit(amount * 3.0, global_position, 2.0, {"color": Color(1, 0.6, 0.2)})
-			Fx.text(rival.global_position, "%s menyerang %s!" % [boss_name, rival.boss_name], Color(1, 0.7, 0.3))
+			Fx.text(rival.global_position, "%s attacks %s!" % [boss_name, rival.boss_name], Color(1, 0.7, 0.3))
 			get_tree().create_timer(0.6).timeout.connect(func():
 				if is_instance_valid(rival): rival.remove_meta("hit_by_%d" % get_instance_id()))
 
@@ -196,7 +202,7 @@ func _begin_charge() -> void:
 
 
 func _summon_clones() -> void:
-	G.say("Kijang Kencana membelah diri!", Color(1, 0.85, 0.4))
+	G.say("Kijang Kencana splits apart!", Color(1, 0.85, 0.4))
 	Au.sfx("sfx_boon", -3.0, 0.0, 0.8)
 	Fx.magic_circle(global_position, 3.0, Color(1.0, 0.82, 0.3), 1.0, 3.0)
 	Fx.sprite("shards", global_position + Vector3(0, 1.2, 0), 4.0, Color(1.0, 0.85, 0.4), 0.5, {"from": 0.3, "grow": 1.3})
@@ -220,8 +226,8 @@ func _transform() -> void:
 	state_t = -1.2
 	invuln = 1.4
 	boss_name = "Kala Marica"
-	boss_title = "Raksasa di balik Kijang Kencana"
-	G.say("Kijang Kencana menampakkan wujud aslinya: Kala Marica!", Color(0.6, 1.0, 0.5))
+	boss_title = "The demon behind Kijang Kencana"
+	G.say("Kijang Kencana reveals its true form: Kala Marica!", Color(0.6, 1.0, 0.5))
 	Au.sfx("sfx_roar", 0.0, 0.0, 0.8)
 	Au.sfx("sfx_lightning", -2.0)
 	G.main.shake(0.7)
@@ -447,7 +453,7 @@ func on_death() -> void:
 	Fx.smoke(global_position + Vector3(0, 1.5, 0), 6.0, Color(0.7, 0.5, 0.9))
 	Fx.burst(global_position + Vector3(0, 1.5, 0), Color(1, 0.8, 0.4), 40, 9.0, 0.35, 1.0)
 	if rival and is_instance_valid(rival) and not rival.dead:
-		G.say("%s tumbang! %s mengamuk!" % [boss_name, rival.boss_name], Color(1, 0.6, 0.3))
+		G.say("%s has fallen! %s goes berserk!" % [boss_name, rival.boss_name], Color(1, 0.6, 0.3))
 	var tw := create_tween()
 	tw.tween_interval(0.6)
 	tw.tween_method(func(v): Art.set_param(model, "fade", v), 1.0, 0.0, 1.0)

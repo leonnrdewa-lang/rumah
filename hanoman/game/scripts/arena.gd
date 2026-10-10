@@ -28,11 +28,18 @@ const REWARD_ICON := {
 const PAINTS := {
 	"dandaka": ["dandaka", "dandaka2", "bambu", "candi"],
 	"muara": ["muara", "rawa", "pasir"],
+	"samudra": ["samudra", "pasir", "samudra"],
+	"argasoka": ["argasoka", "candi", "argasoka"],
+	"alengka": ["alengka", "argasoka"],
 }
 const THEMES := {
 	"dandaka": ["pond", "pillars", "ruins", "grove", "shrine", "open"],
 	"muara": ["pond", "piers", "rocks", "mangrove", "open"],
+	"samudra": ["pond", "rocks", "open", "piers"],
+	"argasoka": ["pillars", "shrine", "grove", "pond", "open"],
+	"alengka": ["pillars", "shrine", "ruins", "open"],
 }
+const WATERY := ["muara", "samudra"]
 
 var biome := "dandaka"
 var kind := "combat"        # combat | miniboss | boss | rest | hub
@@ -318,9 +325,9 @@ func paint_keys() -> Array:
 		"hub":
 			pool = ["hub"]
 		"boss":
-			pool = ["boss"]
+			pool = ["alengka"] if biome == "alengka" else ["boss"]
 		"miniboss":
-			pool = ["candi", "dandaka2"]
+			pool = ["alengka", "argasoka"] if biome == "alengka" else ["candi", "dandaka2"]
 	var out := []
 	# keep the original floors in rotation, add the newer ones for variety
 	var start := depth % pool.size()
@@ -341,7 +348,7 @@ func paint_key() -> String:
 func _build_ground() -> void:
 	var center := bounds.get_center()
 	var big := bounds.size + Vector2(70, 70)
-	if biome == "muara":
+	if biome in WATERY:
 		var wm := ShaderMaterial.new()
 		wm.shader = WATER
 		wm.set_shader_parameter("noise", NOISE)
@@ -589,7 +596,7 @@ func _add_breakables(c: Vector2, h: Vector2) -> void:
 				continue
 			for k in _rng.randi_range(1, 3):
 				var q := p + Vector2(_rng.randf_range(-0.9, 0.9), _rng.randf_range(-0.9, 0.9))
-				var b := Breakable.make("peti" if biome == "muara" and _rng.randf() < 0.6 else "gentong")
+				var b := Breakable.make("peti" if biome in WATERY and _rng.randf() < 0.6 else "gentong")
 				add_child(b)
 				b.position = Vector3(q.x, 0, q.y)
 			obstacles.append([p, 1.2])
@@ -602,6 +609,10 @@ func _build_scenery() -> void:
 	match biome:
 		"muara":
 			ring_props = [["bakau", 0.35], ["batu_besar", 0.2], ["teratai", 0.25], ["perahu", 0.08], ["batu", 0.12]]
+		"samudra":
+			ring_props = [["batu_besar", 0.35], ["batu", 0.35], ["teratai", 0.15], ["perahu", 0.15]]
+		"argasoka", "alengka":
+			ring_props = [["beringin", 0.12], ["candi_pilar", 0.22], ["arca", 0.14], ["semak", 0.22], ["candi_reruntuhan", 0.12], ["bunga_glow", 0.18]]
 		"hub":
 			ring_props = [["beringin", 0.2], ["semak", 0.35], ["pakis", 0.25], ["candi_pilar", 0.1], ["batu", 0.1]]
 		_:
@@ -632,8 +643,8 @@ func _build_scenery() -> void:
 					continue   # keep the camera side low so it doesn't hide the arena
 				var id := _pick(ring_props)
 				if (south or _near_corridor(pos, 5.5)) and (id == "beringin" or id == "bakau" or id == "pohon_mati" or id == "candi_reruntuhan"):
-					id = "semak" if biome != "muara" else "teratai"
-				var yy := -0.3 if biome == "muara" and id == "teratai" else 0.0
+					id = "semak" if not biome in WATERY else "teratai"
+				var yy := -0.3 if biome in WATERY and id == "teratai" else 0.0
 				add_prop(id, pos, _rng.randf() * TAU, band[3] * _rng.randf_range(0.8, 1.2), yy)
 			x += step
 	# torches and glowing flowers along every chamber's edge
@@ -738,7 +749,7 @@ func _open_chamber(i: int) -> void:
 	var mouth: Vector2 = ch.get("mouth", boxes[ch.box].c)
 	Fx.magic_circle(Vector3(mouth.x, 0, mouth.y), 2.6, Color(1.0, 0.82, 0.4), 1.4, 2.0)
 	Au.sfx("sfx_gate", -2.0)
-	G.say("Jalan terbuka! Terus maju, Hanoman.", Color(1, 0.9, 0.6))
+	G.say("The way is open! Press on, Hanoman.", Color(1, 0.9, 0.6))
 	# a beacon so the way on is easy to find in the larger maps
 	_hint = Node3D.new()
 	add_child(_hint)
@@ -800,7 +811,7 @@ func build_exits() -> void:
 		var tw := icon.create_tween().set_loops()
 		tw.tween_property(icon, "position:y", 5.1, 0.9).set_trans(Tween.TRANS_SINE)
 		tw.tween_property(icon, "position:y", 4.9, 0.9).set_trans(Tween.TRANS_SINE)
-		g.set_prompt("Masuk: " + reward_label(rw))
+		g.set_prompt("Enter: " + reward_label(rw))
 		gates.append(g)
 
 
@@ -816,23 +827,23 @@ func _reward_icon(rw: Dictionary) -> String:
 static func reward_label(rw: Dictionary) -> String:
 	match rw.get("type", ""):
 		"boon":
-			return "Anugerah " + G.GOD_NAMES[rw.god]
+			return "Boon of " + G.GOD_NAMES[rw.god]
 		"kepeng":
 			return "Kepeng"
 		"tirta":
-			return "Tirta Amerta (pulih)"
+			return "Tirta Amerta (heal)"
 		"bunga":
-			return "Kembang Wijayakusuma"
+			return "Wijayakusuma Blossom"
 		"palu":
-			return "Pusaka Palu (naikkan anugerah)"
+			return "Palu Heirloom (upgrade a boon)"
 		"miniboss":
-			return "Sang Kijang Kencana"
+			return "Kumbakarna, the Sleeping Giant" if int(G.run.get("room", 0)) > 9 else "The Kijang Kencana"
 		"boss":
-			return "Muara Kalimas — Sura & Baya"
+			return "Alengka — Indrajit" if int(G.run.get("room", 0)) > 9 else "Kalimas Estuary — Sura & Baya"
 		"rest":
-			return "Pasar Sang Hyang & Sendang"
+			return "Divine Market & Spring"
 		"muara":
-			return "Muara Kalimas"
+			return "Kalimas Estuary"
 	return "?"
 
 
@@ -917,10 +928,11 @@ func _spawn_wave(list: Array, chamber: int) -> void:
 		var pos := _spawn_point(pl, chamber)
 		var kind_i: String = list[i]
 		Fx.ring(pos, 1.0, Color(0.7, 0.2, 0.9), 0.6)
-		var e := Enemy.new()
+		var e: Enemy = AlengkaFoe.new() if AlengkaFoe.is_foe(kind_i) else Enemy.new()
 		e.setup(kind_i, depth)
-		# elite chance grows with depth and in later chambers
-		if i == 0 and _rng.randf() < 0.08 + depth * 0.03 + chamber * 0.06:
+		# elite chance grows with depth and in later chambers (and the Horde vow)
+		var horde := 0.25 if G.run.get("heat", {}).has("horde") else 0.0
+		if i == 0 and _rng.randf() < 0.08 + depth * 0.03 + chamber * 0.06 + horde:
 			e.make_elite()
 		_pending += 1
 		var t := get_tree().create_timer(0.55 + i * 0.12)
@@ -952,6 +964,15 @@ func _spawn_point(avoid: Vector3, chamber := 0) -> Vector3:
 
 func _spawn_boss() -> void:
 	wave_i = 0
+	if biome == "alengka":
+		var ab := AlengkaBoss.new()
+		ab.setup_alengka("kumbakarna" if kind == "miniboss" else "indrajit")
+		G.main.spawn_actor(ab, Vector3(bounds.get_center().x, 0, bounds.get_center().y - half.y * 0.4))
+		alive.append(ab)
+		G.main.ui.set_bosses([ab])
+		_add_hazards([ab])
+		G.main.boss_intro(ab, ab.boss_name, ab.boss_title)
+		return
 	if kind == "miniboss":
 		var b := Boss.new()
 		b.setup_boss("kijang")
@@ -973,7 +994,7 @@ func _spawn_boss() -> void:
 		alive.append(y)
 		G.main.ui.set_bosses([s, y])
 		_add_hazards([s, y])
-		G.main.boss_intro(s, "Sura & Baya", "Penguasa Muara Kalimas")
+		G.main.boss_intro(s, "Sura & Baya", "Lords of the Kalimas Estuary")
 
 
 func _add_hazards(list: Array) -> void:

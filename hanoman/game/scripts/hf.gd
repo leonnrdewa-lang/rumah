@@ -89,6 +89,9 @@ func _load_all() -> void:
 		jobs.append(["floor/" + b, manifest.floors[b]])
 	for f in manifest.get("fx", {}):
 		jobs.append(["fx/" + f, manifest.fx[f]])
+	# free-form painted images: title art, cutscene stills, UI frames, icons
+	for k in manifest.get("images", {}):
+		jobs.append([k, manifest.images[k]])
 	for a in manifest.get("sfx", {}):
 		jobs.append(["sfx/" + a, manifest.sfx[a]])
 	for id in manifest.get("models", {}):

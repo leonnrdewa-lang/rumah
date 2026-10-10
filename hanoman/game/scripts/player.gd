@@ -47,6 +47,7 @@ func _ready() -> void:
 	setup_body(0.45, 1.6, L_PLAYER, L_WORLD | L_ENEMY)
 	set_model("hanoman", "biped")
 	staff = Staff.attach(model)
+	Weapons.dress(staff)
 	move_speed = 7.2
 	add_to_group("player")
 	reset_for_run()
@@ -67,6 +68,7 @@ func reset_for_run() -> void:
 	velocity = Vector3.ZERO
 	if rig:
 		rig.revive()
+	Weapons.dress(staff)
 	if staff:
 		staff.visible = true
 	if model:
@@ -102,6 +104,8 @@ func _physics_process(delta: float) -> void:
 		mv = Vector3(v.x, 0, v.y)
 		if mv.length() > 1.0:
 			mv = mv.normalized()
+		if bound_t > 0.0:
+			mv *= 0.15
 	_update_aim(mv)
 	if not input_locked and G.main.combat_enabled():
 		if Input.is_action_just_pressed("dash"):
@@ -123,7 +127,7 @@ func _physics_process(delta: float) -> void:
 			_end_dash()
 	elif combo_i >= 0:
 		_attack_tick(delta)
-		var c: Dictionary = COMBO[combo_i]
+		var c: Dictionary = _combo()[combo_i]
 		var lunge: float = c.lunge if atk_t < c.hit + 0.05 else 0.0
 		velocity = atk_dir * lunge + mv * speed * 0.25
 	else:
@@ -133,6 +137,11 @@ func _physics_process(delta: float) -> void:
 			_step_t += delta * mv.length()
 			if _step_t > 0.3:
 				_step_t = 0.0
+				# wading: ripples and splashes on the wet estuary / ocean floors
+				if G.main.room and G.main.room.biome in Arena.WATERY:
+					Fx.sprite("shock", global_position + Vector3(0, 0.05, 0), 1.4, Color(0.6, 0.85, 1.0), 0.6, {"flat": true, "from": 0.2, "grow": 1.0, "tint": 0.5, "intensity": 0.9, "hold": 0.1})
+					if randf() < 0.4:
+						Fx.splash(global_position, 0.8)
 				Au.sfx("sfx_step%d" % randi_range(1, 3), -14.0, 0.1)
 	if cast_anim > 0.0:
 		cast_anim -= delta
@@ -214,31 +223,40 @@ func _start_swing(i: int) -> void:
 	atk_queued = false
 	atk_dir = assisted(aim, 6.0)
 	snap_face(atk_dir)
-	var c: Dictionary = COMBO[i]
+	var c: Dictionary = _combo()[i]
 	rig.play(c.anim, c.len)
 	Au.sfx("sfx_swing%d" % (i + 1), -3.0 if i < 2 else -1.0, 0.08, 1.0 if i < 2 else 0.85)
 
 
 func _attack_tick(delta: float) -> void:
 	atk_t += delta
-	var c: Dictionary = COMBO[combo_i]
+	var c: Dictionary = _combo()[combo_i]
 	if not atk_hit_done and atk_t >= c.hit:
 		atk_hit_done = true
 		_swing_hit(combo_i)
 	if atk_t >= c.len:
 		var next := combo_i + 1
-		if atk_queued and next < COMBO.size():
+		if atk_queued and next < _combo().size():
 			_start_swing(next)
 		else:
 			combo_i = -1
 			if atk_queued:
 				_start_swing(0)
-	elif atk_queued and atk_t >= c.len * 0.7 and combo_i + 1 < COMBO.size():
+	elif atk_queued and atk_t >= c.len * 0.7 and combo_i + 1 < _combo().size():
 		_start_swing(combo_i + 1)
 
 
+func _combo() -> Array:
+	return Weapons.COMBOS.get(Weapons.current(), COMBO)
+
+
 func _swing_hit(i: int) -> void:
-	var c: Dictionary = COMBO[i]
+	var c: Dictionary = _combo()[i]
+	var wpn := Weapons.current()
+	if wpn == "panah" or wpn == "cakra":
+		var rdmg: float = c.dmg * float(G.run.get("attack_mult", 1.0)) * (1.0 + (Boons.val("bayu_serang") + Boons.val("baruna_serang")) / 100.0)
+		Weapons.shoot(self, i, atk_dir, rdmg)
+		return
 	var col := Color(1.0, 0.85, 0.45)
 	var holder := Boons.slot_holder("serang")
 	if holder != "":
@@ -289,6 +307,8 @@ func _swing_hit(i: int) -> void:
 		Au.sfx("sfx_hit" if i < 2 else "sfx_hit_heavy", -2.0, 0.1, 1.0 if i < 2 else 0.8)
 		# layered body blow under the painted whoosh
 		Au.sfx("sfx_punch_heavy" if i == 2 else ("sfx_punch1" if i == 0 else "sfx_punch2"), -4.0, 0.1)
+		if i == 2 or randf() < 0.15:
+			bark("vo_atk%d" % randi_range(1, 3))
 		G.main.hitstop(0.05 if i < 2 else 0.09)
 		G.vibrate(18 if i < 2 else 45)
 
@@ -364,11 +384,17 @@ func try_special() -> void:
 	cast_anim = 0.32
 	var dir := assisted(aim, LASER_LEN)
 	snap_face(dir)
-	rig.play("thrust", 0.4)
+	if randf() < 0.5:
+		bark("vo_special%d" % randi_range(1, 2))
 	var holder := Boons.slot_holder("jurus")
 	var col := Color(1.0, 0.78, 0.35)
 	if holder != "":
 		col = G.GOD_COLORS[Boons.god_of(holder)]
+	if Weapons.current() != "tongkat":
+		rig.play("spin" if Weapons.current() != "panah" else "cast", 0.55)
+		Weapons.special(self, dir, col)
+		return
+	rig.play("thrust", 0.4)
 	var wave := Boons.owned("baruna_jurus")
 	# charge flare at the fist, then fire
 	var hand := _hand_pos()
@@ -554,6 +580,7 @@ func take_hit(dmg: float, from: Vector3, knockback := 3.0, info := {}) -> float:
 	if away.length_squared() > 0.001:
 		knock += away.normalized() * knockback * 0.6
 	Au.sfx("sfx_player_hurt", -1.0)
+	bark("vo_low" if float(G.run.hp) - dmg < float(G.run.max_hp) * 0.25 else "vo_hurt%d" % randi_range(1, 2), true)
 	Au.sfx("sfx_punch_heavy", -5.0, 0.1)
 	G.vibrate(90)
 	G.main.flash(Color(1.0, 0.2, 0.15), 0.15, 0.25)
@@ -566,7 +593,7 @@ func take_hit(dmg: float, from: Vector3, knockback := 3.0, info := {}) -> float:
 			G.run.hp = float(G.run.max_hp) * 0.5
 			invuln = 2.0
 			Fx.shock(global_position, 4.0, Color(1, 0.85, 0.4), 0.6)
-			G.say("Balung Wesi! Hanoman bangkit lagi.", Color(1, 0.85, 0.4))
+			G.say("Iron Bones! Hanoman rises again.", Color(1, 0.85, 0.4))
 		else:
 			G.run.hp = 0.0
 			die()
@@ -602,3 +629,17 @@ func try_interact() -> void:
 		return
 	if interact_target and is_instance_valid(interact_target):
 		interact_target.call("interact")
+
+
+## Hanoman's voice (Higgsfield TTS barks): rate-limited so it never chatters.
+var _bark_t := 0
+
+
+func bark(key: String, force := false) -> void:
+	var now := Time.get_ticks_msec()
+	if not force and now - _bark_t < 2500:
+		return
+	if Hf.sound(key) == null:
+		return
+	_bark_t = now
+	Au.sfx(key, -2.0, 0.03)

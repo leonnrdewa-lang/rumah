@@ -105,5 +105,6 @@
 "vo/vo_hurt2": "cae90e1d-ddc5-40c5-9aa5-cbd2b5f252b0",
 "vo/vo_low": "6989c07a-d85d-461e-a6ce-0e70943335c2",
 "vo/vo_victory": "08457e20-430b-4dfa-ac90-af4fa390cade",
-"model/indrajit": "1c922d09-9e4c-4299-8e63-b3371817357e"
+"model/indrajit": "1c922d09-9e4c-4299-8e63-b3371817357e",
+"rig/indrajit_attack": "a63da4b5-a751-4bcf-914b-484b3efcd787"
 }

@@ -50,10 +50,22 @@ func setup(p_kind: String, depth := 0) -> void:
 		knock_resist = 0.5
 	_strafe = 1.0 if randf() < 0.5 else -1.0
 	cooldown = randf_range(0.4, 1.4)
+	apply_vows()
+
+
+## Heat: the player's vows make every foe tougher.
+func apply_vows() -> void:
+	var heat: Dictionary = G.run.get("heat", {})
+	if heat.has("swift"):
+		move_speed *= 1.25
+	if heat.has("iron"):
+		max_hp *= 1.4
+		hp = max_hp
 
 
 func _ready() -> void:
 	add_to_group("enemy")
+	G.unlock_codex(kind)
 	_make_bar()
 	invuln = 0.7
 	state = "spawn"
@@ -66,7 +78,7 @@ func _ready() -> void:
 	Fx.burst(global_position + Vector3(0, 0.3, 0), Color(0.7, 0.3, 0.9), 14, 4.0, 0.25, 0.6)
 	Fx.sprite("k_magic", global_position + Vector3(0, 0.1, 0), radius * 3.0 + 2.0, Color(0.8, 0.35, 1.0), 0.8, {"flat": true, "from": 0.3, "grow": 1.1, "spin": 3.0, "tint": 0.5, "intensity": 1.8, "hold": 0.4})
 	if elite:
-		Fx.text(global_position + Vector3(0, 0.6, 0), "Raksasa Sakti!", Color(1, 0.8, 0.3))
+		Fx.text(global_position + Vector3(0, 0.6, 0), "Empowered Ogre!", Color(1, 0.8, 0.3))
 		Fx.magic_circle(global_position, radius + 1.6, Color(1.0, 0.75, 0.25), 1.2, -2.5)
 
 
@@ -437,7 +449,7 @@ func take_hit(amount: float, from: Vector3, knockback := 3.0, info := {}) -> flo
 		var dir := from - global_position
 		dir.y = 0
 		if dir.length() > 0.01 and facing.angle_to(dir) < 0.9:
-			Fx.text(global_position, "Tangkis!", Color(0.8, 0.8, 0.9))
+			Fx.text(global_position, "Blocked!", Color(0.8, 0.8, 0.9))
 			Fx.sparks(global_position + dir.normalized() * radius + Vector3(0, 0.8, 0), Color(1, 0.9, 0.6), 10, 6.0, dir)
 			Au.sfx("sfx_hit_heavy", -8.0, 0.1, 1.6)
 			return super.take_hit(amount * 0.25, from, knockback * 0.3, info)
@@ -446,6 +458,8 @@ func take_hit(amount: float, from: Vector3, knockback := 3.0, info := {}) -> flo
 
 func die() -> void:
 	_clear_tele()
+	if not dead and G.in_run and not has_meta("summoned"):
+		G.run.kills = int(G.run.get("kills", 0)) + 1
 	if elite and not dead and G.in_run:
 		var n := randi_range(20, 35)
 		G.add_kepeng(n)

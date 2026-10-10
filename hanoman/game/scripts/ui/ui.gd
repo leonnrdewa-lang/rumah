@@ -14,17 +14,19 @@ const CREAM := Color("f3e9d2")
 const INK := Color(0.05, 0.04, 0.06)
 
 const WHO := {
-	"hanoman": ["Hanoman", "Duta Prabu Rama"],
-	"rama": ["Prabu Rama", "Titisan Batara Wisnu"],
-	"jembawan": ["Resi Jembawan", "Penasihat Wanara"],
-	"sugriwa": ["Prabu Sugriwa", "Raja Kera Kiskenda"],
+	"hanoman": ["Hanoman", "Envoy of King Rama"],
+	"rama": ["King Rama", "Avatar of Batara Wisnu"],
+	"jembawan": ["Sage Jembawan", "Wanara Counselor"],
+	"sugriwa": ["King Sugriwa", "Ape King of Kiskenda"],
 	"kijang": ["Kijang Kencana", "Kala Marica"],
-	"sura": ["Sura", "Raja Hiu Samudra"],
-	"baya": ["Baya", "Raja Buaya Kali Mas"],
-	"dewa_bayu": ["Batara Bayu", "Dewa Angin"],
-	"dewa_surya": ["Batara Surya", "Dewa Matahari"],
-	"dewa_baruna": ["Batara Baruna", "Dewa Samudra"],
-	"dewa_indra": ["Batara Indra", "Raja Kahyangan"],
+	"sura": ["Sura", "Shark King of the Sea"],
+	"baya": ["Baya", "Crocodile King of Kali Mas"],
+	"indrajit": ["Indrajit", "Son of Rahwana"],
+	"kumbakarna": ["Kumbakarna", "Giant of Alengka"],
+	"dewa_bayu": ["Batara Bayu", "God of Wind"],
+	"dewa_surya": ["Batara Surya", "God of the Sun"],
+	"dewa_baruna": ["Batara Baruna", "God of the Sea"],
+	"dewa_indra": ["Batara Indra", "King of Heaven"],
 }
 
 var hud: Control
@@ -88,7 +90,29 @@ func _label(text: String, size: int, font: Font = F_BODY, color := CREAM, outlin
 	return l
 
 
+## Painted wayang frame from the Higgsfield pack (ui/panel, ui/button, ui/card).
+func _tex_style(key: String, margin: Vector4, content: Vector4, mod := Color.WHITE) -> StyleBoxTexture:
+	var t: Texture2D = Hf.textures.get(key)
+	if t == null:
+		return null
+	var s := StyleBoxTexture.new()
+	s.texture = t
+	s.texture_margin_left = margin.x
+	s.texture_margin_top = margin.y
+	s.texture_margin_right = margin.z
+	s.texture_margin_bottom = margin.w
+	s.content_margin_left = content.x
+	s.content_margin_top = content.y
+	s.content_margin_right = content.z
+	s.content_margin_bottom = content.w
+	s.modulate_color = mod
+	return s
+
+
 func _panel_style(alpha := 0.92) -> StyleBoxTexture:
+	var painted := _tex_style("ui/panel", Vector4(46, 46, 46, 46), Vector4(40, 30, 40, 30), Color(1, 1, 1, alpha))
+	if painted:
+		return painted
 	var s := StyleBoxTexture.new()
 	s.texture = PANEL
 	s.texture_margin_left = 28
@@ -353,7 +377,7 @@ func set_bosses(list: Array) -> void:
 
 func show_prompt(text: String) -> void:
 	prompt.visible = text != "" and not G.main.busy
-	var key := "E" if not G.touch_mode else "Ketuk"
+	var key := "E" if not G.touch_mode else "Tap"
 	prompt_label.text = "[%s]  %s" % [key, text]
 
 
@@ -458,10 +482,10 @@ func settings_menu() -> void:
 	var vb := VBoxContainer.new()
 	vb.add_theme_constant_override("separation", 14)
 	box.add_child(vb)
-	var t := _label("Pengaturan", 44, F_TITLE, GOLD, 8)
+	var t := _label("Settings", 44, F_TITLE, GOLD, 8)
 	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vb.add_child(t)
-	for spec in [["music", "Musik"], ["sfx", "Efek suara"]]:
+	for spec in [["music", "Music"], ["sfx", "Sound effects"]]:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 16)
 		vb.add_child(row)
@@ -479,7 +503,7 @@ func settings_menu() -> void:
 		sl.value_changed.connect(func(v): G.set_setting(key, v))
 		row.add_child(sl)
 	var vib := _big_button("", func(): pass)
-	var upd_vib := func(): vib.text = "Getar HP: " + ("Nyala" if G.setting("vibrate") else "Mati")
+	var upd_vib := func(): vib.text = "Vibration: " + ("On" if G.setting("vibrate") else "Off")
 	upd_vib.call()
 	vib.pressed.connect(func():
 		G.set_setting("vibrate", not G.setting("vibrate"))
@@ -487,16 +511,16 @@ func settings_menu() -> void:
 		G.vibrate(60))
 	vb.add_child(vib)
 	var q := _big_button("", func(): pass)
-	var upd_q := func(): q.text = "Grafis: " + ("Tinggi" if G.high_quality() else "Rendah (HP lemah)")
+	var upd_q := func(): q.text = "Graphics: " + ("High" if G.high_quality() else "Low (weak phones)")
 	upd_q.call()
 	q.pressed.connect(func():
 		G.set_setting("quality", "low" if G.high_quality() else "high")
 		upd_q.call())
 	vb.add_child(q)
-	var note := _label("Grafis berlaku mulai ruang berikutnya.", 16, F_BODY, Color(0.7, 0.68, 0.62), 3)
+	var note := _label("Graphics apply from the next chamber.", 16, F_BODY, Color(0.7, 0.68, 0.62), 3)
 	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vb.add_child(note)
-	var close := _big_button("Tutup", func(): pass)
+	var close := _big_button("Close", func(): pass)
 	close.pressed.connect(func(): _close_modal(root))
 	vb.add_child(close)
 	_back = func(): _close_modal(root)
@@ -504,7 +528,7 @@ func settings_menu() -> void:
 
 
 func room_clear_banner() -> void:
-	var l := _label("Raksasa Tumpas!", 44, F_TITLE, GOLD, 12)
+	var l := _label("Demons Vanquished!", 44, F_TITLE, GOLD, 12)
 	l.set_anchors_preset(Control.PRESET_CENTER)
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	l.position = Vector2(-400, -160)
@@ -576,8 +600,8 @@ func _portrait(root: Control, id: String, from_left := true) -> TextureRect:
 ## lines: [[speaker_id, text], ...]
 func dialog(lines: Array, done: Callable) -> void:
 	if _skip.is_valid():
-		# a dialog is already open (double tap on an NPC): don't stack a second one
-		return
+		# a conversation is still open: wrap it up (its callback runs) before the next
+		_skip.call()
 	var root := _modal(0.0)
 	var grad := TextureRect.new()
 	var gt := GradientTexture2D.new()
@@ -630,7 +654,8 @@ func dialog(lines: Array, done: Callable) -> void:
 		var info: Array = WHO.get(who, [who.capitalize(), ""])
 		name_l.text = info[0]
 		title_l.text = info[1]
-		_portrait(holder, who, true)
+		var mood: String = lines[i][2] if lines[i].size() > 2 else _guess_mood(who, String(lines[i][1]))
+		_portrait(holder, who + "_" + mood if mood != "" and portrait_tex(who + "_" + mood) else who, true)
 		text.text = lines[i][1]
 		Hf.speak(lines[i][1])
 		text.visible_ratio = 0.0
@@ -641,7 +666,7 @@ func dialog(lines: Array, done: Callable) -> void:
 		tw.tween_callback(func(): _typing = false)
 		Au.sfx("sfx_ui_move", -12.0)
 	# Esc / "Lewati" closes the whole conversation at once
-	var skip_b := _big_button("Lewati", func():
+	var skip_b := _big_button("Skip", func():
 		if _skip.is_valid(): _skip.call())
 	skip_b.custom_minimum_size = Vector2(170, 44)
 	skip_b.add_theme_font_size_override("font_size", 20)
@@ -675,6 +700,21 @@ func dialog(lines: Array, done: Callable) -> void:
 	root.gui_input.connect(func(e):
 		if (e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT) or (e is InputEventScreenTouch and e.pressed):
 			if _advance.is_valid(): _advance.call())
+
+
+const ANGRY_WHO := ["sura", "baya", "kijang", "indrajit", "kumbakarna"]
+
+
+## Which painted expression fits a line: angry / happy / sad, or "" for neutral.
+static func _guess_mood(who: String, text: String) -> String:
+	var t := text.to_lower()
+	if t.contains("haha") or t.contains("hehe") or t.contains("hee hee") or t.contains("thank") or t.contains("proud"):
+		return "happy"
+	if who == "rama" and (t.contains("sinta") or t.contains("fall") or t.contains("wound")):
+		return "sad"
+	if text.contains("!") and (who in ANGRY_WHO or who == "hanoman"):
+		return "angry"
+	return ""
 
 
 ## True while a dialog is open or was just closed: the key that closed it must
@@ -713,6 +753,15 @@ func _card(title: String, title_col: Color, sub: String, desc: String, icon: Str
 	b.add_theme_stylebox_override("focus", _flat(Color(0.12, 0.1, 0.12, 0.98), GOLD, 3, 10))
 	b.add_theme_stylebox_override("pressed", _flat(Color(0.2, 0.16, 0.1, 0.98), GOLD, 3, 10))
 	b.add_theme_stylebox_override("disabled", _flat(Color(0.05, 0.05, 0.06, 0.8), Color(0.2, 0.2, 0.2), 2, 10))
+	var cm := Vector4(48, 30, 40, 30)
+	var cc := Vector4(40, 14, 30, 14)
+	var card := _tex_style("ui/card", cm, cc, border.lerp(Color.WHITE, 0.55))
+	if card:
+		b.add_theme_stylebox_override("normal", card)
+		b.add_theme_stylebox_override("hover", _tex_style("ui/card", cm, cc, border.lerp(Color.WHITE, 0.8) * 1.2))
+		b.add_theme_stylebox_override("focus", _tex_style("ui/card", cm, cc, Color(1.35, 1.25, 1.0)))
+		b.add_theme_stylebox_override("pressed", _tex_style("ui/card", cm, cc, Color(1.5, 1.35, 1.0)))
+		b.add_theme_stylebox_override("disabled", _tex_style("ui/card", cm, cc, Color(0.4, 0.4, 0.45)))
 	var hb := HBoxContainer.new()
 	hb.set_anchors_preset(Control.PRESET_FULL_RECT)
 	hb.offset_left = 14
@@ -780,7 +829,7 @@ func boon_menu(god: String, offers: Array, done: Callable) -> void:
 		var holder := Boons.slot_holder(info.slot)
 		var desc := Boons.desc(o.id, o.rar)
 		if holder != "" and info.slot != "pasif":
-			desc += "  (Mengganti: %s)" % Boons.ALL[holder].name
+			desc += "  (Replaces: %s)" % Boons.ALL[holder].name
 		var card := _card("%d. %s" % [i + 1, info.name], Boons.RARITY_COLOR[o.rar], sub, desc,
 			"res://assets/icons/slot_%s.png" % info.slot, Boons.RARITY_COLOR[o.rar])
 		card.pressed.connect(func():
@@ -834,7 +883,7 @@ func choice_menu(title: String, subtitle: String, opts: Array, done: Callable, c
 		_menu_buttons.append(card)
 	if closable:
 		var close := Button.new()
-		close.text = "Tutup"
+		close.text = "Close"
 		close.add_theme_font_override("font", F_HEAD)
 		close.add_theme_font_size_override("font_size", 24)
 		close.add_theme_stylebox_override("normal", _flat(Color(0.1, 0.08, 0.08), GOLD, 2, 10))
@@ -861,27 +910,49 @@ func _big_button(text: String, cb: Callable) -> Button:
 	b.add_theme_color_override("font_color", CREAM)
 	b.add_theme_color_override("font_hover_color", GOLD)
 	b.add_theme_color_override("font_focus_color", GOLD)
-	b.add_theme_stylebox_override("normal", _flat(Color(0.06, 0.05, 0.07, 0.85), GOLD.darkened(0.4), 2, 8))
-	b.add_theme_stylebox_override("hover", _flat(Color(0.14, 0.1, 0.08, 0.95), GOLD, 3, 8))
-	b.add_theme_stylebox_override("focus", _flat(Color(0.14, 0.1, 0.08, 0.95), GOLD, 3, 8))
-	b.add_theme_stylebox_override("pressed", _flat(Color(0.2, 0.14, 0.08, 0.95), GOLD, 3, 8))
+	var m := Vector4(34, 18, 34, 18)
+	var cm := Vector4(30, 10, 30, 10)
+	var pn := _tex_style("ui/button", m, cm, Color(0.85, 0.85, 0.85))
+	if pn:
+		b.add_theme_stylebox_override("normal", pn)
+		b.add_theme_stylebox_override("hover", _tex_style("ui/button", m, cm, Color(1.25, 1.15, 0.95)))
+		b.add_theme_stylebox_override("focus", _tex_style("ui/button", m, cm, Color(1.3, 1.2, 0.95)))
+		b.add_theme_stylebox_override("pressed", _tex_style("ui/button", m, cm, Color(1.5, 1.3, 1.0)))
+		b.add_theme_stylebox_override("disabled", _tex_style("ui/button", m, cm, Color(0.45, 0.45, 0.45)))
+	else:
+		b.add_theme_stylebox_override("normal", _flat(Color(0.06, 0.05, 0.07, 0.85), GOLD.darkened(0.4), 2, 8))
+		b.add_theme_stylebox_override("hover", _flat(Color(0.14, 0.1, 0.08, 0.95), GOLD, 3, 8))
+		b.add_theme_stylebox_override("focus", _flat(Color(0.14, 0.1, 0.08, 0.95), GOLD, 3, 8))
+		b.add_theme_stylebox_override("pressed", _flat(Color(0.2, 0.14, 0.08, 0.95), GOLD, 3, 8))
 	b.pressed.connect(func():
 		Au.sfx("sfx_ui_select", -4.0)
 		cb.call())
 	return b
 
 
+func _title_art() -> Texture2D:
+	var t: Texture2D = Hf.textures.get("title")
+	if t == null:
+		t = Hf.portrait("keyart")
+	return t if t else portrait_tex("title")
+
+
 func title_screen(start: Callable) -> void:
-	var root := _modal(0.0)
-	var art := portrait_tex("keyart")
-	if art:
-		var bg := TextureRect.new()
-		bg.texture = art
-		bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-		bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-		bg.modulate = Color(0.75, 0.75, 0.8)
-		root.add_child(bg)
+	var root := _modal(1.0)
+	# painted key art fills the screen (no 3D diorama behind the menu)
+	var bg := TextureRect.new()
+	bg.texture = _title_art()
+	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.modulate = Color(0.85, 0.85, 0.9)
+	bg.pivot_offset = get_viewport().get_visible_rect().size * 0.5
+	root.add_child(bg)
+	if not Hf.loaded:
+		Hf.ready_loaded.connect(func():
+			if is_instance_valid(bg):
+				bg.texture = _title_art())
+	if true:
 		var tw := bg.create_tween().set_loops()
 		tw.tween_property(bg, "scale", Vector2(1.04, 1.04), 12.0).set_trans(Tween.TRANS_SINE)
 		tw.tween_property(bg, "scale", Vector2(1.0, 1.0), 12.0).set_trans(Tween.TRANS_SINE)
@@ -908,7 +979,7 @@ func title_screen(start: Callable) -> void:
 	var t := _label("HANOMAN DUTA", 92, F_TITLE, GOLD, 18)
 	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vb.add_child(t)
-	var s := _label("Lakon Ramayana & Legenda Sura dan Baya", 28, F_HEAD, CREAM, 8)
+	var s := _label("A Ramayana Tale & the Legend of Sura and Baya", 28, F_HEAD, CREAM, 8)
 	s.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vb.add_child(s)
 	var sp := Control.new()
@@ -919,7 +990,17 @@ func title_screen(start: Callable) -> void:
 	bb.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	bb.add_theme_constant_override("separation", 10)
 	vb.add_child(bb)
-	var go := _big_button("Mulai Lakon" if int(G.meta.runs) == 0 else "Lanjutkan Lakon", func():
+	if G.has_saved_run():
+		var cont := _big_button("Resume Journey", func():
+			Au.sfx("sfx_boon_pick", -3.0)
+			_close_modal(root)
+			G.main.area = "run"
+			G.main.resume_run())
+		bb.add_child(cont)
+		if not Hf.loaded:
+			cont.disabled = true
+			Hf.ready_loaded.connect(func(): if is_instance_valid(cont): cont.disabled = false)
+	var go := _big_button("Begin the Tale" if int(G.meta.runs) == 0 else "Enter Pancawati", func():
 		Au.sfx("sfx_boon_pick", -3.0)
 		_close_modal(root)
 		G.main.area = "hub"
@@ -928,29 +1009,30 @@ func title_screen(start: Callable) -> void:
 	if not Hf.loaded:
 		var label_ok := go.text
 		go.disabled = true
-		go.text = "Memuat aset Higgsfield…"
+		go.text = "Loading Higgsfield assets…"
 		Hf.progress.connect(func(d, tot):
-			if is_instance_valid(go): go.text = "Memuat aset Higgsfield… %d/%d" % [d, tot])
+			if is_instance_valid(go): go.text = "Loading Higgsfield assets… %d/%d" % [d, tot])
 		Hf.ready_loaded.connect(func():
 			if is_instance_valid(go):
 				go.disabled = false
 				go.text = label_ok
 				go.grab_focus())
-	var ctl := _big_button("Kontrol", func(): _controls_help())
+	var ctl := _big_button("Controls", func(): _controls_help())
 	bb.add_child(ctl)
-	bb.add_child(_big_button("Pengaturan", func(): settings_menu()))
+	bb.add_child(_big_button("Lontar of Tales", func(): codex_menu(func(): pass)))
+	bb.add_child(_big_button("Settings", func(): settings_menu()))
 	go.call_deferred("grab_focus")
-	var snd := _label("Nyalakan suara (di iPhone matikan mode senyap)", 16, F_BODY, Color(0.7, 0.68, 0.62), 4)
+	var snd := _label("Turn on sound (on iPhone, disable silent mode)", 16, F_BODY, Color(0.7, 0.68, 0.62), 4)
 	snd.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vb.add_child(snd)
-	var cr := _label("Demo · karya @leonrdewa · aset Blender & Higgsfield", 18, F_BODY, Color(0.8, 0.78, 0.7), 6)
+	var cr := _label("Demo · by @leonrdewa · Blender & Higgsfield assets", 18, F_BODY, Color(0.8, 0.78, 0.7), 6)
 	cr.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vb.add_child(cr)
 
 
 func _controls_help() -> void:
-	var txt := "PC:  WASD gerak · J / klik kiri = Serang (kombo 3) · K / klik kanan = Jurus (tongkat mulur)\nQ = Ajian (lingkaran pengikat) · Spasi / Shift = Lesat (menghindar) · E = Interaksi · Esc = Jeda\nMouse mengarahkan serangan.\n\nHP / Tablet:  jempol kiri = gerak, tombol kanan = Serang, Jurus, Ajian, Lesat.\nSerangan otomatis membidik raksasa terdekat.\n\nGamepad:  stik kiri gerak · X Serang · Y Jurus · RB Ajian · A Lesat · B Interaksi"
-	choice_menu("Kontrol", "", [{"title": "Cara bermain", "desc": txt, "disabled": true}], func(_o): pass, true)
+	var txt := "PC:  WASD move · J / left click = Attack (3-hit combo) · K / right click = Special (extending staff)\nQ = Spell (binding circle) · Space / Shift = Dash (dodge) · E = Interact · Esc = Pause\nMouse aims your attacks.\n\nPhone / Tablet:  left thumb = move, right buttons = Attack, Special, Spell, Dash.\nAttacks auto-aim at the nearest demon.\n\nGamepad:  left stick move · X Attack · Y Special · RB Spell · A Dash · B Interact"
+	choice_menu("Controls", "", [{"title": "How to play", "desc": txt, "disabled": true}], func(_o): pass, true)
 
 
 func pause_menu() -> void:
@@ -963,18 +1045,19 @@ func pause_menu() -> void:
 	vb.position = Vector2(-170, -180)
 	vb.add_theme_constant_override("separation", 12)
 	root.add_child(vb)
-	var t := _label("Jeda", 56, F_TITLE, GOLD, 10)
+	var t := _label("Paused", 56, F_TITLE, GOLD, 10)
 	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vb.add_child(t)
 	var resume := func():
 		get_tree().paused = false
 		_close_modal(root)
-	var b := _big_button("Lanjut", resume)
+	var b := _big_button("Resume", resume)
 	vb.add_child(b)
-	vb.add_child(_big_button("Kontrol", func(): _controls_help()))
-	vb.add_child(_big_button("Pengaturan", func(): settings_menu()))
+	vb.add_child(_big_button("Controls", func(): _controls_help()))
+	vb.add_child(_big_button("Lontar of Tales", func(): codex_menu(func(): pass)))
+	vb.add_child(_big_button("Settings", func(): settings_menu()))
 	if G.in_run:
-		vb.add_child(_big_button("Kembali ke Pancawati", func():
+		vb.add_child(_big_button("Return to Pancawati", func():
 			resume.call()
 			G.end_run(false)
 			G.main.go_hub()))
@@ -984,7 +1067,7 @@ func pause_menu() -> void:
 
 
 func _summary_lines() -> String:
-	return "Ruang dicapai: %d / %d\nAnugerah: %d\nKembang Wijayakusuma didapat: %d" % [
+	return "Chambers reached: %d / %d\nBoons: %d\nWijayakusuma Blossoms gained: %d" % [
 		int(G.run.get("room", 0)), G.main.LAST_ROOM, G.run.get("boons", {}).size(), int(G.run.get("bunga_gained", 0))]
 
 
@@ -996,16 +1079,16 @@ func death_screen(done: Callable) -> void:
 	vb.custom_minimum_size = Vector2(800, 0)
 	vb.add_theme_constant_override("separation", 16)
 	root.add_child(vb)
-	var t := _label("Hanoman Gugur", 70, F_TITLE, Color(0.85, 0.2, 0.25), 14)
+	var t := _label("Hanoman Has Fallen", 70, F_TITLE, Color(0.85, 0.2, 0.25), 14)
 	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vb.add_child(t)
-	var q := _label("Angin tak pernah mati. Ia hanya kembali ke asalnya.", 24, F_BODY, CREAM, 6)
+	var q := _label("The wind never dies. It only returns to where it began.", 24, F_BODY, CREAM, 6)
 	q.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vb.add_child(q)
 	var s := _label(_summary_lines(), 22, F_HEAD, Color(0.8, 0.78, 0.7), 6)
 	s.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vb.add_child(s)
-	var b := _big_button("Kembali ke Pancawati", func():
+	var b := _big_button("Return to Pancawati", func():
 		_close_modal(root)
 		done.call())
 	b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -1032,14 +1115,14 @@ func victory_screen(done: Callable) -> void:
 	vb.custom_minimum_size = Vector2(900, 0)
 	vb.add_theme_constant_override("separation", 14)
 	root.add_child(vb)
-	for row in [["Muara Kalimas Terlampaui", 58, F_TITLE, GOLD], ["Sura dan Baya takluk — dan sejak hari itu, orang menyebut tanah di muara itu Surabaya.", 24, F_BODY, CREAM],
-			["Bersambung ke Alengka...", 34, F_HEAD, Color("5fe0c8")], [_summary_lines(), 22, F_HEAD, Color(0.8, 0.78, 0.7)],
-			["+10 Kembang Wijayakusuma", 24, F_HEAD, CREAM]]:
+	for row in [["Sinta Is Found", 58, F_TITLE, GOLD], ["Across forest, estuary and ocean, Hanoman carried King Rama's ring to Dewi Sinta in the gardens of Alengka.", 24, F_BODY, CREAM],
+			["The war for Alengka begins... (to be continued)", 30, F_HEAD, Color("5fe0c8")], [_summary_lines(), 22, F_HEAD, Color(0.8, 0.78, 0.7)],
+			["+10 Wijayakusuma Blossoms", 24, F_HEAD, CREAM]]:
 		var l := _label(row[0], row[1], row[2], row[3], 8)
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		vb.add_child(l)
-	var b := _big_button("Kembali ke Pancawati", func():
+	var b := _big_button("Return to Pancawati", func():
 		_close_modal(root)
 		done.call())
 	b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -1071,10 +1154,10 @@ func _build_touch() -> void:
 	_joy_knob.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_joy_base.add_child(_joy_knob)
 	var buttons := [
-		["attack", "Serang", Vector2(-150, -150), 120, "slot_serang"],
-		["special", "Jurus", Vector2(-290, -110), 84, "slot_jurus"],
-		["cast", "Ajian", Vector2(-240, -250), 84, "slot_ajian"],
-		["dash", "Lesat", Vector2(-120, -290), 84, "slot_lesat"],
+		["attack", "Attack", Vector2(-150, -150), 120, "slot_serang"],
+		["special", "Special", Vector2(-290, -110), 84, "slot_jurus"],
+		["cast", "Spell", Vector2(-240, -250), 84, "slot_ajian"],
+		["dash", "Dash", Vector2(-120, -290), 84, "slot_lesat"],
 	]
 	for b in buttons:
 		var c := Control.new()
@@ -1170,3 +1253,172 @@ func _button_at(pos: Vector2) -> String:
 
 func show_touch(on: bool) -> void:
 	touch.visible = on and _touch_enabled()
+
+
+# --- cinematics ----------------------------------------------------------------------
+
+var _bars: Array[ColorRect] = []
+
+
+## Black cinema bars sliding in from the top and bottom.
+func letterbox(on: bool) -> void:
+	if _bars.is_empty():
+		for top in [true, false]:
+			var r := ColorRect.new()
+			r.color = Color.BLACK
+			r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			r.anchor_left = 0.0
+			r.anchor_right = 1.0
+			r.anchor_top = 0.0 if top else 1.0
+			r.anchor_bottom = 0.0 if top else 1.0
+			r.offset_top = 0.0 if top else 0.0
+			r.offset_bottom = 0.0
+			add_child(r)
+			_bars.append(r)
+	var h := get_viewport().get_visible_rect().size.y * 0.12
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(_bars[0], "offset_bottom", h if on else 0.0, 0.35).set_trans(Tween.TRANS_CUBIC)
+	tw.tween_property(_bars[1], "offset_top", -h if on else 0.0, 0.35).set_trans(Tween.TRANS_CUBIC)
+	hud.modulate.a = 0.0 if on else 1.0
+
+
+## A painted still with a slow push-in and narration, between letterbox bars.
+func cutscene(image_key: String, lines: Array, done: Callable) -> void:
+	var root := _modal(1.0)
+	var img := TextureRect.new()
+	img.texture = Hf.textures.get(image_key)
+	img.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	img.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	img.set_anchors_preset(Control.PRESET_FULL_RECT)
+	img.pivot_offset = get_viewport().get_visible_rect().size * 0.5
+	img.modulate.a = 0.0
+	root.add_child(img)
+	var text := _label("", 30, F_BODY, CREAM, 10)
+	text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	text.anchor_left = 0.1
+	text.anchor_right = 0.9
+	text.anchor_top = 0.82
+	text.anchor_bottom = 0.96
+	root.add_child(text)
+	fader.color.a = 0.0
+	letterbox(true)
+	var finished := [false]
+	var finish := func():
+		if finished[0]:
+			return
+		finished[0] = true
+		_skip = Callable()
+		letterbox(false)
+		var tw2 := root.create_tween()
+		tw2.tween_property(root, "modulate:a", 0.0, 0.5)
+		tw2.tween_callback(func():
+			_close_modal(root)
+			done.call())
+	_skip = finish
+	var skip_b := _big_button("Skip", func(): finish.call())
+	skip_b.custom_minimum_size = Vector2(150, 44)
+	skip_b.add_theme_font_size_override("font_size", 20)
+	skip_b.focus_mode = Control.FOCUS_NONE
+	skip_b.anchor_left = 1.0
+	skip_b.anchor_right = 1.0
+	skip_b.offset_left = -176
+	skip_b.offset_right = -26
+	skip_b.offset_top = 100
+	skip_b.offset_bottom = 144
+	root.add_child(skip_b)
+	var tw := root.create_tween()
+	tw.tween_property(img, "modulate:a", 1.0, 0.8)
+	tw.parallel().tween_property(img, "scale", Vector2(1.08, 1.08), 3.0 * lines.size() + 1.5).from(Vector2.ONE)
+	for l in lines:
+		tw.tween_callback(func():
+			text.text = l
+			text.visible_ratio = 0.0)
+		tw.tween_property(text, "visible_ratio", 1.0, 0.9)
+		tw.tween_interval(2.0)
+	tw.tween_callback(finish)
+
+
+# --- codex ---------------------------------------------------------------------------
+
+## The Lontar of Tales: unlocked entries with their portraits, plus journey records.
+func codex_menu(done: Callable) -> void:
+	var root := _modal(0.85)
+	var box := PanelContainer.new()
+	box.add_theme_stylebox_override("panel", _panel_style())
+	box.anchor_left = 0.08
+	box.anchor_right = 0.92
+	box.anchor_top = 0.05
+	box.anchor_bottom = 0.95
+	root.add_child(box)
+	var vb := VBoxContainer.new()
+	vb.add_theme_constant_override("separation", 10)
+	box.add_child(vb)
+	var t := _label("Lontar of Tales", 42, F_TITLE, GOLD, 8)
+	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vb.add_child(t)
+	var rec := _label(Codex.records_text(), 18, F_HEAD, Color(0.85, 0.8, 0.7), 4)
+	rec.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vb.add_child(rec)
+	var hb := HBoxContainer.new()
+	hb.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	hb.add_theme_constant_override("separation", 16)
+	vb.add_child(hb)
+	var sc := ScrollContainer.new()
+	sc.custom_minimum_size = Vector2(300, 0)
+	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	hb.add_child(sc)
+	var list := VBoxContainer.new()
+	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sc.add_child(list)
+	var page := HBoxContainer.new()
+	page.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	page.add_theme_constant_override("separation", 14)
+	hb.add_child(page)
+	var pic := TextureRect.new()
+	pic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	pic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	pic.custom_minimum_size = Vector2(260, 0)
+	page.add_child(pic)
+	var words := VBoxContainer.new()
+	words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	page.add_child(words)
+	var name_l := _label("", 32, F_HEAD, GOLD, 6)
+	words.add_child(name_l)
+	var sub_l := _label("", 20, F_BODY, Color(0.75, 0.7, 0.6), 4)
+	words.add_child(sub_l)
+	var body := _label("", 21, F_BODY, CREAM, 3)
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	words.add_child(body)
+	var show := func(id: String):
+		var e: Array = Codex.ENTRIES[id]
+		name_l.text = e[0]
+		sub_l.text = e[1]
+		body.text = e[2]
+		pic.texture = portrait_tex(e[3]) if e[3] != "" else null
+	var ids := Codex.unlocked()
+	for id in Codex.ORDER:
+		var b := Button.new()
+		var open: bool = id in ids
+		b.text = Codex.ENTRIES[id][0] if open else "? ? ?"
+		b.disabled = not open
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		b.add_theme_font_override("font", F_HEAD)
+		b.add_theme_font_size_override("font_size", 20)
+		b.add_theme_stylebox_override("normal", _flat(Color(0.06, 0.05, 0.08, 0.8), GOLD.darkened(0.5), 1, 6))
+		b.add_theme_stylebox_override("hover", _flat(Color(0.14, 0.1, 0.08, 0.95), GOLD, 2, 6))
+		b.add_theme_stylebox_override("focus", _flat(Color(0.14, 0.1, 0.08, 0.95), GOLD, 2, 6))
+		b.pressed.connect(func(): show.call(id))
+		b.focus_entered.connect(func(): if open: show.call(id))
+		list.add_child(b)
+	if not ids.is_empty():
+		show.call(ids[0])
+	var close := _big_button("Close", func(): pass)
+	close.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	close.pressed.connect(func():
+		_close_modal(root)
+		done.call())
+	vb.add_child(close)
+	_back = func(): close.pressed.emit()
+	close.call_deferred("grab_focus")

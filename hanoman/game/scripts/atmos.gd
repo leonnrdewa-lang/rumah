@@ -39,7 +39,7 @@ static func build(a: Arena) -> void:
 		root.add_child(l)
 	if not G.high_quality():
 		return
-	var muara := a.biome == "muara"
+	var muara := a.biome in Arena.WATERY
 	var hub := a.kind == "hub"
 	# floating motes: fireflies in the forest, sea spray on the estuary, embers at bosses
 	var mote_col := Color(0.75, 1.0, 0.45)
@@ -62,6 +62,13 @@ static func build(a: Arena) -> void:
 		if a.sd_all(Vector2(p.x, p.z)) > 0.5:
 			continue
 		root.add_child(_mist(p, rng.randf_range(5.0, 9.0), Color(0.55, 0.7, 0.8) if muara else Color(0.6, 0.75, 0.6)))
+	# moonlight and torch glints shimmering on the open water
+	if muara:
+		for i in int(clamp(ext.x * ext.z * 0.03, 8, 40)):
+			var p := centre + Vector3(rng.randf_range(-ext.x - 6, ext.x + 6), -0.3, rng.randf_range(-ext.z - 6, ext.z + 6))
+			if a.sd_all(Vector2(p.x, p.z)) < 0.8:
+				continue
+			root.add_child(_glint(p, rng.randf_range(1.2, 3.2)))
 	# slanted light shafts falling through the canopy
 	var rays := int(clamp(ext.x * 0.4, 3, 10))
 	for i in rays:
@@ -150,6 +157,23 @@ static func _mist(pos: Vector3, size: float, col: Color) -> MeshInstance3D:
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	mi.position = pos
 	mi.basis = Basis(Vector3.UP, randf() * TAU) * Basis.from_scale(Vector3(size, 1, size * 0.7))
+	return mi
+
+
+static func _glint(pos: Vector3, size: float) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	mi.mesh = Fx._flat_unit()
+	var m := Fx.tex_mat("k_light", Color(0.75, 0.9, 1.0), 0.0, 0.6, 0.0)
+	m.set_shader_parameter("spin_speed", randf_range(-0.3, 0.3))
+	mi.material_override = m
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	mi.position = pos
+	mi.basis = Basis.from_scale(Vector3(size, 1, size * 0.45))
+	var tw := mi.create_tween().set_loops()
+	var peak := randf_range(0.35, 0.8)
+	tw.tween_interval(randf_range(0.0, 2.0))
+	tw.tween_method(func(v): m.set_shader_parameter("intensity", v), 0.0, peak, randf_range(0.8, 1.6)).set_trans(Tween.TRANS_SINE)
+	tw.tween_method(func(v): m.set_shader_parameter("intensity", v), peak, 0.0, randf_range(0.8, 1.6)).set_trans(Tween.TRANS_SINE)
 	return mi
 
 

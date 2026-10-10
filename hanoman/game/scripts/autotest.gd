@@ -111,7 +111,7 @@ func _run() -> void:
 	main.go_hub()
 	await _wait(2.5)
 	await _shot("01_hub")
-	main.ui.dialog([["rama", "Uji dialog: Hanoman, bawalah cincinku ke Alengka."]], func(): pass)
+	main.ui.dialog([["rama", "Dialog test: Hanoman, carry my ring to Alengka."]], func(): pass)
 	await _wait(1.5)
 	await _shot("02_dialog")
 	for k in 2:
@@ -145,13 +145,28 @@ func _run() -> void:
 	await _shot("04_room1_clear")
 	# pick up reward if boon
 	for n in get_tree().get_nodes_in_group("interactable"):
-		if n.get_meta("active", true) and String(n.get_meta("prompt", "")).begins_with("Terima"):
+		if n.get_meta("active", true) and String(n.get_meta("prompt", "")).begins_with("Accept"):
 			n.interact()
 			await _wait(0.8)
 			await _shot("05_boon_menu")
 			main.ui._menu_buttons[0].pressed.emit()
 	await _wait(0.5)
-	var rooms := [5, 9]
+	# alternative weapons in the first room's arena
+	G.meta.weapons = ["gada", "panah", "cakra"]
+	for w in ["gada", "panah", "cakra"]:
+		G.meta.weapon = w
+		Weapons.dress(main.player.staff)
+		G.run.room = 1
+		main.enter_room({"type": "kepeng"})
+		await _wait(2.5)
+		await _fight(3.0)
+		main.player.prana = 3.0
+		main.player.try_special()
+		await _wait(0.4)
+		await _shot("05w_%s" % w)
+	G.meta.weapon = "tongkat"
+	Weapons.dress(main.player.staff)
+	var rooms := [5, 9, 10, 13, 14, 15]
 	for target in rooms:
 		G.run.room = target - 1
 		main.enter_room({"type": "kepeng"})

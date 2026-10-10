@@ -34,7 +34,7 @@ func _begin() -> void:
 	active = true
 	_t = 1.5
 	var muara := arena.biome == "muara"
-	G.main.ui.phase_banner("Air Pasang!" if muara else "Hujan Petir Emas!")
+	G.main.ui.phase_banner("High Tide!" if muara else "Golden Lightning Storm!")
 	G.main.flash(Color(0.5, 0.8, 1.0) if muara else Color(1.0, 0.85, 0.4), 0.3, 0.6)
 	G.main.shake(0.5)
 	Au.sfx("sfx_bell", -1.0)

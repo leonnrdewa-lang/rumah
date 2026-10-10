@@ -168,3 +168,68 @@ static func _find_bone(sk: Skeleton3D, keys: Array) -> int:
 				and not (n.contains("thumb") or n.contains("index") or n.contains("middle") or n.contains("ring") or n.contains("pinky")):
 			best = i
 	return best
+
+
+var style := "tongkat"
+var _extra: Node3D
+
+
+## Restyle the held weapon (see Weapons): mace, bow or chakra instead of the staff.
+func set_style(s: String) -> void:
+	style = s
+	if _extra:
+		_extra.queue_free()
+		_extra = null
+	for c in get_children():
+		(c as Node3D).visible = s == "tongkat" or s == "gada"
+	if s == "tongkat":
+		set_length(2.2)
+		return
+	_extra = Node3D.new()
+	add_child(_extra)
+	match s:
+		"gada":
+			set_length(1.15)
+			var head := MeshInstance3D.new()
+			var sm := SphereMesh.new()
+			sm.radius = 0.2
+			sm.height = 0.46
+			sm.radial_segments = 12
+			sm.rings = 6
+			head.mesh = sm
+			head.material_override = Art.toon(GOLD, 0.2, 1.6, true)
+			head.position.y = length - grip + 0.1
+			_extra.add_child(head)
+			for k in 6:
+				var spike := _cyl(0.035, 0.18, GOLD)
+				var a := TAU * k / 6.0
+				spike.position = head.position + Vector3(cos(a), 0, sin(a)) * 0.2
+				spike.rotation = Vector3(0, -a, PI / 2)
+				_extra.add_child(spike)
+		"panah":
+			var bow := MeshInstance3D.new()
+			var t := TorusMesh.new()
+			t.inner_radius = 0.6
+			t.outer_radius = 0.66
+			t.rings = 20
+			t.ring_segments = 6
+			bow.mesh = t
+			bow.material_override = Art.toon(GOLD, 0.15, 1.6, true)
+			bow.scale = Vector3(0.45, 1.0, 1.0)
+			bow.rotation = Vector3(0, 0, PI / 2)
+			_extra.add_child(bow)
+			var string := _cyl(0.008, 1.3, Color(0.95, 0.9, 0.8))
+			string.position.x = -0.22
+			_extra.add_child(string)
+		"cakra":
+			var disc := MeshInstance3D.new()
+			var c := CylinderMesh.new()
+			c.top_radius = 0.32
+			c.bottom_radius = 0.32
+			c.height = 0.05
+			c.radial_segments = 16
+			disc.mesh = c
+			disc.material_override = Art.toon(GOLD, 0.4, 1.6, true)
+			disc.rotation.x = PI / 2
+			disc.position.y = 0.2
+			_extra.add_child(disc)
