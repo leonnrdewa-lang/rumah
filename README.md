@@ -1,5 +1,8 @@
 # Sawit The Franchise
 
+> Juga di repo ini: **[Hanoman Duta](hanoman/README.md)**, demo action roguelike ala Hades
+> bertema Ramayana & legenda Sura-Baya (main di `docs/hanoman/`).
+
 Game *farming sim* satir bergaya cozy (ala Animal Crossing / Coral Island) tentang
 seorang juragan kebun sawit di Desa Sukamakmur. Tanam, pupuk, panen, dan jual
 Tandan Buah Segar (TBS) ke pabrik. Kuasai lahan warga dengan cara halal...
