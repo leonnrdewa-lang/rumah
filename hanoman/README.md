@@ -58,23 +58,22 @@ cd docs/hanoman && python3 -m http.server 8060   # buka http://localhost:8060
 
 Mouse mengarahkan serangan; di HP serangan membidik raksasa terdekat. Gamepad juga didukung.
 
-## Alur demo
+## Alur demo (v4, bahasa Inggris di dalam game)
 
-1. **Pertapaan Pancawati** (hub malam): Prabu Rama memberi misi, **Resi Jembawan** menukar
-   Kembang Wijayakusuma dengan kesaktian permanen, **Prabu Sugriwa** memberi tips. Masuk sumur tua.
-2. **Hutan Dandaka**, ruang 1–4: gelombang Wil, Buto Cakil (terjang keris), Buto Ijo (hantaman
-   area), Banaspati (bola api). Tiap ruang bersih → hadiah; pilih 1 dari 2 gapura candi bentar
-   yang menunjukkan hadiah berikutnya.
-3. **Kijang Kencana** (mini-bos): terjang beruntun, membelah diri, lalu berubah wujud jadi Kala Marica.
-4. **Pasar Sang Hyang & Sendang Suci**: pulihkan nyawa, belanja anugerah/Tirta/Pusaka Palu.
-5. **Muara Kalimas**, ruang 7–8: Yuyu Kangkang (kebal dari depan) dan kawan-kawan.
-6. **Bos Sura & Baya** sekaligus: Sura menyelam lalu menerkam dari bawah, gelombang air; Baya
-   menggigit, sabetan ekor berputar, terjangan guling. Serangan mereka saling melukai: adu mereka!
-7. Menang → epilog asal nama Surabaya, "Bersambung ke Alengka…". Gugur → kembali ke Pancawati.
+1. **Pancawati Hermitage** (hub): Rama memberi misi, **Jembawan** mengajarkan kesaktian dan
+   **senjata baru** (Rujakpolo Mace, Sacred Bow, Sudarsana Chakra), **Sugriwa** punya cerita yang
+   terbuka sesuai progres, **rak senjata**, **Lontar of Tales** (kodeks + statistik), dan
+   **Altar of Vows** (mode Heat) setelah menang sekali.
+2. **Dandaka Forest** (ruang 1–4) → **Kijang Kencana** (5) → pasar & mata air (6).
+3. **Kalimas Estuary** (7–8) → **Sura & Baya** (9): kalahkan mereka, epilog Surabaya, lalu lanjut.
+4. **The Southern Ocean** (10–11, di atas punggung kura-kura raksasa) → istirahat (12).
+5. **Alengka**: **Kumbakarna** (13, raksasa yang tertidur–bangun), **Asoka Garden** (14),
+   **Indrajit** (15, panah Nagapasa, teleport, ilusi, hujan panah). Menang → Hanoman bertemu Sinta.
+6. Musuh baru: pemanah, dukun pemanggil Wil, pembawa perisai; varian elite emas; tiap bos punya fase 2.
+7. Simpan otomatis tiap ruang ("Resume Journey" di menu), cutscene bergambar tiap babak,
+   suara Hanoman saat bertarung, 67 dialog bersuara bahasa Inggris, ekspresi potret.
 
-**Anugerah dewa** (20 boon, 4 kelangkaan): Batara **Bayu** (angin, dorongan/sedotan),
-**Surya** (api, bakar/ledakan), **Baruna** (air, basah/lambat, ombak), **Indra** (petir berantai).
-Tiap anugerah mengisi slot Serang / Jurus / Ajian / Lesat / Pasif.
+**Anugerah dewa**: 20 boon + 6 boon Duo (dua dewa), 4 kelangkaan.
 
 ## Build ulang
 
